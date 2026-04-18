@@ -8,21 +8,26 @@ import {
 } from 'react';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import type { ThemeId } from './themes';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type EffectiveScheme = 'light' | 'dark';
 
 interface ThemeContextValue {
+  themeId: ThemeId;
   preference: ThemePreference;
   scheme: EffectiveScheme;
+  setThemeId: (id: ThemeId) => void;
   setPreference: (pref: ThemePreference) => void;
 }
 
-const STORAGE_KEY = 'theme_preference';
+const STORAGE_KEY = 'theme_id';
 
 const ThemeContext = createContext<ThemeContextValue>({
+  themeId: 'pearl-white',
   preference: 'system',
   scheme: 'light',
+  setThemeId: () => {},
   setPreference: () => {},
 });
 
@@ -32,19 +37,24 @@ export interface AppThemeProviderProps {
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useSystemColorScheme();
+  const [themeId, setThemeIdState] = useState<ThemeId>('pearl-white');
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
     void kvStore.getItem(STORAGE_KEY).then((stored) => {
-      if (stored === 'light' || stored === 'dark' || stored === 'system') {
-        setPreferenceState(stored);
+      if (stored) {
+        setThemeIdState(stored as ThemeId);
       }
     });
   }, []);
 
+  const setThemeId = useCallback((id: ThemeId) => {
+    setThemeIdState(id);
+    void kvStore.setItem(STORAGE_KEY, id);
+  }, []);
+
   const setPreference = useCallback((pref: ThemePreference) => {
     setPreferenceState(pref);
-    void kvStore.setItem(STORAGE_KEY, pref);
   }, []);
 
   const scheme: EffectiveScheme =
@@ -53,7 +63,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
       : preference;
 
   return (
-    <ThemeContext.Provider value={{ preference, scheme, setPreference }}>
+    <ThemeContext.Provider value={{ themeId, preference, scheme, setThemeId, setPreference }}>
       {children}
     </ThemeContext.Provider>
   );

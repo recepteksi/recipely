@@ -50,6 +50,7 @@ export const tr: Translations = {
     themeSystem: 'Sistem',
     themeLight: 'Açık',
     themeDark: 'Koyu',
+    chooseTheme: 'Temayı Seç',
     language: 'Dil',
     account: 'Hesap',
     signOut: 'Çıkış yap',

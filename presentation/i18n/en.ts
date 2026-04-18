@@ -48,6 +48,7 @@ export const en = {
     themeSystem: 'System',
     themeLight: 'Light',
     themeDark: 'Dark',
+    chooseTheme: 'Choose Your Theme',
     language: 'Language',
     account: 'Account',
     signOut: 'Sign out',
