@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, shadows } from '@presentation/base/theme';
-import { ALL_THEMES, getThemeDefinition, getThemeColors, type ThemeId } from '@presentation/base/theme/themes';
+import { ALL_THEMES, getThemeDefinition, getThemeColors, getPreferredVariant, type ThemeId } from '@presentation/base/theme/themes';
 import { ThemedText } from './themed-text';
 import { t } from '@presentation/i18n';
 
@@ -44,15 +44,9 @@ export const ThemeSelector = ({
 
     // Filter by tab
     if (activeTab === 'light') {
-      result = result.filter((id) => {
-        const def = getThemeDefinition(id);
-        return def.light.background !== def.dark.background;
-      });
+      result = result.filter((id) => getPreferredVariant(id) === 'light');
     } else if (activeTab === 'dark') {
-      result = result.filter((id) => {
-        const def = getThemeDefinition(id);
-        return def.light.background === def.dark.background;
-      });
+      result = result.filter((id) => getPreferredVariant(id) === 'dark');
     }
 
     // Filter by search
@@ -79,14 +73,8 @@ export const ThemeSelector = ({
   };
 
   const tabCounts = useMemo(() => {
-    const lightCount = ALL_THEMES.filter((id) => {
-      const def = getThemeDefinition(id);
-      return def.light.background !== def.dark.background;
-    }).length;
-    const darkCount = ALL_THEMES.filter((id) => {
-      const def = getThemeDefinition(id);
-      return def.light.background === def.dark.background;
-    }).length;
+    const lightCount = ALL_THEMES.filter((id) => getPreferredVariant(id) === 'light').length;
+    const darkCount = ALL_THEMES.filter((id) => getPreferredVariant(id) === 'dark').length;
     return { all: ALL_THEMES.length, light: lightCount, dark: darkCount };
   }, []);
 
