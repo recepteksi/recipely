@@ -1,15 +1,18 @@
 import { useCallback, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ScreenContainer } from '@presentation/base/widgets/screen-container';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { StateView, type StateViewStatus } from '@presentation/base/widgets/state-view';
 import { t } from '@presentation/i18n';
-import { spacing, radii } from '@presentation/base/theme';
+import { pickColors } from '@presentation/base/theme/colors';
+import { radii } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 
 export const TaskDetailScreen = (): React.JSX.Element => {
+  const colors = pickColors(useColorScheme());
   const params = useLocalSearchParams<{ recipeId: string; taskId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
   const taskId = typeof params.taskId === 'string' ? params.taskId : '';
@@ -42,25 +45,57 @@ export const TaskDetailScreen = (): React.JSX.Element => {
       : current.status === 'error'
         ? 'error'
         : 'content';
-  const failure: Failure | undefined = current.status === 'error' ? current.failure : undefined;
+  const failure: Failure | undefined =
+    current.status === 'error' ? current.failure : undefined;
 
   return (
     <ScreenContainer scrollable>
       <StateView status={status} failure={failure} onRetry={onRetry}>
         {current.status === 'loaded' ? (
-          <View>
-            <ThemedText variant="title">{current.task.title}</ThemedText>
-            <View style={styles.statusRow}>
-              <View
-                style={[
-                  styles.statusChip,
-                  current.task.completed ? styles.completedChip : styles.pendingChip,
-                ]}
+          <View style={styles.container}>
+            <ThemedText variant="title" style={styles.title}>
+              {current.task.title}
+            </ThemedText>
+
+            <View
+              style={[
+                styles.circle,
+                current.task.completed
+                  ? { backgroundColor: colors.success }
+                  : {
+                      backgroundColor: 'transparent',
+                      borderWidth: 3,
+                      borderColor: colors.border,
+                    },
+              ]}
+            >
+              {current.task.completed ? (
+                <Ionicons name="checkmark" size={40} color="#FFFFFF" />
+              ) : null}
+            </View>
+
+            <View
+              style={[
+                styles.statusBadge,
+                {
+                  backgroundColor: current.task.completed
+                    ? colors.successLight
+                    : colors.warningLight,
+                },
+              ]}
+            >
+              <ThemedText
+                variant="subtitle"
+                style={{
+                  color: current.task.completed
+                    ? colors.success
+                    : colors.warning,
+                }}
               >
-                <ThemedText variant="caption">
-                  {current.task.completed ? t().tasks.completed : t().tasks.pending}
-                </ThemedText>
-              </View>
+                {current.task.completed
+                  ? t().tasks.completed
+                  : t().tasks.pending}
+              </ThemedText>
             </View>
           </View>
         ) : null}
@@ -70,19 +105,24 @@ export const TaskDetailScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  statusRow: {
-    marginTop: spacing.lg,
+  container: {
+    alignItems: 'center',
   },
-  statusChip: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+  title: {
+    textAlign: 'center',
+  },
+  circle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  statusBadge: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: radii.round,
-  },
-  completedChip: {
-    backgroundColor: '#4caf5033',
-  },
-  pendingChip: {
-    backgroundColor: '#ff980033',
   },
 });

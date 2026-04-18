@@ -1,7 +1,7 @@
 import { StyleSheet, Text, useColorScheme, type TextProps, type TextStyle } from 'react-native';
 import { pickColors } from '@presentation/base/theme/colors';
 
-export type ThemedTextVariant = 'title' | 'subtitle' | 'body' | 'caption';
+export type ThemedTextVariant = 'headline' | 'title' | 'subtitle' | 'body' | 'caption' | 'label';
 
 export interface ThemedTextProps extends TextProps {
   variant?: ThemedTextVariant;
@@ -21,20 +21,38 @@ export const ThemedText = ({
 };
 
 const styles = StyleSheet.create<Record<ThemedTextVariant, TextStyle>>({
+  headline: {
+    fontSize: 32,
+    fontWeight: '800',
+    lineHeight: 40,
+    letterSpacing: -0.5,
+  },
   title: {
     fontSize: 24,
     fontWeight: '700',
+    lineHeight: 32,
+    letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 18,
     fontWeight: '600',
+    lineHeight: 26,
   },
   body: {
     fontSize: 15,
     fontWeight: '400',
+    lineHeight: 22,
   },
   caption: {
     fontSize: 13,
     fontWeight: '400',
+    lineHeight: 18,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 });
