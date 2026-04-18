@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A73E8"/>
+      <stop offset="100%" stop-color="#6C63FF"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B35"/>
+      <stop offset="100%" stop-color="#FF8A5C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="512" cy="512" r="490" fill="url(#grad)"/>
+
+  <!-- Inner white circle -->
+  <circle cx="512" cy="512" r="380" fill="#FFFFFF" opacity="0.1"/>
+
+  <!-- Fork (left part) -->
+  <path d="M340 280 L340 700 Q340 740 360 740 Q380 740 380 700 L380 400
+           Q380 340 360 310 Q340 280 340 280
+           M340 340 L340 260
+           Q340 230 360 230 Q380 230 380 260 L380 340
+           M340 430 L340 350
+           Q340 320 360 320 Q380 320 380 350 L380 430"
+        fill="#FFFFFF"
+        stroke="none"/>
+
+  <!-- Spoon (right part) -->
+  <path d="M640 280 Q640 220 610 200 Q590 185 570 200 Q550 215 555 260
+           Q560 310 580 350 Q600 390 640 430
+           L640 280 Z"
+        fill="#FFFFFF"/>
+
+  <!-- Spoon handle -->
+  <path d="M570 350 Q590 400 640 460 L680 740 Q682 760 662 760 Q642 760 640 740 L600 460
+           Q560 400 570 350 Z"
+        fill="#FFFFFF"/>
+
+  <!-- Center accent (leaf/herb shape) -->
+  <path d="M512 380 Q560 350 590 380 Q620 410 590 450 Q560 480 512 480
+           Q464 480 434 450 Q404 410 434 380 Q464 350 512 380 Z"
+        fill="url(#grad2)"
+        opacity="0.9"/>
+
+  <!-- R letter cutout (subtle) -->
+  <text x="512" y="540"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="200"
+        font-weight="700"
+        text-anchor="middle"
+        fill="#FFFFFF"
+        opacity="0.15">R</text>
+
+  <!-- Top dot (like a cherry/tomato) -->
+  <circle cx="512" cy="300" r="30" fill="#FFFFFF" opacity="0.9"/>
+
+  <!-- Decorative dots -->
+  <circle cx="280" cy="400" r="8" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="744" cy="600" r="8" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="300" cy="650" r="5" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="720" cy="350" r="5" fill="#FFFFFF" opacity="0.4"/>
+</svg>
