@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useColorScheme as useSystemColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { getThemeColors, type ThemeId, type ThemeColors } from './themes';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type EffectiveScheme = 'light' | 'dark';
 
-interface ThemeContextValue {
+export interface ThemeContextValue {
   themeId: ThemeId;
   preference: ThemePreference;
   scheme: EffectiveScheme;
@@ -14,8 +14,6 @@ interface ThemeContextValue {
   setThemeId: (id: ThemeId) => void;
   setPreference: (pref: ThemePreference) => void;
 }
-
-const STORAGE_KEY = 'theme_id';
 
 const ThemeContext = createContext<ThemeContextValue>({
   themeId: 'pearl-white',
@@ -31,12 +29,13 @@ export interface AppThemeProviderProps {
 }
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
-  const systemScheme = useSystemColorScheme();
+  const systemScheme = useColorScheme();
   const [themeId, setThemeIdState] = useState<ThemeId>('pearl-white');
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
+  // Load persisted theme on mount
   useEffect(() => {
-    void kvStore.getItem(STORAGE_KEY).then((stored) => {
+    void kvStore.getItem('theme_id').then((stored) => {
       if (stored) {
         setThemeIdState(stored as ThemeId);
       }
@@ -45,7 +44,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const setThemeId = useCallback((id: ThemeId) => {
     setThemeIdState(id);
-    void kvStore.setItem(STORAGE_KEY, id);
+    void kvStore.setItem('theme_id', id);
   }, []);
 
   const setPreference = useCallback((pref: ThemePreference) => {
@@ -57,10 +56,16 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
       ? (systemScheme ?? 'light')
       : preference;
 
+  // Memoize to ensure stable reference when themeId/scheme unchanged
   const colors = useMemo(() => getThemeColors(themeId, scheme), [themeId, scheme]);
 
+  const value = useMemo(
+    () => ({ themeId, preference, scheme, colors, setThemeId, setPreference }),
+    [themeId, preference, scheme, colors, setThemeId, setPreference],
+  );
+
   return (
-    <ThemeContext.Provider value={{ themeId, preference, scheme, colors, setThemeId, setPreference }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
