@@ -8,13 +8,11 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { StateView, type StateViewStatus } from '@presentation/base/widgets/state-view';
 import { t } from '@presentation/i18n';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { radii } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 
 export const TaskDetailScreen = (): React.JSX.Element => {
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const params = useLocalSearchParams<{ recipeId: string; taskId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
   const taskId = typeof params.taskId === 'string' ? params.taskId : '';

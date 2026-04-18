@@ -9,7 +9,6 @@ import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
-import { pickColors } from '@presentation/base/theme/colors';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii } from '@presentation/base/theme';
@@ -34,8 +33,7 @@ const LoadingSkeleton = (): React.JSX.Element => (
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const { recipeListStore } = useStores();
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);

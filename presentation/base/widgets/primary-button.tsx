@@ -1,7 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 
 export interface PrimaryButtonProps {
   label: string;
@@ -16,8 +15,7 @@ export const PrimaryButton = ({
   loading = false,
   disabled = false,
 }: PrimaryButtonProps): React.JSX.Element => {
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const isInteractive = !loading && !disabled;
   const backgroundColor = isInteractive ? colors.primary : colors.border;
 

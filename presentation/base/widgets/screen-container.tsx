@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 
 export interface ScreenContainerProps {
   children: ReactNode;
@@ -27,8 +26,7 @@ export const ScreenContainer = ({
   contentStyle,
   padded = true,
 }: ScreenContainerProps): React.JSX.Element => {
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const padStyle = padded ? styles.padded : undefined;
 
   if (scrollable) {

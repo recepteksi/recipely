@@ -9,6 +9,7 @@ import {
 import { useColorScheme as useSystemColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import type { ThemeId } from './themes';
+import type { ThemeColors } from './themes';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type EffectiveScheme = 'light' | 'dark';
@@ -17,6 +18,7 @@ interface ThemeContextValue {
   themeId: ThemeId;
   preference: ThemePreference;
   scheme: EffectiveScheme;
+  colors: ThemeColors;
   setThemeId: (id: ThemeId) => void;
   setPreference: (pref: ThemePreference) => void;
 }
@@ -27,6 +29,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   themeId: 'pearl-white',
   preference: 'system',
   scheme: 'light',
+  colors: {} as ThemeColors,
   setThemeId: () => {},
   setPreference: () => {},
 });
@@ -62,8 +65,12 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
       ? (systemScheme ?? 'light')
       : preference;
 
+  // Import dynamically to avoid circular — resolved at call time
+  const { getThemeColors } = require('./themes');
+  const colors = getThemeColors(themeId, scheme);
+
   return (
-    <ThemeContext.Provider value={{ themeId, preference, scheme, setThemeId, setPreference }}>
+    <ThemeContext.Provider value={{ themeId, preference, scheme, colors, setThemeId, setPreference }}>
       {children}
     </ThemeContext.Provider>
   );

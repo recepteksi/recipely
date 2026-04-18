@@ -10,7 +10,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, shadows } from '@presentation/base/theme';
 import { ALL_THEMES, getThemeDefinition, getThemeColors, type ThemeId } from '@presentation/base/theme/themes';
 import { ThemedText } from './themed-text';
@@ -35,8 +34,7 @@ export const ThemeSelector = ({
   onClose,
   onSelect,
 }: ThemeSelectorProps): React.JSX.Element => {
-  const { themeId, scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const { themeId, scheme, colors } = useTheme();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewId, setPreviewId] = useState<ThemeId | null>(themeId);

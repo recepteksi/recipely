@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
 
@@ -18,7 +17,7 @@ export const CheckboxItem = ({
   onToggle,
   disabled,
 }: CheckboxItemProps): React.JSX.Element => {
-  const colors = pickColors(useTheme().scheme);
+  const colors = useTheme().colors;
 
   const boxStyle = checked
     ? { backgroundColor: colors.success, borderColor: colors.success }

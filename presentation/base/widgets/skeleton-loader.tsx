@@ -7,7 +7,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 
 export interface SkeletonLoaderProps {
   width: number | string;
@@ -22,7 +21,7 @@ export const SkeletonLoader = ({
   borderRadius = 8,
   style,
 }: SkeletonLoaderProps): React.JSX.Element => {
-  const colors = pickColors(useTheme().scheme);
+  const colors = useTheme().colors;
   const translateX = useSharedValue(-200);
 
   useEffect(() => {

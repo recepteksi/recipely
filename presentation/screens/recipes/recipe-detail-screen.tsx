@@ -10,7 +10,6 @@ import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { CheckboxItem } from '@presentation/base/widgets/checkbox-item';
 import { StateView, type StateViewStatus } from '@presentation/base/widgets/state-view';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { t } from '@presentation/i18n';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
@@ -32,8 +31,7 @@ const InfoChip = ({ icon, label, iconColor, chipBg, chipTextColor }: InfoChipPro
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 

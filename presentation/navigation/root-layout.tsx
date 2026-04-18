@@ -5,14 +5,12 @@ import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { initLocale, t } from '@presentation/i18n';
 
 initLocale();
 
 const RootStack = (): React.JSX.Element => {
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const { scheme, colors } = useTheme();
   const router = useRouter();
 
   return (

@@ -15,7 +15,6 @@ import { ProgressBar } from '@presentation/base/widgets/progress-bar';
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { t } from '@presentation/i18n';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
@@ -23,8 +22,7 @@ import type { Task } from '@domain/tasks/task';
 
 export const TaskListScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const { scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const colors = useTheme().colors;
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
