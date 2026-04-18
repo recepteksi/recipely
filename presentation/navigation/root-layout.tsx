@@ -13,12 +13,16 @@ const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   const router = useRouter();
 
+  const reactNavTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const headerBg = colors.background;
+  const headerTint = colors.text;
+
   return (
-    <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={reactNavTheme}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: headerBg },
+          headerTintColor: headerTint,
           headerShadowVisible: false,
         }}
       >
