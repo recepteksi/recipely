@@ -1,15 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
-import type { ThemeId } from './themes';
-import type { ThemeColors } from './themes';
+import { getThemeColors, type ThemeId, type ThemeColors } from './themes';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 export type EffectiveScheme = 'light' | 'dark';
@@ -65,9 +57,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
       ? (systemScheme ?? 'light')
       : preference;
 
-  // Import dynamically to avoid circular — resolved at call time
-  const { getThemeColors } = require('./themes');
-  const colors = getThemeColors(themeId, scheme);
+  const colors = useMemo(() => getThemeColors(themeId, scheme), [themeId, scheme]);
 
   return (
     <ThemeContext.Provider value={{ themeId, preference, scheme, colors, setThemeId, setPreference }}>
