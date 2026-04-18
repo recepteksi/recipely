@@ -1,50 +1,101 @@
-# Welcome to your Expo app 👋
+# Recipely
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform mobile app built with **React Native** and **Expo**, following **Domain-Driven Design (DDD)** and **Clean Architecture** principles.
 
-## Get started
+Browse recipes, view ingredients and cooking instructions, and manage tasks -- all powered by the free [DummyJSON](https://dummyjson.com) API.
 
-1. Install dependencies
+## Tech Stack
 
-   ```bash
-   npm install
-   ```
+| Layer | Technology |
+|-------|-----------|
+| Framework | Expo SDK 54, React Native 0.81, React 19 |
+| Language | TypeScript (strict mode) |
+| Navigation | expo-router (file-based routing) |
+| State Management | Zustand |
+| HTTP | Axios |
+| Architecture | DDD / Clean Architecture |
+| i18n | expo-localization (EN, TR) |
+| Testing | Jest + jest-expo |
 
-2. Start the app
+## Architecture
 
-   ```bash
-   npx expo start
-   ```
+```
+presentation/
+  app/              Thin route re-exports (expo-router)
+  screens/          Screen components
+  navigation/       Root layout
+  i18n/             Internationalization (EN + TR)
+  base/             Shared widgets, theme, utils
+  bootstrap/        DI initialization, stores context
 
-In the output, you'll find options to open the app in a
+application/        Use cases, Zustand stores, DI registration
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+domain/             Entities, value objects, repository interfaces
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+infrastructure/     Repository implementations, DTOs, mappers, HTTP client, storage
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+core/               Result monad, Failure hierarchy, Entity/ValueObject base, DI container
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**Dependency rule**: each layer only imports from layers below it, never upward.
 
-## Learn more
+See [architecture.md](architecture.md) for full details and coding rules.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Getting Started
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Prerequisites
 
-## Join the community
+- Node.js 18+
+- npm
 
-Join our community of developers creating universal apps.
+### Install
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm install
+```
+
+### Run
+
+```bash
+# Start Expo dev server
+npm start
+
+# Or target a specific platform
+npm run web
+npm run ios
+npm run android
+```
+
+### Test Credentials
+
+The app uses DummyJSON's auth API. Use these credentials to log in:
+
+```
+Username: emilys
+Password: emilyspass
+```
+
+### Verify
+
+```bash
+# Type-check
+npx tsc --noEmit
+
+# Run tests
+npx jest
+
+# Lint
+npm run lint
+```
+
+## Project Rules
+
+- One class/interface/component per file
+- All user-visible strings via `t()` (i18n)
+- Static values in dedicated constants files
+- `Result<T, Failure>` for error handling (no thrown exceptions)
+- Platform-specific files use `.web.ts` / `.ts` extension resolution
+
+## License
+
+MIT
