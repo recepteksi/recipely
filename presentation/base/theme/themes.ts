@@ -184,7 +184,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Warm orange radiating energy and optimism',
     preferredVariant: 'light',
     light: makeColors(
-      '#F97316', '#FFFFFF', '#FFEDD5', '#EA580C', '#FB923C',
+      '#4E2407', '#FFFFFF', '#FFEDD5', '#EA580C', '#FB923C',
       LIGHT_BG, '#FFF7ED', '#1C1917', '#6B7280', '#EA580C', '#FFFFFF',
     ),
     dark: makeColors(
@@ -198,8 +198,8 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Rich golden yellow evoking sunshine and prosperity',
     preferredVariant: 'light',
     light: makeColors(
-      '#EAB308', '#1C1917', '#FEF9C3', '#CA8A04', '#FDE047',
-      LIGHT_BG, '#FEFCE8', '#1C1917', '#6B7280', '#CA8A04', '#1C1917',
+      '#4A3803', '#FFFFFF', '#FEF9C3', '#CA8A04', '#FDE047',
+      LIGHT_BG, '#FEFCE8', '#1C1917', '#6B7280', '#CA8A04', '#FFFFFF',
     ),
     dark: makeColors(
       '#FDE047', '#1C1917', '#422006', '#EAB308', '#FEF08A',
@@ -212,7 +212,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Fresh lime green bursting with vitality',
     preferredVariant: 'light',
     light: makeColors(
-      '#84CC16', '#FFFFFF', '#ECFCCB', '#65A30D', '#A3E635',
+      '#2A4007', '#FFFFFF', '#ECFCCB', '#65A30D', '#A3E635',
       LIGHT_BG, '#F7FEE7', '#1A2E05', '#6B7280', '#65A30D', '#FFFFFF',
     ),
     dark: makeColors(
@@ -226,7 +226,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Deep emerald green suggesting growth and balance',
     preferredVariant: 'light',
     light: makeColors(
-      '#10B981', '#FFFFFF', '#D1FAE5', '#059669', '#34D399',
+      '#053A29', '#FFFFFF', '#D1FAE5', '#059669', '#34D399',
       LIGHT_BG, '#ECFDF5', '#1A2E1A', '#6B7280', '#059669', '#FFFFFF',
     ),
     dark: makeColors(
@@ -240,7 +240,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Cool teal with tropical vibes',
     preferredVariant: 'light',
     light: makeColors(
-      '#14B8A6', '#FFFFFF', '#CCFBF1', '#0D9488', '#5EEAD4',
+      '#063A34', '#FFFFFF', '#CCFBF1', '#0D9488', '#5EEAD4',
       LIGHT_BG, '#F0FDFA', '#134E4A', '#6B7280', '#0D9488', '#FFFFFF',
     ),
     dark: makeColors(
@@ -254,7 +254,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Icy cyan on dark surfaces for a futuristic feel',
     preferredVariant: 'dark',
     light: makeColors(
-      '#06B6D4', '#FFFFFF', '#CFFAFE', '#0891B2', '#67E8F9',
+      '#023943', '#FFFFFF', '#CFFAFE', '#0891B2', '#67E8F9',
       LIGHT_BG, '#ECFEFF', '#082F49', '#6B7280', '#0891B2', '#FFFFFF',
     ),
     dark: makeColors(
@@ -268,7 +268,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Classic sky blue with ocean depth',
     preferredVariant: 'light',
     light: makeColors(
-      '#0EA5E9', '#FFFFFF', '#E0F2FE', '#0284C7', '#7DD3FC',
+      '#043449', '#FFFFFF', '#E0F2FE', '#0284C7', '#7DD3FC',
       LIGHT_BG, '#F0F9FF', '#0C4A6E', '#6B7280', '#0284C7', '#FFFFFF',
     ),
     dark: makeColors(
@@ -352,7 +352,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Coral pink on dark surfaces for a bold yet warm look',
     preferredVariant: 'dark',
     light: makeColors(
-      '#FB7185', '#FFFFFF', '#FFE4E6', '#F43F5E', '#FDA4AF',
+      '#4F242A', '#FFFFFF', '#FFE4E6', '#F43F5E', '#FDA4AF',
       LIGHT_BG, '#FFF5F5', '#4A051C', '#6B7280', '#F43F5E', '#FFFFFF',
     ),
     dark: makeColors(
@@ -366,7 +366,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Cool mint green with a fresh spa-like feel',
     preferredVariant: 'light',
     light: makeColors(
-      '#2DD4BF', '#FFFFFF', '#CCFBF1', '#14B8A6', '#5EEAD4',
+      '#0E433C', '#FFFFFF', '#CCFBF1', '#14B8A6', '#5EEAD4',
       LIGHT_BG, '#F0FDFA', '#134E4A', '#6B7280', '#14B8A6', '#FFFFFF',
     ),
     dark: makeColors(
@@ -380,7 +380,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Bright tangerine on dark surfaces for a bold citrus pop',
     preferredVariant: 'dark',
     light: makeColors(
-      '#FB923C', '#FFFFFF', '#FFEDD5', '#F97316', '#FDBA74',
+      '#4F2E13', '#FFFFFF', '#FFEDD5', '#F97316', '#FDBA74',
       LIGHT_BG, '#FFF7ED', '#431407', '#6B7280', '#F97316', '#FFFFFF',
     ),
     dark: makeColors(
@@ -394,7 +394,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Soft lavender with a dreamy, ethereal quality',
     preferredVariant: 'light',
     light: makeColors(
-      '#A78BFA', '#FFFFFF', '#EDE9FE', '#8B5CF6', '#C4B5FD',
+      '#352C4F', '#FFFFFF', '#EDE9FE', '#8B5CF6', '#C4B5FD',
       LIGHT_BG, '#F5F3FF', '#2E1065', '#6B7280', '#8B5CF6', '#FFFFFF',
     ),
     dark: makeColors(
@@ -408,7 +408,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     description: 'Electric chartreuse on dark surfaces for a high-energy futuristic look',
     preferredVariant: 'dark',
     light: makeColors(
-      '#84CC16', '#FFFFFF', '#ECFCCB', '#65A30D', '#A3E635',
+      '#2A4007', '#FFFFFF', '#ECFCCB', '#65A30D', '#A3E635',
       LIGHT_BG, '#F7FEE7', '#1A2E05', '#6B7280', '#65A30D', '#FFFFFF',
     ),
     dark: makeColors(
