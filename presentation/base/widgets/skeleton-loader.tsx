@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { StyleSheet, useColorScheme, type ViewStyle } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 
 export interface SkeletonLoaderProps {
@@ -21,7 +22,7 @@ export const SkeletonLoader = ({
   borderRadius = 8,
   style,
 }: SkeletonLoaderProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
   const translateX = useSharedValue(-200);
 
   useEffect(() => {

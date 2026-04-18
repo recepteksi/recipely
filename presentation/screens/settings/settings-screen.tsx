@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ScreenContainer } from '@presentation/base/widgets/screen-container';
@@ -9,19 +9,19 @@ import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings-row';
 import { ThemeToggle } from '@presentation/base/widgets/theme-toggle';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = pickColors(colorScheme);
+  const { preference, scheme, setPreference } = useTheme();
+  const colors = pickColors(scheme);
   const { authStore } = useStores();
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
 
-  const [theme, setTheme] = useState<'system' | 'light' | 'dark'>('system');
   const [language, setLanguage] = useState<'en' | 'tr'>(getLocale() as 'en' | 'tr');
 
   const handleLanguageChange = (lang: 'en' | 'tr') => {
@@ -54,7 +54,7 @@ export const SettingsScreen = (): React.JSX.Element => {
         <SettingsRow
           icon="color-palette-outline"
           label={t().settings.theme}
-          rightElement={<ThemeToggle value={theme} onChange={setTheme} />}
+          rightElement={<ThemeToggle value={preference} onChange={setPreference} />}
         />
         <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
         <SettingsRow

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View, useColorScheme } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { radii } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
@@ -16,7 +17,7 @@ const options: Array<{ key: 'system' | 'light' | 'dark'; labelKey: 'themeSystem'
 ];
 
 export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>

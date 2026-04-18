@@ -1,4 +1,5 @@
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { spacing } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
@@ -8,7 +9,7 @@ export interface SectionHeaderProps {
 }
 
 export const SectionHeader = ({ title }: SectionHeaderProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
 
   return (
     <View style={styles.container}>

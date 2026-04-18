@@ -8,20 +8,21 @@ import {
   StyleSheet,
   TextInput,
   View,
-  useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { t } from '@presentation/i18n';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { shadows } from '@presentation/base/theme/shadows';
+import { t } from '@presentation/i18n';
 
 export const LoginScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const colors = pickColors(useColorScheme());
+  const { scheme } = useTheme();
+  const colors = pickColors(scheme);
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);

@@ -1,5 +1,6 @@
-import { StyleSheet, TextInput, View, Pressable, useColorScheme } from 'react-native';
+import { StyleSheet, TextInput, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 
@@ -10,7 +11,7 @@ export interface SearchBarProps {
 }
 
 export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>

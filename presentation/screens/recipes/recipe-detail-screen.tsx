@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, StyleSheet, View, useColorScheme } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -9,6 +9,7 @@ import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { CheckboxItem } from '@presentation/base/widgets/checkbox-item';
 import { StateView, type StateViewStatus } from '@presentation/base/widgets/state-view';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { t } from '@presentation/i18n';
 import { spacing, radii, sizes } from '@presentation/base/theme';
@@ -31,8 +32,8 @@ const InfoChip = ({ icon, label, iconColor, chipBg, chipTextColor }: InfoChipPro
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const colors = pickColors(colorScheme);
+  const { scheme } = useTheme();
+  const colors = pickColors(scheme);
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 

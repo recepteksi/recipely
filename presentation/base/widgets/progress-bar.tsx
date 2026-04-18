@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
@@ -12,7 +13,7 @@ export interface ProgressBarProps {
 }
 
 export const ProgressBar = ({ current, total, label }: ProgressBarProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
   const progress = useSharedValue(0);
 
   useEffect(() => {

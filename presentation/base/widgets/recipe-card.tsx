@@ -1,5 +1,6 @@
-import { Image, Pressable, StyleSheet, View, useColorScheme } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -18,7 +19,7 @@ export interface RecipeCardProps {
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags, onPress,
 }: RecipeCardProps): React.JSX.Element => {
-  const colors = pickColors(useColorScheme());
+  const colors = pickColors(useTheme().scheme);
 
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.5;

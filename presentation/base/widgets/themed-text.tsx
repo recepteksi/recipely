@@ -1,4 +1,5 @@
-import { StyleSheet, Text, useColorScheme, type TextProps, type TextStyle } from 'react-native';
+import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 
 export type ThemedTextVariant = 'headline' | 'title' | 'subtitle' | 'body' | 'caption' | 'label';
@@ -14,7 +15,7 @@ export const ThemedText = ({
   style,
   ...rest
 }: ThemedTextProps): React.JSX.Element => {
-  const scheme = useColorScheme();
+  const { scheme } = useTheme();
   const colors = pickColors(scheme);
   const color = muted ? colors.textMuted : colors.text;
   return <Text {...rest} style={[styles[variant], { color }, style]} />;

@@ -5,7 +5,6 @@ import {
   RefreshControl,
   StyleSheet,
   View,
-  useColorScheme,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,6 +14,7 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { ProgressBar } from '@presentation/base/widgets/progress-bar';
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { t } from '@presentation/i18n';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
@@ -23,7 +23,8 @@ import type { Task } from '@domain/tasks/task';
 
 export const TaskListScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const colors = pickColors(useColorScheme());
+  const { scheme } = useTheme();
+  const colors = pickColors(scheme);
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
