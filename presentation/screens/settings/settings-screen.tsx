@@ -74,7 +74,7 @@ export const SettingsScreen = (): React.JSX.Element => {
               <ThemedText variant="body" muted style={styles.themePreviewName}>
                 {currentTheme.name}
               </ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+              <Ionicons name="checkmark-circle" size={18} color={currentThemeColors.primary} />
             </View>
           }
         />
