@@ -3,11 +3,11 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   View,
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@presentation/base/theme/theme-context';
 import { pickColors } from '@presentation/base/theme/colors';
 
 export interface ScreenContainerProps {
@@ -27,7 +27,7 @@ export const ScreenContainer = ({
   contentStyle,
   padded = true,
 }: ScreenContainerProps): React.JSX.Element => {
-  const scheme = useColorScheme();
+  const { scheme } = useTheme();
   const colors = pickColors(scheme);
   const padStyle = padded ? styles.padded : undefined;
 
