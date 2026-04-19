@@ -1,7 +1,6 @@
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { ThemedText } from './themed-text';
@@ -19,7 +18,7 @@ export interface RecipeCardProps {
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags, onPress,
 }: RecipeCardProps): React.JSX.Element => {
-  const colors = pickColors(useTheme().scheme);
+  const colors = useTheme().colors;
 
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.5;
@@ -40,8 +39,8 @@ export const RecipeCard = ({
             {cuisine}
           </ThemedText>
         </View>
-        <View style={styles.difficultyChip}>
-          <ThemedText variant="caption" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+        <View style={[styles.difficultyChip, { backgroundColor: colors.overlay }]}>
+          <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: '600' }}>
             {difficulty}
           </ThemedText>
         </View>
@@ -104,7 +103,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: radii.round,
     paddingHorizontal: 10,
     paddingVertical: 4,

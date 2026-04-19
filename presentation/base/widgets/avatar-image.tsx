@@ -1,6 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 
 export interface AvatarImageProps {
   uri?: string;
@@ -9,7 +8,7 @@ export interface AvatarImageProps {
 }
 
 export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.Element => {
-  const colors = pickColors(useTheme().scheme);
+  const colors = useTheme().colors;
   const borderRadius = size / 2;
   const initial = name.charAt(0).toUpperCase();
 

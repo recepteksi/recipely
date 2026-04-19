@@ -10,9 +10,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
-import { spacing, radii, shadows } from '@presentation/base/theme';
-import { ALL_THEMES, getThemeDefinition, getThemeColors, type ThemeId } from '@presentation/base/theme/themes';
+import { spacing, radii } from '@presentation/base/theme';
+import { ALL_THEMES, getThemeDefinition, getThemeColors, getPreferredVariant, type ThemeId } from '@presentation/base/theme/themes';
 import { ThemedText } from './themed-text';
 import { t } from '@presentation/i18n';
 
@@ -35,29 +34,19 @@ export const ThemeSelector = ({
   onClose,
   onSelect,
 }: ThemeSelectorProps): React.JSX.Element => {
-  const { themeId, scheme } = useTheme();
-  const colors = pickColors(scheme);
+  const { themeId, scheme, colors } = useTheme();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [previewId, setPreviewId] = useState<ThemeId | null>(themeId);
 
   const filteredThemeIds = useMemo(() => {
     let result = ALL_THEMES;
 
-    // Filter by tab
     if (activeTab === 'light') {
-      result = result.filter((id) => {
-        const def = getThemeDefinition(id);
-        return def.light.background !== def.dark.background;
-      });
+      result = result.filter((id) => getPreferredVariant(id) === 'light');
     } else if (activeTab === 'dark') {
-      result = result.filter((id) => {
-        const def = getThemeDefinition(id);
-        return def.light.background === def.dark.background;
-      });
+      result = result.filter((id) => getPreferredVariant(id) === 'dark');
     }
 
-    // Filter by search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter((id) => {
@@ -72,23 +61,14 @@ export const ThemeSelector = ({
     return result;
   }, [activeTab, searchQuery]);
 
-  const previewTheme = previewId ? getThemeDefinition(previewId) : null;
-  const previewColors = previewId ? getThemeColors(previewId, scheme) : null;
-
   const handleSelect = (id: ThemeId) => {
     onSelect(id);
     onClose();
   };
 
   const tabCounts = useMemo(() => {
-    const lightCount = ALL_THEMES.filter((id) => {
-      const def = getThemeDefinition(id);
-      return def.light.background !== def.dark.background;
-    }).length;
-    const darkCount = ALL_THEMES.filter((id) => {
-      const def = getThemeDefinition(id);
-      return def.light.background === def.dark.background;
-    }).length;
+    const lightCount = ALL_THEMES.filter((id) => getPreferredVariant(id) === 'light').length;
+    const darkCount = ALL_THEMES.filter((id) => getPreferredVariant(id) === 'dark').length;
     return { all: ALL_THEMES.length, light: lightCount, dark: darkCount };
   }, []);
 
@@ -103,16 +83,7 @@ export const ThemeSelector = ({
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.headerTop}>
-            <View style={styles.titleGroup}>
-              <ThemedText variant="title" style={styles.title}>
-                {t().settings.chooseTheme}
-              </ThemedText>
-              <ThemedText variant="body" muted style={styles.subtitle}>
-                {previewTheme
-                  ? `${previewTheme.name} / ${previewTheme.nameTr}`
-                  : 'Select a theme'}
-              </ThemedText>
-            </View>
+            <ThemedText variant="title">{t().settings.chooseTheme}</ThemedText>
             <Pressable
               onPress={onClose}
               style={({ pressed }) => [
@@ -125,13 +96,8 @@ export const ThemeSelector = ({
             </Pressable>
           </View>
 
-          {/* Search bar */}
-          <View
-            style={[
-              styles.searchContainer,
-              { backgroundColor: colors.inputBackground },
-            ]}
-          >
+          {/* Search */}
+          <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground }]}>
             <Ionicons name="search" size={18} color={colors.textMuted} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}
@@ -150,21 +116,16 @@ export const ThemeSelector = ({
           </View>
 
           {/* Filter tabs */}
-          <View
-            style={[styles.tabContainer, { backgroundColor: colors.inputBackground }]}
-          >
+          <View style={[styles.tabContainer, { backgroundColor: colors.inputBackground }]}>
             {TAB_OPTIONS.map((tab) => {
               const isActive = activeTab === tab.key;
-              const count = tabCounts[tab.key];
               return (
                 <Pressable
                   key={tab.key}
                   onPress={() => setActiveTab(tab.key)}
                   style={[
                     styles.tab,
-                    isActive
-                      ? { backgroundColor: colors.primary }
-                      : undefined,
+                    isActive ? { backgroundColor: colors.primary } : undefined,
                   ]}
                 >
                   <ThemedText
@@ -174,7 +135,7 @@ export const ThemeSelector = ({
                       fontWeight: '600',
                     }}
                   >
-                    {tab.label} ({count})
+                    {tab.label} ({tabCounts[tab.key]})
                   </ThemedText>
                 </Pressable>
               );
@@ -192,89 +153,60 @@ export const ThemeSelector = ({
             {filteredThemeIds.map((id) => {
               const def = getThemeDefinition(id);
               const isActive = id === themeId;
-              const isPreview = id === previewId;
-              const themeColors = getThemeColors(id, scheme);
+              const isDarkScheme = scheme === 'dark';
+              const themeColors = isDarkScheme ? def.dark : def.light;
+              const gradColors = isDarkScheme
+                ? [def.dark.primaryGradientStart, def.dark.primaryGradientEnd]
+                : [def.light.primaryGradientStart, def.light.primaryGradientEnd];
 
               return (
                 <Pressable
                   key={id}
-                  onPress={() => {
-                    setPreviewId(id);
-                  }}
-                  onLongPress={() => handleSelect(id)}
+                  onPress={() => handleSelect(id)}
                   style={({ pressed }) => [
                     styles.swatchWrapper,
-                    pressed ? { opacity: 0.8, transform: [{ scale: 0.96 }] } : undefined,
+                    pressed ? { opacity: 0.75 } : undefined,
                   ]}
                 >
-                  {/* Active ring */}
-                  {isActive && (
-                    <View
-                      style={[
-                        styles.activeRing,
-                        { borderColor: colors.primary },
-                      ]}
-                    />
-                  )}
-                  {/* Swatch circle with gradient */}
-                  <LinearGradient
-                    colors={
-                      scheme === 'dark'
-                        ? [def.dark.primaryGradientStart, def.dark.primaryGradientEnd]
-                        : [def.light.primaryGradientStart, def.light.primaryGradientEnd]
-                    }
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={[
-                      styles.swatch,
-                      isPreview && !isActive
-                        ? { borderWidth: 2, borderColor: colors.primary }
-                        : undefined,
-                    ]}
-                  >
-                    {/* Inner mini-preview */}
-                    <View
-                      style={[
-                        styles.miniPreview,
-                        { backgroundColor: themeColors.background },
-                      ]}
+                  {/* Gradient circle with check badge if active */}
+                  <View style={styles.swatchOuter}>
+                    <LinearGradient
+                      colors={gradColors as [string, string, ...string[]]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.swatch}
                     >
+                      {/* Mini preview inside */}
+                      <View style={[styles.miniPreview, { backgroundColor: themeColors.background }]}>
+                        <View style={[styles.miniPrimaryDot, { backgroundColor: themeColors.primary }]} />
+                        <View style={[styles.miniTextLine, { backgroundColor: themeColors.text }]} />
+                        <View style={[styles.miniTextLine, styles.miniTextLineShort, { backgroundColor: themeColors.textMuted }]} />
+                      </View>
+                    </LinearGradient>
+                    {/* Checkmark badge for active theme */}
+                    {isActive && (
                       <View
                         style={[
-                          styles.miniPrimaryDot,
-                          { backgroundColor: themeColors.primary },
+                          styles.badge,
+                          { backgroundColor: themeColors.primary, borderColor: colors.background },
                         ]}
-                      />
-                      <View
-                        style={[
-                          styles.miniTextLine,
-                          { backgroundColor: themeColors.text },
-                        ]}
-                      />
-                      <View
-                        style={[
-                          styles.miniTextLine,
-                          styles.miniTextLineShort,
-                          { backgroundColor: themeColors.textMuted },
-                        ]}
-                      />
-                    </View>
-                  </LinearGradient>
+                      >
+                        <Ionicons name="checkmark" size={12} color={themeColors.primaryText} />
+                      </View>
+                    )}
+                  </View>
                   {/* Theme name */}
                   <ThemedText
                     variant="caption"
-                    muted={!isActive}
                     style={[
                       styles.swatchLabel,
-                      isActive ? { color: colors.primary, fontWeight: '600' } : undefined,
+                      isActive
+                        ? { color: colors.primary, fontWeight: '700' }
+                        : { color: colors.textMuted },
                     ]}
                     numberOfLines={1}
                   >
                     {def.name}
-                  </ThemedText>
-                  {/* Tap hint */}
-                  <ThemedText variant="caption" muted style={styles.tapHint}>
-                    Tap to preview
                   </ThemedText>
                 </Pressable>
               );
@@ -290,97 +222,6 @@ export const ThemeSelector = ({
             </View>
           )}
         </ScrollView>
-
-        {/* Live preview card */}
-        {previewTheme && previewColors && (
-          <View
-            style={[
-              styles.previewCard,
-              { backgroundColor: previewColors.cardBackground, borderColor: previewColors.cardBorder },
-            ]}
-          >
-            <View style={styles.previewHeader}>
-              <ThemedText variant="subtitle" style={{ color: previewColors.text }}>
-                {previewTheme.name}
-              </ThemedText>
-              <ThemedText variant="caption" muted style={{ color: previewColors.textMuted }}>
-                {previewTheme.description}
-              </ThemedText>
-            </View>
-            <View style={styles.previewColors}>
-              {/* Background */}
-              <View style={styles.previewColorItem}>
-                <View
-                  style={[
-                    styles.previewColorSwatch,
-                    { backgroundColor: previewColors.background, borderColor: previewColors.border },
-                  ]}
-                />
-                <ThemedText variant="caption" muted style={{ color: previewColors.textMuted }}>
-                  Background
-                </ThemedText>
-              </View>
-              {/* Primary */}
-              <View style={styles.previewColorItem}>
-                <LinearGradient
-                  colors={[previewColors.primaryGradientStart, previewColors.primaryGradientEnd]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.previewColorSwatch}
-                />
-                <ThemedText variant="caption" muted style={{ color: previewColors.textMuted }}>
-                  Primary
-                </ThemedText>
-              </View>
-              {/* Surface */}
-              <View style={styles.previewColorItem}>
-                <View
-                  style={[
-                    styles.previewColorSwatch,
-                    { backgroundColor: previewColors.surface, borderColor: previewColors.border },
-                  ]}
-                />
-                <ThemedText variant="caption" muted style={{ color: previewColors.textMuted }}>
-                  Surface
-                </ThemedText>
-              </View>
-              {/* Chip */}
-              <View style={styles.previewColorItem}>
-                <View
-                  style={[
-                    styles.previewColorSwatch,
-                    { backgroundColor: previewColors.chipBackground, borderColor: previewColors.border },
-                  ]}
-                >
-                  <ThemedText
-                    variant="caption"
-                    style={{ color: previewColors.chipText, fontSize: 10 }}
-                  >
-                    Chip
-                  </ThemedText>
-                </View>
-                <ThemedText variant="caption" muted style={{ color: previewColors.textMuted }}>
-                  Chip
-                </ThemedText>
-              </View>
-            </View>
-            <Pressable
-              onPress={() => handleSelect(previewId!)}
-              style={({ pressed }) => [
-                styles.applyButton,
-                { backgroundColor: previewColors.primary },
-                pressed ? { opacity: 0.85 } : undefined,
-              ]}
-            >
-              <ThemedText
-                variant="body"
-                style={{ color: previewColors.primaryText, fontWeight: '700' }}
-              >
-                Apply Theme
-              </ThemedText>
-            </Pressable>
-          </View>
-        )}
       </View>
     </Modal>
   );
@@ -398,18 +239,9 @@ const styles = StyleSheet.create({
   },
   headerTop: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  titleGroup: {
-    flex: 1,
-  },
-  title: {
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: 13,
+    marginBottom: spacing.md,
   },
   closeButton: {
     width: 36,
@@ -417,7 +249,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: spacing.md,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -459,58 +290,55 @@ const styles = StyleSheet.create({
   swatchWrapper: {
     alignItems: 'center',
     width: 80,
-    position: 'relative',
   },
-  activeRing: {
-    position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: 20,
-    borderRadius: radii.round,
-    borderWidth: 3,
-    zIndex: 1,
+  swatchOuter: {
+    position: 'relative',
+    marginBottom: spacing.xs,
   },
   swatch: {
     width: 64,
     height: 64,
-    borderRadius: radii.xl,
+    borderRadius: 32,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.xs,
   },
   miniPreview: {
-    width: 56,
-    height: 56,
-    borderRadius: radii.md,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     padding: spacing.xs,
     gap: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniPrimaryDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   miniTextLine: {
-    width: 32,
-    height: 4,
-    borderRadius: 2,
+    width: 28,
+    height: 3,
+    borderRadius: 1.5,
   },
   miniTextLineShort: {
+    width: 18,
+  },
+  badge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
     width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
   },
   swatchLabel: {
     fontSize: 11,
     textAlign: 'center',
-    marginTop: 2,
-  },
-  tapHint: {
-    fontSize: 9,
-    marginTop: 1,
-    opacity: 0.6,
   },
   emptyState: {
     alignItems: 'center',
@@ -520,40 +348,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-  },
-  previewCard: {
-    margin: spacing.lg,
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    padding: spacing.lg,
-    gap: spacing.lg,
-  },
-  previewHeader: {
-    gap: spacing.xs,
-  },
-  previewColors: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: spacing.md,
-  },
-  previewColorItem: {
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  previewColorSwatch: {
-    width: 40,
-    height: 40,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  applyButton: {
-    height: 48,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

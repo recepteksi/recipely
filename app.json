@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.recipely"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,14 +20,20 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.recipely"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      ["expo-router", { "root": "presentation/app" }],
+      [
+        "expo-router",
+        {
+          "root": "presentation/app"
+        }
+      ],
       [
         "expo-splash-screen",
         {

@@ -12,15 +12,13 @@ import { SettingsRow } from '@presentation/base/widgets/settings-row';
 import { ThemeSelector } from '@presentation/base/widgets/theme-selector';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, radii } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
 import { getThemeDefinition } from '@presentation/base/theme/themes';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
-  const { themeId, scheme, setThemeId } = useTheme();
-  const colors = pickColors(scheme);
+  const { themeId, scheme, setThemeId, colors } = useTheme();
   const { authStore } = useStores();
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
@@ -76,7 +74,7 @@ export const SettingsScreen = (): React.JSX.Element => {
               <ThemedText variant="body" muted style={styles.themePreviewName}>
                 {currentTheme.name}
               </ThemedText>
-              <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+              <Ionicons name="checkmark-circle" size={18} color={currentThemeColors.primary} />
             </View>
           }
         />

@@ -2,7 +2,6 @@ import { type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { pickColors } from '@presentation/base/theme/colors';
 import { spacing, sizes } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
 
@@ -23,7 +22,7 @@ export const SettingsRow = ({
   destructive = false,
   showChevron,
 }: SettingsRowProps): React.JSX.Element => {
-  const colors = pickColors(useTheme().scheme);
+  const colors = useTheme().colors;
   const iconColor = destructive ? colors.danger : colors.primary;
   const chevronVisible = showChevron ?? (onPress !== undefined);
 

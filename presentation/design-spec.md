@@ -6,7 +6,378 @@
 
 ---
 
-## A. Design System Updates
+## Theme Palette Strategy (Apr 2026 redesign)
+
+### Why this section exists
+
+Real-device QA (Android, OLED) revealed two production-blocking issues that the previous
+"low-luminance tinted backgrounds" iteration did not catch:
+
+1. **All dark themes read as the same near-black.** Hex values like `#1A0505`, `#1A0D00`,
+   `#0A1400` are hex-distinct but visually identical on a phone screen — relative luminance
+   in the 0.003-0.009 band, with chroma so muted it disappears under typical room lighting.
+   The 20-theme picker is therefore visually meaningless in dark variants.
+
+2. **`primaryText` is being misused as "text on overlay/badge".** In dark themes the project
+   contracts `primaryText` to be a DARK hex (because `primary` is a bright pastel). When the
+   recipe-card difficulty chip rendered `primaryText` over `colors.overlay`, it produced
+   dark-on-dark invisible text. Same pattern in checkbox/task widgets that render checkmarks
+   over `colors.success`.
+
+This section is the source of truth that fixes both. Sections below (A-H) keep their previous
+content, but **all `background` and `surface` values they reference are superseded by the
+table in this section**, and all "text on overlay / on success" rules are superseded by the
+new semantic tokens defined here.
+
+### References (Apr 2026 design research)
+
+- **[Material 3 — Color roles](https://m3.material.io/styles/color/roles)** — adopted the
+  "tonal surface elevation" idea: surface is not a fixed gray, it inherits the primary hue
+  family at a higher tonal step. Our dark surfaces mix the per-theme background toward a
+  warm-neutral elevation target `#52535A` so cards lift visibly off the bg without losing
+  the theme tint.
+- **[Mobbin — Mobile Dark Mode patterns](https://mobbin.com/explore/mobile/screens/dark-mode)** —
+  surveyed Yummly, Tasty, Linear, Finimize. Common pattern: dark backgrounds carry 3-8% of
+  the brand hue's chroma even at L≈0.01, and cards sit ~30-45% lighter than bg via tonal
+  elevation rather than a flat gray surface.
+- **[Designing Dark Mode for Mobile (2026 guide)](https://appinventiv.com/blog/guide-on-designing-dark-mode-for-mobile-app/)** —
+  reinforced WCAG bg/text floor of 7:1 for body in dark mode (we hit ≥10.1:1 on every
+  surf/text pair; ≥11.2:1 on every bg/text pair).
+
+### A. Background palette redesign — DARK variants
+
+Target relative luminance band: **[0.003, 0.020]**. Sibling themes within the same hue
+family are spread across this band by ≥0.0015 luminance OR shifted in hue (peach vs rose
+vs wine for the warm reds). **Surface synthesis target moves from `#3A3B41` to `#52535A`**
+so cards hit a 1.4-1.5:1 contrast against bg (previous 1.2:1 was visually flat).
+
+| Theme ID            | Old bg       | New bg       | Luminance | Synthesized surface | bg/surf | surf/text |
+|---------------------|--------------|--------------|-----------|---------------------|---------|-----------|
+| midnight-slate      | `#0B0B0D`    | `#0B0F1A`    | 0.0049    | `#2F313A`           | 1.48    | 11.82     |
+| pearl-white         | `#050A14`    | `#0A1A33`    | 0.0104    | `#2E3747`           | 1.45    | 10.93     |
+| crimson-ember       | `#1A0505`    | `#1A0309`    | 0.0030    | `#362B32`           | 1.46    | 12.38     |
+| amber-sunset        | `#1A0D00`    | `#190A00`    | 0.0042    | `#362F2D`           | 1.48    | 11.97     |
+| golden-hour         | `#1A1500`    | `#1A1300`    | 0.0069    | `#36332D`           | 1.47    | 11.49     |
+| lime-zest           | `#0A1400`    | `#0A1700`    | 0.0068    | `#2E352D`           | 1.46    | 11.52     |
+| emerald-garden      | `#001A12`    | `#021A14`    | 0.0080    | `#2A3737`           | 1.47    | 11.28     |
+| teal-lagoon         | `#001715`    | `#021A1D`    | 0.0084    | `#2A373C`           | 1.46    | 11.21     |
+| cyan-frost          | `#00121C`    | `#02141C`    | 0.0060    | `#2A343B`           | 1.48    | 11.60     |
+| ocean-deep          | `#001929`    | `#021024`    | 0.0051    | `#2A323F`           | 1.48    | 11.79     |
+| indigo-night        | `#0A0A1E`    | `#0B0824`    | 0.0037    | `#2F2E3F`           | 1.47    | 12.11     |
+| violet-bloom        | `#0D0A1E`    | `#100620`    | 0.0034    | `#312D3D`           | 1.47    | 12.18     |
+| royal-purple        | `#0D0619`    | `#180628`    | 0.0048    | `#352D41`           | 1.46    | 11.96     |
+| fuchsia-flash       | `#1A0010`    | `#22042A`    | 0.0059    | `#3A2C42`           | 1.45    | 11.84     |
+| rose-quartz         | `#1A0008`    | `#22030E`    | 0.0044    | `#3A2B34`           | 1.45    | 12.17     |
+| coral-reef          | `#1A0008`    | `#2C0A14`    | 0.0080    | `#3F2F37`           | 1.44    | 11.46     |
+| mint-breeze         | `#001715`    | `#072B26`    | 0.0191    | `#2D3F40`           | 1.37    | 10.11     |
+| tangerine-dream     | `#1A0D00`    | `#2A1208`    | 0.0094    | `#3E3331`           | 1.45    | 11.13     |
+| lavender-mist       | `#0D0A1E`    | `#1F1733`    | 0.0114    | `#393547`           | 1.44    | 10.80     |
+| chartreuse-zap      | `#0A1400`    | `#162A00`    | 0.0183    | `#343F2D`           | 1.39    | 10.12     |
+
+Sibling-pair luminance separation (the old palette had pairs like `crimson/rose/coral` all
+at `#1A0008`/`#1A0008`/`#1A0008` — literally identical):
+
+| Sibling group                                              | Luminance values                                |
+|------------------------------------------------------------|-------------------------------------------------|
+| crimson-ember / rose-quartz / coral-reef                   | 0.0030 / 0.0044 / 0.0080 — coral lifts via L+hue |
+| amber-sunset / tangerine-dream                             | 0.0042 / 0.0094 — tangerine 2× brighter         |
+| lime-zest / chartreuse-zap                                 | 0.0068 / 0.0183 — chartreuse 2.7× brighter      |
+| emerald-garden / mint-breeze / teal-lagoon                 | 0.0080 / 0.0191 / 0.0084 — mint lifts via L     |
+| violet-bloom / lavender-mist / royal-purple / indigo-night | 0.0034 / 0.0114 / 0.0048 / 0.0037 — lavender lifts |
+
+### A. Background palette redesign — LIGHT variants
+
+Target band: **[0.74, 0.95]**. Light backgrounds in the previous palette were `#FFF*` near-
+whites that all looked identical too. We tint backgrounds with stronger hue chroma
+(luminance 0.78-0.90) and move the **surface synthesis to mix toward pure `#FFFFFF` at 0.55**
+so cards "lift" toward white. Body text against any bg or any surface stays ≥14.7:1.
+
+| Theme ID            | Old bg       | New bg       | Luminance | Synthesized surface | surf/bg | surf/text |
+|---------------------|--------------|--------------|-----------|---------------------|---------|-----------|
+| midnight-slate      | `#FFFFFF`    | `#F2F4F7`    | 0.9029    | `#F9FAFB`           | 1.05    | 17.08     |
+| pearl-white         | `#FFFFFF`    | `#E8EFFB`    | 0.8585    | `#F5F8FD`           | 1.09    | 16.77     |
+| crimson-ember       | `#FEF2F2`    | `#FBE7E7`    | 0.8343    | `#FDF4F4`           | 1.10    | 16.51     |
+| amber-sunset        | `#FFF7ED`    | `#FFEFD9`    | 0.8800    | `#FFF8EE`           | 1.07    | 16.93     |
+| golden-hour         | `#FEFCE8`    | `#FCF3BF`    | 0.8856    | `#FEFAE2`           | 1.07    | 16.99     |
+| lime-zest           | `#F7FEE7`    | `#EAF7C8`    | 0.8818    | `#F6FBE6`           | 1.07    | 16.88     |
+| emerald-garden      | `#ECFDF5`    | `#D6F2E2`    | 0.8329    | `#EDF9F2`           | 1.10    | 16.52     |
+| teal-lagoon         | `#F0FDFA`    | `#D2F1EC`    | 0.8267    | `#EBF9F6`           | 1.11    | 16.50     |
+| cyan-frost          | `#ECFEFF`    | `#D5F1F8`    | 0.8383    | `#ECF9FC`           | 1.10    | 16.60     |
+| ocean-deep          | `#F0F9FF`    | `#D9ECFC`    | 0.8177    | `#EEF6FE`           | 1.11    | 16.36     |
+| indigo-night        | `#EEF2FF`    | `#DCDFFB`    | 0.7496    | `#EFF1FD`           | 1.17    | 15.87     |
+| violet-bloom        | `#F5F3FF`    | `#E8DEFB`    | 0.7636    | `#F5F0FD`           | 1.15    | 15.95     |
+| royal-purple        | `#FAF5FF`    | `#EDDDFB`    | 0.7668    | `#F7F0FD`           | 1.15    | 16.01     |
+| fuchsia-flash       | `#FDF4FF`    | `#F8DDF7`    | 0.7838    | `#FCF0FB`           | 1.14    | 16.15     |
+| rose-quartz         | `#FFF1F2`    | `#FCDDE3`    | 0.7795    | `#FEF0F2`           | 1.14    | 16.12     |
+| coral-reef          | `#FFF5F5`    | `#FFE0D8`    | 0.7953    | `#FFF1ED`           | 1.13    | 16.20     |
+| mint-breeze         | `#F0FDFA`    | `#DAF3EC`    | 0.8506    | `#EEFAF6`           | 1.09    | 16.70     |
+| tangerine-dream     | `#FFF7ED`    | `#FFE0C2`    | 0.7847    | `#FFF1E4`           | 1.14    | 16.11     |
+| lavender-mist       | `#F5F3FF`    | `#EBE2FB`    | 0.7902    | `#F6F2FD`           | 1.13    | 16.18     |
+| chartreuse-zap      | `#F7FEE7`    | `#E0F5B5`    | 0.8449    | `#F1FBDE`           | 1.09    | 16.66     |
+
+Light siblings differentiate primarily by **hue family** (e.g., crimson rose-leaning vs
+coral peach-leaning) — at high luminance, hue is more perceptually distinct than L itself.
+
+### B. New semantic tokens (tight: only 2 added)
+
+Add to `ThemeColors` interface in `themes.ts`:
+
+```ts
+export interface ThemeColors {
+  // ... all existing fields unchanged ...
+
+  /**
+   * Text/icon color for content sitting on `colors.overlay` (semi-transparent dark
+   * backdrop on hero images, recipe-card chips). ALWAYS white in both variants —
+   * overlays are darken-by-design regardless of theme variant.
+   */
+  onOverlay: string;
+
+  /**
+   * Text/icon color for content sitting on `colors.success` (checkmarks in checkbox/
+   * task widgets, success-state badge fill). ALWAYS dark in both variants — `success`
+   * is always a green tinted toward 0.4-0.5 luminance and requires dark text.
+   */
+  onSuccess: string;
+}
+```
+
+| Token       | Dark value | Light value | Rationale                                                              |
+|-------------|-----------|-------------|------------------------------------------------------------------------|
+| `onOverlay` | `#FFFFFF` | `#FFFFFF`   | Overlay is `rgba(0,0,0,0.6)` → effective backdrop ≤ #6B6B6B → cr ≥4.74 |
+| `onSuccess` | `#0F1B0F` | `#0F1B0F`   | Success greens (`#81C995` / `#34A853`) → cr 9.12 / 5.84                |
+
+`primaryText` keeps its current contract: "text on `colors.primary`". It is NOT a
+generic "text on dark surface" token, so the recipe-card / checkbox / task widgets must
+stop using it for non-primary backdrops.
+
+### C. Overlay alpha bump (dark-image legibility)
+
+The previous `lightSemantics.overlay = rgba(15,23,42,0.35)` is too transparent for
+readable white text — over a white pixel under the overlay, white text computes 2.22:1
+(fails AA). Standardize:
+
+```ts
+const darkSemantics: VariantSemantics = {
+  // ... unchanged ...
+  overlay: 'rgba(0,0,0,0.6)',     // was 0.55 — bumped for chip legibility
+};
+const lightSemantics: VariantSemantics = {
+  // ... unchanged ...
+  overlay: 'rgba(0,0,0,0.55)',    // was rgba(15,23,42,0.35) — black, alpha 0.55
+};
+```
+
+Verified pairings (white text via `onOverlay` on `rgba(0,0,0,0.6)` over image pixels):
+
+| Image pixel under overlay | Effective backdrop | cr (white) |
+|---------------------------|--------------------|------------|
+| `#FFFFFF` (worst case)    | `#666666`          | 5.74       |
+| `#F2C04D` (pizza orange)  | `#614D1F`          | 8.11       |
+| `#7F7F7F` (mid gray)      | `#333333`          | 12.63      |
+| `#E0E0E0` (bright sky)    | `#5A5A5A`          | 6.90       |
+
+All pass WCAG AA (≥4.5:1) for normal text.
+
+### D. WCAG checks performed
+
+For each of the 20 themes, verified:
+
+- `bg / text` contrast ≥ 11.2:1 (every dark theme), ≥ 14.7:1 (every light theme).
+- `surface / text` contrast ≥ 10.1:1 (every dark theme), ≥ 15.8:1 (every light theme).
+- `bg / surface` contrast 1.37-1.48:1 (dark), 1.05-1.17:1 (light) — combined with the
+  existing `cardBorder` hairline, cards are visibly distinct from bg in both variants.
+- `onOverlay` on darken-applied image pixels (4 sample tones from white→black): all ≥4.74.
+- `onSuccess` on `colors.success` in both variants: 9.12 (dark) / 5.84 (light).
+- `primaryText` on `colors.primary` in all 20 themes: unchanged, all ≥7.0 (already
+  validated in previous spec — primary themes already paired primaryText correctly).
+
+Sibling-pair luminance deltas (dark variants): 5 of 5 sibling groups now separate by
+≥0.0015 in L OR by hue family. No two dark backgrounds share both hue family and L band.
+
+---
+
+## Hand-off
+
+### For ts-developer (Task #6) — exact `themes.ts` mutations
+
+1. **Extend `ThemeColors` interface** at `presentation/base/theme/themes.ts:23`. Add at
+   end of interface, before closing brace:
+
+   ```ts
+   onOverlay: string;
+   onSuccess: string;
+   ```
+
+2. **Update `darkSemantics` and `lightSemantics`** at `presentation/base/theme/themes.ts:128-144`:
+
+   ```ts
+   const darkSemantics: VariantSemantics = {
+     danger: '#F28B82',
+     success: '#81C995',
+     warning: '#FDD663',
+     starFilled: '#FFD54F',
+     overlay: 'rgba(0,0,0,0.6)',     // CHANGED from 0.55 → 0.6
+     shadow: '#000000',
+   };
+   const lightSemantics: VariantSemantics = {
+     danger: '#D93025',
+     success: '#34A853',
+     warning: '#FBBC04',
+     starFilled: '#FFB800',
+     overlay: 'rgba(0,0,0,0.55)',    // CHANGED — black, alpha 0.55 (was rgba(15,23,42,0.35))
+     shadow: '#0F172A',
+   };
+   ```
+
+3. **Update `makeColors`** at `presentation/base/theme/themes.ts:146` — add the two new
+   constant tokens to the returned object:
+
+   ```ts
+   onOverlay: '#FFFFFF',
+   onSuccess: '#0F1B0F',
+   ```
+
+4. **Bump dark-surface mix target** at `presentation/base/theme/themes.ts:120`:
+
+   ```ts
+   const DARK_SURFACE_TARGET = '#52535A';   // was '#3A3B41'
+   ```
+
+5. **Replace light-surface mix logic** at `presentation/base/theme/themes.ts:241`. Light
+   surface should now lift TOWARD white, not pull TOWARD a gray:
+
+   ```ts
+   const surface = mixHex(a.background, '#FFFFFF', 0.55);   // was mixHex(a.background, LIGHT_SURFACE_TARGET, 0.4)
+   ```
+
+   The constant `LIGHT_SURFACE_TARGET = '#E8E8ED'` becomes unused — delete the
+   declaration at line 124.
+
+6. **Replace per-theme `background` hex values**, light AND dark, for all 20 themes per
+   the tables in section A above. Concretely (search-and-replace pairs, light variants
+   first then dark):
+
+   | Theme           | LIGHT bg new   | DARK bg new    |
+   |-----------------|----------------|----------------|
+   | midnight-slate  | `#F2F4F7` (replaces `LIGHT_NEUTRAL_BG`) | `#0B0F1A` (replaces `DARK_NEUTRAL_BG`) |
+   | pearl-white     | `#E8EFFB` (replaces `LIGHT_NEUTRAL_BG`) | `#0A1A33`     |
+   | crimson-ember   | `#FBE7E7`     | `#1A0309`     |
+   | amber-sunset    | `#FFEFD9`     | `#190A00`     |
+   | golden-hour     | `#FCF3BF`     | `#1A1300`     |
+   | lime-zest       | `#EAF7C8`     | `#0A1700`     |
+   | emerald-garden  | `#D6F2E2`     | `#021A14`     |
+   | teal-lagoon     | `#D2F1EC`     | `#021A1D`     |
+   | cyan-frost      | `#D5F1F8`     | `#02141C`     |
+   | ocean-deep      | `#D9ECFC`     | `#021024`     |
+   | indigo-night    | `#DCDFFB`     | `#0B0824`     |
+   | violet-bloom    | `#E8DEFB`     | `#100620`     |
+   | royal-purple    | `#EDDDFB`     | `#180628`     |
+   | fuchsia-flash   | `#F8DDF7`     | `#22042A`     |
+   | rose-quartz     | `#FCDDE3`     | `#22030E`     |
+   | coral-reef      | `#FFE0D8`     | `#2C0A14`     |
+   | mint-breeze     | `#DAF3EC`     | `#072B26`     |
+   | tangerine-dream | `#FFE0C2`     | `#2A1208`     |
+   | lavender-mist   | `#EBE2FB`     | `#1F1733`     |
+   | chartreuse-zap  | `#E0F5B5`     | `#162A00`     |
+
+   Note: `midnight-slate` and `pearl-white` previously used the `LIGHT_NEUTRAL_BG` /
+   `DARK_NEUTRAL_BG` constants — replace those references with the explicit hex listed.
+   The `DARK_NEUTRAL_BG` constant is still referenced as a fallback `primaryText` value
+   in midnight-slate dark (line 257) — leave that usage in place; only the `background:`
+   field changes per-theme.
+
+7. **Verify nothing else** consumed the old surface targets externally — `grep` for
+   `DARK_SURFACE_TARGET` and `LIGHT_SURFACE_TARGET` and confirm they only live in
+   `themes.ts`. (They do per current code.)
+
+After ts-developer commits: re-run `npx tsc --noEmit` to confirm the new fields don't
+break any consumer that destructures `ThemeColors`.
+
+### For rn-developer (Task #7) — exact widget swaps
+
+Three files use `colors.primaryText` for content that is NOT on `colors.primary`. Swap
+to the new semantic tokens:
+
+1. **`presentation/base/widgets/recipe-card.tsx:43`** — difficulty chip label.
+   ```diff
+   - <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: '600' }}>
+   + <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: '600' }}>
+       {difficulty}
+     </ThemedText>
+   ```
+   Leave the cuisine-badge label at line 38 unchanged — that one IS on `colors.primary`,
+   so `colors.primaryText` is correct there.
+
+2. **`presentation/base/widgets/checkbox-item.tsx:33`** — checkmark over `colors.success`.
+   ```diff
+   - {checked ? <Ionicons name="checkmark" size={16} color={colors.primaryText} /> : null}
+   + {checked ? <Ionicons name="checkmark" size={16} color={colors.onSuccess} /> : null}
+   ```
+
+3. **`presentation/screens/tasks/task-list-screen.tsx:135`** — checkmark over `colors.success`.
+   ```diff
+   - <Ionicons name="checkmark" size={16} color={colors.primaryText} />
+   + <Ionicons name="checkmark" size={16} color={colors.onSuccess} />
+   ```
+
+4. **`presentation/screens/tasks/task-detail-screen.tsx:73`** — large checkmark over `colors.success`.
+   ```diff
+   - <Ionicons name="checkmark" size={40} color={colors.primaryText} />
+   + <Ionicons name="checkmark" size={40} color={colors.onSuccess} />
+   ```
+
+**Do NOT touch** `presentation/screens/recipes/recipe-detail-screen.tsx:152` (step-circle
+number) — that text IS on `colors.primary`, so `colors.primaryText` is the correct
+contracted token there. Verified ≥6.6:1 in every theme.
+
+### For test-developer (Task #8) — contrast regression rules
+
+Add a contrast-suite in `__tests__/` (or `application/__tests__/contrast.test.ts`) that
+iterates `ALL_THEMES` × `['light', 'dark']` and asserts:
+
+1. **Per-theme bg/text floor**:
+   - dark: `contrastRatio(colors.background, colors.text) >= 11.0`
+   - light: `contrastRatio(colors.background, colors.text) >= 14.0`
+
+2. **Per-theme surf/text floor** (new — was untested):
+   - dark: `contrastRatio(colors.surface, colors.text) >= 10.0`
+   - light: `contrastRatio(colors.surface, colors.text) >= 15.0`
+
+3. **Per-theme bg/surf separation** (new — guards card visibility regression):
+   - dark: `contrastRatio(colors.background, colors.surface) >= 1.35`
+   - light: `contrastRatio(colors.background, colors.surface) >= 1.04`
+
+4. **Per-theme onSuccess pair** (new):
+   - both variants: `contrastRatio(colors.success, colors.onSuccess) >= 4.5`
+
+5. **Per-theme onOverlay pair simulated** (new — overlay sits on a worst-case white
+   image pixel; assert white text passes against the resulting alpha-blended backdrop):
+   - both variants: white-on-`#666666` ≥ 4.5 (effective backdrop after 0.6 alpha black
+     overlay over `#FFFFFF`). Implement as a pure helper `simulateOverlayBackdrop(image,
+     overlayHex, alpha)` that returns the blended hex, then assert
+     `contrastRatio(colors.onOverlay, simulateOverlayBackdrop('#FFFFFF', '#000000', 0.6)) >= 4.5`.
+
+6. **Sibling-distinctness regression** (new — the central bug we're fixing):
+   - dark variants: for every sibling group below, assert that at least ONE of the
+     following is true for each pair within the group:
+     - `Math.abs(relativeLuminance(a.bg) - relativeLuminance(b.bg)) >= 0.0015`, OR
+     - the per-theme `name` field declares them in different hue families (proxy:
+       compare the dominant RGB channel — if argmax differs, hue family differs).
+   - Sibling groups: `[crimson-ember, rose-quartz, coral-reef]`,
+     `[amber-sunset, tangerine-dream]`, `[lime-zest, chartreuse-zap]`,
+     `[emerald-garden, mint-breeze, teal-lagoon]`,
+     `[violet-bloom, lavender-mist, royal-purple, indigo-night]`.
+
+7. **`primaryText` sanity** (existing rule, keep): for every theme,
+   `contrastRatio(colors.primary, colors.primaryText) >= 4.5`.
+
+If any check fails, the test message must include the offending theme ID and the actual
+ratio, so designers can correct without re-running the audit script.
+
+---
+
+
 
 ### A.1 Color Palette
 
