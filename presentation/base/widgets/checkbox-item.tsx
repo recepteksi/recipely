@@ -30,7 +30,7 @@ export const CheckboxItem = ({
       style={styles.row}
     >
       <View style={[styles.checkbox, boxStyle]}>
-        {checked ? <Ionicons name="checkmark" size={16} color="#FFFFFF" /> : null}
+        {checked ? <Ionicons name="checkmark" size={16} color={colors.onSuccess} /> : null}
       </View>
       <ThemedText
         variant="body"

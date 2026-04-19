@@ -39,8 +39,8 @@ export const RecipeCard = ({
             {cuisine}
           </ThemedText>
         </View>
-        <View style={styles.difficultyChip}>
-          <ThemedText variant="caption" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+        <View style={[styles.difficultyChip, { backgroundColor: colors.overlay }]}>
+          <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: '600' }}>
             {difficulty}
           </ThemedText>
         </View>
@@ -103,7 +103,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: radii.round,
     paddingHorizontal: 10,
     paddingVertical: 4,

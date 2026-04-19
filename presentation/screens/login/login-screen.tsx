@@ -73,12 +73,15 @@ export const LoginScreen = (): React.JSX.Element => {
           <MaterialCommunityIcons
             name="silverware-fork-knife"
             size={48}
-            color="#FFFFFF"
+            color={colors.primaryText}
           />
-          <ThemedText variant="headline" style={styles.appName}>
+          <ThemedText variant="headline" style={[styles.appName, { color: colors.primaryText }]}>
             {t().login.title}
           </ThemedText>
-          <ThemedText variant="body" style={styles.gradientSubtitle}>
+          <ThemedText
+            variant="body"
+            style={[styles.gradientSubtitle, { color: colors.primaryText }]}
+          >
             {t().login.subtitle}
           </ThemedText>
         </View>
@@ -175,7 +178,7 @@ export const LoginScreen = (): React.JSX.Element => {
             ]}
           >
             {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={colors.primaryText} />
             ) : (
               <ThemedText
                 variant="body"
@@ -216,14 +219,13 @@ const styles = StyleSheet.create({
     paddingTop: '15%',
   },
   appName: {
-    color: '#FFFFFF',
     marginTop: 12,
   },
   gradientSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
     marginTop: 8,
     textAlign: 'center',
     paddingHorizontal: 32,
+    opacity: 0.8,
   },
   card: {
     borderRadius: 24,

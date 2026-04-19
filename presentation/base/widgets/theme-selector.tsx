@@ -185,7 +185,12 @@ export const ThemeSelector = ({
                     </LinearGradient>
                     {/* Checkmark badge for active theme */}
                     {isActive && (
-                      <View style={[styles.badge, { backgroundColor: themeColors.primary }]}>
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: themeColors.primary, borderColor: colors.background },
+                        ]}
+                      >
                         <Ionicons name="checkmark" size={12} color={themeColors.primaryText} />
                       </View>
                     )}
@@ -330,7 +335,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
   },
   swatchLabel: {
     fontSize: 11,

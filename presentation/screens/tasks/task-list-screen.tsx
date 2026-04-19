@@ -132,7 +132,7 @@ export const TaskListScreen = (): React.JSX.Element => {
         ]}
       >
         {item.completed ? (
-          <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+          <Ionicons name="checkmark" size={16} color={colors.onSuccess} />
         ) : null}
       </View>
 
