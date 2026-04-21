@@ -18,34 +18,37 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 
-export const LoginScreen = (): React.JSX.Element => {
+export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
-  const signIn = authStore((s) => s.signIn);
+  const register = authStore((s) => s.register);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [focusField, setFocusField] = useState<string | null>(null);
 
   const passwordRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
 
-  const fieldsEmpty = email.trim().length === 0 || password.trim().length === 0;
+  const fieldsEmpty =
+    email.trim().length === 0 || password.trim().length === 0 || displayName.trim().length === 0;
+
+  const handleRegister = useCallback(() => {
+    if (fieldsEmpty) {
+      return;
+    }
+    void register(email, password, displayName);
+  }, [register, email, password, displayName, fieldsEmpty]);
 
   useEffect(() => {
     if (state.status === 'authenticated') {
       router.replace('/recipes');
     }
   }, [state.status, router]);
-
-  const handleSignIn = useCallback(() => {
-    if (email.trim().length === 0 || password.trim().length === 0) {
-      return;
-    }
-    void signIn(email, password);
-  }, [signIn, email, password]);
 
   const isLoading = state.status === 'loading';
   const errorMessage =
@@ -81,7 +84,7 @@ export const LoginScreen = (): React.JSX.Element => {
             variant="body"
             style={[styles.gradientSubtitle, { color: colors.primaryText }]}
           >
-            {t().login.subtitle}
+            {t().register.subtitle}
           </ThemedText>
         </View>
 
@@ -96,12 +99,45 @@ export const LoginScreen = (): React.JSX.Element => {
         >
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons
+              name="account-outline"
+              size={20}
+              color={colors.textMuted}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.inputBackground,
+                  color: colors.text,
+                  borderColor:
+                    focusField === 'displayName'
+                      ? colors.inputBorderFocused
+                      : colors.inputBorder,
+                },
+              ]}
+              placeholder={t().register.displayNamePlaceholder}
+              placeholderTextColor={colors.textMuted}
+              value={displayName}
+              onChangeText={setDisplayName}
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+              onFocus={() => setFocusField('displayName')}
+              onBlur={() => setFocusField(null)}
+              onSubmitEditing={() => emailRef.current?.focus()}
+            />
+          </View>
+
+          <View style={[styles.inputWrapper, { marginTop: 12 }]}>
+            <MaterialCommunityIcons
               name="email-outline"
               size={20}
               color={colors.textMuted}
               style={styles.inputIcon}
             />
             <TextInput
+              ref={emailRef}
               style={[
                 styles.input,
                 {
@@ -155,7 +191,7 @@ export const LoginScreen = (): React.JSX.Element => {
               returnKeyType="done"
               onFocus={() => setFocusField('password')}
               onBlur={() => setFocusField(null)}
-              onSubmitEditing={handleSignIn}
+              onSubmitEditing={handleRegister}
             />
           </View>
 
@@ -169,7 +205,7 @@ export const LoginScreen = (): React.JSX.Element => {
           ) : null}
 
           <Pressable
-            onPress={handleSignIn}
+            onPress={handleRegister}
             disabled={fieldsEmpty || isLoading}
             style={[
               styles.signInButton,
@@ -184,28 +220,22 @@ export const LoginScreen = (): React.JSX.Element => {
                 variant="body"
                 style={[styles.signInLabel, { color: colors.primaryText }]}
               >
-                {t().login.signIn}
+                {t().register.signUp}
               </ThemedText>
             )}
           </Pressable>
 
           <View style={styles.signUpRow}>
             <ThemedText variant="body" style={{ color: colors.textMuted }}>
-              {t().login.noAccount}
+              {t().register.haveAccount}
             </ThemedText>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.back()}>
               <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
-                {t().login.signUp}
+                {t().register.signIn}
               </ThemedText>
             </Pressable>
           </View>
         </View>
-
-        {t().login.hint ? (
-          <ThemedText variant="caption" muted style={styles.hint}>
-            {t().login.hint}
-          </ThemedText>
-        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -289,9 +319,5 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontWeight: '600',
-  },
-  hint: {
-    marginTop: 16,
-    textAlign: 'center',
   },
 });

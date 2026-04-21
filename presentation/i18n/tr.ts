@@ -13,12 +13,14 @@ export const tr: Translations = {
   login: {
     title: 'Recipely',
     subtitle: 'Tariflerinizi ve görevlerinizi görmek için giriş yapın.',
-    usernamePlaceholder: 'Kullanıcı adı',
+    emailPlaceholder: 'E-posta',
     passwordPlaceholder: 'Şifre',
     signIn: 'Giriş yap',
-    hint: 'Deneyin: emilys / emilyspass',
-    emptyFields: 'Lütfen kullanıcı adı ve şifre girin.',
-    invalidCredentials: 'Geçersiz kullanıcı adı veya şifre',
+    signUp: 'Hesap oluştur',
+    hint: '',
+    emptyFields: 'Lütfen e-posta ve şifre girin.',
+    invalidCredentials: 'Geçersiz e-posta veya şifre',
+    noAccount: 'Hesabınız yok mu?',
   },
   recipes: {
     title: 'Tarifler',
@@ -64,5 +66,12 @@ export const tr: Translations = {
     tasks: 'Görevler',
     task: 'Görev',
     settings: 'Ayarlar',
+  },
+  register: {
+    subtitle: 'Başlamak için hesap oluşturun.',
+    displayNamePlaceholder: 'Görünen ad',
+    signUp: 'Hesap oluştur',
+    haveAccount: 'Zaten hesabınız var mı?',
+    signIn: 'Giriş yap',
   },
 };

@@ -4,6 +4,7 @@ import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { ITaskRepository } from '@domain/tasks/i-task-repository';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
+import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
@@ -42,6 +43,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const taskRepo = container.resolve<ITaskRepository>(TOKENS.TaskRepository);
 
   const signIn = new SignInUseCase(authRepo);
+  const signUp = new SignUpUseCase(authRepo);
   const signOut = new SignOutUseCase(authRepo);
   const getSession = new GetSessionUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
@@ -49,7 +51,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const listTasks = new ListTasksUseCase(taskRepo);
   const getTask = new GetTaskUseCase(taskRepo);
 
-  const authStore = configureAuthStore({ signIn, signOut, getSession });
+  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const taskListStore = configureTaskListStore({ listTasks });
