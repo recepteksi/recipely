@@ -29,6 +29,19 @@
     },
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "infoPlist": {
+              "NSAllowsArbitraryLoads": true
+            }
+          },
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
         "expo-router",
         {
           "root": "presentation/app"

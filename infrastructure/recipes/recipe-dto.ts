@@ -1,8 +1,10 @@
+// Wire shape returned by the Recipely backend for a single recipe.
+// Keep in sync with recipely-backend `application/recipes/dtos/recipe.dto.ts`.
 export interface RecipeDto {
-  id: number;
+  id: string;
   name: string;
   cuisine: string;
-  difficulty: string;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   ingredients: string[];
   instructions: string[];
   prepTimeMinutes: number;
@@ -10,6 +12,9 @@ export interface RecipeDto {
   image: string;
   rating: number;
   tags: string[];
-  userId: number;
   mealType: string[];
+  ownerId: string;
+  categoryId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

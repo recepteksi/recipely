@@ -3,9 +3,11 @@ import { ValidationFailure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 
+// WHY: domain's Recipe uses a plain string for difficulty; no need to promote the
+// backend's string-union into a domain enum just to swap a remote.
 export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
   return Recipe.create({
-    id: String(dto.id),
+    id: dto.id,
     name: dto.name,
     cuisine: dto.cuisine,
     difficulty: dto.difficulty,
@@ -17,6 +19,6 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     rating: dto.rating,
     tags: dto.tags,
     mealType: dto.mealType,
-    ownerId: String(dto.userId),
+    ownerId: dto.ownerId,
   });
 };

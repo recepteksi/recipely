@@ -1,6 +1,13 @@
-export const DUMMYJSON_BASE_URL = 'https://dummyjson.com';
-export const AUTH_LOGIN_URL = 'https://dummyjson.com/auth/login';
-export const AUTH_TOKEN_EXPIRES_MINS = 60;
-export const DEFAULT_TOKEN_EXPIRES_MS = 3_600_000;
-export const TODOS_PER_COURSE = 5;
-export const RECIPES_PAGE_LIMIT = 30;
+const DEFAULT_API_BASE_URL = 'http://144.24.239.155:3000';
+
+export const API_BASE_URL: string =
+  process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ?? DEFAULT_API_BASE_URL;
+
+export const HEALTH_URL: string = API_BASE_URL.replace(/\/$/, '') + '/health';
+
+export const AUTH_LOGIN_PATH = '/auth/login';
+export const AUTH_REGISTER_PATH = '/auth/register';
+
+export const RECIPES_PAGE_SIZE = 30;
+
+export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;

@@ -6,4 +6,5 @@ export const TOKENS = {
   AuthRepository: Symbol.for('AuthRepository'),
   RecipeRepository: Symbol.for('RecipeRepository'),
   TaskRepository: Symbol.for('TaskRepository'),
+  HealthCheckService: Symbol.for('HealthCheckService'),
 } as const;

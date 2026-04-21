@@ -1,12 +1,13 @@
-import type { Container } from '@core/di/container';
+import { type Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
 import { HttpClient } from '@infrastructure/network/http-client';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { TaskRepository } from '@infrastructure/tasks/task-repository';
+import { HealthCheckService } from '@infrastructure/network/health-check-service';
 
-const DUMMYJSON_BASE_URL = 'https://dummyjson.com';
+import { API_BASE_URL } from '@infrastructure/constants/api';
 
 export const registerInfrastructure = (container: Container): void => {
   const storage = new SecureTokenStorage();
@@ -14,7 +15,7 @@ export const registerInfrastructure = (container: Container): void => {
 
   container.register(TOKENS.HttpClient, () => {
     return new HttpClient({
-      baseUrl: DUMMYJSON_BASE_URL,
+      baseUrl: API_BASE_URL,
       tokenProvider: async () => {
         const result = await storage.loadSession();
         if (!result.ok || result.value === null) {
@@ -26,7 +27,8 @@ export const registerInfrastructure = (container: Container): void => {
   });
 
   container.register(TOKENS.AuthRepository, () => {
-    return new AuthRepository(storage);
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new AuthRepository(http, storage);
   });
 
   container.register(TOKENS.RecipeRepository, () => {
@@ -38,4 +40,6 @@ export const registerInfrastructure = (container: Container): void => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new TaskRepository(http);
   });
+
+  container.register(TOKENS.HealthCheckService, () => new HealthCheckService());
 };

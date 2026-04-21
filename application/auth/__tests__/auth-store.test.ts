@@ -2,6 +2,7 @@ import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-reposito
 import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
+import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result';
@@ -27,6 +28,7 @@ const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSession => {
 const makeStore = (repo: FakeAuthRepository) =>
   configureAuthStore({
     signIn: new SignInUseCase(repo),
+    signUp: new SignUpUseCase(repo),
     signOut: new SignOutUseCase(repo),
     getSession: new GetSessionUseCase(repo),
   });

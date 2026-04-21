@@ -11,12 +11,14 @@ export const en = {
   login: {
     title: 'Recipely',
     subtitle: 'Sign in to view your recipes and tasks.',
-    usernamePlaceholder: 'Username',
+    emailPlaceholder: 'Email',
     passwordPlaceholder: 'Password',
     signIn: 'Sign in',
-    hint: 'Try: emilys / emilyspass',
-    emptyFields: 'Please enter username and password.',
-    invalidCredentials: 'Invalid username or password',
+    signUp: 'Create account',
+    hint: '',
+    emptyFields: 'Please enter email and password.',
+    invalidCredentials: 'Invalid email or password',
+    noAccount: "Don't have an account?",
   },
   recipes: {
     title: 'Recipes',
@@ -62,6 +64,13 @@ export const en = {
     tasks: 'Tasks',
     task: 'Task',
     settings: 'Settings',
+  },
+  register: {
+    subtitle: 'Create an account to get started.',
+    displayNamePlaceholder: 'Display name',
+    signUp: 'Create account',
+    haveAccount: 'Already have an account?',
+    signIn: 'Sign in',
   },
 };
 
