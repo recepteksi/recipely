@@ -73,7 +73,10 @@ export class HttpClient {
         config.headers.Authorization = `Bearer ${token}`;
       }
       if (config.data !== undefined && config.data !== null) {
-        config.data = encryptEnvelope(config.data, this.aesKey);
+        // WHY: backend's decryptBody middleware expects plaintext to be
+        // `{ data: <T> }` (mirroring the response side). Wrap before encrypt
+        // so the contract is symmetric.
+        config.data = encryptEnvelope({ data: config.data }, this.aesKey);
       }
       if (options.enableLogging) {
         // eslint-disable-next-line no-console
