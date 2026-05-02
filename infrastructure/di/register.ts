@@ -1,6 +1,6 @@
 import { type Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
-import { HttpClient } from '@infrastructure/network/http-client';
+import { HttpClient, type HttpClientOptions } from '@infrastructure/network/http-client';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
@@ -9,22 +9,28 @@ import { HealthCheckService } from '@infrastructure/network/health-check-service
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 
-export const registerInfrastructure = (container: Container): void => {
+export interface InfrastructureOptions {
+  localeProvider?: () => string;
+}
+
+export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();
   container.register(TOKENS.SecureStorage, () => storage);
 
-  container.register(TOKENS.HttpClient, () => {
-    return new HttpClient({
-      baseUrl: API_BASE_URL,
-      tokenProvider: async () => {
-        const result = await storage.loadSession();
-        if (!result.ok || result.value === null) {
-          return null;
-        }
-        return result.value.accessToken;
-      },
-    });
-  });
+  const httpClientOptions: HttpClientOptions = {
+    baseUrl: API_BASE_URL,
+    tokenProvider: async () => {
+      const result = await storage.loadSession();
+      if (!result.ok || result.value === null) {
+        return null;
+      }
+      return result.value.accessToken;
+    },
+  };
+  if (opts?.localeProvider) {
+    httpClientOptions.localeProvider = opts.localeProvider;
+  }
+  container.register(TOKENS.HttpClient, () => new HttpClient(httpClientOptions));
 
   container.register(TOKENS.AuthRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);

@@ -20,6 +20,7 @@ import {
 export interface HttpClientOptions {
   baseUrl: string;
   tokenProvider: () => Promise<string | null>;
+  localeProvider?: () => string;
   timeoutMs?: number;
   // WHY: keeps logging opt-in — production builds flip this off to drop PII out of logcat/xcode.
   enableLogging?: boolean;
@@ -72,6 +73,9 @@ export class HttpClient {
         config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;
       }
+      const locale = options.localeProvider ? options.localeProvider() : 'en';
+      config.headers = config.headers ?? {};
+      config.headers['Accept-Language'] = locale;
       if (config.data !== undefined && config.data !== null) {
         // WHY: backend's decryptBody middleware expects plaintext to be
         // `{ data: <T> }` (mirroring the response side). Wrap before encrypt

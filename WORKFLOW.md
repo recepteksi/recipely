@@ -1,106 +1,101 @@
 # Development Workflow
 
-Her emir alındığında bu iş akışını sırasıyla uygula.
+Apply this workflow sequentially for every task.
 
-## 1. Branch Açma
+## 1. Branch Creation
 
 ```bash
-# Yeni iş için dev'den branch aç
+# Create branch from dev for new work
 git checkout dev
 git pull origin dev
-git checkout -b <branch-adi>
+git checkout -b <branch-name>
 ```
 
-Branch adlandırma:
-- `feat/<kısa-acıklama>` — yeni özellik
-- `fix/<kısa-acıklama>` — hata düzeltme
-- `refactor/<kısa-acıklama>` — yeniden yapılandırma
-- `chore/<kısa-acıklama>` — diğer işler
+Branch naming:
+- `feat/<short-description>` — new feature
+- `fix/<short-description>` — bug fix
+- `refactor/<short-description>` — refactoring
+- `chore/<short-description>` — other tasks
 
-## 2. Task Oluşturma
+## 2. Task Creation
 
-Her alt görev için `TaskCreate` ile task oluştur ve agent ata:
+Create a task for each subtask using `TaskCreate` and assign an agent:
 
-| Görev | Agent |
-|-------|-------|
-| UI/widget geliştirme | `rn-developer` |
-| TypeScript / domain katmanı | `ts-developer` |
-| Test yazma | `test-developer` |
-| Kod review | `code-reviewer` |
-| Tasarım kararları | `ui-designer` |
+| Task | Agent |
+|------|-------|
+| UI/widget development | `rn-developer` |
+| TypeScript / domain layer | `ts-developer` |
+| Test writing | `test-developer` |
+| Code review | `code-reviewer` |
+| Design decisions | `ui-designer` |
 
-```bash
-# Task oluştur örneği
-TaskCreate: "Login ekranı UI geliştirmesi", assignee: "rn-developer"
-```
+## 3. Development
 
-## 3. Çalışma
+1. Assign work to relevant agents via `TaskCreate`
+2. Agents complete their work
+3. Regularly run `git add` + `git commit`
+4. Keep commit messages clear and atomic
 
-1. İlgili agent'lara TaskCreate ile işleri ata
-2. Agent'lar işleri tamamlar
-3. Düzenli olarak `git add` + `git commit` yap
-4. Commit mesajları anlaşılır ve atomic olsun
+## 4. Code Review (Before Merge)
 
-## 4. Code Review (Mergeden Önce)
-
-İş bitiminde, dev'e göndermeden önce:
+Before sending to dev, after finishing work:
 
 ```bash
-# code-reviewer agent'ı çağır
+# Call code-reviewer agent
 Agent(subagent_type: "code-reviewer", prompt: "...")
 ```
 
-Code-reviewer kontrol edecek:
-- DDD / Clean Architecture kuralları
+Code-reviewer will check:
+- DDD / Clean Architecture rules
 - TypeScript strictness
-- Katmanlar arası importlar (dependency rule)
-- Eksik hata yönetimi
-- Tekrar eden kod
+- Cross-layer imports (dependency rule)
+- Missing error handling
+- Duplicate code
 - Test coverage
 
-### Geri Dönüş
-- Agent sorun bulursa → ilgili task'a yaz → agent'a düzeltttiğini yaptır → tekrar review'e gönder
-- Sorun yoksa → devam et
+### Feedback Loop
+- If agent finds issues → write to relevant task → have agent fix → send for review again
+- If no issues → proceed
 
-## 5. Dev'e Gönderme
+## 5. Push to Dev
 
 ```bash
-# Review geçti, dev'e push et
-git push origin <branch-adi>
+# After review passes, push to dev
+git push origin <branch-name>
 ```
 
 ## 6. Merge
 
-PR aç ve kontrol et, ardından:
+Open a PR and verify, then:
 
 ```bash
-# Dev ile senkronize et (gerekirse resolve conflict)
+# Sync with dev (resolve conflicts if needed)
 git checkout dev
 git pull origin dev
-git merge <branch-adi>
+git merge <branch-name>
 
-# Conflict varsa çöz, sonra commit
+# If conflicts exist, resolve them, then commit
 git push origin dev
 ```
 
-## 7. Branch Temizliği
+## 7. Branch Cleanup
 
 ```bash
-# Merge tamamlandıktan sonra local branch'i sil
-git branch -d <branch-adi>
+# After merge is complete, delete local branch
+git branch -d <branch-name>
 ```
 
 ---
 
-## Kurallar
+## Rules
 
-- **Dependency rule**: Katmanlar sadece aşağıya import eder, yukarıya asla
-- **Error handling**: `Result<T, Failure>` kullan, exception fırlatma
-- **Test**: Domain/infrastructure değişikliklerinde `test-developer` ile test yaz
-- **Build**: İş tamamlandığında yerel build çalışsın (`npx expo export --platform web`)
-- **Lint**: `npm run lint` ve `npx tsc --noEmit` hatasız olsun
+- **Dependency rule**: Layers import only downward, never upward
+- **Error handling**: Use `Result<T, Failure>`, never throw exceptions
+- **Tests**: For domain/infrastructure changes, write tests with `test-developer`
+- **Build**: After work is done, run local build (`npx expo export --platform web`)
+- **Lint**: `npm run lint` and `npx tsc --noEmit` must pass with no errors
 
-## İletişim
+## Communication
 
-- Branch açılırken `dev` base alınır
-- Tüm PR'lar `dev`'e gider, `main` sadece release için kullanılır
+- `dev` is the base branch for all work
+- All PRs go to `dev`, `main` is only for releases
