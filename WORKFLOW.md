@@ -17,18 +17,37 @@ Branch adlandırma:
 - `refactor/<kısa-acıklama>` — yeniden yapılandırma
 - `chore/<kısa-acıklama>` — diğer işler
 
-## 2. Çalışma
+## 2. Task Oluşturma
 
-1. İşi tamamla
-2. Düzenli olarak `git add` + `git commit` yap
-3. Commit mesajları anlaşılır ve atomic olsun
+Her alt görev için `TaskCreate` ile task oluştur ve agent ata:
 
-## 3. Code Review (Mergeden Önce)
+| Görev | Agent |
+|-------|-------|
+| UI/widget geliştirme | `rn-developer` |
+| TypeScript / domain katmanı | `ts-developer` |
+| Test yazma | `test-developer` |
+| Kod review | `code-reviewer` |
+| Tasarım kararları | `ui-designer` |
+
+```bash
+# Task oluştur örneği
+TaskCreate: "Login ekranı UI geliştirmesi", assignee: "rn-developer"
+```
+
+## 3. Çalışma
+
+1. İlgili agent'lara TaskCreate ile işleri ata
+2. Agent'lar işleri tamamlar
+3. Düzenli olarak `git add` + `git commit` yap
+4. Commit mesajları anlaşılır ve atomic olsun
+
+## 4. Code Review (Mergeden Önce)
 
 İş bitiminde, dev'e göndermeden önce:
 
 ```bash
-# Değişiklikleri görmek için code-reviewer agent'ı çağır
+# code-reviewer agent'ı çağır
+Agent(subagent_type: "code-reviewer", prompt: "...")
 ```
 
 Code-reviewer kontrol edecek:
@@ -40,17 +59,17 @@ Code-reviewer kontrol edecek:
 - Test coverage
 
 ### Geri Dönüş
-- Agent sorun bulursa → sorunları düzelt → tekrar review'e gönder
+- Agent sorun bulursa → ilgili task'a yaz → agent'a düzeltttiğini yaptır → tekrar review'e gönder
 - Sorun yoksa → devam et
 
-## 4. Dev'e Gönderme
+## 5. Dev'e Gönderme
 
 ```bash
 # Review geçti, dev'e push et
 git push origin <branch-adi>
 ```
 
-## 5. Merge
+## 6. Merge
 
 PR aç ve kontrol et, ardından:
 
@@ -64,7 +83,7 @@ git merge <branch-adi>
 git push origin dev
 ```
 
-## 6. Branch Temizliği
+## 7. Branch Temizliği
 
 ```bash
 # Merge tamamlandıktan sonra local branch'i sil
@@ -77,7 +96,7 @@ git branch -d <branch-adi>
 
 - **Dependency rule**: Katmanlar sadece aşağıya import eder, yukarıya asla
 - **Error handling**: `Result<T, Failure>` kullan, exception fırlatma
-- **Test**: Domain/infrastructure değişikliklerinde test yaz
+- **Test**: Domain/infrastructure değişikliklerinde `test-developer` ile test yaz
 - **Build**: İş tamamlandığında yerel build çalışsın (`npx expo export --platform web`)
 - **Lint**: `npm run lint` ve `npx tsc --noEmit` hatasız olsun
 
