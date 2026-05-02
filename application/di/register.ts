@@ -9,6 +9,7 @@ import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
+import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import { ListTasksUseCase } from '@application/tasks/list-tasks-use-case';
 import { GetTaskUseCase } from '@application/tasks/get-task-use-case';
 import { configureAuthStore, type AuthStore } from '@application/auth/auth-store';
@@ -58,6 +59,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const getSession = new GetSessionUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
   const getRecipe = new GetRecipeUseCase(recipeRepo);
+  const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
   const listTasks = new ListTasksUseCase(taskRepo);
   const getTask = new GetTaskUseCase(taskRepo);
 
@@ -65,7 +67,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const savedRecipesStore = configureSavedRecipesStore();
-  const createdRecipesStore = configureCreatedRecipesStore();
+  const createdRecipesStore = configureCreatedRecipesStore({ createRecipeUseCase });
   const taskListStore = configureTaskListStore({ listTasks });
   const taskDetailStore = configureTaskDetailStore({ getTask });
 
