@@ -21,6 +21,14 @@ import {
   type RecipeDetailStore,
 } from '@application/recipes/recipe-detail-store';
 import {
+  configureSavedRecipesStore,
+  type SavedRecipesStore,
+} from '@application/recipes/saved-recipes-store';
+import {
+  configureCreatedRecipesStore,
+  type CreatedRecipesStore,
+} from '@application/recipes/created-recipes-store';
+import {
   configureTaskListStore,
   type TaskListStore,
 } from '@application/tasks/task-list-store';
@@ -33,6 +41,8 @@ export interface ApplicationStores {
   authStore: AuthStore;
   recipeListStore: RecipeListStore;
   recipeDetailStore: RecipeDetailStore;
+  savedRecipesStore: SavedRecipesStore;
+  createdRecipesStore: CreatedRecipesStore;
   taskListStore: TaskListStore;
   taskDetailStore: TaskDetailStore;
 }
@@ -54,6 +64,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const authStore = configureAuthStore({ signIn, signUp, signOut, getSession });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
+  const savedRecipesStore = configureSavedRecipesStore();
+  const createdRecipesStore = configureCreatedRecipesStore();
   const taskListStore = configureTaskListStore({ listTasks });
   const taskDetailStore = configureTaskDetailStore({ getTask });
 
@@ -61,6 +73,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     authStore,
     recipeListStore,
     recipeDetailStore,
+    savedRecipesStore,
+    createdRecipesStore,
     taskListStore,
     taskDetailStore,
   };

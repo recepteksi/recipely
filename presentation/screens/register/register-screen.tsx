@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -10,13 +10,26 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
+import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD = 8;
+
+const computeStrength = (password: string): number => {
+  let s = 0;
+  if (password.length >= MIN_PASSWORD) s++;
+  if (/[A-Z]/.test(password)) s++;
+  if (/[0-9]/.test(password)) s++;
+  if (/[^A-Za-z0-9]/.test(password)) s++;
+  return s;
+};
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -26,23 +39,18 @@ export const RegisterScreen = (): React.JSX.Element => {
   const state = authStore((s) => s.state);
   const register = authStore((s) => s.register);
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [focusField, setFocusField] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
 
-  const passwordRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
-
-  const fieldsEmpty =
-    email.trim().length === 0 || password.trim().length === 0 || displayName.trim().length === 0;
-
-  const handleRegister = useCallback(() => {
-    if (fieldsEmpty) {
-      return;
-    }
-    void register(email, password, displayName);
-  }, [register, email, password, displayName, fieldsEmpty]);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (state.status === 'authenticated') {
@@ -50,9 +58,79 @@ export const RegisterScreen = (): React.JSX.Element => {
     }
   }, [state.status, router]);
 
+  const emailValid = EMAIL_RE.test(email);
+  const passwordsMatch = password.length > 0 && password === confirm;
+  const strength = useMemo(() => computeStrength(password), [password]);
+
+  const strengthLabels = [
+    t().register.weak,
+    t().register.weak,
+    t().register.fair,
+    t().register.good,
+    t().register.strong,
+  ];
+  const strengthColors = [
+    colors.danger,
+    colors.danger,
+    colors.warning,
+    colors.warning,
+    colors.success,
+  ];
+  const strengthLabel = strengthLabels[strength];
+  const strengthColor = strengthColors[strength];
+
+  const canSubmit =
+    name.trim().length > 0 &&
+    emailValid &&
+    password.length >= MIN_PASSWORD &&
+    password === confirm &&
+    agree;
+
+  const handleRegister = useCallback(() => {
+    if (name.trim().length === 0) {
+      setLocalError(t().register.errorName);
+      return;
+    }
+    if (!emailValid) {
+      setLocalError(t().register.errorEmail);
+      return;
+    }
+    if (password.length < MIN_PASSWORD) {
+      setLocalError(t().register.errorPwdShort);
+      return;
+    }
+    if (password !== confirm) {
+      setLocalError(t().register.errorMismatch);
+      return;
+    }
+    if (!agree) {
+      setLocalError(t().register.errorAgree);
+      return;
+    }
+    setLocalError(undefined);
+    void register(email, password, name);
+  }, [name, email, emailValid, password, confirm, agree, register]);
+
   const isLoading = state.status === 'loading';
-  const errorMessage =
+  const remoteError =
     state.status === 'error' ? state.failure.message : undefined;
+  const errorMessage = localError ?? remoteError;
+
+  const inputStyle = (
+    field: string,
+    extra: { paddingRight?: number } = {},
+  ): React.ComponentProps<typeof TextInput>['style'] => ({
+    height: 52,
+    borderWidth: 1.5,
+    borderRadius: radii.lg,
+    paddingLeft: 48,
+    paddingRight: extra.paddingRight ?? 14,
+    fontSize: 15,
+    backgroundColor: colors.inputBackground,
+    color: colors.text,
+    borderColor:
+      focusField === field ? colors.inputBorderFocused : colors.inputBorder,
+  });
 
   return (
     <KeyboardAvoidingView
@@ -71,18 +149,24 @@ export const RegisterScreen = (): React.JSX.Element => {
           style={styles.gradient}
         />
 
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+        </Pressable>
+
         <View style={styles.gradientContent}>
-          <MaterialCommunityIcons
-            name="silverware-fork-knife"
-            size={48}
-            color={colors.primaryText}
-          />
-          <ThemedText variant="headline" style={[styles.appName, { color: colors.primaryText }]}>
-            {t().login.title}
+          <View style={styles.heroIconWrap}>
+            <Ionicons name="person-outline" size={26} color="#FFFFFF" />
+          </View>
+          <ThemedText variant="headline" style={[styles.title, { color: '#FFFFFF' }]}>
+            {t().register.title}
           </ThemedText>
           <ThemedText
             variant="body"
-            style={[styles.gradientSubtitle, { color: colors.primaryText }]}
+            style={[styles.subtitle, { color: '#FFFFFF' }]}
           >
             {t().register.subtitle}
           </ThemedText>
@@ -91,65 +175,42 @@ export const RegisterScreen = (): React.JSX.Element => {
         <View
           style={[
             styles.card,
-            {
-              backgroundColor: colors.cardBackground,
-              ...shadows.lg,
-            },
+            { backgroundColor: colors.cardBackground, ...shadows.lg },
           ]}
         >
           <View style={styles.inputWrapper}>
-            <MaterialCommunityIcons
-              name="account-outline"
+            <Ionicons
+              name="person-outline"
               size={20}
               color={colors.textMuted}
               style={styles.inputIcon}
             />
             <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.inputBackground,
-                  color: colors.text,
-                  borderColor:
-                    focusField === 'displayName'
-                      ? colors.inputBorderFocused
-                      : colors.inputBorder,
-                },
-              ]}
-              placeholder={t().register.displayNamePlaceholder}
+              style={inputStyle('name')}
+              placeholder={t().register.namePlaceholder}
               placeholderTextColor={colors.textMuted}
-              value={displayName}
-              onChangeText={setDisplayName}
+              value={name}
+              onChangeText={setName}
               autoCapitalize="words"
               autoCorrect={false}
               returnKeyType="next"
-              onFocus={() => setFocusField('displayName')}
+              onFocus={() => setFocusField('name')}
               onBlur={() => setFocusField(null)}
               onSubmitEditing={() => emailRef.current?.focus()}
             />
           </View>
 
-          <View style={[styles.inputWrapper, { marginTop: 12 }]}>
-            <MaterialCommunityIcons
-              name="email-outline"
+          <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
+            <Ionicons
+              name="mail-outline"
               size={20}
               color={colors.textMuted}
               style={styles.inputIcon}
             />
             <TextInput
               ref={emailRef}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.inputBackground,
-                  color: colors.text,
-                  borderColor:
-                    focusField === 'email'
-                      ? colors.inputBorderFocused
-                      : colors.inputBorder,
-                },
-              ]}
-              placeholder={t().login.emailPlaceholder}
+              style={inputStyle('email', { paddingRight: 44 })}
+              placeholder={t().register.emailPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
@@ -161,41 +222,140 @@ export const RegisterScreen = (): React.JSX.Element => {
               onBlur={() => setFocusField(null)}
               onSubmitEditing={() => passwordRef.current?.focus()}
             />
+            {email.length > 0 ? (
+              <Ionicons
+                name={emailValid ? 'checkmark-circle' : 'close-circle'}
+                size={18}
+                color={emailValid ? colors.success : colors.danger}
+                style={styles.inputStatusIcon}
+              />
+            ) : null}
           </View>
 
-          <View style={[styles.inputWrapper, { marginTop: 12 }]}>
-            <MaterialCommunityIcons
-              name="lock-outline"
+          <View style={[styles.inputWrapper, { marginTop: spacing.md, marginBottom: 6 }]}>
+            <Ionicons
+              name="lock-closed-outline"
               size={20}
               color={colors.textMuted}
               style={styles.inputIcon}
             />
             <TextInput
               ref={passwordRef}
-              style={[
-                styles.input,
-                {
-                  backgroundColor: colors.inputBackground,
-                  color: colors.text,
-                  borderColor:
-                    focusField === 'password'
-                      ? colors.inputBorderFocused
-                      : colors.inputBorder,
-                },
-              ]}
-              placeholder={t().login.passwordPlaceholder}
+              style={inputStyle('password', { paddingRight: 44 })}
+              placeholder={t().register.passwordPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
-              returnKeyType="done"
+              secureTextEntry={!showPwd}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
               onFocus={() => setFocusField('password')}
+              onBlur={() => setFocusField(null)}
+              onSubmitEditing={() => confirmRef.current?.focus()}
+            />
+            <Pressable
+              onPress={() => setShowPwd((s) => !s)}
+              hitSlop={8}
+              style={styles.eyeButton}
+            >
+              <MaterialCommunityIcons
+                name={showPwd ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={colors.textMuted}
+              />
+            </Pressable>
+          </View>
+
+          {password.length > 0 ? (
+            <View style={styles.strengthWrap}>
+              <View style={styles.strengthSegments}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.strengthSegment,
+                      {
+                        backgroundColor: i < strength ? strengthColor : colors.border,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+              <ThemedText
+                variant="caption"
+                style={{ color: strengthColor, marginTop: 4 }}
+              >
+                {strengthLabel}
+              </ThemedText>
+            </View>
+          ) : null}
+
+          <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={20}
+              color={colors.textMuted}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              ref={confirmRef}
+              style={inputStyle('confirm', { paddingRight: 44 })}
+              placeholder={t().register.confirmPlaceholder}
+              placeholderTextColor={colors.textMuted}
+              value={confirm}
+              onChangeText={setConfirm}
+              secureTextEntry={!showPwd}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onFocus={() => setFocusField('confirm')}
               onBlur={() => setFocusField(null)}
               onSubmitEditing={handleRegister}
             />
+            {confirm.length > 0 ? (
+              <Ionicons
+                name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
+                size={18}
+                color={passwordsMatch ? colors.success : colors.danger}
+                style={styles.inputStatusIcon}
+              />
+            ) : null}
           </View>
 
-          {errorMessage ? (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: agree }}
+            onPress={() => setAgree((a) => !a)}
+            style={styles.termsRow}
+          >
+            <View
+              style={[
+                styles.termsBox,
+                {
+                  backgroundColor: agree ? colors.primary : 'transparent',
+                  borderColor: agree ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              {agree ? (
+                <Ionicons name="checkmark" size={14} color={colors.primaryText} />
+              ) : null}
+            </View>
+            <ThemedText variant="caption" muted style={styles.termsText}>
+              {t().register.agreeText}{' '}
+              <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+                {t().register.terms}
+              </ThemedText>
+              {' '}
+              {t().register.and}{' '}
+              <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+                {t().register.privacy}
+              </ThemedText>
+            </ThemedText>
+          </Pressable>
+
+          {errorMessage !== undefined ? (
             <ThemedText
               variant="caption"
               style={[styles.error, { color: colors.danger }]}
@@ -206,11 +366,11 @@ export const RegisterScreen = (): React.JSX.Element => {
 
           <Pressable
             onPress={handleRegister}
-            disabled={fieldsEmpty || isLoading}
+            disabled={!canSubmit || isLoading}
             style={[
-              styles.signInButton,
+              styles.submitButton,
               { backgroundColor: colors.primary },
-              (fieldsEmpty || isLoading) ? styles.buttonDisabled : null,
+              !canSubmit || isLoading ? styles.submitDisabled : null,
             ]}
           >
             {isLoading ? (
@@ -218,19 +378,22 @@ export const RegisterScreen = (): React.JSX.Element => {
             ) : (
               <ThemedText
                 variant="body"
-                style={[styles.signInLabel, { color: colors.primaryText }]}
+                style={[styles.submitLabel, { color: colors.primaryText }]}
               >
                 {t().register.signUp}
               </ThemedText>
             )}
           </Pressable>
 
-          <View style={styles.signUpRow}>
-            <ThemedText variant="body" style={{ color: colors.textMuted }}>
+          <View style={styles.signInRow}>
+            <ThemedText variant="caption" style={{ color: colors.textMuted }}>
               {t().register.haveAccount}
             </ThemedText>
             <Pressable onPress={() => router.back()}>
-              <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
+              <ThemedText
+                variant="caption"
+                style={[styles.signInLink, { color: colors.primary }]}
+              >
                 {t().register.signIn}
               </ThemedText>
             </Pressable>
@@ -253,28 +416,53 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: '40%',
+    height: 260,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
   },
+  backButton: {
+    position: 'absolute',
+    top: 56,
+    left: spacing.lg,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
   gradientContent: {
     alignItems: 'center',
-    paddingTop: '15%',
+    paddingTop: 76,
+    paddingBottom: 24,
   },
-  appName: {
-    marginTop: 12,
+  heroIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  gradientSubtitle: {
-    marginTop: 8,
+  title: {
+    marginTop: 10,
+  },
+  subtitle: {
+    marginTop: 6,
     textAlign: 'center',
     paddingHorizontal: 32,
-    opacity: 0.8,
+    opacity: 0.88,
   },
   card: {
     borderRadius: 24,
     padding: 24,
     marginHorizontal: 16,
-    marginTop: '10%',
+    marginTop: -40,
   },
   inputWrapper: {
     position: 'relative',
@@ -285,39 +473,74 @@ const styles = StyleSheet.create({
     left: 16,
     zIndex: 1,
   },
-  input: {
-    height: 52,
-    borderWidth: 1.5,
-    borderRadius: 12,
-    paddingLeft: 48,
-    paddingRight: 16,
-    fontSize: 15,
+  inputStatusIcon: {
+    position: 'absolute',
+    right: 14,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 8,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  strengthWrap: {
+    marginBottom: spacing.sm,
+  },
+  strengthSegments: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  strengthSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  termsBox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  termsText: {
+    flex: 1,
+    lineHeight: 18,
   },
   error: {
-    marginTop: 12,
+    marginTop: spacing.md,
     textAlign: 'center',
   },
-  signInButton: {
+  submitButton: {
     height: 52,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
-  buttonDisabled: {
+  submitDisabled: {
     opacity: 0.5,
   },
-  signInLabel: {
+  submitLabel: {
     fontWeight: '600',
   },
-  signUpRow: {
+  signInRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: spacing.md,
     gap: 4,
   },
-  signUpLink: {
+  signInLink: {
     fontWeight: '600',
   },
 });

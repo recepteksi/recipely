@@ -1,5 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -10,6 +15,43 @@ import { t } from '@presentation/i18n';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { radii } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
+
+interface CheckCircleProps {
+  completed: boolean;
+}
+
+const CheckCircle = ({ completed }: CheckCircleProps): React.JSX.Element => {
+  const colors = useTheme().colors;
+  const scale = useSharedValue(0);
+
+  useEffect(() => {
+    scale.value = withSpring(1, { damping: 10, stiffness: 120 });
+  }, [scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.circle,
+        animatedStyle,
+        completed
+          ? { backgroundColor: colors.success }
+          : {
+              backgroundColor: 'transparent',
+              borderWidth: 3,
+              borderColor: colors.border,
+            },
+      ]}
+    >
+      {completed ? (
+        <Ionicons name="checkmark" size={40} color={colors.onSuccess} />
+      ) : null}
+    </Animated.View>
+  );
+};
 
 export const TaskDetailScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -57,22 +99,7 @@ export const TaskDetailScreen = (): React.JSX.Element => {
               {current.task.title}
             </ThemedText>
 
-            <View
-              style={[
-                styles.circle,
-                current.task.completed
-                  ? { backgroundColor: colors.success }
-                  : {
-                      backgroundColor: 'transparent',
-                      borderWidth: 3,
-                      borderColor: colors.border,
-                    },
-              ]}
-            >
-              {current.task.completed ? (
-                <Ionicons name="checkmark" size={40} color={colors.onSuccess} />
-              ) : null}
-            </View>
+            <CheckCircle completed={current.task.completed} />
 
             <View
               style={[

@@ -10,6 +10,7 @@ const validProps = {
   prepTimeMinutes: 20,
   cookTimeMinutes: 15,
   image: 'https://cdn.dummyjson.com/recipe-images/1.webp',
+  media: [{ type: 'image' as const, url: 'https://cdn.dummyjson.com/recipe-images/1.webp' }],
   rating: 4.6,
   tags: ['Pizza', 'Italian'],
   mealType: ['Dinner'],

@@ -8,7 +8,14 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
-import { DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { API_AES_KEY_HEX, DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import {
+  decryptEnvelope,
+  encryptEnvelope,
+  EnvelopeDecryptError,
+  keyFromHex,
+  type Envelope,
+} from '@infrastructure/crypto/aes-envelope';
 
 export interface HttpClientOptions {
   baseUrl: string;
@@ -26,10 +33,26 @@ interface RecipelyErrorBody {
   };
 }
 
+interface RecipelyDataBody<T> {
+  data: T;
+}
+
+function isEnvelope(body: unknown): body is Envelope {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    typeof (body as Envelope).payload === 'string' &&
+    typeof (body as Envelope).iv === 'string'
+  );
+}
+
 export class HttpClient {
   private readonly instance: AxiosInstance;
+  private readonly aesKey: Uint8Array;
 
   constructor(private readonly options: HttpClientOptions) {
+    this.aesKey = keyFromHex(API_AES_KEY_HEX);
+
     this.instance = axios.create({
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
@@ -37,13 +60,23 @@ export class HttpClient {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      // Tell axios to NOT throw on non-2xx so our interceptor can decrypt the
+      // error body before mapAxiosError sees it.
+      validateStatus: () => true,
     });
 
+    // Request interceptor: attach JWT and encrypt body if present.
     this.instance.interceptors.request.use(async (config) => {
       const token = await options.tokenProvider();
       if (token) {
         config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      if (config.data !== undefined && config.data !== null) {
+        // WHY: backend's decryptBody middleware expects plaintext to be
+        // `{ data: <T> }` (mirroring the response side). Wrap before encrypt
+        // so the contract is symmetric.
+        config.data = encryptEnvelope({ data: config.data }, this.aesKey);
       }
       if (options.enableLogging) {
         // eslint-disable-next-line no-console
@@ -52,31 +85,62 @@ export class HttpClient {
       return config;
     });
 
-    if (options.enableLogging) {
-      this.instance.interceptors.response.use(
-        (response) => {
+    // Response interceptor: decrypt envelopes back into plain JSON.
+    this.instance.interceptors.response.use(
+      (response) => {
+        if (isEnvelope(response.data)) {
+          try {
+            response.data = decryptEnvelope(response.data, this.aesKey);
+          } catch (err) {
+            if (options.enableLogging) {
+              // eslint-disable-next-line no-console
+              console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`);
+            }
+          }
+        }
+        if (options.enableLogging) {
           // eslint-disable-next-line no-console
           console.log(`[HTTP ←] ${response.status} ${response.config.url ?? ''}`);
-          return response;
-        },
-        (error: unknown) => Promise.reject(error),
-      );
-    }
+        }
+        return response;
+      },
+      (error: unknown) => Promise.reject(error),
+    );
   }
 
   async request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
     try {
-      const response = await this.instance.request<T>(config);
-      return ok(response.data);
+      const response = await this.instance.request<unknown>(config);
+      if (response.status >= 200 && response.status < 300) {
+        const dataEnvelope = response.data;
+        if (isRecipelyDataBody<T>(dataEnvelope)) {
+          return ok(dataEnvelope.data);
+        }
+        // Backwards compat / non-/api/v1 responses (eg /health) come through unchanged.
+        return ok(dataEnvelope as T);
+      }
+      return fail(failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
       return fail(mapAxiosError(error));
     }
   }
 }
 
-// WHY: Recipely backend wraps errors as { error: { code, message, field? } }.
-// We map its code → domain Failure class so controller/store code never sees HTTP quirks.
+const isRecipelyDataBody = <T>(body: unknown): body is RecipelyDataBody<T> => {
+  return typeof body === 'object' && body !== null && 'data' in body;
+};
+
+const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody => {
+  return typeof body === 'object' && body !== null && 'error' in body;
+};
+
+// WHY: Recipely backend wraps errors as { error: { code, message, field? } }
+// inside the AES envelope. We decrypt in the response interceptor, then map
+// `code` → domain Failure class so controller/store code never sees HTTP quirks.
 const mapAxiosError = (error: unknown): Failure => {
+  if (error instanceof EnvelopeDecryptError) {
+    return new ValidationFailure(`Bad envelope: ${error.message}`);
+  }
   if (!(error instanceof AxiosError)) {
     return new UnknownFailure('Unexpected error', error);
   }
@@ -118,8 +182,4 @@ const failureFromResponse = (status: number, body: unknown): Failure => {
   if (status === 404) return new NotFoundFailure(message);
   if (status >= 400 && status < 500) return new ValidationFailure(message);
   return new UnknownFailure(message);
-};
-
-const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody => {
-  return typeof body === 'object' && body !== null && 'error' in body;
 };
