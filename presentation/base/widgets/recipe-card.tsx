@@ -1,4 +1,9 @@
 import { Image, Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
@@ -19,17 +24,33 @@ export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags, onPress,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
 
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.5;
 
   return (
+    <Animated.View style={animatedStyle}>
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
+      onPressIn={() => {
+        scale.value = withTiming(0.97, { duration: 100 });
+        opacity.value = withTiming(0.9, { duration: 100 });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, { duration: 150 });
+        opacity.value = withTiming(1, { duration: 150 });
+      }}
+      style={[
         styles.card,
         shadows.md,
-        { backgroundColor: colors.cardBackground, opacity: pressed ? 0.92 : 1 },
+        { backgroundColor: colors.cardBackground },
       ]}
     >
       <View style={styles.imageContainer}>
@@ -74,6 +95,7 @@ export const RecipeCard = ({
         </View>
       </View>
     </Pressable>
+    </Animated.View>
   );
 };
 

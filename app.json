@@ -59,7 +59,15 @@
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-video",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Recipely accesses your photos to add them to recipes.",
+          "cameraPermission": "Recipely accesses your camera to take photos and videos for recipes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

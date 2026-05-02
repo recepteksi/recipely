@@ -1,6 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { radii, sizes } from '@presentation/base/theme';
 
 export interface PrimaryButtonProps {
   label: string;
@@ -44,12 +45,12 @@ export const PrimaryButton = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 10,
+    borderRadius: radii.lg,
     paddingHorizontal: 20,
     paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: sizes.buttonHeight,
   },
   inner: {
     flexDirection: 'row',

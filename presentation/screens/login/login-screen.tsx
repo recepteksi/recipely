@@ -72,14 +72,14 @@ export const LoginScreen = (): React.JSX.Element => {
           <MaterialCommunityIcons
             name="silverware-fork-knife"
             size={48}
-            color={colors.primaryText}
+            color="#FFFFFF"
           />
-          <ThemedText variant="headline" style={[styles.appName, { color: colors.primaryText }]}>
+          <ThemedText variant="headline" style={[styles.appName, { color: '#FFFFFF' }]}>
             {t().login.title}
           </ThemedText>
           <ThemedText
             variant="body"
-            style={[styles.gradientSubtitle, { color: colors.primaryText }]}
+            style={[styles.gradientSubtitle, { color: '#FFFFFF' }]}
           >
             {t().login.subtitle}
           </ThemedText>

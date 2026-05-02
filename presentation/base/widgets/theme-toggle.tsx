@@ -9,7 +9,7 @@ export interface ThemeToggleProps {
   onChange: (value: 'system' | 'light' | 'dark') => void;
 }
 
-const options: Array<{ key: 'system' | 'light' | 'dark'; labelKey: 'themeSystem' | 'themeLight' | 'themeDark' }> = [
+const options: { key: 'system' | 'light' | 'dark'; labelKey: 'themeSystem' | 'themeLight' | 'themeDark' }[] = [
   { key: 'system', labelKey: 'themeSystem' },
   { key: 'light', labelKey: 'themeLight' },
   { key: 'dark', labelKey: 'themeDark' },
@@ -33,7 +33,11 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
           >
             <ThemedText
               variant="caption"
-              style={{ color: active ? colors.primaryText : colors.textMuted, fontWeight: '600' }}
+              numberOfLines={1}
+              style={[
+                styles.segmentLabel,
+                { color: active ? colors.primaryText : colors.textMuted },
+              ]}
             >
               {t().settings[opt.labelKey]}
             </ThemedText>
@@ -49,12 +53,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: radii.round,
     height: 34,
+    padding: 3,
     overflow: 'hidden',
+    gap: 2,
   },
   segment: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.round,
+    paddingHorizontal: 4,
+    overflow: 'hidden',
+  },
+  segmentLabel: {
+    fontWeight: '600',
+    fontSize: 12,
   },
 });

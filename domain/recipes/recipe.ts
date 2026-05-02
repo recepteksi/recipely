@@ -1,6 +1,7 @@
 import { Entity } from '@core/entity/entity';
 import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import type { MediaItem } from '@domain/recipes/media-item';
 
 export interface RecipeProps {
   id: string;
@@ -12,6 +13,7 @@ export interface RecipeProps {
   prepTimeMinutes: number;
   cookTimeMinutes: number;
   image: string;
+  media: MediaItem[];
   rating: number;
   tags: string[];
   mealType: string[];
@@ -56,6 +58,9 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get image(): string {
     return this.props.image;
+  }
+  get media(): MediaItem[] {
+    return this.props.media;
   }
   get rating(): number {
     return this.props.rating;

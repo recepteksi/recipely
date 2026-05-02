@@ -37,6 +37,9 @@ describe('toRecipe', () => {
       expect(r.value.rating).toBe(4.6);
       expect(r.value.ownerId).toBe('b1c2d3e4-f567-4890-abcd-ef0123456789');
       expect(r.value.mealType).toEqual(['Dinner']);
+      expect(r.value.media).toEqual([
+        { type: 'image', url: 'https://cdn.recipely.io/recipe-images/1.webp' },
+      ]);
     }
   });
 

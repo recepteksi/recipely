@@ -28,16 +28,24 @@ export interface AppThemeProviderProps {
   children: ReactNode;
 }
 
+const isThemePreference = (v: string): v is ThemePreference =>
+  v === 'system' || v === 'light' || v === 'dark';
+
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
   const [themeId, setThemeIdState] = useState<ThemeId>('pearl-white');
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
-  // Load persisted theme on mount
+  // Load persisted theme + preference on mount
   useEffect(() => {
     void kvStore.getItem('theme_id').then((stored) => {
       if (stored) {
         setThemeIdState(stored as ThemeId);
+      }
+    });
+    void kvStore.getItem('theme_preference').then((stored) => {
+      if (stored !== null && isThemePreference(stored)) {
+        setPreferenceState(stored);
       }
     });
   }, []);
@@ -49,6 +57,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const setPreference = useCallback((pref: ThemePreference) => {
     setPreferenceState(pref);
+    void kvStore.setItem('theme_preference', pref);
   }, []);
 
   const scheme: EffectiveScheme =
