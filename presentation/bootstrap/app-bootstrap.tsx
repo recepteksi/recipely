@@ -1,9 +1,10 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { type ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
 import { container } from '@core/di/container-instance';
 import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';
 import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
+import { getLocale } from '@presentation/i18n/i18n';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -11,7 +12,7 @@ export interface AppBootstrapProps {
 
 // Initialize stores synchronously on module load
 const initializeStores = (): Stores => {
-  registerInfrastructure(container);
+  registerInfrastructure(container, { localeProvider: getLocale });
   return registerApplication(container);
 };
 
