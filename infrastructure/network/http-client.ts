@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError } from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, type AxiosProgressEvent } from 'axios';
 import { fail, ok, type Result } from '@core/result/result';
 import {
   type Failure,
@@ -126,6 +126,44 @@ export class HttpClient {
       return fail(failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
       return fail(mapAxiosError(error));
+    }
+  }
+
+  async uploadMultipart<T>(
+    url: string,
+    formData: FormData,
+    onProgress?: (event: AxiosProgressEvent) => void,
+  ): Promise<Result<T, Failure>> {
+    try {
+      const token = await this.options.tokenProvider();
+      const locale = this.options.localeProvider ? this.options.localeProvider() : 'en';
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      headers['Accept-Language'] = locale;
+
+      const response = await axios.post<T>(`${this.options.baseUrl}${url}`, formData, {
+        headers,
+        timeout: this.options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
+        onUploadProgress: onProgress,
+      });
+      return ok(response.data);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+          return fail(new NetworkFailure('Upload timed out'));
+        }
+        if (error.response) {
+          return fail(failureFromResponse(error.response.status, error.response.data));
+        }
+        if (error.request) {
+          return fail(new NetworkFailure(error.message || 'Network unreachable'));
+        }
+      }
+      return fail(new UnknownFailure(error instanceof Error ? error.message : 'Upload failed', error));
     }
   }
 }
