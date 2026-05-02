@@ -157,13 +157,6 @@ export const en = {
     errorMismatch: 'Passwords don’t match.',
     errorAgree: 'Please accept the terms.',
   },
-  register: {
-    subtitle: 'Create an account to get started.',
-    displayNamePlaceholder: 'Display name',
-    signUp: 'Create account',
-    haveAccount: 'Already have an account?',
-    signIn: 'Sign in',
-  },
 };
 
 type DeepStringify<T> = {

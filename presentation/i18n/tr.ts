@@ -159,11 +159,4 @@ export const tr: Translations = {
     errorMismatch: 'Şifreler eşleşmiyor.',
     errorAgree: 'Lütfen şartları kabul edin.',
   },
-  register: {
-    subtitle: 'Başlamak için hesap oluşturun.',
-    displayNamePlaceholder: 'Görünen ad',
-    signUp: 'Hesap oluştur',
-    haveAccount: 'Zaten hesabınız var mı?',
-    signIn: 'Giriş yap',
-  },
 };
