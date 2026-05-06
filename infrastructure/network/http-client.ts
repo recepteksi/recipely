@@ -76,11 +76,16 @@ export class HttpClient {
       const locale = options.localeProvider ? options.localeProvider() : 'en';
       config.headers = config.headers ?? {};
       config.headers['Accept-Language'] = locale;
-      if (config.data !== undefined && config.data !== null) {
+      
+      // Encrypt body for POST/PUT/PATCH. For requests with no data (like POST /favorite),
+      // send an empty encrypted envelope so the backend's decryptBody middleware doesn't reject it.
+      const methodsWithBody = ['POST', 'PUT', 'PATCH'];
+      if (methodsWithBody.includes(config.method?.toUpperCase() ?? '')) {
+        const bodyData = config.data ?? {};
         // WHY: backend's decryptBody middleware expects plaintext to be
         // `{ data: <T> }` (mirroring the response side). Wrap before encrypt
         // so the contract is symmetric.
-        config.data = encryptEnvelope({ data: config.data }, this.aesKey);
+        config.data = encryptEnvelope({ data: bodyData }, this.aesKey);
       }
       if (options.enableLogging) {
         // eslint-disable-next-line no-console
