@@ -52,13 +52,21 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       set({ state: { status: 'authenticated', session: result.value } });
       // Pre-load favorites in background
       try {
+        // eslint-disable-next-line no-console
+        console.log('[AuthStore] hydrate: loading favorites...');
         const favResult = await deps.loadFavorites.execute();
         if (favResult.ok) {
+          // eslint-disable-next-line no-console
+          console.log('[AuthStore] hydrate: favorites loaded:', Array.from(favResult.value));
           const setSavedIds = deps.savedRecipesStore((s) => s.setSavedIds);
           setSavedIds(favResult.value);
+        } else {
+          // eslint-disable-next-line no-console
+          console.error('[AuthStore] hydrate: failed to load favorites:', favResult.failure);
         }
-      } catch {
-        // Silently ignore errors - favorites will load when needed
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[AuthStore] hydrate: error loading favorites:', e);
       }
     },
 

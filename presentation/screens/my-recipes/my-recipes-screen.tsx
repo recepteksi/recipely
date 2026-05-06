@@ -37,10 +37,17 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // Load saved recipe IDs from backend on first mount
   useEffect(() => {
     const loadSavedRecipes = async () => {
+      // eslint-disable-next-line no-console
+      console.log('[MyRecipesScreen] Loading saved recipes from backend...');
       const result = await loadFavoritesUseCase.execute();
       if (result.ok) {
+        // eslint-disable-next-line no-console
+        console.log('[MyRecipesScreen] Loaded saved recipes:', Array.from(result.value));
         const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
         setSavedIds(result.value);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('[MyRecipesScreen] Failed to load saved recipes:', result.failure);
       }
     };
     void loadSavedRecipes();

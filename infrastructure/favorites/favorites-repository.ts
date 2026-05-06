@@ -4,7 +4,10 @@ import type { HttpClient } from '@infrastructure/network/http-client';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
 
 interface FavoritesListResponse {
-  data: Array<{ id: string }>;
+  items: Array<{ id: string }>;
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 /**
@@ -47,10 +50,14 @@ export class FavoritesRepository implements IFavoritesRepository {
     });
 
     if (!result.ok) {
+      // eslint-disable-next-line no-console
+      console.error('[FavoritesRepository] getFavoritesIds failed:', result.failure);
       return fail(result.failure);
     }
 
-    const ids = new Set(result.value.data.map((r) => r.id));
+    const ids = new Set(result.value.items.map((r) => r.id));
+    // eslint-disable-next-line no-console
+    console.log('[FavoritesRepository] getFavoritesIds loaded:', Array.from(ids));
     return ok(ids);
   }
 }
