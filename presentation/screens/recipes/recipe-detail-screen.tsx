@@ -74,10 +74,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       return;
     }
     try {
-      console.log('[SaveButton] Toggling favorite...', { userId, recipeId });
-      const isSavedNow = savedRecipesStore((s) => s.savedIds.has(recipeId));
-      console.log('[SaveButton] isSavedNow:', isSavedNow);
-      if (isSavedNow) {
+      console.log('[SaveButton] Toggling favorite...', { userId, recipeId, isSaved });
+      if (isSaved) {
         console.log('[SaveButton] Removing favorite...');
         await favoritesStore.getState().removeFavorite(userId, recipeId);
       } else {
@@ -89,7 +87,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
-  }, [isLoading, recipeId, userId]);
+  }, [isSaved, isLoading, recipeId, userId]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
