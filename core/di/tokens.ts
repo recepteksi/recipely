@@ -9,5 +9,6 @@ export const TOKENS = {
   FavoritesRepository: Symbol.for('FavoritesRepository'),
   AddFavoriteUseCase: Symbol.for('AddFavoriteUseCase'),
   RemoveFavoriteUseCase: Symbol.for('RemoveFavoriteUseCase'),
+  LoadFavoritesUseCase: Symbol.for('LoadFavoritesUseCase'),
   HealthCheckService: Symbol.for('HealthCheckService'),
 } as const;

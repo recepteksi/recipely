@@ -21,4 +21,10 @@ export interface IFavoritesRepository {
    * @returns Result indicating success or failure
    */
   removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>>;
+
+  /**
+   * Get all favorite recipe IDs for the current user.
+   * @returns Set of favorite recipe IDs, or failure if request fails
+   */
+  getFavoritesIds(): Promise<Result<Set<string>, Failure>>;
 }

@@ -14,6 +14,7 @@ import { ListTasksUseCase } from '@application/tasks/list-tasks-use-case';
 import { GetTaskUseCase } from '@application/tasks/get-task-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
+import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureAuthStore, type AuthStore } from '@application/auth/auth-store';
 import {
   configureRecipeListStore,
@@ -53,6 +54,7 @@ export interface ApplicationStores {
   taskListStore: TaskListStore;
   taskDetailStore: TaskDetailStore;
   favoritesStore: FavoritesStore;
+  loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
 export const registerApplication = (container: Container): ApplicationStores => {
@@ -71,8 +73,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const getTask = new GetTaskUseCase(taskRepo);
   const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
   const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
+  const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
 
-  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession });
+  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const savedRecipesStore = configureSavedRecipesStore();
@@ -94,5 +97,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
     taskListStore,
     taskDetailStore,
     favoritesStore,
+    loadFavoritesUseCase,
   };
 };

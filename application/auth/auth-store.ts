@@ -5,6 +5,7 @@ import type { SignInUseCase } from '@application/auth/sign-in-use-case';
 import type { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import type { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/get-session-use-case';
+import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 
 export type AuthStatus =
   | { status: 'idle' }
@@ -26,6 +27,7 @@ export interface AuthStoreDeps {
   signUp: SignUpUseCase;
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
+  loadFavorites: LoadFavoritesUseCase;
 }
 
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
@@ -46,6 +48,10 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+      // Pre-load favorites in background (fire and forget)
+      deps.loadFavorites.execute().catch(() => {
+        // Silently ignore errors - favorites will load when needed
+      });
     },
 
     signIn: async (email: string, password: string) => {

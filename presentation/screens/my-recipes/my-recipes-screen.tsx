@@ -19,7 +19,7 @@ type Tab = 'saved' | 'created';
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore, savedRecipesStore, createdRecipesStore } = useStores();
+  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase } = useStores();
 
   const recipeListState = recipeListStore((s) => s.state);
   const loadRecipes = recipeListStore((s) => s.load);
@@ -33,6 +33,17 @@ export const MyRecipesScreen = (): React.JSX.Element => {
       void loadRecipes();
     }
   }, [recipeListState.status, loadRecipes]);
+
+  // Load saved recipe IDs from backend on first mount
+  useEffect(() => {
+    const loadSavedRecipes = async () => {
+      const result = await loadFavoritesUseCase.execute();
+      if (result.ok) {
+        savedRecipesStore.setState(() => ({ savedIds: result.value }));
+      }
+    };
+    void loadSavedRecipes();
+  }, []);
 
   const savedRecipes = useMemo(() => {
     const all: readonly Recipe[] =

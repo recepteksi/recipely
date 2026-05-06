@@ -4,6 +4,7 @@ import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
+import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result';
 import { AuthSession } from '@domain/auth/auth-session';
@@ -25,12 +26,18 @@ const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSession => {
   return session.value;
 };
 
+// Fake LoadFavoritesUseCase that always returns empty set
+const fakeLoadFavorites: LoadFavoritesUseCase = {
+  execute: () => Promise.resolve(ok(new Set<string>())),
+} as unknown as LoadFavoritesUseCase;
+
 const makeStore = (repo: FakeAuthRepository) =>
   configureAuthStore({
     signIn: new SignInUseCase(repo),
     signUp: new SignUpUseCase(repo),
     signOut: new SignOutUseCase(repo),
     getSession: new GetSessionUseCase(repo),
+    loadFavorites: fakeLoadFavorites,
   });
 
 describe('auth-store', () => {
