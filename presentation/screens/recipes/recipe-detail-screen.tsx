@@ -67,16 +67,21 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
 
   const handleToggleSave = useCallback(async () => {
+    // eslint-disable-next-line no-console
+    console.log('[SaveButton] handleToggleSave called!', { isLoading, userId, recipeId });
     if (isLoading || !userId) {
       console.log('[SaveButton] Skipping: isLoading=' + isLoading + ', userId=' + userId);
       return;
     }
     try {
-      console.log('[SaveButton] Toggling favorite...', { userId, recipeId, isSaved });
+      console.log('[SaveButton] Toggling favorite...', { userId, recipeId });
       const isSavedNow = savedRecipesStore((s) => s.savedIds.has(recipeId));
+      console.log('[SaveButton] isSavedNow:', isSavedNow);
       if (isSavedNow) {
+        console.log('[SaveButton] Removing favorite...');
         await favoritesStore.getState().removeFavorite(userId, recipeId);
       } else {
+        console.log('[SaveButton] Adding favorite...');
         await favoritesStore.getState().addFavorite(userId, recipeId);
       }
       console.log('[SaveButton] Success!');
@@ -298,12 +303,18 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       {current.status === 'loaded' ? (
         <Pressable
           onPress={handleToggleSave}
-          style={[styles.saveButton, { top: insets.top + 8, opacity: isLoading ? 0.5 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
+          disabled={isLoading || !userId}
+          style={[
+            styles.saveButton,
+            { top: insets.top + 8, opacity: isLoading || !userId ? 0.5 : 1 },
+          ]}
         >
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={20}
-            color={isLoading ? '#CCCCCC' : '#FFFFFF'}
+            color={isLoading || !userId ? '#CCCCCC' : '#FFFFFF'}
           />
         </Pressable>
       ) : null}
