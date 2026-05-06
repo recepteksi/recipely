@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { container } from '@core/di/container-instance';
 import { registerInfrastructure } from '@infrastructure/di/register';
@@ -19,7 +19,14 @@ const initializeStores = (): Stores => {
 const stores = initializeStores();
 
 export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
-  console.log('[Bootstrap] Rendering with stores');
+  useEffect(() => {
+    // Restore auth session from secure storage on app startup
+    stores.authStore.getState().hydrate().catch((err: unknown) => {
+      // eslint-disable-next-line no-console
+      console.error('[AppBootstrap] hydrate failed:', err);
+    });
+  }, []);
+
   return <StoresProvider value={stores}>{children}</StoresProvider>;
 };
 
