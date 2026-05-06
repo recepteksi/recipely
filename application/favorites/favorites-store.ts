@@ -36,12 +36,14 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
         set({ isLoading: false, error: failure });
         return;
       }
-      savedRecipesStore.setState((s) => {
-        const next = new Set(s.savedIds);
-        next.add(recipeId);
-        return { savedIds: next };
-      });
+      const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
+      const currentIds = savedRecipesStore((s) => s.savedIds);
+      const next = new Set(currentIds);
+      next.add(recipeId);
+      setSavedIds(next);
       set({ isLoading: false });
+      // eslint-disable-next-line no-console
+      console.log(`[FavoritesStore] addFavorite success: ${recipeId} added`);
     },
     removeFavorite: async (userId: string, recipeId: string) => {
       set({ isLoading: true, error: null });
@@ -53,12 +55,14 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
         set({ isLoading: false, error: failure });
         return;
       }
-      savedRecipesStore.setState((s) => {
-        const next = new Set(s.savedIds);
-        next.delete(recipeId);
-        return { savedIds: next };
-      });
+      const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
+      const currentIds = savedRecipesStore((s) => s.savedIds);
+      const next = new Set(currentIds);
+      next.delete(recipeId);
+      setSavedIds(next);
       set({ isLoading: false });
+      // eslint-disable-next-line no-console
+      console.log(`[FavoritesStore] removeFavorite success: ${recipeId} removed`);
     },
     clearError: () => set({ error: null }),
   }));
