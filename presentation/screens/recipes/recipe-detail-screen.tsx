@@ -57,12 +57,34 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
-  const toggleSaved = savedRecipesStore((s) => s.toggle);
+  const isLoading = favoritesStore((s) => s.isLoading);
+  const authState = authStore((s) => s.state);
+  const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleToggleSave = useCallback(async () => {
+    if (isLoading || !userId) {
+      console.log('[SaveButton] Skipping: isLoading=' + isLoading + ', userId=' + userId);
+      return;
+    }
+    try {
+      console.log('[SaveButton] Toggling favorite...', { userId, recipeId, isSaved });
+      if (isSaved) {
+        await favoritesStore.getState().removeFavorite(userId, recipeId);
+      } else {
+        await favoritesStore.getState().addFavorite(userId, recipeId);
+      }
+      console.log('[SaveButton] Success!');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('[SaveButton] Error:', errorMsg);
+    }
+  }, [isSaved, isLoading, recipeId, userId]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
@@ -275,15 +297,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
       {current.status === 'loaded' ? (
         <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: isSaved }}
-          onPress={() => toggleSaved(recipeId)}
-          style={[styles.saveButton, { top: insets.top + 8 }]}
+          onPress={handleToggleSave}
+          style={[styles.saveButton, { top: insets.top + 8, opacity: isLoading ? 0.5 : 1 }]}
         >
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={20}
-            color="#FFFFFF"
+            color={isLoading ? '#CCCCCC' : '#FFFFFF'}
           />
         </Pressable>
       ) : null}

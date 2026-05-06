@@ -4,6 +4,9 @@ import { HttpClient, type HttpClientOptions } from '@infrastructure/network/http
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
+import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
+import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
+import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { TaskRepository } from '@infrastructure/tasks/task-repository';
 import { HealthCheckService } from '@infrastructure/network/health-check-service';
 
@@ -40,6 +43,21 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.RecipeRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new RecipeRepository(http);
+  });
+
+  container.register(TOKENS.FavoritesRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new FavoritesRepository(http);
+  });
+
+  container.register(TOKENS.AddFavoriteUseCase, () => {
+    const repo = container.resolve<FavoritesRepository>(TOKENS.FavoritesRepository);
+    return new AddFavoriteUseCase(repo);
+  });
+
+  container.register(TOKENS.RemoveFavoriteUseCase, () => {
+    const repo = container.resolve<FavoritesRepository>(TOKENS.FavoritesRepository);
+    return new RemoveFavoriteUseCase(repo);
   });
 
   container.register(TOKENS.TaskRepository, () => {
