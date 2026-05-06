@@ -58,7 +58,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         if (favResult.ok) {
           // eslint-disable-next-line no-console
           console.log('[AuthStore] hydrate: favorites loaded:', Array.from(favResult.value));
-          const setSavedIds = deps.savedRecipesStore((s) => s.setSavedIds);
+          const { setSavedIds } = deps.savedRecipesStore.getState();
           setSavedIds(favResult.value);
         } else {
           // eslint-disable-next-line no-console

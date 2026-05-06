@@ -41,9 +41,8 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
         }
         // eslint-disable-next-line no-console
         console.log(`[FavoritesStore] addFavorite API call succeeded, updating store...`);
-        const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
-        const currentIds = savedRecipesStore((s) => s.savedIds);
-        const next = new Set(currentIds);
+        const { savedIds, setSavedIds } = savedRecipesStore.getState();
+        const next = new Set(savedIds);
         next.add(recipeId);
         setSavedIds(next);
         set({ isLoading: false });
@@ -71,9 +70,8 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
         }
         // eslint-disable-next-line no-console
         console.log(`[FavoritesStore] removeFavorite API call succeeded, updating store...`);
-        const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
-        const currentIds = savedRecipesStore((s) => s.savedIds);
-        const next = new Set(currentIds);
+        const { savedIds, setSavedIds } = savedRecipesStore.getState();
+        const next = new Set(savedIds);
         next.delete(recipeId);
         setSavedIds(next);
         set({ isLoading: false });
