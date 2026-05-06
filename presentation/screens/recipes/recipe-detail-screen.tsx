@@ -66,7 +66,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) {
       console.log('[SaveButton] Skipping: isLoading=' + isLoading + ', userId=' + userId);
@@ -74,7 +73,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     }
     try {
       console.log('[SaveButton] Toggling favorite...', { userId, recipeId, isSaved });
-      if (isSaved) {
+      const isSavedNow = savedRecipesStore((s) => s.savedIds.has(recipeId));
+      if (isSavedNow) {
         await favoritesStore.getState().removeFavorite(userId, recipeId);
       } else {
         await favoritesStore.getState().addFavorite(userId, recipeId);
@@ -84,7 +84,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
-  }, [isSaved, isLoading, recipeId, userId]);
+  }, [isLoading, recipeId, userId]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
