@@ -39,10 +39,12 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     const loadSavedRecipes = async () => {
       const result = await loadFavoritesUseCase.execute();
       if (result.ok) {
-        savedRecipesStore.setState(() => ({ savedIds: result.value }));
+        const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
+        setSavedIds(result.value);
       }
     };
     void loadSavedRecipes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const savedRecipes = useMemo(() => {

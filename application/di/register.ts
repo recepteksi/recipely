@@ -75,10 +75,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
   const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
 
-  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase });
+  const savedRecipesStore = configureSavedRecipesStore();
+  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
-  const savedRecipesStore = configureSavedRecipesStore();
   const favoritesStore = configureFavoritesStore({
     addFavoriteUseCase,
     removeFavoriteUseCase,

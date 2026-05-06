@@ -9,6 +9,7 @@ export interface SavedRecipesStoreState {
   toggle: (id: string) => void;
   addLocal: (id: string) => void;
   removeLocal: (id: string) => void;
+  setSavedIds: (ids: Set<string>) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: Failure | null) => void;
   clearError: () => void;
@@ -43,6 +44,7 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
         next.delete(id);
         return { savedIds: next };
       }),
+    setSavedIds: (ids) => set({ savedIds: ids }),
     setLoading: (loading) => set({ isLoading: loading }),
     setError: (error) => set({ error }),
     clearError: () => set({ error: null }),

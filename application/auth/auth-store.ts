@@ -6,6 +6,7 @@ import type { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import type { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
+import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
 export type AuthStatus =
   | { status: 'idle' }
@@ -28,6 +29,7 @@ export interface AuthStoreDeps {
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
+  savedRecipesStore: SavedRecipesStore;
 }
 
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
@@ -48,10 +50,16 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
-      // Pre-load favorites in background (fire and forget)
-      deps.loadFavorites.execute().catch(() => {
+      // Pre-load favorites in background
+      try {
+        const favResult = await deps.loadFavorites.execute();
+        if (favResult.ok) {
+          const setSavedIds = deps.savedRecipesStore((s) => s.setSavedIds);
+          setSavedIds(favResult.value);
+        }
+      } catch {
         // Silently ignore errors - favorites will load when needed
-      });
+      }
     },
 
     signIn: async (email: string, password: string) => {
