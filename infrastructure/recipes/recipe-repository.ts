@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
@@ -75,12 +76,21 @@ export class RecipeRepository implements IRecipeRepository {
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
     const formData = new FormData();
-    // Image as file
-    formData.append('image', {
-      uri: input.imageUri,
-      name: input.imageFileName,
-      type: input.imageMimeType,
-    } as unknown as Blob);
+    // WHY: RN native FormData recognises { uri, name, type } as a file upload;
+    // browser FormData does not — it serialises the object to "[object Object]"
+    // and multer never sees a file part. On web, fetch the blob URI first.
+    if (Platform.OS === 'web') {
+      const resp = await fetch(input.imageUri);
+      const blob = await resp.blob();
+      const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+      formData.append('image', blob, `recipe-${Date.now()}.${ext}`);
+    } else {
+      formData.append('image', {
+        uri: input.imageUri,
+        name: input.imageFileName,
+        type: input.imageMimeType,
+      } as unknown as Blob);
+    }
 
     // Localized string fields — backend expects JSON-stringified Record<string, string>
     formData.append('name', JSON.stringify(input.name));
