@@ -46,7 +46,8 @@ export class FavoritesRepository implements IFavoritesRepository {
   async getFavoritesIds(): Promise<Result<Set<string>, Failure>> {
     const result = await this.http.request<FavoritesListResponse>({
       method: 'GET',
-      url: '/me/favorites?pageSize=1000',
+      url: '/me/favorites',
+      params: { pageSize: 20 },
     });
 
     if (!result.ok) {

@@ -2,6 +2,7 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
+import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { CreateRecipeInput, CreateRecipeProgressCallback } from '@domain/recipes/i-recipe-repository';
 
 export type CreateRecipeState =
@@ -17,11 +18,13 @@ export interface CreatedRecipesStoreState {
   remove: (id: string) => void;
   findById: (id: string) => Recipe | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
+  loadMyRecipes: () => Promise<void>;
   resetCreateState: () => void;
 }
 
 export interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
+  listMyRecipesUseCase: ListMyRecipesUseCase;
 }
 
 export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreState>>;
@@ -45,6 +48,13 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         createState: { status: 'success', recipe },
         recipes: [recipe, ...s.recipes],
       }));
+    },
+    loadMyRecipes: async () => {
+      const result = await deps.listMyRecipesUseCase.execute();
+      if (!result.ok) {
+        return;
+      }
+      set({ recipes: result.value });
     },
     resetCreateState: () => set({ createState: { status: 'idle' } }),
   }));

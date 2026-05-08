@@ -25,6 +25,7 @@ export type CreateRecipeProgressCallback = (loaded: number, total: number) => vo
 
 export interface IRecipeRepository {
   listActiveRecipes(): Promise<Result<Recipe[], Failure>>;
+  listMyRecipes(): Promise<Result<Recipe[], Failure>>;
   getRecipe(id: string): Promise<Result<Recipe, Failure>>;
   createRecipe(
     input: CreateRecipeInput,

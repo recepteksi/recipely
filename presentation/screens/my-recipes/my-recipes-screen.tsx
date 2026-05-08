@@ -19,12 +19,13 @@ type Tab = 'saved' | 'created';
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase } = useStores();
+  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase, authStore } = useStores();
 
   const recipeListState = recipeListStore((s) => s.state);
   const loadRecipes = recipeListStore((s) => s.load);
   const savedIds = savedRecipesStore((s) => s.savedIds);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
+  const authState = authStore((s) => s.state);
 
   const [tab, setTab] = useState<Tab>('saved');
 
@@ -34,23 +35,16 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     }
   }, [recipeListState.status, loadRecipes]);
 
-  // Load saved recipe IDs from backend on first mount
   useEffect(() => {
     const loadSavedRecipes = async () => {
-      // eslint-disable-next-line no-console
-      console.log('[MyRecipesScreen] Loading saved recipes from backend...');
       const result = await loadFavoritesUseCase.execute();
       if (result.ok) {
-        // eslint-disable-next-line no-console
-        console.log('[MyRecipesScreen] Loaded saved recipes:', Array.from(result.value));
-        const setSavedIds = savedRecipesStore((s) => s.setSavedIds);
+        const { setSavedIds } = savedRecipesStore.getState();
         setSavedIds(result.value);
-      } else {
-        // eslint-disable-next-line no-console
-        console.error('[MyRecipesScreen] Failed to load saved recipes:', result.failure);
       }
     };
     void loadSavedRecipes();
+    void createdRecipesStore.getState().loadMyRecipes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
