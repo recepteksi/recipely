@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, type AxiosProgressEvent } from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, AxiosHeaders, type AxiosProgressEvent } from 'axios';
 import { fail, ok, type Result } from '@core/result/result';
 import {
   type Failure,
@@ -58,15 +58,14 @@ export class HttpClient {
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
+        // Content-Type is set per-request in the interceptor so FormData uploads
+        // can omit it and let the XHR runtime auto-set multipart + boundary.
       },
-      // Tell axios to NOT throw on non-2xx so our interceptor can decrypt the
-      // error body before mapAxiosError sees it.
       validateStatus: () => true,
     });
 
-    // Request interceptor: attach JWT and encrypt body if present.
+    // Request interceptor: attach JWT, set Content-Type, and encrypt body.
     this.instance.interceptors.request.use(async (config) => {
       const token = await options.tokenProvider();
       if (token) {
@@ -76,7 +75,28 @@ export class HttpClient {
       const locale = options.localeProvider ? options.localeProvider() : 'en';
       config.headers = config.headers ?? {};
       config.headers['Accept-Language'] = locale;
-      
+
+      // WHY: FormData uploads must NOT have an explicit Content-Type — the XHR
+      // runtime sets it with the correct multipart boundary. If we leave
+      // 'application/json' from the instance defaults the backend's decrypt-body
+      // middleware sees the wrong content-type, its multipart guard misses, and
+      // the request is rejected as a missing AES envelope (400).
+      const isFormDataPayload =
+        typeof FormData !== 'undefined' && config.data instanceof FormData;
+
+      if (isFormDataPayload) {
+        // WHY: AxiosHeaders uses internal storage — plain JS `delete` on the cast
+        // Record does not call the class's delete() and leaves the header live.
+        // Must use the class method so the XHR runtime can auto-set
+        // Content-Type: multipart/form-data; boundary=... from the FormData.
+        if (config.headers instanceof AxiosHeaders) {
+          config.headers.delete('Content-Type');
+        }
+        return config;
+      }
+
+      config.headers['Content-Type'] = 'application/json';
+
       // Encrypt body for POST/PUT/PATCH. For requests with no data (like POST /favorite),
       // send an empty encrypted envelope so the backend's decryptBody middleware doesn't reject it.
       const methodsWithBody = ['POST', 'PUT', 'PATCH'];
@@ -134,42 +154,20 @@ export class HttpClient {
     }
   }
 
-  async uploadMultipart<T>(
+  // Routes through this.instance so the request interceptor handles auth +
+  // Content-Type omission for FormData, and the response interceptor handles
+  // AES decryption — no duplicate logic here.
+  uploadMultipart<T>(
     url: string,
     formData: FormData,
     onProgress?: (event: AxiosProgressEvent) => void,
   ): Promise<Result<T, Failure>> {
-    try {
-      const token = await this.options.tokenProvider();
-      const locale = this.options.localeProvider ? this.options.localeProvider() : 'en';
-      const headers: Record<string, string> = {
-        Accept: 'application/json',
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      headers['Accept-Language'] = locale;
-
-      const response = await axios.post<T>(`${this.options.baseUrl}${url}`, formData, {
-        headers,
-        timeout: this.options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
-        onUploadProgress: onProgress,
-      });
-      return ok(response.data);
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-          return fail(new NetworkFailure('Upload timed out'));
-        }
-        if (error.response) {
-          return fail(failureFromResponse(error.response.status, error.response.data));
-        }
-        if (error.request) {
-          return fail(new NetworkFailure(error.message || 'Network unreachable'));
-        }
-      }
-      return fail(new UnknownFailure(error instanceof Error ? error.message : 'Upload failed', error));
-    }
+    return this.request<T>({
+      method: 'POST',
+      url,
+      data: formData,
+      ...(onProgress !== undefined ? { onUploadProgress: onProgress } : {}),
+    });
   }
 }
 
@@ -212,6 +210,11 @@ const failureFromResponse = (status: number, body: unknown): Failure => {
   if (envelope?.code) {
     switch (envelope.code) {
       case 'validation':
+        return new ValidationFailure(message, envelope.field);
+      case 'unprocessable':
+        // 422: request was received but a required piece (e.g. missing image or
+        // field) was absent. Surface as ValidationFailure so the UI treats it as
+        // "fix your input"; field tells the UI which input was missing.
         return new ValidationFailure(message, envelope.field);
       case 'unauthorized':
         return new UnauthorizedFailure(message);

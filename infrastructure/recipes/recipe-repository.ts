@@ -35,6 +35,26 @@ export class RecipeRepository implements IRecipeRepository {
     return ok(recipes);
   }
 
+  async listMyRecipes(): Promise<Result<Recipe[], Failure>> {
+    const result = await this.http.request<RecipesListDto>({
+      method: 'GET',
+      url: '/me/recipes',
+      params: { page: 1, pageSize: 20 },
+    });
+    if (!result.ok) {
+      return result;
+    }
+    const recipes: Recipe[] = [];
+    for (const dto of result.value.items) {
+      const mapped = toRecipe(dto);
+      if (!mapped.ok) {
+        return fail(mapped.failure);
+      }
+      recipes.push(mapped.value);
+    }
+    return ok(recipes);
+  }
+
   async getRecipe(id: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'GET',
@@ -77,11 +97,19 @@ export class RecipeRepository implements IRecipeRepository {
     if (input.tags) {
       formData.append('tags', JSON.stringify(input.tags));
     }
-    if (input.mealType) {
+    // Only send mealType when at least one locale has a non-empty list; an
+    // all-empty mealType is meaningless and wastes bytes.
+    if (
+      input.mealType &&
+      Object.values(input.mealType).some((arr) => arr.length > 0)
+    ) {
       formData.append('mealType', JSON.stringify(input.mealType));
     }
-    if (input.categoryId !== undefined) {
-      formData.append('categoryId', input.categoryId ?? 'null');
+    // Only send categoryId when it is an actual UUID string — null means
+    // "no category" which is the backend default, and the string literal
+    // 'null' would fail z.string().uuid() validation.
+    if (typeof input.categoryId === 'string') {
+      formData.append('categoryId', input.categoryId);
     }
     if (input.isPublished !== undefined) {
       formData.append('isPublished', String(input.isPublished));
