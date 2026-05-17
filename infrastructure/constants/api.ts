@@ -14,6 +14,10 @@ export const HEALTH_URL: string = `${SERVER_URL}/health`;
 // under here, so the v1 prefix lives in one place.
 export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 
+// Upload endpoint is mounted at the server root (outside /api/v1), so it
+// needs an absolute URL that bypasses HttpClient's baseURL.
+export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
+
 export const AUTH_LOGIN_PATH = '/auth/login';
 export const AUTH_REGISTER_PATH = '/auth/register';
 

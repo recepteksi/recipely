@@ -40,3 +40,26 @@ TypeScript is strict; the `@/*` path alias maps to the repo root.
 DummyJSON (`https://dummyjson.com`) — free, public, zero configuration.
 
 Entry point is `expo-router/entry` (set in `package.json` `main`). App config lives in `app.json`.
+
+## Team & Workflow
+
+This project has a persistent agent team configured at `~/.claude/teams/recipely-team/config.json`.
+
+**Default workflow for every non-trivial task:**
+
+1. Start from `dev` and pull latest: `git checkout dev && git pull`.
+2. Create a feature branch off `dev`: `git checkout -b feat/<short-name>` (or `fix/`, `refactor/`, `chore/`).
+3. Do all work on the feature branch.
+4. When done, run `npm run lint` and `npx tsc --noEmit` and `npx jest` for the touched layer.
+5. Merge back to `dev` (or open a PR targeting `dev`, never `main`).
+6. Never commit directly to `dev` or `main`.
+
+**Preferred agents for the team `recipely-team`:**
+
+- `ts-developer` — domain / application / infrastructure / core (entities, use cases, repositories, DTOs, mappers, DI, types).
+- `rn-developer` — `presentation/` UI (screens, widgets, expo-router, themed components).
+- `test-developer` — Jest + jest-expo tests for every new use case, repository, mapper, store, value object.
+- `ui-designer` — research + `presentation/design-spec.md` updates (no production code).
+- `code-reviewer` — independent DDD / Clean Architecture / TypeScript-strictness review after a batch of changes.
+
+When a task starts, spawn (or message) the relevant team members via the Agent / SendMessage tool with `team_name: "recipely-team"`. Match the agent's tool capabilities to the work: read-only agents for research, full-capability agents for implementation.

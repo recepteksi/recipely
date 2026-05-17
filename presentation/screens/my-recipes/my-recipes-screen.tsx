@@ -19,13 +19,12 @@ type Tab = 'saved' | 'created';
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase, authStore } = useStores();
+  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase } = useStores();
 
   const recipeListState = recipeListStore((s) => s.state);
   const loadRecipes = recipeListStore((s) => s.load);
   const savedIds = savedRecipesStore((s) => s.savedIds);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
-  const authState = authStore((s) => s.state);
 
   const [tab, setTab] = useState<Tab>('saved');
 

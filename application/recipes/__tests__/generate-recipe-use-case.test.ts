@@ -1,0 +1,81 @@
+import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
+import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import { UnknownFailure, ValidationFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result';
+import { Recipe } from '@domain/recipes/recipe';
+
+const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
+  const result = Recipe.create({
+    id: 'r1',
+    name: 'Stub Recipe',
+    cuisine: 'Italian',
+    difficulty: 'EASY',
+    ingredients: ['flour'],
+    instructions: ['mix'],
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 20,
+    image: 'https://cdn.example.com/r1.webp',
+    media: [{ type: 'image', url: 'https://cdn.example.com/r1.webp' }],
+    rating: 4.5,
+    tags: ['quick'],
+    mealType: ['Dinner'],
+    ownerId: 'owner-1',
+    ...overrides,
+  });
+  if (!result.ok) throw new Error('failed to build Recipe fixture');
+  return result.value;
+};
+
+describe('GenerateRecipeUseCase.execute', () => {
+  it('returns ValidationFailure with messageKey createRecipe.aiError when prompt is empty', async () => {
+    const repo = new FakeRecipeRepository();
+    const useCase = new GenerateRecipeUseCase(repo);
+
+    const r = await useCase.execute({ prompt: '', locale: 'en' });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.failure).toBeInstanceOf(ValidationFailure);
+      expect((r.failure as ValidationFailure).message).toBe('createRecipe.aiError');
+      expect((r.failure as ValidationFailure).code).toBe('validation');
+    }
+    expect(repo.generateCallCount).toBe(0);
+  });
+
+  it('returns ValidationFailure when prompt is whitespace-only', async () => {
+    const repo = new FakeRecipeRepository();
+    const useCase = new GenerateRecipeUseCase(repo);
+
+    const r = await useCase.execute({ prompt: '   \n\t  ', locale: 'en' });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.failure).toBeInstanceOf(ValidationFailure);
+      expect((r.failure as ValidationFailure).message).toBe('createRecipe.aiError');
+    }
+    expect(repo.generateCallCount).toBe(0);
+  });
+
+  it('calls repo.generateRecipe with the trimmed prompt and the passed locale', async () => {
+    const recipe = makeRecipe();
+    const repo = new FakeRecipeRepository({ generateRecipeResult: ok(recipe) });
+    const useCase = new GenerateRecipeUseCase(repo);
+
+    const r = await useCase.execute({ prompt: '  spicy pasta  ', locale: 'tr' });
+
+    expect(repo.lastGenerateCall).toEqual({ prompt: 'spicy pasta', locale: 'tr' });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value).toBe(recipe);
+  });
+
+  it('propagates failure from the repository', async () => {
+    const failure = new UnknownFailure('AI provider crashed');
+    const repo = new FakeRecipeRepository({ generateRecipeResult: fail(failure) });
+    const useCase = new GenerateRecipeUseCase(repo);
+
+    const r = await useCase.execute({ prompt: 'pizza', locale: 'en' });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBe(failure);
+  });
+});
