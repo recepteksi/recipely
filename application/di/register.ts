@@ -11,6 +11,9 @@ import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
+import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
+import { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
 import { ListTasksUseCase } from '@application/tasks/list-tasks-use-case';
 import { GetTaskUseCase } from '@application/tasks/get-task-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
@@ -71,6 +74,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const getRecipe = new GetRecipeUseCase(recipeRepo);
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
   const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
+  const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
+  const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepo);
+  const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
   const listTasks = new ListTasksUseCase(taskRepo);
   const getTask = new GetTaskUseCase(taskRepo);
   const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
@@ -86,7 +92,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     removeFavoriteUseCase,
     savedRecipesStore,
   });
-  const createdRecipesStore = configureCreatedRecipesStore({ createRecipeUseCase, listMyRecipesUseCase });
+  const createdRecipesStore = configureCreatedRecipesStore({
+    createRecipeUseCase,
+    listMyRecipesUseCase,
+    generateRecipeUseCase,
+    updateRecipeUseCase,
+    deleteRecipeUseCase,
+  });
   const taskListStore = configureTaskListStore({ listTasks });
   const taskDetailStore = configureTaskDetailStore({ getTask });
 

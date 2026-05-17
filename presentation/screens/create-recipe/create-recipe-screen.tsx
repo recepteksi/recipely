@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -7,37 +8,60 @@ import {
   StyleSheet,
   TextInput,
   View,
-  Image,
+  type ImageStyle,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { MediaPicker } from '@presentation/base/widgets/media-picker';
+import { Slider } from '@presentation/base/widgets/slider';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, type ThemeColors } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
-import {
-  generateAiRecipe,
-  isAiConfigured,
-  type RecipeDraft,
-} from '@application/recipes/generate-ai-recipe';
+import type { Recipe } from '@domain/recipes/recipe';
+import type { UpdateRecipeInput } from '@domain/recipes/i-recipe-repository';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 const DIFFICULTIES: readonly Difficulty[] = ['Easy', 'Medium', 'Hard'];
 
 type WizardStep = 0 | 1 | 2 | 3 | 4 | 5;
 
+const SERVINGS_MIN = 1;
+const SERVINGS_MAX = 20;
+const TIME_MIN = 0;
+const TIME_MAX = 120;
+const TIME_STEP = 5;
+
+const DIFFICULTY_TO_DOMAIN: Record<Difficulty, 'EASY' | 'MEDIUM' | 'HARD'> = {
+  Easy: 'EASY',
+  Medium: 'MEDIUM',
+  Hard: 'HARD',
+};
+
+const DOMAIN_TO_DIFFICULTY: Record<string, Difficulty> = {
+  EASY: 'Easy',
+  MEDIUM: 'Medium',
+  HARD: 'Hard',
+  Easy: 'Easy',
+  Medium: 'Medium',
+  Hard: 'Hard',
+};
+
 interface RecipeFormState {
   name: string;
   cuisine: string;
   difficulty: Difficulty;
-  prepTimeMinutes: string;
-  cookTimeMinutes: string;
-  servings: string;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  servings: number;
   ingredients: string[];
   instructions: string[];
   media: MediaItem[];
@@ -47,145 +71,197 @@ const emptyForm: RecipeFormState = {
   name: '',
   cuisine: '',
   difficulty: 'Easy',
-  prepTimeMinutes: '',
-  cookTimeMinutes: '',
-  servings: '',
+  prepTimeMinutes: 15,
+  cookTimeMinutes: 20,
+  servings: 4,
   ingredients: [''],
   instructions: [''],
   media: [],
 };
 
-const draftToForm = (
-  draft: RecipeDraft,
+// WHY: the backend draft Recipe already exposes locale-resolved strings via the
+// mapper, so we just pull props straight off. We preserve the user's media
+// (likely empty at this point in the flow) so they can still attach a cover.
+const recipeToForm = (
+  recipe: Recipe,
   prevMedia: MediaItem[],
-): RecipeFormState => ({
-  name: draft.name,
-  cuisine: draft.cuisine,
-  difficulty: draft.difficulty,
-  prepTimeMinutes: String(draft.prepTimeMinutes ?? ''),
-  cookTimeMinutes: String(draft.cookTimeMinutes ?? ''),
-  servings: String(draft.servings ?? ''),
-  ingredients: draft.ingredients.length > 0 ? draft.ingredients : [''],
-  instructions: draft.instructions.length > 0 ? draft.instructions : [''],
-  media: prevMedia,
-});
+): RecipeFormState => {
+  const difficulty = DOMAIN_TO_DIFFICULTY[recipe.difficulty] ?? 'Easy';
+  return {
+    name: recipe.name,
+    cuisine: recipe.cuisine,
+    difficulty,
+    prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : emptyForm.prepTimeMinutes,
+    cookTimeMinutes: recipe.cookTimeMinutes > 0 ? recipe.cookTimeMinutes : emptyForm.cookTimeMinutes,
+    servings: emptyForm.servings,
+    ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [''],
+    instructions: recipe.instructions.length > 0 ? recipe.instructions : [''],
+    media: prevMedia,
+  };
+};
 
-const formToDraft = (form: RecipeFormState): RecipeDraft => ({
-  name: form.name,
-  cuisine: form.cuisine,
-  difficulty: form.difficulty,
-  prepTimeMinutes: parseInt(form.prepTimeMinutes, 10) || 0,
-  cookTimeMinutes: parseInt(form.cookTimeMinutes, 10) || 0,
-  servings: parseInt(form.servings, 10) || 0,
-  ingredients: form.ingredients.filter((s) => s.trim().length > 0),
-  instructions: form.instructions.filter((s) => s.trim().length > 0),
-});
+const stepLabels = (): readonly string[] => [
+  t().createRecipe.stepBasics,
+  t().createRecipe.stepMedia,
+  t().createRecipe.stepIngredients,
+  t().createRecipe.stepInstructions,
+  t().createRecipe.stepReview,
+];
 
-interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  error?: boolean;
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+interface TimeSliderCardProps {
+  label: string;
+  value: number;
+  icon: 'time-outline' | 'flame-outline';
+  onChange: (next: number) => void;
+  colors: ThemeColors;
 }
 
-const STEP_LABELS = (tr: ReturnType<typeof t>): readonly string[] => [
-  tr.createRecipe.stepBasics,
-  tr.createRecipe.stepMedia,
-  tr.createRecipe.stepIngredients,
-  tr.createRecipe.stepInstructions,
-  tr.createRecipe.stepReview,
-];
+const TimeSliderCard = ({
+  label,
+  value,
+  icon,
+  onChange,
+  colors,
+}: TimeSliderCardProps): React.JSX.Element => {
+  return (
+    <View
+      style={[
+        styles.timeCard,
+        { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+      ]}
+    >
+      <View style={styles.timeCardHeader}>
+        <Ionicons name={icon} size={14} color={colors.primary} />
+        <ThemedText
+          variant="caption"
+          style={[styles.timeCardLabel, { color: colors.textMuted }]}
+        >
+          {label}
+        </ThemedText>
+      </View>
+      <View style={styles.timeCardValueRow}>
+        <ThemedText style={[styles.timeCardValue, { color: colors.text }]}>
+          {value}
+        </ThemedText>
+        <ThemedText
+          variant="caption"
+          style={[styles.timeCardUnit, { color: colors.textMuted }]}
+        >
+          {' '}
+          {t().recipes.minutes}
+        </ThemedText>
+      </View>
+      <Slider
+        value={value}
+        min={TIME_MIN}
+        max={TIME_MAX}
+        step={TIME_STEP}
+        onChange={onChange}
+      />
+    </View>
+  );
+};
+
+interface ReviewRowItemProps {
+  label: string;
+  count: number;
+  unitLabel: string;
+  onPress: () => void;
+  colors: ThemeColors;
+}
+
+const ReviewRowItem = ({
+  label,
+  count,
+  unitLabel,
+  onPress,
+  colors,
+}: ReviewRowItemProps): React.JSX.Element => (
+  <Pressable
+    onPress={onPress}
+    style={[
+      styles.reviewRow,
+      { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+    ]}
+  >
+    <View style={styles.reviewRowBody}>
+      <ThemedText variant="body" style={styles.reviewRowLabel}>
+        {label}
+      </ThemedText>
+      <ThemedText variant="caption" muted style={styles.reviewRowCount}>
+        {count} {unitLabel}
+      </ThemedText>
+    </View>
+    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+  </Pressable>
+);
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const insets = useSafeAreaInsets();
   const { createdRecipesStore } = useStores();
   const createState = createdRecipesStore((s) => s.createState);
+  const generateState = createdRecipesStore((s) => s.generateState);
+  const updateState = createdRecipesStore((s) => s.updateState);
 
-  const aiAvailable = isAiConfigured();
+  const { recipeId } = useLocalSearchParams<{ recipeId?: string }>();
+  const isEditMode = typeof recipeId === 'string' && recipeId.length > 0;
+  const existingRecipe = isEditMode
+    ? createdRecipesStore((s) => s.findById)(recipeId)
+    : undefined;
 
-  const [step, setStep] = useState<WizardStep>(aiAvailable ? 0 : 1);
+  const [step, setStep] = useState<WizardStep>(isEditMode ? 1 : 0);
   const [aiPrompt, setAiPrompt] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | undefined>(undefined);
+  const [wasAiUsed, setWasAiUsed] = useState(false);
 
-  const [form, setForm] = useState<RecipeFormState>(emptyForm);
-  const [missingImage, setMissingImage] = useState(false);
+  const [form, setForm] = useState<RecipeFormState>(() =>
+    isEditMode && existingRecipe !== undefined ? recipeToForm(existingRecipe, []) : emptyForm,
+  );
+  const [missing, setMissing] = useState(false);
+  const [hasNewImage, setHasNewImage] = useState(false);
 
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
-
-  const chatScrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    if (chatScrollRef.current !== null) {
-      chatScrollRef.current.scrollToEnd({ animated: true });
-    }
-  }, [chatHistory, chatLoading]);
+  const aiLoading = generateState.status === 'generating';
 
   const handleGenerate = async (): Promise<void> => {
-    if (aiPrompt.trim().length === 0) return;
-    setAiLoading(true);
+    const trimmed = aiPrompt.trim();
+    if (trimmed.length === 0 || aiLoading) return;
     setAiError(undefined);
-    const result = await generateAiRecipe({
-      prompt: aiPrompt,
-      lang: getLocale() === 'tr' ? 'tr' : 'en',
-    });
-    setAiLoading(false);
-    if (!result.ok) {
+    const locale = getLocale();
+    await createdRecipesStore.getState().generateRecipe(trimmed, locale);
+    const state = createdRecipesStore.getState().generateState;
+    if (state.status === 'success') {
+      setForm(recipeToForm(state.recipe, form.media));
+      setWasAiUsed(true);
+      setStep(5);
+      createdRecipesStore.getState().resetGenerateState();
+      return;
+    }
+    if (state.status === 'error') {
       setAiError(t().createRecipe.aiError);
-      return;
     }
-    setForm(draftToForm(result.value, form.media));
-    setChatHistory([
-      { role: 'user', content: aiPrompt },
-      { role: 'assistant', content: t().createRecipe.aiFirstReply },
-    ]);
-    setStep(1);
   };
 
-  const handleManual = (): void => {
+  const handleManualStart = (): void => {
     setForm(emptyForm);
-    if (aiAvailable) {
-      setChatHistory([
-        { role: 'assistant', content: t().createRecipe.manualMode },
-      ]);
-    }
+    setWasAiUsed(false);
     setStep(1);
   };
 
-  const handleSendChat = async (): Promise<void> => {
-    const text = chatInput.trim();
-    if (text.length === 0 || chatLoading) return;
-    setChatInput('');
-    const next: ChatMessage[] = [...chatHistory, { role: 'user', content: text }];
-    setChatHistory(next);
-    setChatLoading(true);
-    const result = await generateAiRecipe({
-      prompt: text,
-      lang: getLocale() === 'tr' ? 'tr' : 'en',
-      previous: formToDraft(form),
-    });
-    setChatLoading(false);
-    if (!result.ok) {
-      setChatHistory((h) => [
-        ...h,
-        { role: 'assistant', content: t().createRecipe.aiError, error: true },
-      ]);
-      return;
-    }
-    setForm(draftToForm(result.value, form.media));
-    setChatHistory((h) => [
-      ...h,
-      { role: 'assistant', content: t().createRecipe.aiUpdated },
-    ]);
+  const handleIdeaChip = (chip: string): void => {
+    const lower = chip.toLowerCase();
+    setAiPrompt((p) => (p.trim().length === 0 ? chip : `${p}, ${lower}`));
   };
 
   const updateField = <K extends keyof RecipeFormState>(
     key: K,
     value: RecipeFormState[K],
   ): void => setForm((f) => ({ ...f, [key]: value }));
+
   const updateIngredient = (i: number, value: string): void =>
     setForm((f) => ({
       ...f,
@@ -194,10 +270,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const removeIngredient = (i: number): void =>
     setForm((f) => ({
       ...f,
-      ingredients: f.ingredients.filter((_, idx) => idx !== i),
+      ingredients:
+        f.ingredients.length <= 1
+          ? ['']
+          : f.ingredients.filter((_, idx) => idx !== i),
     }));
   const addIngredient = (): void =>
     setForm((f) => ({ ...f, ingredients: [...f.ingredients, ''] }));
+
   const updateInstruction = (i: number, value: string): void =>
     setForm((f) => ({
       ...f,
@@ -206,13 +286,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const removeInstruction = (i: number): void =>
     setForm((f) => ({
       ...f,
-      instructions: f.instructions.filter((_, idx) => idx !== i),
+      instructions:
+        f.instructions.length <= 1
+          ? ['']
+          : f.instructions.filter((_, idx) => idx !== i),
     }));
   const addInstruction = (): void =>
     setForm((f) => ({ ...f, instructions: [...f.instructions, ''] }));
 
-  const onMediaAdd = (items: MediaItem[]): void =>
+  const onMediaAdd = (items: MediaItem[]): void => {
     setForm((f) => ({ ...f, media: [...f.media, ...items] }));
+    setHasNewImage(true);
+  };
   const onMediaRemove = (i: number): void =>
     setForm((f) => ({ ...f, media: f.media.filter((_, idx) => idx !== i) }));
   const onMediaSetCover = (i: number): void =>
@@ -223,41 +308,42 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       return { ...f, media: [picked, ...arr] };
     });
 
-  const canAdvance = (): boolean => {
+  const canNext = (): boolean => {
     if (step === 1) return form.name.trim().length > 0;
-    if (step === 2) return true;
-    if (step === 3) return form.ingredients.some((s) => s.trim().length > 0);
-    if (step === 4) return form.instructions.some((s) => s.trim().length > 0);
+    if (step === 3)
+      return form.ingredients.some((s) => s.trim().length > 0);
+    if (step === 4)
+      return form.instructions.some((s) => s.trim().length > 0);
     return true;
   };
 
   const handleNext = (): void => {
-    if (!canAdvance()) return;
+    if (!canNext()) return;
     if (step < 5) setStep((s) => (s + 1) as WizardStep);
   };
 
   const handleBack = (): void => {
-    if (step === 1) {
-      if (aiAvailable) setStep(0);
-    } else if (step > 1) {
-      setStep((s) => (s - 1) as WizardStep);
-    }
-  };
-
-  const handlePublish = async (): Promise<void> => {
-    const coverImage = form.media.find((m) => m.type === 'image');
-    if (!coverImage) {
-      setMissingImage(true);
+    if (step <= 1) {
+      if (step === 1 && !isEditMode) setStep(0);
+      else router.back();
       return;
     }
-    setMissingImage(false);
+    setStep((s) => (s - 1) as WizardStep);
+  };
+
+  const handleClose = (): void => {
+    router.back();
+  };
+
+  const handlePublishManual = async (): Promise<void> => {
+    const coverImage = form.media.find((m) => m.type === 'image');
+    if (coverImage === undefined) {
+      setMissing(true);
+      return;
+    }
+    setMissing(false);
     const locale = getLocale();
     const cuisine = form.cuisine.trim() || 'Custom';
-    const diffMap: Record<Difficulty, 'EASY' | 'MEDIUM' | 'HARD'> = {
-      Easy: 'EASY',
-      Medium: 'MEDIUM',
-      Hard: 'HARD',
-    };
     const uri = coverImage.url;
     const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
     const mimeMap: Record<string, string> = {
@@ -268,17 +354,21 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       heic: 'image/heic',
     };
     const mime = mimeMap[ext] ?? 'image/jpeg';
-    const cleanIngredients = form.ingredients.map((s) => s.trim()).filter((s) => s.length > 0);
-    const cleanInstructions = form.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
+    const cleanIngredients = form.ingredients
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    const cleanInstructions = form.instructions
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
     await createdRecipesStore.getState().createRecipe({
       name: { [locale]: form.name.trim() },
       cuisine: { [locale]: cuisine },
-      difficulty: diffMap[form.difficulty],
+      difficulty: DIFFICULTY_TO_DOMAIN[form.difficulty],
       ingredients: { [locale]: cleanIngredients },
       instructions: { [locale]: cleanInstructions },
-      prepTimeMinutes: parseInt(form.prepTimeMinutes, 10) || 0,
-      cookTimeMinutes: parseInt(form.cookTimeMinutes, 10) || 0,
+      prepTimeMinutes: form.prepTimeMinutes,
+      cookTimeMinutes: form.cookTimeMinutes,
       imageUri: uri,
       imageFileName: `recipe-${Date.now()}.${ext}`,
       imageMimeType: mime,
@@ -295,323 +385,427 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     }
   };
 
-  const fieldStyle = (): React.ComponentProps<typeof TextInput>['style'] => ({
-    height: 44,
-    backgroundColor: colors.inputBackground,
-    borderWidth: 1.5,
-    borderColor: colors.inputBorder,
-    borderRadius: radii.lg,
-    paddingHorizontal: 14,
-    fontSize: 14,
-    color: colors.text,
-  });
+  const handleUpdate = async (): Promise<void> => {
+    const locale = getLocale();
+    const cuisine = form.cuisine.trim() || 'Custom';
+    const cleanIngredients = form.ingredients.map((s) => s.trim()).filter((s) => s.length > 0);
+    const cleanInstructions = form.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
 
-  const renderAppBar = (): React.JSX.Element => (
-    <View
-      style={[
-        styles.appBar,
-        { backgroundColor: colors.background, borderBottomColor: colors.border },
-      ]}
+    const input: UpdateRecipeInput = {
+      name: { [locale]: form.name.trim() },
+      cuisine: { [locale]: cuisine },
+      difficulty: DIFFICULTY_TO_DOMAIN[form.difficulty],
+      ingredients: { [locale]: cleanIngredients },
+      instructions: { [locale]: cleanInstructions },
+      prepTimeMinutes: form.prepTimeMinutes,
+      cookTimeMinutes: form.cookTimeMinutes,
+      tags: { [locale]: [cuisine, form.difficulty] },
+      mealType: { [locale]: [] },
+      isPublished: true,
+      locale,
+    };
+
+    if (hasNewImage) {
+      const coverImage = form.media.find((m) => m.type === 'image');
+      if (coverImage !== undefined) {
+        const uri = coverImage.url;
+        const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+        const mimeMap: Record<string, string> = {
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+          png: 'image/png',
+          webp: 'image/webp',
+          heic: 'image/heic',
+        };
+        input.imageUri = uri;
+        input.imageFileName = `recipe-${Date.now()}.${ext}`;
+        input.imageMimeType = mimeMap[ext] ?? 'image/jpeg';
+      }
+    }
+
+    if (recipeId === undefined || recipeId.length === 0) return;
+    await createdRecipesStore.getState().updateRecipe(recipeId, input);
+
+    const state = createdRecipesStore.getState().updateState;
+    if (state.status === 'success') {
+      createdRecipesStore.getState().resetUpdateState();
+      router.back();
+    }
+  };
+
+  const handlePublishAi = (): void => {
+    // WHY: backend already persisted this as a draft when generate succeeded.
+    // We don't have an update endpoint yet, so media/edits on this screen are
+    // intentionally not synced back. The draft is already in My Recipes.
+    createdRecipesStore.getState().clearAiDraft();
+    router.replace('/my-recipes');
+  };
+
+  const handleSave = (): void => {
+    if (isEditMode) {
+      void handleUpdate();
+      return;
+    }
+    if (wasAiUsed) {
+      handlePublishAi();
+      return;
+    }
+    void handlePublishManual();
+  };
+
+  if (step === 0) {
+    return renderPromptStep({
+      colors,
+      insets,
+      aiPrompt,
+      setAiPrompt,
+      aiLoading,
+      aiError,
+      onGenerate: () => void handleGenerate(),
+      onManual: handleManualStart,
+      onClose: handleClose,
+      onIdeaChip: handleIdeaChip,
+    });
+  }
+
+  const labels = stepLabels();
+  const currentLabel = labels[step - 1] ?? '';
+  const progress = step / 5;
+  const isPublishing = createState.status === 'creating';
+  const isSaving = isEditMode ? updateState.status === 'updating' : isPublishing;
+  const continueDisabled = !canNext();
+
+  return (
+    <KeyboardAvoidingView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Pressable onPress={() => router.back()} style={styles.appBarSide}>
-        <ThemedText
-          variant="body"
-          style={[styles.appBarSideLabel, { color: colors.primary }]}
-        >
-          {t().createRecipe.cancel}
-        </ThemedText>
-      </Pressable>
-      <ThemedText variant="subtitle">{t().createRecipe.title}</ThemedText>
-      <View style={styles.appBarSide} />
-    </View>
-  );
+      <View
+        style={[
+          styles.wizardHeader,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+            paddingTop: insets.top + spacing.sm,
+          },
+        ]}
+      >
+        <Pressable onPress={handleBack} style={styles.iconBtn} hitSlop={8}>
+          <Ionicons
+            name={step > 1 ? 'chevron-back' : 'close'}
+            size={20}
+            color={colors.text}
+          />
+        </Pressable>
+        <View style={styles.wizardHeaderCenter}>
+          <ThemedText
+            variant="caption"
+            style={[styles.wizardHeaderCount, { color: colors.textMuted }]}
+          >
+            {`${step}/5`}
+          </ThemedText>
+          <ThemedText
+            variant="subtitle"
+            style={[styles.wizardHeaderTitle, { color: colors.text }]}
+          >
+            {currentLabel}
+          </ThemedText>
+        </View>
+        <View style={styles.iconBtn} />
+      </View>
+      <View
+        style={[styles.progressTrack, { backgroundColor: colors.border }]}
+      >
+        <LinearGradient
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.progressFill, { width: `${progress * 100}%` }]}
+        />
+      </View>
 
-  const renderStepIndicator = (): React.JSX.Element => {
-    const labels = STEP_LABELS(t());
-    return (
-      <View style={[styles.stepIndicator, { borderBottomColor: colors.border }]}>
-        {labels.map((_, idx) => {
-          const stepNum = idx + 1;
-          const isCompleted = step > stepNum;
-          const isCurrent = step === stepNum;
-          return (
-            <View key={stepNum} style={styles.stepIndicatorItem}>
-              {idx > 0 ? (
-                <View
-                  style={[
-                    styles.stepLine,
-                    {
-                      backgroundColor:
-                        step > idx ? colors.primary : colors.border,
-                    },
-                  ]}
-                />
-              ) : null}
-              <View
+      <ScrollView
+        style={styles.stepScroll}
+        contentContainerStyle={[
+          styles.stepScrollInner,
+          { paddingBottom: 96 + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {step === 1
+          ? renderStep1({ form, colors, updateField })
+          : step === 2
+            ? renderStep2({
+                form,
+                onMediaAdd,
+                onMediaRemove,
+                onMediaSetCover,
+              })
+            : step === 3
+              ? renderStep3({
+                  form,
+                  colors,
+                  updateIngredient,
+                  removeIngredient,
+                  addIngredient,
+                })
+              : step === 4
+                ? renderStep4({
+                    form,
+                    colors,
+                    updateInstruction,
+                    removeInstruction,
+                    addInstruction,
+                  })
+                : renderStep5({
+                    form,
+                    colors,
+                    missing,
+                    wasAiUsed,
+                    createError: createState.status === 'error',
+                    updateError: updateState.status === 'error',
+                    onEditIngredients: () => setStep(3),
+                    onEditInstructions: () => setStep(4),
+                  })}
+      </ScrollView>
+
+      <View
+        style={[
+          styles.stickyBottom,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+            paddingBottom: insets.bottom + spacing.md,
+          },
+        ]}
+      >
+        {step > 1 ? (
+          <Pressable
+            onPress={handleBack}
+            style={[
+              styles.bottomBackBtn,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              },
+            ]}
+          >
+            <ThemedText
+              variant="body"
+              style={[styles.bottomBackLabel, { color: colors.text }]}
+            >
+              {t().createRecipe.back}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+        {step < 5 ? (
+          <Pressable
+            onPress={handleNext}
+            disabled={continueDisabled}
+            style={[styles.bottomPrimary, shadows.md]}
+          >
+            <LinearGradient
+              colors={
+                continueDisabled
+                  ? [colors.border, colors.border]
+                  : [colors.primaryGradientStart, colors.primaryGradientEnd]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.bottomPrimaryInner}
+            >
+              <ThemedText
+                variant="body"
                 style={[
-                  styles.stepCircle,
+                  styles.bottomPrimaryLabel,
                   {
-                    borderColor: isCurrent || isCompleted ? colors.primary : colors.border,
-                    backgroundColor: isCurrent || isCompleted ? colors.primary : 'transparent',
+                    color: continueDisabled ? colors.textMuted : '#FFFFFF',
                   },
                 ]}
               >
-                {isCompleted ? (
-                  <Ionicons name="checkmark" size={12} color={colors.primaryText} />
-                ) : (
-                  <ThemedText
-                    variant="caption"
-                    style={[
-                      styles.stepCircleText,
-                      {
-                        color: isCurrent ? colors.primaryText : colors.textMuted,
-                      },
-                    ]}
-                  >
-                    {stepNum}
-                  </ThemedText>
-                )}
-              </View>
-            </View>
-          );
-        })}
-      </View>
-    );
-  };
-
-  const renderBottomNav = (): React.JSX.Element => {
-    const isPublishing = createState.status === 'creating';
-    const isLastStep = step === 5;
-    const nextDisabled = !canAdvance() || isPublishing;
-
-    return (
-      <View style={[styles.bottomNav, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
-        <Pressable
-          onPress={handleBack}
-          disabled={step === 1 && !aiAvailable}
-          style={[
-            styles.bottomNavBtn,
-            styles.bottomNavBtnOutline,
-            {
-              borderColor: colors.border,
-              opacity: step === 1 && !aiAvailable ? 0.4 : 1,
-            },
-          ]}
-        >
-          <ThemedText variant="body" style={[styles.bottomNavBtnLabel, { color: colors.text }]}>
-            {t().createRecipe.back}
-          </ThemedText>
-        </Pressable>
-        <Pressable
-          onPress={isLastStep ? () => void handlePublish() : handleNext}
-          disabled={nextDisabled}
-          style={[
-            styles.bottomNavBtn,
-            styles.bottomNavBtnFilled,
-            {
-              backgroundColor: colors.primary,
-              opacity: nextDisabled ? 0.5 : 1,
-            },
-          ]}
-        >
-          <ThemedText
-            variant="body"
-            style={[styles.bottomNavBtnLabel, { color: colors.primaryText }]}
+                {t().createRecipe.continue}
+              </ThemedText>
+            </LinearGradient>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={handleSave}
+            disabled={isSaving}
+            style={[styles.bottomPrimary, shadows.md, { opacity: isSaving ? 0.6 : 1 }]}
           >
-            {isLastStep
-              ? isPublishing
-                ? t().createRecipe.publishing
-                : t().createRecipe.publish
-              : t().createRecipe.next}
-          </ThemedText>
-        </Pressable>
+            <LinearGradient
+              colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.bottomPrimaryInner}
+            >
+              <ThemedText
+                variant="body"
+                style={[styles.bottomPrimaryLabel, { color: '#FFFFFF' }]}
+              >
+                {isEditMode
+                  ? (updateState.status === 'updating' ? t().createRecipe.updating : t().createRecipe.updateSave)
+                  : isPublishing
+                    ? t().createRecipe.publishing
+                    : t().createRecipe.save}
+              </ThemedText>
+            </LinearGradient>
+          </Pressable>
+        )}
       </View>
-    );
-  };
+    </KeyboardAvoidingView>
+  );
+};
 
-  const renderChatPanel = (): React.JSX.Element | null => {
-    if (!aiAvailable) return null;
-    return (
+// ============================ Step 0 (AI prompt) ============================
+
+interface PromptStepArgs {
+  colors: ThemeColors;
+  insets: { top: number; bottom: number; left: number; right: number };
+  aiPrompt: string;
+  setAiPrompt: (next: string) => void;
+  aiLoading: boolean;
+  aiError: string | undefined;
+  onGenerate: () => void;
+  onManual: () => void;
+  onClose: () => void;
+  onIdeaChip: (chip: string) => void;
+}
+
+const renderPromptStep = (args: PromptStepArgs): React.JSX.Element => {
+  const {
+    colors,
+    insets,
+    aiPrompt,
+    setAiPrompt,
+    aiLoading,
+    aiError,
+    onGenerate,
+    onManual,
+    onClose,
+    onIdeaChip,
+  } = args;
+  const generateDisabled = aiLoading || aiPrompt.trim().length === 0;
+  const ideaChips = t().createRecipe.ideaChips;
+
+  return (
+    <KeyboardAvoidingView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View
         style={[
-          styles.chatPanel,
+          styles.promptHeader,
           {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.cardBorder,
+            paddingTop: insets.top + spacing.sm,
           },
         ]}
       >
         <Pressable
-          onPress={() => setChatOpen((o) => !o)}
-          style={styles.chatHeader}
+          onPress={onClose}
+          style={[
+            styles.iconBtnBordered,
+            {
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+            },
+          ]}
+          hitSlop={8}
         >
+          <Ionicons name="close" size={18} color={colors.text} />
+        </Pressable>
+        <ThemedText variant="subtitle" style={styles.promptHeaderTitle}>
+          {t().createRecipe.title}
+        </ThemedText>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView
+        contentContainerStyle={[
+          styles.promptScroll,
+          { paddingBottom: insets.bottom + spacing.xl },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.promptBody}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.chatAvatar}
+            style={[styles.heroSquare, shadows.lg]}
           >
-            <ThemedText style={styles.chatSparkle}>✦</ThemedText>
+            <ThemedText style={styles.heroSparkle}>✨</ThemedText>
           </LinearGradient>
-          <View style={styles.chatHeaderBody}>
-            <ThemedText variant="caption" style={styles.chatTitle}>
-              {t().createRecipe.chatTitle}
+
+          <View style={styles.promptHeadingBlock}>
+            <ThemedText variant="headline" style={styles.promptHero}>
+              {t().createRecipe.aiHero}
             </ThemedText>
-            <ThemedText variant="caption" muted>
-              {t().createRecipe.chatSubtitle}
+            <ThemedText
+              variant="body"
+              style={[styles.promptHeroSub, { color: colors.textMuted }]}
+            >
+              {t().createRecipe.aiHeroSub}
             </ThemedText>
           </View>
-          <Ionicons
-            name={chatOpen ? 'chevron-down' : 'chevron-up'}
-            size={16}
-            color={colors.textMuted}
-          />
-        </Pressable>
-        {chatOpen ? (
-          <>
-            <ScrollView
-              ref={chatScrollRef}
-              style={styles.chatMessages}
-              contentContainerStyle={styles.chatMessagesInner}
-            >
-              {chatHistory.map((m, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.chatBubble,
-                    m.role === 'user' ? styles.chatBubbleRight : styles.chatBubbleLeft,
-                    {
-                      backgroundColor:
-                        m.role === 'user'
-                          ? colors.primary
-                          : m.error === true
-                            ? colors.warningLight
-                            : colors.chipBackground,
-                    },
-                  ]}
-                >
-                  <ThemedText
-                    variant="caption"
-                    style={{
-                      color:
-                        m.role === 'user'
-                          ? colors.primaryText
-                          : m.error === true
-                            ? colors.danger
-                            : colors.text,
-                    }}
-                  >
-                    {m.content}
-                  </ThemedText>
-                </View>
-              ))}
-              {chatLoading ? (
-                <View
-                  style={[
-                    styles.chatBubble,
-                    styles.chatBubbleLeft,
-                    { backgroundColor: colors.chipBackground },
-                  ]}
-                >
-                  <ThemedText variant="caption" muted style={styles.thinking}>
-                    {t().createRecipe.aiThinking}
-                  </ThemedText>
-                </View>
-              ) : null}
-            </ScrollView>
-            <View style={[styles.chatInputRow, { borderTopColor: colors.border }]}>
+
+          <View style={styles.promptForm}>
+            <View style={[styles.promptInputShadow, shadows.sm]}>
               <TextInput
-                value={chatInput}
-                onChangeText={setChatInput}
-                placeholder={t().createRecipe.chatPlaceholder}
+                value={aiPrompt}
+                onChangeText={setAiPrompt}
+                placeholder={t().createRecipe.aiPromptPlaceholder}
                 placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={4}
                 style={[
-                  styles.chatInput,
+                  styles.promptInput,
                   {
                     backgroundColor: colors.inputBackground,
                     borderColor: colors.inputBorder,
                     color: colors.text,
                   },
                 ]}
-                onSubmitEditing={() => void handleSendChat()}
               />
-              <Pressable
-                onPress={() => void handleSendChat()}
-                disabled={chatInput.trim().length === 0 || chatLoading}
-                style={[
-                  styles.chatSend,
-                  {
-                    backgroundColor: colors.primary,
-                    opacity:
-                      chatInput.trim().length === 0 || chatLoading ? 0.5 : 1,
-                  },
-                ]}
-              >
-                <Ionicons name="arrow-up" size={16} color={colors.primaryText} />
-              </Pressable>
             </View>
-          </>
-        ) : null}
-      </View>
-    );
-  };
 
-  if (step === 0) {
-    return (
-      <View style={[styles.root, { backgroundColor: colors.background }]}>
-        {renderAppBar()}
-        <View style={styles.promptBody}>
-          <LinearGradient
-            colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.promptIcon, shadows.md]}
-          >
-            <ThemedText style={styles.promptSparkle}>✦</ThemedText>
-          </LinearGradient>
-          <View style={styles.promptHeading}>
-            <ThemedText variant="title" style={styles.promptTitle}>
-              {t().createRecipe.aiButton}
-            </ThemedText>
-            <ThemedText variant="caption" muted style={styles.promptSubtitle}>
-              {t().createRecipe.aiPromptLabel}
-            </ThemedText>
-          </View>
-          <View style={styles.promptForm}>
-            <TextInput
-              value={aiPrompt}
-              onChangeText={setAiPrompt}
-              placeholder={t().createRecipe.aiPromptPlaceholder}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={4}
-              style={[
-                styles.promptInput,
-                {
-                  backgroundColor: colors.inputBackground,
-                  borderColor: colors.inputBorder,
-                  color: colors.text,
-                },
-              ]}
-            />
+            <View style={styles.chipRow}>
+              {ideaChips.map((chip) => (
+                <Pressable
+                  key={chip}
+                  onPress={() => onIdeaChip(chip)}
+                  style={[
+                    styles.ideaChip,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: colors.surface,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    variant="caption"
+                    style={[styles.ideaChipLabel, { color: colors.text }]}
+                  >
+                    {chip}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+
             <Pressable
-              onPress={() => void handleGenerate()}
-              disabled={aiLoading || aiPrompt.trim().length === 0}
-              style={({ pressed }) => [
+              onPress={onGenerate}
+              disabled={generateDisabled}
+              style={[
                 styles.promptCta,
                 shadows.md,
-                {
-                  opacity:
-                    aiLoading || aiPrompt.trim().length === 0
-                      ? 0.5
-                      : pressed
-                        ? 0.85
-                        : 1,
-                },
+                { opacity: generateDisabled ? 0.5 : 1 },
               ]}
             >
               <LinearGradient
-                colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+                colors={[
+                  colors.primaryGradientStart,
+                  colors.primaryGradientEnd,
+                ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.promptCtaInner}
@@ -622,7 +816,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
                 >
                   {aiLoading
                     ? t().createRecipe.aiGenerating
-                    : `✦  ${t().createRecipe.aiButton}`}
+                    : `✨  ${t().createRecipe.aiButton}`}
                 </ThemedText>
               </LinearGradient>
             </Pressable>
@@ -635,445 +829,739 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
               </ThemedText>
             ) : null}
           </View>
-          <Pressable onPress={handleManual}>
+
+          <View style={styles.dividerRow}>
+            <View
+              style={[styles.dividerLine, { backgroundColor: colors.border }]}
+            />
             <ThemedText
               variant="caption"
-              style={[styles.manualLink, { color: colors.textMuted }]}
+              style={[styles.dividerLabel, { color: colors.textMuted }]}
+            >
+              {t().createRecipe.or}
+            </ThemedText>
+            <View
+              style={[styles.dividerLine, { backgroundColor: colors.border }]}
+            />
+          </View>
+
+          <Pressable
+            onPress={onManual}
+            style={[
+              styles.manualBtn,
+              { borderColor: colors.border, backgroundColor: 'transparent' },
+            ]}
+          >
+            <ThemedText
+              variant="body"
+              style={[styles.manualBtnLabel, { color: colors.text }]}
             >
               {t().createRecipe.manualButton}
             </ThemedText>
           </Pressable>
         </View>
-      </View>
-    );
-  }
-
-  const renderStep1 = (): React.JSX.Element => (
-    <ScrollView contentContainerStyle={styles.formScroll}>
-      <ThemedText variant="label" muted style={styles.label}>
-        {t().createRecipe.name}
-      </ThemedText>
-      <TextInput
-        value={form.name}
-        onChangeText={(v) => updateField('name', v)}
-        style={fieldStyle()}
-        placeholderTextColor={colors.textMuted}
-      />
-
-      <View style={styles.row}>
-        <View style={styles.rowItem}>
-          <ThemedText variant="label" muted style={styles.label}>
-            {t().createRecipe.cuisine}
-          </ThemedText>
-          <TextInput
-            value={form.cuisine}
-            onChangeText={(v) => updateField('cuisine', v)}
-            style={fieldStyle()}
-            placeholderTextColor={colors.textMuted}
-          />
-        </View>
-        <View style={styles.rowItem}>
-          <ThemedText variant="label" muted style={styles.label}>
-            {t().createRecipe.difficulty}
-          </ThemedText>
-          <View style={[styles.difficultyRow, { borderColor: colors.inputBorder }]}>
-            {DIFFICULTIES.map((d) => {
-              const isActive = form.difficulty === d;
-              return (
-                <Pressable
-                  key={d}
-                  onPress={() => updateField('difficulty', d)}
-                  style={[
-                    styles.difficultyBtn,
-                    isActive
-                      ? { backgroundColor: colors.primary }
-                      : { backgroundColor: 'transparent' },
-                  ]}
-                >
-                  <ThemedText
-                    variant="caption"
-                    style={{
-                      color: isActive ? colors.primaryText : colors.text,
-                      fontWeight: '600',
-                    }}
-                  >
-                    {d}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <View style={styles.rowItem}>
-          <ThemedText variant="label" muted style={styles.label}>
-            {t().createRecipe.prepTime}
-          </ThemedText>
-          <TextInput
-            value={form.prepTimeMinutes}
-            onChangeText={(v) => updateField('prepTimeMinutes', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            style={fieldStyle()}
-          />
-        </View>
-        <View style={styles.rowItem}>
-          <ThemedText variant="label" muted style={styles.label}>
-            {t().createRecipe.cookTime}
-          </ThemedText>
-          <TextInput
-            value={form.cookTimeMinutes}
-            onChangeText={(v) => updateField('cookTimeMinutes', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            style={fieldStyle()}
-          />
-        </View>
-        <View style={styles.rowItem}>
-          <ThemedText variant="label" muted style={styles.label}>
-            {t().createRecipe.servings}
-          </ThemedText>
-          <TextInput
-            value={form.servings}
-            onChangeText={(v) => updateField('servings', v.replace(/[^0-9]/g, ''))}
-            keyboardType="number-pad"
-            style={fieldStyle()}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderStep2 = (): React.JSX.Element => (
-    <ScrollView contentContainerStyle={styles.formScroll}>
-      <ThemedText variant="label" muted style={styles.label}>
-        {t().createRecipe.media}
-      </ThemedText>
-      <MediaPicker
-        media={form.media}
-        onAdd={onMediaAdd}
-        onRemove={onMediaRemove}
-        onSetCover={onMediaSetCover}
-      />
-    </ScrollView>
-  );
-
-  const renderStep3 = (): React.JSX.Element => (
-    <ScrollView contentContainerStyle={styles.formScroll}>
-      <ThemedText variant="label" muted style={styles.label}>
-        {t().createRecipe.ingredients}
-      </ThemedText>
-      {form.ingredients.map((ing, i) => (
-        <View key={i} style={styles.listRow}>
-          <TextInput
-            value={ing}
-            onChangeText={(v) => updateIngredient(i, v)}
-            placeholder={`${t().createRecipe.ingredients} ${i + 1}`}
-            placeholderTextColor={colors.textMuted}
-            style={[fieldStyle(), styles.listInput]}
-          />
-          <Pressable
-            onPress={() => removeIngredient(i)}
-            style={[styles.removeBtn, { borderColor: colors.border }]}
-          >
-            <Ionicons name="close" size={14} color={colors.textMuted} />
-          </Pressable>
-        </View>
-      ))}
-      <Pressable
-        onPress={addIngredient}
-        style={[styles.addRowBtn, { borderColor: colors.border }]}
-      >
-        <Ionicons name="add" size={14} color={colors.primary} />
-        <ThemedText
-          variant="caption"
-          style={[styles.addRowLabel, { color: colors.primary }]}
-        >
-          {t().createRecipe.addIngredient}
-        </ThemedText>
-      </Pressable>
-    </ScrollView>
-  );
-
-  const renderStep4 = (): React.JSX.Element => (
-    <ScrollView contentContainerStyle={styles.formScroll}>
-      <ThemedText variant="label" muted style={styles.label}>
-        {t().createRecipe.instructions}
-      </ThemedText>
-      {form.instructions.map((instStep, i) => (
-        <View key={i} style={styles.stepRow}>
-          <View style={[styles.stepBadge, { backgroundColor: colors.primary }]}>
-            <ThemedText
-              variant="caption"
-              style={[styles.stepBadgeText, { color: colors.primaryText }]}
-            >
-              {i + 1}
-            </ThemedText>
-          </View>
-          <TextInput
-            value={instStep}
-            onChangeText={(v) => updateInstruction(i, v)}
-            multiline
-            placeholder={`Step ${i + 1}`}
-            placeholderTextColor={colors.textMuted}
-            style={[
-              fieldStyle(),
-              styles.stepInput,
-            ]}
-          />
-          <Pressable
-            onPress={() => removeInstruction(i)}
-            style={[styles.removeBtn, { borderColor: colors.border }]}
-          >
-            <Ionicons name="close" size={14} color={colors.textMuted} />
-          </Pressable>
-        </View>
-      ))}
-      <Pressable
-        onPress={addInstruction}
-        style={[styles.addRowBtn, { borderColor: colors.border }]}
-      >
-        <Ionicons name="add" size={14} color={colors.primary} />
-        <ThemedText
-          variant="caption"
-          style={[styles.addRowLabel, { color: colors.primary }]}
-        >
-          {t().createRecipe.addStep}
-        </ThemedText>
-      </Pressable>
-    </ScrollView>
-  );
-
-  const renderStep5 = (): React.JSX.Element => {
-    const coverImage = form.media.find((m) => m.type === 'image');
-    const cleanIngredients = form.ingredients.filter((s) => s.trim().length > 0);
-    const cleanInstructions = form.instructions.filter((s) => s.trim().length > 0);
-
-    return (
-      <ScrollView contentContainerStyle={styles.formScroll}>
-        {coverImage !== undefined ? (
-          <Image
-            source={{ uri: coverImage.url }}
-            style={[styles.reviewImage, { borderRadius: radii.md }]}
-            resizeMode="cover"
-          />
-        ) : null}
-
-        <ThemedText variant="title" style={styles.reviewName}>
-          {form.name.trim().length > 0 ? form.name.trim() : '—'}
-        </ThemedText>
-
-        <View style={styles.reviewChips}>
-          {form.cuisine.trim().length > 0 ? (
-            <View style={[styles.chip, { backgroundColor: colors.chipBackground }]}>
-              <ThemedText variant="caption" style={{ color: colors.text }}>
-                {form.cuisine.trim()}
-              </ThemedText>
-            </View>
-          ) : null}
-          <View style={[styles.chip, { backgroundColor: colors.chipBackground }]}>
-            <ThemedText variant="caption" style={{ color: colors.text }}>
-              {form.difficulty}
-            </ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.reviewTimesRow}>
-          {form.prepTimeMinutes.length > 0 ? (
-            <ThemedText variant="caption" muted>
-              {t().createRecipe.prepTime}: {form.prepTimeMinutes} min
-            </ThemedText>
-          ) : null}
-          {form.cookTimeMinutes.length > 0 ? (
-            <ThemedText variant="caption" muted>
-              {t().createRecipe.cookTime}: {form.cookTimeMinutes} min
-            </ThemedText>
-          ) : null}
-          {form.servings.length > 0 ? (
-            <ThemedText variant="caption" muted>
-              {t().createRecipe.servings}: {form.servings}
-            </ThemedText>
-          ) : null}
-        </View>
-
-        <View style={styles.reviewBadgesRow}>
-          <View style={[styles.reviewBadge, { backgroundColor: colors.chipBackground }]}>
-            <ThemedText variant="caption" style={{ color: colors.text }}>
-              {cleanIngredients.length} {t().createRecipe.ingredients}
-            </ThemedText>
-          </View>
-          <View style={[styles.reviewBadge, { backgroundColor: colors.chipBackground }]}>
-            <ThemedText variant="caption" style={{ color: colors.text }}>
-              {cleanInstructions.length} {t().createRecipe.stepInstructions}
-            </ThemedText>
-          </View>
-        </View>
-
-        {cleanIngredients.slice(0, 3).map((ing, i) => (
-          <View key={i} style={styles.reviewIngredientRow}>
-            <View style={[styles.reviewBullet, { backgroundColor: colors.primary }]} />
-            <ThemedText variant="caption">{ing}</ThemedText>
-          </View>
-        ))}
-
-        {createState.status === 'error' ? (
-          <ThemedText
-            variant="caption"
-            style={[styles.reviewError, { color: colors.danger }]}
-          >
-            {t().createRecipe.saveError}
-          </ThemedText>
-        ) : null}
-
-        {missingImage ? (
-          <ThemedText
-            variant="caption"
-            style={[styles.reviewError, { color: colors.danger }]}
-          >
-            {t().createRecipe.noImage}
-          </ThemedText>
-        ) : null}
       </ScrollView>
-    );
-  };
-
-  const renderCurrentStep = (): React.JSX.Element => {
-    if (step === 1) return renderStep1();
-    if (step === 2) return renderStep2();
-    if (step === 3) return renderStep3();
-    if (step === 4) return renderStep4();
-    return renderStep5();
-  };
-
-  return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={[styles.root, { backgroundColor: colors.background }]}>
-        {renderAppBar()}
-        {renderStepIndicator()}
-        {renderCurrentStep()}
-        {renderChatPanel()}
-        {renderBottomNav()}
-      </View>
     </KeyboardAvoidingView>
   );
 };
 
-const styles = StyleSheet.create({
+// ============================ Step 1 (Basics) ===============================
+
+interface Step1Args {
+  form: RecipeFormState;
+  colors: ThemeColors;
+  updateField: <K extends keyof RecipeFormState>(
+    key: K,
+    value: RecipeFormState[K],
+  ) => void;
+}
+
+const renderStep1 = (args: Step1Args): React.JSX.Element => {
+  const { form, colors, updateField } = args;
+  const fieldStyle: StyleProp<TextStyle> = {
+    height: 48,
+    backgroundColor: colors.inputBackground,
+    borderWidth: 1.5,
+    borderColor: colors.inputBorder,
+    borderRadius: radii.lg,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: colors.text,
+  };
+
+  return (
+    <View style={styles.fieldGroup}>
+      <View>
+        <ThemedText
+          variant="label"
+          style={[styles.fieldLabel, { color: colors.textMuted }]}
+        >
+          {t().createRecipe.name}
+        </ThemedText>
+        <TextInput
+          value={form.name}
+          onChangeText={(v) => updateField('name', v)}
+          placeholder={t().createRecipe.namePlaceholder}
+          placeholderTextColor={colors.textMuted}
+          style={fieldStyle}
+        />
+      </View>
+
+      <View>
+        <ThemedText
+          variant="label"
+          style={[styles.fieldLabel, { color: colors.textMuted }]}
+        >
+          {t().createRecipe.cuisine}
+        </ThemedText>
+        <TextInput
+          value={form.cuisine}
+          onChangeText={(v) => updateField('cuisine', v)}
+          placeholder="Italian"
+          placeholderTextColor={colors.textMuted}
+          style={fieldStyle}
+        />
+      </View>
+
+      <View>
+        <ThemedText
+          variant="label"
+          style={[styles.fieldLabel, { color: colors.textMuted }]}
+        >
+          {t().createRecipe.difficulty}
+        </ThemedText>
+        <View style={styles.difficultyRow}>
+          {DIFFICULTIES.map((d) => {
+            const isActive = form.difficulty === d;
+            return (
+              <Pressable
+                key={d}
+                onPress={() => updateField('difficulty', d)}
+                style={[
+                  styles.difficultyBtn,
+                  {
+                    borderColor: isActive ? colors.primary : colors.border,
+                    backgroundColor: isActive
+                      ? colors.primary
+                      : colors.surface,
+                  },
+                ]}
+              >
+                <ThemedText
+                  variant="body"
+                  style={[
+                    styles.difficultyLabel,
+                    {
+                      color: isActive ? colors.primaryText : colors.text,
+                    },
+                  ]}
+                >
+                  {d}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View>
+        <View style={styles.servingsHeaderRow}>
+          <ThemedText
+            variant="label"
+            style={[styles.fieldLabel, { color: colors.textMuted }]}
+          >
+            {t().createRecipe.servings}
+          </ThemedText>
+          <ThemedText
+            style={[styles.servingsValue, { color: colors.primary }]}
+          >
+            {form.servings}
+          </ThemedText>
+        </View>
+        <View style={styles.stepperRow}>
+          <Pressable
+            onPress={() =>
+              updateField(
+                'servings',
+                clamp(form.servings - 1, SERVINGS_MIN, SERVINGS_MAX),
+              )
+            }
+            disabled={form.servings <= SERVINGS_MIN}
+            style={[
+              styles.stepperBtn,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                opacity: form.servings <= SERVINGS_MIN ? 0.4 : 1,
+              },
+            ]}
+          >
+            <ThemedText
+              style={[styles.stepperBtnLabel, { color: colors.text }]}
+            >
+              −
+            </ThemedText>
+          </Pressable>
+          <View style={styles.stepperSliderWrap}>
+            <Slider
+              value={form.servings}
+              min={SERVINGS_MIN}
+              max={SERVINGS_MAX}
+              step={1}
+              onChange={(v) => updateField('servings', v)}
+            />
+          </View>
+          <Pressable
+            onPress={() =>
+              updateField(
+                'servings',
+                clamp(form.servings + 1, SERVINGS_MIN, SERVINGS_MAX),
+              )
+            }
+            disabled={form.servings >= SERVINGS_MAX}
+            style={[
+              styles.stepperBtn,
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                opacity: form.servings >= SERVINGS_MAX ? 0.4 : 1,
+              },
+            ]}
+          >
+            <ThemedText
+              style={[styles.stepperBtnLabel, { color: colors.text }]}
+            >
+              +
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
+
+      <View style={styles.timeCardsRow}>
+        <TimeSliderCard
+          label={t().createRecipe.prepTime}
+          value={form.prepTimeMinutes}
+          icon="time-outline"
+          onChange={(v) => updateField('prepTimeMinutes', v)}
+          colors={colors}
+        />
+        <TimeSliderCard
+          label={t().createRecipe.cookTime}
+          value={form.cookTimeMinutes}
+          icon="flame-outline"
+          onChange={(v) => updateField('cookTimeMinutes', v)}
+          colors={colors}
+        />
+      </View>
+    </View>
+  );
+};
+
+// ============================ Step 2 (Media) ================================
+
+interface Step2Args {
+  form: RecipeFormState;
+  onMediaAdd: (items: MediaItem[]) => void;
+  onMediaRemove: (i: number) => void;
+  onMediaSetCover: (i: number) => void;
+}
+
+const renderStep2 = (args: Step2Args): React.JSX.Element => (
+  <View>
+    <MediaPicker
+      media={args.form.media}
+      onAdd={args.onMediaAdd}
+      onRemove={args.onMediaRemove}
+      onSetCover={args.onMediaSetCover}
+    />
+  </View>
+);
+
+// ============================ Step 3 (Ingredients) ==========================
+
+interface Step3Args {
+  form: RecipeFormState;
+  colors: ThemeColors;
+  updateIngredient: (i: number, value: string) => void;
+  removeIngredient: (i: number) => void;
+  addIngredient: () => void;
+}
+
+const renderStep3 = (args: Step3Args): React.JSX.Element => {
+  const { form, colors, updateIngredient, removeIngredient, addIngredient } =
+    args;
+  return (
+    <View>
+      <View style={styles.listHeader}>
+        <ThemedText variant="title" style={{ color: colors.text }}>
+          {t().createRecipe.ingredients}
+        </ThemedText>
+        <ThemedText variant="caption" muted>
+          {form.ingredients.length} {t().createRecipe.items}
+        </ThemedText>
+      </View>
+      <View style={styles.listBody}>
+        {form.ingredients.map((ing, i) => (
+          <View
+            key={`ing-${i}`}
+            style={[
+              styles.ingredientRow,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.cardBorder,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.ingredientBadge,
+                { backgroundColor: colors.chipBackground },
+              ]}
+            >
+              <ThemedText
+                variant="caption"
+                style={[
+                  styles.ingredientBadgeLabel,
+                  { color: colors.textMuted },
+                ]}
+              >
+                {i + 1}
+              </ThemedText>
+            </View>
+            <TextInput
+              value={ing}
+              onChangeText={(v) => updateIngredient(i, v)}
+              placeholder={t().createRecipe.ingredientPlaceholder}
+              placeholderTextColor={colors.textMuted}
+              style={[styles.ingredientInput, { color: colors.text }]}
+            />
+            <Pressable
+              onPress={() => removeIngredient(i)}
+              style={styles.iconBtnGhost}
+              hitSlop={8}
+            >
+              <Ionicons name="close" size={16} color={colors.textMuted} />
+            </Pressable>
+          </View>
+        ))}
+        <Pressable
+          onPress={addIngredient}
+          style={[
+            styles.dashedAddBtn,
+            { borderColor: colors.primary },
+          ]}
+        >
+          <Ionicons name="add" size={16} color={colors.primary} />
+          <ThemedText
+            variant="body"
+            style={[styles.dashedAddLabel, { color: colors.primary }]}
+          >
+            {t().createRecipe.addIngredient}
+          </ThemedText>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+// ============================ Step 4 (Instructions) =========================
+
+interface Step4Args {
+  form: RecipeFormState;
+  colors: ThemeColors;
+  updateInstruction: (i: number, value: string) => void;
+  removeInstruction: (i: number) => void;
+  addInstruction: () => void;
+}
+
+const renderStep4 = (args: Step4Args): React.JSX.Element => {
+  const { form, colors, updateInstruction, removeInstruction, addInstruction } =
+    args;
+  return (
+    <View>
+      <View style={styles.listHeader}>
+        <ThemedText variant="title" style={{ color: colors.text }}>
+          {t().createRecipe.instructions}
+        </ThemedText>
+        <ThemedText variant="caption" muted>
+          {form.instructions.length} {t().createRecipe.steps}
+        </ThemedText>
+      </View>
+      <View style={styles.listBody}>
+        {form.instructions.map((stepText, i) => (
+          <View
+            key={`inst-${i}`}
+            style={[
+              styles.instructionCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.cardBorder,
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.instructionBadge}
+            >
+              <ThemedText style={styles.instructionBadgeLabel}>
+                {i + 1}
+              </ThemedText>
+            </LinearGradient>
+            <TextInput
+              value={stepText}
+              onChangeText={(v) => updateInstruction(i, v)}
+              placeholder={t().createRecipe.stepPlaceholder}
+              placeholderTextColor={colors.textMuted}
+              multiline
+              style={[styles.instructionInput, { color: colors.text }]}
+            />
+            <Pressable
+              onPress={() => removeInstruction(i)}
+              style={styles.iconBtnGhost}
+              hitSlop={8}
+            >
+              <Ionicons name="close" size={16} color={colors.textMuted} />
+            </Pressable>
+          </View>
+        ))}
+        <Pressable
+          onPress={addInstruction}
+          style={[
+            styles.dashedAddBtn,
+            { borderColor: colors.primary },
+          ]}
+        >
+          <Ionicons name="add" size={16} color={colors.primary} />
+          <ThemedText
+            variant="body"
+            style={[styles.dashedAddLabel, { color: colors.primary }]}
+          >
+            {t().createRecipe.addStep}
+          </ThemedText>
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+// ============================ Step 5 (Review) ===============================
+
+interface Step5Args {
+  form: RecipeFormState;
+  colors: ThemeColors;
+  missing: boolean;
+  wasAiUsed: boolean;
+  createError: boolean;
+  updateError: boolean;
+  onEditIngredients: () => void;
+  onEditInstructions: () => void;
+}
+
+const renderStep5 = (args: Step5Args): React.JSX.Element => {
+  const {
+    form,
+    colors,
+    missing,
+    wasAiUsed,
+    createError,
+    updateError,
+    onEditIngredients,
+    onEditInstructions,
+  } = args;
+  const coverImage = form.media.find((m) => m.type === 'image');
+  const cleanIngredients = form.ingredients.filter((s) => s.trim().length > 0);
+  const cleanInstructions = form.instructions.filter((s) => s.trim().length > 0);
+  const totalTime = form.prepTimeMinutes + form.cookTimeMinutes;
+  const chips: string[] = [];
+  if (form.cuisine.trim().length > 0) chips.push(form.cuisine.trim());
+  chips.push(form.difficulty);
+  chips.push(`${form.servings} ${t().recipes.servings}`);
+  chips.push(`${totalTime} ${t().recipes.minutes}`);
+
+  return (
+    <View style={styles.reviewWrap}>
+      <ThemedText variant="title" style={[styles.reviewTitle, { color: colors.text }]}>
+        {t().createRecipe.reviewTitle}
+      </ThemedText>
+
+      <View
+        style={[
+          styles.reviewCard,
+          { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+        ]}
+      >
+        {coverImage !== undefined ? (
+          <Image
+            source={{ uri: coverImage.url }}
+            style={styles.reviewImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View
+            style={[
+              styles.reviewImagePlaceholder,
+              { backgroundColor: colors.chipBackground },
+            ]}
+          >
+            <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+          </View>
+        )}
+        <View style={styles.reviewCardBody}>
+          <ThemedText variant="title" style={{ color: colors.text }}>
+            {form.name.trim().length > 0 ? form.name.trim() : '—'}
+          </ThemedText>
+          <View style={styles.reviewChipsRow}>
+            {chips.map((chip, idx) => (
+              <View
+                key={`${idx}-${chip}`}
+                style={[
+                  styles.reviewChip,
+                  { backgroundColor: colors.chipBackground },
+                ]}
+              >
+                <ThemedText
+                  variant="caption"
+                  style={[styles.reviewChipLabel, { color: colors.chipText }]}
+                >
+                  {chip}
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <ReviewRowItem
+        label={t().createRecipe.ingredients}
+        count={cleanIngredients.length}
+        unitLabel={t().createRecipe.items}
+        onPress={onEditIngredients}
+        colors={colors}
+      />
+      <ReviewRowItem
+        label={t().createRecipe.instructions}
+        count={cleanInstructions.length}
+        unitLabel={t().createRecipe.steps}
+        onPress={onEditInstructions}
+        colors={colors}
+      />
+
+      {missing ? (
+        <ThemedText
+          variant="caption"
+          style={[styles.reviewError, { color: colors.danger }]}
+        >
+          {t().createRecipe.noImage}
+        </ThemedText>
+      ) : null}
+      {createError ? (
+        <ThemedText
+          variant="caption"
+          style={[styles.reviewError, { color: colors.danger }]}
+        >
+          {t().createRecipe.saveError}
+        </ThemedText>
+      ) : null}
+      {updateError ? (
+        <ThemedText
+          variant="caption"
+          style={[styles.reviewError, { color: colors.danger }]}
+        >
+          {t().createRecipe.updateError}
+        </ThemedText>
+      ) : null}
+      {wasAiUsed ? (
+        <ThemedText
+          variant="caption"
+          style={[styles.reviewCaption, { color: colors.textMuted }]}
+        >
+          {t().createRecipe.aiSavedDraft}
+        </ThemedText>
+      ) : null}
+    </View>
+  );
+};
+
+// ================================ Styles ===================================
+
+const styles = StyleSheet.create<{
+  root: ViewStyle;
+  promptHeader: ViewStyle;
+  promptHeaderTitle: TextStyle;
+  headerSpacer: ViewStyle;
+  promptScroll: ViewStyle;
+  promptBody: ViewStyle;
+  heroSquare: ViewStyle;
+  heroSparkle: TextStyle;
+  promptHeadingBlock: ViewStyle;
+  promptHero: TextStyle;
+  promptHeroSub: TextStyle;
+  promptForm: ViewStyle;
+  promptInputShadow: ViewStyle;
+  promptInput: TextStyle;
+  chipRow: ViewStyle;
+  ideaChip: ViewStyle;
+  ideaChipLabel: TextStyle;
+  promptCta: ViewStyle;
+  promptCtaInner: ViewStyle;
+  promptCtaLabel: TextStyle;
+  promptError: TextStyle;
+  dividerRow: ViewStyle;
+  dividerLine: ViewStyle;
+  dividerLabel: TextStyle;
+  manualBtn: ViewStyle;
+  manualBtnLabel: TextStyle;
+  wizardHeader: ViewStyle;
+  iconBtn: ViewStyle;
+  iconBtnBordered: ViewStyle;
+  iconBtnGhost: ViewStyle;
+  wizardHeaderCenter: ViewStyle;
+  wizardHeaderCount: TextStyle;
+  wizardHeaderTitle: TextStyle;
+  progressTrack: ViewStyle;
+  progressFill: ViewStyle;
+  stepScroll: ViewStyle;
+  stepScrollInner: ViewStyle;
+  stickyBottom: ViewStyle;
+  bottomBackBtn: ViewStyle;
+  bottomBackLabel: TextStyle;
+  bottomPrimary: ViewStyle;
+  bottomPrimaryInner: ViewStyle;
+  bottomPrimaryLabel: TextStyle;
+  fieldGroup: ViewStyle;
+  fieldLabel: TextStyle;
+  difficultyRow: ViewStyle;
+  difficultyBtn: ViewStyle;
+  difficultyLabel: TextStyle;
+  servingsHeaderRow: ViewStyle;
+  servingsValue: TextStyle;
+  stepperRow: ViewStyle;
+  stepperBtn: ViewStyle;
+  stepperBtnLabel: TextStyle;
+  stepperSliderWrap: ViewStyle;
+  timeCardsRow: ViewStyle;
+  timeCard: ViewStyle;
+  timeCardHeader: ViewStyle;
+  timeCardLabel: TextStyle;
+  timeCardValueRow: ViewStyle;
+  timeCardValue: TextStyle;
+  timeCardUnit: TextStyle;
+  listHeader: ViewStyle;
+  listBody: ViewStyle;
+  ingredientRow: ViewStyle;
+  ingredientBadge: ViewStyle;
+  ingredientBadgeLabel: TextStyle;
+  ingredientInput: TextStyle;
+  instructionCard: ViewStyle;
+  instructionBadge: ViewStyle;
+  instructionBadgeLabel: TextStyle;
+  instructionInput: TextStyle;
+  dashedAddBtn: ViewStyle;
+  dashedAddLabel: TextStyle;
+  reviewWrap: ViewStyle;
+  reviewTitle: TextStyle;
+  reviewCard: ViewStyle;
+  reviewImage: ImageStyle;
+  reviewImagePlaceholder: ViewStyle;
+  reviewCardBody: ViewStyle;
+  reviewChipsRow: ViewStyle;
+  reviewChip: ViewStyle;
+  reviewChipLabel: TextStyle;
+  reviewRow: ViewStyle;
+  reviewRowBody: ViewStyle;
+  reviewRowLabel: TextStyle;
+  reviewRowCount: TextStyle;
+  reviewError: TextStyle;
+  reviewCaption: TextStyle;
+}>({
   root: {
     flex: 1,
   },
-  appBar: {
+  // Prompt header (step 0)
+  promptHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingTop: 56,
     paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  appBarSide: {
-    minWidth: 60,
+  promptHeaderTitle: {
+    textAlign: 'center',
   },
-  appBarSideLabel: {
-    fontWeight: '600',
+  headerSpacer: {
+    width: 36,
+    height: 36,
   },
-  stepIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
+  promptScroll: {
     paddingHorizontal: spacing.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  stepIndicatorItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepLine: {
-    width: 24,
-    height: 2,
-  },
-  stepCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepCircleText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  bottomNavBtn: {
-    flex: 1,
-    height: 48,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bottomNavBtnOutline: {
-    borderWidth: 1.5,
-  },
-  bottomNavBtnFilled: {},
-  bottomNavBtnLabel: {
-    fontWeight: '700',
-    fontSize: 15,
+    flexGrow: 1,
   },
   promptBody: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.lg,
     gap: spacing.lg,
+    paddingTop: spacing.xl,
   },
-  promptIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  heroSquare: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  promptSparkle: {
-    fontSize: 36,
+  heroSparkle: {
+    fontSize: 44,
     color: '#FFFFFF',
   },
-  promptHeading: {
+  promptHeadingBlock: {
     alignItems: 'center',
+    maxWidth: 320,
   },
-  promptTitle: {
+  promptHero: {
     textAlign: 'center',
   },
-  promptSubtitle: {
+  promptHeroSub: {
     marginTop: spacing.xs,
     textAlign: 'center',
   },
   promptForm: {
     width: '100%',
-    maxWidth: 480,
+  },
+  promptInputShadow: {
+    borderRadius: radii.xl,
   },
   promptInput: {
-    minHeight: 96,
-    borderRadius: radii.lg,
+    minHeight: 110,
+    borderRadius: radii.xl,
     borderWidth: 1.5,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
     textAlignVertical: 'top',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: spacing.sm,
+  },
+  ideaChip: {
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: radii.round,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ideaChipLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   promptCta: {
     marginTop: spacing.md,
-    height: 48,
+    height: 52,
     borderRadius: radii.lg,
     overflow: 'hidden',
   },
@@ -1084,53 +1572,54 @@ const styles = StyleSheet.create({
   },
   promptCtaLabel: {
     fontWeight: '700',
+    fontSize: 16,
   },
   promptError: {
     marginTop: spacing.sm,
     textAlign: 'center',
   },
-  manualLink: {
-    textDecorationLine: 'underline',
-    fontWeight: '500',
-  },
-  formScroll: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    paddingBottom: spacing.xxxl,
-  },
-  label: {
-    marginBottom: 6,
-  },
-  row: {
+  dividerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.md,
+    width: '100%',
   },
-  rowItem: {
+  dividerLine: {
     flex: 1,
+    height: 1,
   },
-  difficultyRow: {
-    flexDirection: 'row',
-    height: 44,
-    borderWidth: 1.5,
+  dividerLabel: {
+    fontSize: 12,
+  },
+  manualBtn: {
+    width: '100%',
+    height: 48,
     borderRadius: radii.lg,
-    overflow: 'hidden',
-  },
-  difficultyBtn: {
-    flex: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  listRow: {
+  manualBtnLabel: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  // Wizard header
+  wizardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  listInput: {
-    flex: 1,
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  removeBtn: {
+  iconBtnBordered: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -1138,165 +1627,306 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addRowBtn: {
-    flexDirection: 'row',
+  iconBtnGhost: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    height: 40,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
   },
-  addRowLabel: {
+  wizardHeaderCenter: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  wizardHeaderCount: {
+    fontSize: 11,
     fontWeight: '600',
-    fontSize: 13,
+    letterSpacing: 0.5,
   },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    marginBottom: 6,
+  wizardHeaderTitle: {
+    fontSize: 15,
   },
-  stepBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  stepBadgeText: {
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  stepInput: {
-    flex: 1,
-    height: 'auto',
-    minHeight: 60,
-    paddingVertical: 10,
-    textAlignVertical: 'top',
-  },
-  reviewImage: {
+  progressTrack: {
+    height: 3,
     width: '100%',
-    height: 200,
-    marginBottom: spacing.md,
+    overflow: 'hidden',
   },
-  reviewName: {
-    marginBottom: spacing.sm,
+  progressFill: {
+    height: 3,
   },
-  reviewChips: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.round,
-  },
-  reviewTimesRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.sm,
-    flexWrap: 'wrap',
-  },
-  reviewBadgesRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  reviewBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.md,
-  },
-  reviewIngredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: 4,
-  },
-  reviewBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  reviewError: {
-    marginTop: spacing.md,
-    textAlign: 'center',
-  },
-  chatPanel: {
-    borderTopWidth: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  chatAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chatSparkle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  chatHeaderBody: {
+  stepScroll: {
     flex: 1,
   },
-  chatTitle: {
-    fontWeight: '700',
-  },
-  chatMessages: {
-    maxHeight: 200,
-  },
-  chatMessagesInner: {
+  stepScrollInner: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
+    paddingVertical: spacing.lg,
   },
-  chatBubble: {
-    maxWidth: '82%',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: radii.lg,
-  },
-  chatBubbleLeft: {
-    alignSelf: 'flex-start',
-  },
-  chatBubbleRight: {
-    alignSelf: 'flex-end',
-  },
-  thinking: {
-    fontStyle: 'italic',
-  },
-  chatInputRow: {
+  // Sticky bottom action bar
+  stickyBottom: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  chatInput: {
-    flex: 1,
-    height: 40,
-    borderRadius: radii.round,
+  bottomBackBtn: {
+    height: 52,
+    paddingHorizontal: 20,
+    borderRadius: radii.lg,
     borderWidth: 1.5,
-    paddingHorizontal: 14,
-    fontSize: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chatSend: {
+  bottomBackLabel: {
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  bottomPrimary: {
+    flex: 1,
+    height: 52,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+  },
+  bottomPrimaryInner: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomPrimaryLabel: {
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  // Step 1 fields
+  fieldGroup: {
+    gap: spacing.lg,
+  },
+  fieldLabel: {
+    marginBottom: spacing.sm,
+  },
+  difficultyRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  difficultyBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  difficultyLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  servingsHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: spacing.sm,
+  },
+  servingsValue: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  stepperBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  stepperBtnLabel: {
+    fontSize: 20,
+    fontWeight: '600',
+    lineHeight: 22,
+  },
+  stepperSliderWrap: {
+    flex: 1,
+  },
+  timeCardsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  timeCard: {
+    flex: 1,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+    gap: 6,
+  },
+  timeCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  timeCardLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  timeCardValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  timeCardValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 28,
+  },
+  timeCardUnit: {
+    fontSize: 12,
+  },
+  // List shared (steps 3 and 4)
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: spacing.md,
+  },
+  listBody: {
+    gap: spacing.sm,
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 8,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+  },
+  ingredientBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ingredientBadgeLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  ingredientInput: {
+    flex: 1,
+    height: 36,
+    fontSize: 14,
+    paddingVertical: 0,
+  },
+  instructionCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+  },
+  instructionBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  instructionBadgeLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  instructionInput: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 60,
+    paddingVertical: 0,
+    textAlignVertical: 'top',
+  },
+  dashedAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 48,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
+    marginTop: 4,
+  },
+  dashedAddLabel: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  // Step 5 review
+  reviewWrap: {
+    gap: spacing.md,
+  },
+  reviewTitle: {},
+  reviewCard: {
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  reviewImage: {
+    width: '100%',
+    height: 160,
+  },
+  reviewImagePlaceholder: {
+    width: '100%',
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewCardBody: {
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  reviewChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  reviewChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.round,
+  },
+  reviewChipLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  reviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+  },
+  reviewRowBody: {
+    flexShrink: 1,
+  },
+  reviewRowLabel: {
+    fontWeight: '600',
+  },
+  reviewRowCount: {
+    marginTop: 2,
+  },
+  reviewError: {
+    textAlign: 'center',
+  },
+  reviewCaption: {
+    textAlign: 'center',
   },
 });

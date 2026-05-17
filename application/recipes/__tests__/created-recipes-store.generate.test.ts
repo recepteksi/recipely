@@ -1,0 +1,188 @@
+import { configureCreatedRecipesStore } from '@application/recipes/created-recipes-store';
+import type {
+  CreateRecipeUseCase,
+} from '@application/recipes/create-recipe-use-case';
+import type {
+  GenerateRecipeInput,
+  GenerateRecipeUseCase,
+} from '@application/recipes/generate-recipe-use-case';
+import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
+import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
+import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
+import { UnknownFailure, type Failure } from '@core/failure';
+import { fail, ok, type Result } from '@core/result/result';
+import { Recipe } from '@domain/recipes/recipe';
+
+const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
+  const result = Recipe.create({
+    id: 'r1',
+    name: 'AI Recipe',
+    cuisine: 'Italian',
+    difficulty: 'EASY',
+    ingredients: ['flour'],
+    instructions: ['mix'],
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 20,
+    image: 'https://cdn.example.com/r1.webp',
+    media: [{ type: 'image', url: 'https://cdn.example.com/r1.webp' }],
+    rating: 4.5,
+    tags: [],
+    mealType: [],
+    ownerId: 'owner-1',
+    ...overrides,
+  });
+  if (!result.ok) throw new Error('failed to build Recipe fixture');
+  return result.value;
+};
+
+// Hand-rolled fakes — we only exercise generateRecipe in this file, but the
+// store requires all five use cases at construction time.
+const fakeCreateUseCase = {
+  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+} as unknown as CreateRecipeUseCase;
+
+const fakeListMyUseCase = {
+  execute: () => Promise.resolve(ok([])),
+} as unknown as ListMyRecipesUseCase;
+
+const fakeUpdateUseCase = {
+  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+} as unknown as UpdateRecipeUseCase;
+
+const fakeDeleteUseCase = {
+  execute: () => Promise.resolve(ok(undefined)),
+} as unknown as DeleteRecipeUseCase;
+
+interface DeferredGenerateUseCase {
+  useCase: GenerateRecipeUseCase;
+  resolve: (r: Result<Recipe, Failure>) => void;
+  lastInput: GenerateRecipeInput | null;
+}
+
+// Returns a use case whose `execute` returns a promise the test controls.
+const makeDeferredGenerateUseCase = (): DeferredGenerateUseCase => {
+  let resolveFn: (r: Result<Recipe, Failure>) => void = () => undefined;
+  const promise = new Promise<Result<Recipe, Failure>>((res) => {
+    resolveFn = res;
+  });
+  const ref: DeferredGenerateUseCase = {
+    useCase: {
+      execute: (input: GenerateRecipeInput) => {
+        ref.lastInput = input;
+        return promise;
+      },
+    } as unknown as GenerateRecipeUseCase,
+    resolve: (r) => resolveFn(r),
+    lastInput: null,
+  };
+  return ref;
+};
+
+const makeStoreWithGenerateResult = (result: Result<Recipe, Failure>) => {
+  const generateUseCase = {
+    execute: (_input: GenerateRecipeInput) => Promise.resolve(result),
+  } as unknown as GenerateRecipeUseCase;
+
+  return configureCreatedRecipesStore({
+    createRecipeUseCase: fakeCreateUseCase,
+    listMyRecipesUseCase: fakeListMyUseCase,
+    generateRecipeUseCase: generateUseCase,
+    updateRecipeUseCase: fakeUpdateUseCase,
+    deleteRecipeUseCase: fakeDeleteUseCase,
+  });
+};
+
+describe('createdRecipesStore.generateRecipe', () => {
+  it('starts with generateState idle and aiDraft null', () => {
+    const store = makeStoreWithGenerateResult(ok(makeRecipe()));
+
+    expect(store.getState().generateState).toEqual({ status: 'idle' });
+    expect(store.getState().aiDraft).toBeNull();
+    expect(store.getState().recipes).toEqual([]);
+  });
+
+  it('transitions to generating synchronously before the promise resolves', async () => {
+    const deferred = makeDeferredGenerateUseCase();
+    const store = configureCreatedRecipesStore({
+      createRecipeUseCase: fakeCreateUseCase,
+      listMyRecipesUseCase: fakeListMyUseCase,
+      generateRecipeUseCase: deferred.useCase,
+      updateRecipeUseCase: fakeUpdateUseCase,
+      deleteRecipeUseCase: fakeDeleteUseCase,
+    });
+
+    const pending = store.getState().generateRecipe('pasta', 'en');
+
+    // Synchronous check — state must have flipped before we await.
+    expect(store.getState().generateState).toEqual({ status: 'generating' });
+    expect(store.getState().aiDraft).toBeNull();
+
+    deferred.resolve(ok(makeRecipe()));
+    await pending;
+  });
+
+  it('on success, sets generateState.success, aiDraft, and prepends to recipes', async () => {
+    const recipe = makeRecipe({ id: 'r-new', name: 'New AI Dish' });
+    const store = makeStoreWithGenerateResult(ok(recipe));
+
+    await store.getState().generateRecipe('pasta', 'en');
+
+    const s = store.getState();
+    expect(s.generateState.status).toBe('success');
+    if (s.generateState.status === 'success') {
+      expect(s.generateState.recipe).toBe(recipe);
+    }
+    expect(s.aiDraft).toBe(recipe);
+    expect(s.recipes).toEqual([recipe]);
+  });
+
+  it('prepends the new recipe ahead of any existing recipes', async () => {
+    const existing = makeRecipe({ id: 'existing' });
+    const generated = makeRecipe({ id: 'generated' });
+    const store = makeStoreWithGenerateResult(ok(generated));
+    store.getState().add(existing);
+
+    await store.getState().generateRecipe('pasta', 'en');
+
+    const s = store.getState();
+    expect(s.recipes.map((r) => r.id)).toEqual(['generated', 'existing']);
+  });
+
+  it('on failure, sets generateState.error and leaves aiDraft + recipes untouched', async () => {
+    const failure = new UnknownFailure('AI down');
+    const store = makeStoreWithGenerateResult(fail(failure));
+
+    await store.getState().generateRecipe('pasta', 'en');
+
+    const s = store.getState();
+    expect(s.generateState.status).toBe('error');
+    if (s.generateState.status === 'error') {
+      expect(s.generateState.failure).toBe(failure);
+    }
+    expect(s.aiDraft).toBeNull();
+    expect(s.recipes).toEqual([]);
+  });
+
+  it('resetGenerateState returns generateState to idle', async () => {
+    const store = makeStoreWithGenerateResult(ok(makeRecipe()));
+
+    await store.getState().generateRecipe('pasta', 'en');
+    expect(store.getState().generateState.status).toBe('success');
+
+    store.getState().resetGenerateState();
+
+    expect(store.getState().generateState).toEqual({ status: 'idle' });
+  });
+
+  it('clearAiDraft sets aiDraft back to null', async () => {
+    const recipe = makeRecipe();
+    const store = makeStoreWithGenerateResult(ok(recipe));
+
+    await store.getState().generateRecipe('pasta', 'en');
+    expect(store.getState().aiDraft).toBe(recipe);
+
+    store.getState().clearAiDraft();
+
+    expect(store.getState().aiDraft).toBeNull();
+  });
+});

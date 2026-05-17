@@ -21,6 +21,25 @@ export interface CreateRecipeInput {
   locale?: string;
 }
 
+export interface UpdateRecipeInput {
+  name: Record<string, string>;
+  cuisine: Record<string, string>;
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
+  ingredients: Record<string, string[]>;
+  instructions: Record<string, string[]>;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  imageUri?: string;
+  imageFileName?: string;
+  imageMimeType?: string;
+  rating?: number;
+  tags?: Record<string, string[]>;
+  mealType?: Record<string, string[]>;
+  categoryId?: string | null;
+  isPublished?: boolean;
+  locale?: string;
+}
+
 export type CreateRecipeProgressCallback = (loaded: number, total: number) => void;
 
 export interface IRecipeRepository {
@@ -31,4 +50,11 @@ export interface IRecipeRepository {
     input: CreateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>>;
+  generateRecipe(prompt: string, locale: string): Promise<Result<Recipe, Failure>>;
+  updateRecipe(
+    id: string,
+    input: UpdateRecipeInput,
+    onProgress?: CreateRecipeProgressCallback,
+  ): Promise<Result<Recipe, Failure>>;
+  deleteRecipe(id: string): Promise<Result<void, Failure>>;
 }
