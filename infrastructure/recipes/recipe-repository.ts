@@ -9,7 +9,7 @@ import type {
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import type { HttpClient } from '@infrastructure/network/http-client';
-import { RECIPES_PAGE_SIZE } from '@infrastructure/constants/api';
+import { RECIPES_PAGE_SIZE, UPLOAD_URL } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
@@ -151,20 +151,16 @@ export class RecipeRepository implements IRecipeRepository {
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
-    const hasImage =
-      input.imageUri !== undefined ||
-      input.imageFileName !== undefined ||
-      input.imageMimeType !== undefined;
+    let imageUrl: string | undefined;
 
-    if (hasImage) {
+    // If a new local image is provided, upload it to /upload first to get a URL.
+    // The backend update endpoint only accepts image as a URL string in the JSON body.
+    if (input.imageUri !== undefined) {
       const formData = new FormData();
-      // Same web/native FormData split as createRecipe — see that method for
-      // the rationale on why we fetch the blob on web.
       if (Platform.OS === 'web') {
-        const resp = await fetch(input.imageUri as string);
+        const resp = await fetch(input.imageUri);
         const blob = await resp.blob();
-        const ext =
-          blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+        const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
         formData.append('image', blob, `recipe-${Date.now()}.${ext}`);
       } else {
         formData.append('image', {
@@ -173,56 +169,20 @@ export class RecipeRepository implements IRecipeRepository {
           type: input.imageMimeType,
         } as unknown as Blob);
       }
-
-      formData.append('name', JSON.stringify(input.name));
-      formData.append('cuisine', JSON.stringify(input.cuisine));
-      formData.append('difficulty', input.difficulty);
-      formData.append('ingredients', JSON.stringify(input.ingredients));
-      formData.append('instructions', JSON.stringify(input.instructions));
-      formData.append('prepTimeMinutes', String(input.prepTimeMinutes));
-      formData.append('cookTimeMinutes', String(input.cookTimeMinutes));
-
-      if (input.rating !== undefined) {
-        formData.append('rating', String(input.rating));
-      }
-      if (input.tags) {
-        formData.append('tags', JSON.stringify(input.tags));
-      }
-      if (input.mealType && Object.values(input.mealType).some((arr) => arr.length > 0)) {
-        formData.append('mealType', JSON.stringify(input.mealType));
-      }
-      if (typeof input.categoryId === 'string') {
-        formData.append('categoryId', input.categoryId);
-      }
-      if (input.isPublished !== undefined) {
-        formData.append('isPublished', String(input.isPublished));
-      }
-      if (input.locale) {
-        formData.append('locale', input.locale);
-      }
-
-      // WHY: uploadMultipart is hardcoded to POST; for updates we need PATCH,
-      // so we call request() directly — the request interceptor handles
-      // Content-Type omission for FormData automatically.
-      const result = await this.http.request<RecipeDto>({
-        method: 'PATCH',
-        url: `/recipes/${encodeURIComponent(id)}/with-image`,
+      const uploadResult = await this.http.request<{ url: string }>({
+        method: 'POST',
+        url: UPLOAD_URL,
         data: formData,
         ...(onProgress !== undefined
           ? { onUploadProgress: (event) => onProgress(event.loaded ?? 0, event.total ?? 0) }
           : {}),
       });
-      if (!result.ok) {
-        return result;
+      if (!uploadResult.ok) {
+        return uploadResult;
       }
-      const mapped = toRecipe(result.value);
-      if (!mapped.ok) {
-        return fail(mapped.failure);
-      }
-      return ok(mapped.value);
+      imageUrl = uploadResult.value.url;
     }
 
-    // No image — plain JSON PATCH
     const body: Record<string, unknown> = {
       name: input.name,
       cuisine: input.cuisine,
@@ -232,6 +192,7 @@ export class RecipeRepository implements IRecipeRepository {
       prepTimeMinutes: input.prepTimeMinutes,
       cookTimeMinutes: input.cookTimeMinutes,
     };
+    if (imageUrl !== undefined) body['image'] = imageUrl;
     if (input.rating !== undefined) body['rating'] = input.rating;
     if (input.tags !== undefined) body['tags'] = input.tags;
     if (input.mealType !== undefined) body['mealType'] = input.mealType;

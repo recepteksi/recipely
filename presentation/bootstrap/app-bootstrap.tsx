@@ -1,3 +1,4 @@
+import '@presentation/bootstrap/crypto-polyfill';
 import { type ReactNode, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { container } from '@core/di/container-instance';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -25,7 +25,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const loadRecipes = recipeListStore((s) => s.load);
   const savedIds = savedRecipesStore((s) => s.savedIds);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
-  const deleteState = createdRecipesStore((s) => s.deleteState);
 
   const [tab, setTab] = useState<Tab>('saved');
 
@@ -48,14 +47,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (deleteState.status === 'error') {
-      Alert.alert(t().myRecipes.deleteError);
-      createdRecipesStore.getState().resetDeleteState();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deleteState.status]);
-
   const savedRecipes = useMemo(() => {
     const all: readonly Recipe[] =
       recipeListState.status === 'loaded' ? recipeListState.recipes : [];
@@ -75,27 +66,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const openCreate = (): void => {
     router.push('/create-recipe');
-  };
-
-  const openEdit = (id: string): void => {
-    router.push(`/create-recipe?recipeId=${id}`);
-  };
-
-  const handleDelete = (id: string, name: string): void => {
-    Alert.alert(
-      t().myRecipes.deleteConfirmTitle,
-      t().myRecipes.deleteConfirm,
-      [
-        { text: t().common.cancel, style: 'cancel' },
-        {
-          text: t().myRecipes.deleteRecipe,
-          style: 'destructive',
-          onPress: () => void createdRecipesStore.getState().deleteRecipe(id),
-        },
-      ],
-    );
-    // suppress unused variable warning — name is for readability at call site
-    void name;
   };
 
   return (
@@ -198,78 +168,17 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           <FlatList
             data={items as Recipe[]}
             keyExtractor={(r) => r.id}
-            renderItem={({ item }) => {
-              const isCreated = tab === 'created';
-              return (
-                <View style={isCreated ? styles.recipeItemWrap : undefined}>
-                  <RecipeCard
-                    name={item.name}
-                    image={item.image}
-                    cuisine={item.cuisine}
-                    difficulty={item.difficulty}
-                    rating={item.rating}
-                    tags={item.tags}
-                    onPress={() => openRecipe(item.id)}
-                  />
-                  {isCreated ? (
-                    <View
-                      style={[
-                        styles.actionRow,
-                        {
-                          backgroundColor: colors.surface,
-                          borderColor: colors.cardBorder,
-                        },
-                      ]}
-                    >
-                      <Pressable
-                        onPress={() => openEdit(item.id)}
-                        style={styles.actionBtn}
-                      >
-                        <Ionicons
-                          name="pencil-outline"
-                          size={14}
-                          color={colors.primary}
-                        />
-                        <ThemedText
-                          variant="caption"
-                          style={[
-                            styles.actionBtnLabel,
-                            { color: colors.primary },
-                          ]}
-                        >
-                          {t().myRecipes.editRecipe}
-                        </ThemedText>
-                      </Pressable>
-                      <View
-                        style={[
-                          styles.actionDivider,
-                          { backgroundColor: colors.border },
-                        ]}
-                      />
-                      <Pressable
-                        onPress={() => handleDelete(item.id, item.name)}
-                        style={styles.actionBtn}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={14}
-                          color={colors.danger}
-                        />
-                        <ThemedText
-                          variant="caption"
-                          style={[
-                            styles.actionBtnLabel,
-                            { color: colors.danger },
-                          ]}
-                        >
-                          {t().myRecipes.deleteRecipe}
-                        </ThemedText>
-                      </Pressable>
-                    </View>
-                  ) : null}
-                </View>
-              );
-            }}
+            renderItem={({ item }) => (
+              <RecipeCard
+                name={item.name}
+                image={item.image}
+                cuisine={item.cuisine}
+                difficulty={item.difficulty}
+                rating={item.rating}
+                tags={item.tags}
+                onPress={() => openRecipe(item.id)}
+              />
+            )}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             contentContainerStyle={styles.listContent}
           />
@@ -358,30 +267,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     width: '100%',
     maxWidth: 240,
-  },
-  recipeItemWrap: {
-    gap: 0,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: radii.lg,
-    borderBottomRightRadius: radii.lg,
-    overflow: 'hidden',
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 10,
-  },
-  actionBtnLabel: {
-    fontWeight: '600',
-  },
-  actionDivider: {
-    width: 1,
   },
 });
