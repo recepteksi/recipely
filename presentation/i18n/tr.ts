@@ -12,7 +12,7 @@ export const tr: Translations = {
   },
   login: {
     title: 'Recipely',
-    subtitle: 'Tariflerinizi ve görevlerinizi görmek için giriş yapın.',
+    subtitle: 'Tariflerinizi görmek için giriş yapın.',
     emailPlaceholder: 'E-posta',
     passwordPlaceholder: 'Şifre',
     signIn: 'Giriş yap',
@@ -25,7 +25,6 @@ export const tr: Translations = {
   recipes: {
     title: 'Tarifler',
     empty: 'Tarif bulunamadı.',
-    viewTasks: 'Görevleri görüntüle',
     cuisine: 'Mutfak',
     difficulty: 'Zorluk',
     prepTime: 'Hazırlık süresi',
@@ -52,14 +51,6 @@ export const tr: Translations = {
     clearFilters: 'Temizle',
     showResults: 'Göster',
   },
-  tasks: {
-    title: 'Görevler',
-    empty: 'Bu tarif için görev yok.',
-    completed: 'Tamamlandı',
-    pending: 'Beklemede',
-    progress: 'tamamlandı',
-    allCompleted: 'Tüm görevler tamamlandı!',
-  },
   settings: {
     title: 'Ayarlar',
     appearance: 'Görünüm',
@@ -80,8 +71,6 @@ export const tr: Translations = {
   navigation: {
     recipes: 'Tarifler',
     recipe: 'Tarif',
-    tasks: 'Görevler',
-    task: 'Görev',
     settings: 'Ayarlar',
     myRecipes: 'Tariflerim',
   },
@@ -174,6 +163,17 @@ export const tr: Translations = {
     cover: 'Kapak',
     setCover: 'Kapak yap',
     more: 'Ekle',
+  },
+  comments: {
+    title: 'Yorumlar',
+    empty: 'Henüz yorum yok. İlk yorumu sen yap!',
+    placeholder: 'Yorum yaz...',
+    send: 'Gönder',
+    signInToComment: 'Yorum yapmak için giriş yapın.',
+    loadMore: 'Daha fazla',
+    deleteConfirm: 'Bu yorum silinsin mi?',
+    error: 'Gönderilemedi. Tekrar deneyin.',
+    total: 'yorum',
   },
   register: {
     title: 'Hesap oluştur',

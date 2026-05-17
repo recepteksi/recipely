@@ -5,10 +5,10 @@ export const TOKENS = {
   SecureStorage: Symbol.for('SecureStorage'),
   AuthRepository: Symbol.for('AuthRepository'),
   RecipeRepository: Symbol.for('RecipeRepository'),
-  TaskRepository: Symbol.for('TaskRepository'),
   FavoritesRepository: Symbol.for('FavoritesRepository'),
   AddFavoriteUseCase: Symbol.for('AddFavoriteUseCase'),
   RemoveFavoriteUseCase: Symbol.for('RemoveFavoriteUseCase'),
   LoadFavoritesUseCase: Symbol.for('LoadFavoritesUseCase'),
   HealthCheckService: Symbol.for('HealthCheckService'),
+  CommentRepository: Symbol.for('CommentRepository'),
 } as const;

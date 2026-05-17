@@ -8,8 +8,8 @@ import { FavoritesRepository } from '@infrastructure/favorites/favorites-reposit
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { TaskRepository } from '@infrastructure/tasks/task-repository';
 import { HealthCheckService } from '@infrastructure/network/health-check-service';
+import { CommentRepository } from '@infrastructure/comments/comment-repository';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 
@@ -66,10 +66,10 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     return new LoadFavoritesUseCase(repo);
   });
 
-  container.register(TOKENS.TaskRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new TaskRepository(http);
-  });
-
   container.register(TOKENS.HealthCheckService, () => new HealthCheckService());
+
+  container.register(TOKENS.CommentRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new CommentRepository(http);
+  });
 };

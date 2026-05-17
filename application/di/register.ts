@@ -2,7 +2,6 @@ import type { Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-import type { ITaskRepository } from '@domain/tasks/i-task-repository';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
@@ -14,8 +13,6 @@ import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-c
 import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
 import { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
-import { ListTasksUseCase } from '@application/tasks/list-tasks-use-case';
-import { GetTaskUseCase } from '@application/tasks/get-task-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
@@ -37,17 +34,17 @@ import {
   type CreatedRecipesStore,
 } from '@application/recipes/created-recipes-store';
 import {
-  configureTaskListStore,
-  type TaskListStore,
-} from '@application/tasks/task-list-store';
-import {
-  configureTaskDetailStore,
-  type TaskDetailStore,
-} from '@application/tasks/task-detail-store';
-import {
   configureFavoritesStore,
   type FavoritesStore,
 } from '@application/favorites/favorites-store';
+import { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
+import { AddCommentUseCase } from '@application/comments/add-comment-use-case';
+import { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
+import {
+  configureCommentsStore,
+  type CommentsStore,
+} from '@application/comments/comments-store';
+import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 
 export interface ApplicationStores {
   authStore: AuthStore;
@@ -55,17 +52,14 @@ export interface ApplicationStores {
   recipeDetailStore: RecipeDetailStore;
   savedRecipesStore: SavedRecipesStore;
   createdRecipesStore: CreatedRecipesStore;
-  taskListStore: TaskListStore;
-  taskDetailStore: TaskDetailStore;
   favoritesStore: FavoritesStore;
+  commentsStore: CommentsStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
 export const registerApplication = (container: Container): ApplicationStores => {
   const authRepo = container.resolve<IAuthRepository>(TOKENS.AuthRepository);
   const recipeRepo = container.resolve<IRecipeRepository>(TOKENS.RecipeRepository);
-  const taskRepo = container.resolve<ITaskRepository>(TOKENS.TaskRepository);
-
   const signIn = new SignInUseCase(authRepo);
   const signUp = new SignUpUseCase(authRepo);
   const signOut = new SignOutUseCase(authRepo);
@@ -77,8 +71,11 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
   const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
-  const listTasks = new ListTasksUseCase(taskRepo);
-  const getTask = new GetTaskUseCase(taskRepo);
+  const commentRepo = container.resolve<ICommentRepository>(TOKENS.CommentRepository);
+  const listCommentsUseCase = new ListCommentsUseCase(commentRepo);
+  const addCommentUseCase = new AddCommentUseCase(commentRepo);
+  const deleteCommentUseCase = new DeleteCommentUseCase(commentRepo);
+
   const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
   const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
   const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
@@ -99,18 +96,19 @@ export const registerApplication = (container: Container): ApplicationStores => 
     updateRecipeUseCase,
     deleteRecipeUseCase,
   });
-  const taskListStore = configureTaskListStore({ listTasks });
-  const taskDetailStore = configureTaskDetailStore({ getTask });
-
+  const commentsStore = configureCommentsStore({
+    listComments: listCommentsUseCase,
+    addComment: addCommentUseCase,
+    deleteComment: deleteCommentUseCase,
+  });
   return {
     authStore,
     recipeListStore,
     recipeDetailStore,
     savedRecipesStore,
     createdRecipesStore,
-    taskListStore,
-    taskDetailStore,
     favoritesStore,
+    commentsStore,
     loadFavoritesUseCase,
   };
 };

@@ -10,7 +10,7 @@ export const en = {
   },
   login: {
     title: 'Recipely',
-    subtitle: 'Sign in to view your recipes and tasks.',
+    subtitle: 'Sign in to view your recipes.',
     emailPlaceholder: 'Email',
     passwordPlaceholder: 'Password',
     signIn: 'Sign in',
@@ -23,7 +23,6 @@ export const en = {
   recipes: {
     title: 'Recipes',
     empty: 'No recipes found.',
-    viewTasks: 'View tasks',
     cuisine: 'Cuisine',
     difficulty: 'Difficulty',
     prepTime: 'Prep time',
@@ -50,14 +49,6 @@ export const en = {
     clearFilters: 'Clear',
     showResults: 'Show',
   },
-  tasks: {
-    title: 'Tasks',
-    empty: 'No tasks for this recipe.',
-    completed: 'Completed',
-    pending: 'Pending',
-    progress: 'completed',
-    allCompleted: 'All tasks completed!',
-  },
   settings: {
     title: 'Settings',
     appearance: 'Appearance',
@@ -78,8 +69,6 @@ export const en = {
   navigation: {
     recipes: 'Recipes',
     recipe: 'Recipe',
-    tasks: 'Tasks',
-    task: 'Task',
     settings: 'Settings',
     myRecipes: 'My Recipes',
   },
@@ -172,6 +161,17 @@ export const en = {
     cover: 'Cover',
     setCover: 'Set cover',
     more: 'Add more',
+  },
+  comments: {
+    title: 'Comments',
+    empty: 'No comments yet. Be the first!',
+    placeholder: 'Write a comment...',
+    send: 'Send',
+    signInToComment: 'Sign in to leave a comment.',
+    loadMore: 'Load more',
+    deleteConfirm: 'Delete this comment?',
+    error: 'Failed to post. Please try again.',
+    total: 'comments',
   },
   register: {
     title: 'Create account',
