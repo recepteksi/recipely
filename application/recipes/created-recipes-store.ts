@@ -3,7 +3,14 @@ import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
-import type { CreateRecipeInput, CreateRecipeProgressCallback } from '@domain/recipes/i-recipe-repository';
+import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
+import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
+import type {
+  CreateRecipeInput,
+  CreateRecipeProgressCallback,
+  UpdateRecipeInput,
+} from '@domain/recipes/i-recipe-repository';
 
 export type CreateRecipeState =
   | { status: 'idle' }
@@ -11,20 +18,53 @@ export type CreateRecipeState =
   | { status: 'success'; recipe: Recipe }
   | { status: 'error'; failure: Failure };
 
+export type GenerateRecipeState =
+  | { status: 'idle' }
+  | { status: 'generating' }
+  | { status: 'success'; recipe: Recipe }
+  | { status: 'error'; failure: Failure };
+
+export type UpdateRecipeState =
+  | { status: 'idle' }
+  | { status: 'updating' }
+  | { status: 'success'; recipe: Recipe }
+  | { status: 'error'; failure: Failure };
+
+export type DeleteRecipeState =
+  | { status: 'idle' }
+  | { status: 'deleting' }
+  | { status: 'success' }
+  | { status: 'error'; failure: Failure };
+
 export interface CreatedRecipesStoreState {
   recipes: readonly Recipe[];
   createState: CreateRecipeState;
+  generateState: GenerateRecipeState;
+  updateState: UpdateRecipeState;
+  deleteState: DeleteRecipeState;
+  aiDraft: Recipe | null;
   add: (recipe: Recipe) => void;
   remove: (id: string) => void;
+  replace: (recipe: Recipe) => void;
   findById: (id: string) => Recipe | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;
+  generateRecipe: (prompt: string, locale: string) => Promise<void>;
+  updateRecipe: (id: string, input: UpdateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
+  deleteRecipe: (id: string) => Promise<void>;
   resetCreateState: () => void;
+  resetGenerateState: () => void;
+  resetUpdateState: () => void;
+  resetDeleteState: () => void;
+  clearAiDraft: () => void;
 }
 
 export interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
+  generateRecipeUseCase: GenerateRecipeUseCase;
+  updateRecipeUseCase: UpdateRecipeUseCase;
+  deleteRecipeUseCase: DeleteRecipeUseCase;
 }
 
 export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreState>>;
@@ -33,8 +73,14 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
     createState: { status: 'idle' },
+    generateState: { status: 'idle' },
+    updateState: { status: 'idle' },
+    deleteState: { status: 'idle' },
+    aiDraft: null,
     add: (recipe) => set((s) => ({ recipes: [recipe, ...s.recipes] })),
     remove: (id) => set((s) => ({ recipes: s.recipes.filter((r) => r.id !== id) })),
+    replace: (recipe) =>
+      set((s) => ({ recipes: s.recipes.map((r) => (r.id === recipe.id ? recipe : r)) })),
     findById: (id) => get().recipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: 'creating' } });
@@ -56,6 +102,48 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       }
       set({ recipes: result.value });
     },
+    generateRecipe: async (prompt, locale) => {
+      set({ generateState: { status: 'generating' } });
+      const result = await deps.generateRecipeUseCase.execute({ prompt, locale });
+      if (!result.ok) {
+        set({ generateState: { status: 'error', failure: result.failure } });
+        return;
+      }
+      const recipe = result.value;
+      // WHY: backend already persisted the generated recipe as a draft, so
+      // prepend it to `recipes` for an instant "My Recipes" reflection in
+      // addition to surfacing it as `aiDraft` for the wizard to pre-fill.
+      set((s) => ({
+        generateState: { status: 'success', recipe },
+        aiDraft: recipe,
+        recipes: [recipe, ...s.recipes],
+      }));
+    },
+    updateRecipe: async (id, input, onProgress) => {
+      set({ updateState: { status: 'updating' } });
+      const result = await deps.updateRecipeUseCase.execute(id, input, onProgress);
+      if (!result.ok) {
+        set({ updateState: { status: 'error', failure: result.failure } });
+        return;
+      }
+      const recipe = result.value;
+      get().replace(recipe);
+      set({ updateState: { status: 'success', recipe } });
+    },
+    deleteRecipe: async (id) => {
+      set({ deleteState: { status: 'deleting' } });
+      const result = await deps.deleteRecipeUseCase.execute(id);
+      if (!result.ok) {
+        set({ deleteState: { status: 'error', failure: result.failure } });
+        return;
+      }
+      get().remove(id);
+      set({ deleteState: { status: 'success' } });
+    },
     resetCreateState: () => set({ createState: { status: 'idle' } }),
+    resetGenerateState: () => set({ generateState: { status: 'idle' } }),
+    resetUpdateState: () => set({ updateState: { status: 'idle' } }),
+    resetDeleteState: () => set({ deleteState: { status: 'idle' } }),
+    clearAiDraft: () => set({ aiDraft: null }),
   }));
 };

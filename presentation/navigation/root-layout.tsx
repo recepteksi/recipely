@@ -35,14 +35,6 @@ const RootStack = (): React.JSX.Element => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="recipes/[recipeId]/tasks/index"
-          options={{ title: t().navigation.tasks }}
-        />
-        <Stack.Screen
-          name="recipes/[recipeId]/tasks/[taskId]"
-          options={{ title: t().navigation.task }}
-        />
-        <Stack.Screen
           name="my-recipes"
           options={{ title: t().navigation.myRecipes, headerBackVisible: false }}
         />

@@ -1,21 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { MediaGallery } from '@presentation/base/widgets/media-gallery';
 import { VideoSection } from '@presentation/base/widgets/video-section';
 import { TimeCard } from '@presentation/base/widgets/time-card';
 import { IngredientCard } from '@presentation/base/widgets/ingredient-card';
 import { InstructionCard } from '@presentation/base/widgets/instruction-card';
+import { CommentCard } from '@presentation/base/widgets/comment-card';
 import {
   StateView,
   type StateViewStatus,
 } from '@presentation/base/widgets/state-view';
+import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii } from '@presentation/base/theme';
@@ -57,7 +58,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
@@ -65,6 +66,40 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const commentState = commentsStore((s) => s.byRecipe[recipeId]);
+  const deleteState = createdRecipesStore((s) => s.deleteState);
+  const isDeleting = deleteState.status === 'deleting';
+  const [showDeleteSheet, setShowDeleteSheet] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [commentInput, setCommentInput] = useState('');
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const confirmDelete = useCallback(async () => {
+    setDeleteError(null);
+    await createdRecipesStore.getState().deleteRecipe(recipeId);
+    const { deleteState: s } = createdRecipesStore.getState();
+    if (s.status === 'success') {
+      createdRecipesStore.getState().resetDeleteState();
+      setShowDeleteSheet(false);
+      // Wait for the modal dismiss animation to complete before navigating.
+      setTimeout(() => router.back(), 300);
+    } else if (s.status === 'error') {
+      createdRecipesStore.getState().resetDeleteState();
+      setDeleteError(t().myRecipes.deleteError);
+    }
+  }, [recipeId, router]);
+
+  const handleAddComment = useCallback(async () => {
+    const trimmed = commentInput.trim();
+    if (trimmed.length === 0) return;
+    const ok = await commentsStore.getState().addComment(recipeId, trimmed);
+    if (ok) {
+      setCommentInput('');
+      setSubmitError(null);
+    } else {
+      setSubmitError(t().comments.error);
+    }
+  }, [commentInput, commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
     // eslint-disable-next-line no-console
@@ -108,6 +143,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       void load(recipeId);
     }
   }, [isLocal, recipeId, networkState, load]);
+
+  useEffect(() => {
+    if (recipeState?.status === 'loaded' && commentState === undefined) {
+      void commentsStore.getState().load(recipeId);
+    }
+  }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
@@ -271,17 +312,140 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       ))}
                     </View>
 
-                    <View style={styles.actions}>
-                      <PrimaryButton
-                        label={t().recipes.viewTasks}
-                        onPress={() =>
-                          router.push({
-                            pathname: '/recipes/[recipeId]/tasks',
-                            params: { recipeId },
-                          })
-                        }
+                    {isLocal ? (
+                      <View style={styles.ownerActions}>
+                        <Pressable
+                          onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                          style={({ pressed }) => [
+                            styles.ownerBtn,
+                            { backgroundColor: colors.primaryLight, opacity: pressed ? 0.75 : 1 },
+                          ]}
+                        >
+                          <Ionicons name="pencil-outline" size={16} color={colors.primary} />
+                          <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.primary }]}>
+                            {t().myRecipes.editRecipe}
+                          </ThemedText>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => setShowDeleteSheet(true)}
+                          style={({ pressed }) => [
+                            styles.ownerBtn,
+                            styles.ownerBtnDanger,
+                            { opacity: pressed ? 0.75 : 1 },
+                          ]}
+                        >
+                          <Ionicons name="trash-outline" size={16} color={colors.danger} />
+                          <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
+                            {t().myRecipes.deleteRecipe}
+                          </ThemedText>
+                        </Pressable>
+                      </View>
+                    ) : null}
+
+                    <SectionHeader
+                      title={
+                        commentState?.total
+                          ? `${t().comments.title} · ${commentState.total}`
+                          : t().comments.title
+                      }
+                    />
+
+                    {commentState?.isLoading ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.primary}
+                        style={styles.commentsLoader}
                       />
-                    </View>
+                    ) : !commentState || commentState.items.length === 0 ? (
+                      <ThemedText variant="caption" muted style={styles.commentsEmpty}>
+                        {t().comments.empty}
+                      </ThemedText>
+                    ) : (
+                      <View style={styles.commentsList}>
+                        {commentState.items.map((comment) => (
+                          <CommentCard
+                            key={comment.id}
+                            body={comment.body}
+                            createdAt={comment.createdAt}
+                            isOwn={comment.authorId === userId}
+                            onDelete={() => void commentsStore.getState().deleteComment(recipeId, comment.id)}
+                          />
+                        ))}
+                      </View>
+                    )}
+
+                    {commentState !== undefined &&
+                    commentState.items.length < commentState.total ? (
+                      <Pressable
+                        onPress={() => void commentsStore.getState().loadMore(recipeId)}
+                        style={({ pressed }) => [
+                          styles.loadMoreBtn,
+                          { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+                        ]}
+                      >
+                        <ThemedText variant="caption" muted>
+                          {commentState.isLoadingMore
+                            ? t().common.loading
+                            : t().comments.loadMore}
+                        </ThemedText>
+                      </Pressable>
+                    ) : null}
+
+                    {userId !== null ? (
+                      <View style={styles.commentInputRow}>
+                        <TextInput
+                          value={commentInput}
+                          onChangeText={setCommentInput}
+                          placeholder={t().comments.placeholder}
+                          placeholderTextColor={colors.textMuted}
+                          style={[
+                            styles.commentInput,
+                            {
+                              backgroundColor: colors.surface,
+                              color: colors.text,
+                              borderColor: colors.border,
+                            },
+                          ]}
+                          multiline
+                          maxLength={2000}
+                        />
+                        <Pressable
+                          onPress={() => void handleAddComment()}
+                          disabled={
+                            commentState?.isSubmitting === true ||
+                            commentInput.trim().length === 0
+                          }
+                          style={({ pressed }) => [
+                            styles.commentSendBtn,
+                            {
+                              backgroundColor: colors.primary,
+                              opacity:
+                                pressed ||
+                                commentState?.isSubmitting === true ||
+                                commentInput.trim().length === 0
+                                  ? 0.6
+                                  : 1,
+                            },
+                          ]}
+                        >
+                          <Ionicons name="send" size={16} color="#fff" />
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <ThemedText variant="caption" muted style={styles.signInHint}>
+                        {t().comments.signInToComment}
+                      </ThemedText>
+                    )}
+
+                    {submitError !== null ? (
+                      <ThemedText
+                        variant="caption"
+                        style={[styles.submitError, { color: colors.danger }]}
+                      >
+                        {submitError}
+                      </ThemedText>
+                    ) : null}
+
                   </View>
                 </View>
               );
@@ -297,6 +461,48 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       >
         <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </Pressable>
+
+      <BottomSheet
+        visible={showDeleteSheet}
+        title={t().myRecipes.deleteConfirmTitle}
+        hideCloseButton
+        onClose={() => { setShowDeleteSheet(false); setDeleteError(null); }}
+      >
+        <ThemedText variant="body" muted style={styles.deleteSheetBody}>
+          {t().myRecipes.deleteConfirm}
+        </ThemedText>
+        {deleteError !== null ? (
+          <ThemedText variant="caption" style={[styles.deleteSheetError, { color: colors.danger }]}>
+            {deleteError}
+          </ThemedText>
+        ) : null}
+        <View style={styles.deleteSheetActions}>
+          <Pressable
+            onPress={() => { setShowDeleteSheet(false); setDeleteError(null); }}
+            style={({ pressed }) => [
+              styles.deleteSheetBtn,
+              { backgroundColor: colors.surface, opacity: pressed ? 0.75 : 1 },
+            ]}
+          >
+            <ThemedText variant="body" style={{ fontWeight: '600' }}>
+              {t().common.cancel}
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            onPress={() => void confirmDelete()}
+            disabled={isDeleting}
+            style={({ pressed }) => [
+              styles.deleteSheetBtn,
+              styles.deleteSheetBtnDanger,
+              { opacity: pressed || isDeleting ? 0.7 : 1 },
+            ]}
+          >
+            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, { fontWeight: '600' }]}>
+              {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
+            </ThemedText>
+          </Pressable>
+        </View>
+      </BottomSheet>
 
       {current.status === 'loaded' ? (
         <Pressable
@@ -370,8 +576,51 @@ const styles = StyleSheet.create({
   cardsList: {
     gap: spacing.sm,
   },
-  actions: {
+  ownerActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
     marginTop: spacing.xl,
+  },
+  ownerBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    height: 44,
+    borderRadius: radii.lg,
+  },
+  ownerBtnDanger: {
+    backgroundColor: 'rgba(217,48,37,0.1)',
+  },
+  ownerBtnLabel: {
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  deleteSheetBody: {
+    marginBottom: spacing.md,
+    lineHeight: 22,
+  },
+  deleteSheetError: {
+    marginBottom: spacing.md,
+  },
+  deleteSheetActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  deleteSheetBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: radii.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteSheetBtnDanger: {
+    backgroundColor: 'rgba(217,48,37,0.12)',
+  },
+  deleteSheetBtnDangerLabel: {
+    color: '#D93025',
   },
   backButton: {
     position: 'absolute',
@@ -392,5 +641,49 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  commentsLoader: {
+    marginVertical: spacing.md,
+  },
+  commentsEmpty: {
+    marginTop: spacing.sm,
+  },
+  commentsList: {
+    gap: spacing.sm,
+  },
+  loadMoreBtn: {
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.round,
+    borderWidth: 1,
+  },
+  commentInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  commentInput: {
+    flex: 1,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    minHeight: 44,
+  },
+  commentSendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signInHint: {
+    marginTop: spacing.sm,
+  },
+  submitError: {
+    marginTop: spacing.xs,
   },
 });

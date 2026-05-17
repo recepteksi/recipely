@@ -1,0 +1,17 @@
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
+import type { CommentPage, ICommentRepository } from '@domain/comments/i-comment-repository';
+
+export interface ListCommentsInput {
+  recipeId: string;
+  page: number;
+  pageSize: number;
+}
+
+export class ListCommentsUseCase {
+  constructor(private readonly repo: ICommentRepository) {}
+
+  execute(input: ListCommentsInput): Promise<Result<CommentPage, Failure>> {
+    return this.repo.listByRecipe(input.recipeId, input.page, input.pageSize);
+  }
+}

@@ -9,6 +9,7 @@ export interface BottomSheetProps {
   visible: boolean;
   title: string;
   onClose: () => void;
+  hideCloseButton?: boolean;
   rightAction?: { label: string; onPress: () => void };
   children: ReactNode;
 }
@@ -17,6 +18,7 @@ export const BottomSheet = ({
   visible,
   title,
   onClose,
+  hideCloseButton = false,
   rightAction,
   children,
 }: BottomSheetProps): React.JSX.Element => {
@@ -46,9 +48,13 @@ export const BottomSheet = ({
             <View style={[styles.grabber, { backgroundColor: colors.border }]} />
           </View>
           <View style={styles.header}>
-            <Pressable onPress={onClose} hitSlop={8} style={styles.headerSide}>
-              <ThemedText variant="body" muted>×</ThemedText>
-            </Pressable>
+            {hideCloseButton ? (
+              <View style={styles.headerSide} />
+            ) : (
+              <Pressable onPress={onClose} hitSlop={8} style={styles.headerSide}>
+                <ThemedText variant="body" muted>×</ThemedText>
+              </Pressable>
+            )}
             <ThemedText variant="subtitle">{title}</ThemedText>
             {rightAction !== undefined ? (
               <Pressable
