@@ -47,6 +47,12 @@ function isEnvelope(body: unknown): body is Envelope {
   );
 }
 
+/**
+ * Axios-backed HTTP client for the Recipely backend. Automatically attaches
+ * the JWT bearer token and `Accept-Language` header on every request, encrypts
+ * JSON request bodies and decrypts AES-GCM response envelopes, and maps
+ * non-2xx responses and network errors to the domain `Failure` hierarchy.
+ */
 export class HttpClient {
   private readonly instance: AxiosInstance;
   private readonly aesKey: Uint8Array;
@@ -108,7 +114,7 @@ export class HttpClient {
         config.data = encryptEnvelope({ data: bodyData }, this.aesKey);
       }
       if (options.enableLogging) {
-        // eslint-disable-next-line no-console
+         
         console.log(`[HTTP →] ${config.method?.toUpperCase()} ${config.baseURL ?? ''}${config.url ?? ''}`);
       }
       return config;
@@ -122,13 +128,13 @@ export class HttpClient {
             response.data = decryptEnvelope(response.data, this.aesKey);
           } catch (err) {
             if (options.enableLogging) {
-              // eslint-disable-next-line no-console
+               
               console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`);
             }
           }
         }
         if (options.enableLogging) {
-          // eslint-disable-next-line no-console
+           
           console.log(`[HTTP ←] ${response.status} ${response.config.url ?? ''}`);
         }
         return response;

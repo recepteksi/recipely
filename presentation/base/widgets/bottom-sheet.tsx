@@ -14,6 +14,7 @@ export interface BottomSheetProps {
   children: ReactNode;
 }
 
+/** Modal bottom sheet with a grabber, header, optional close button, and scrollable content area. */
 export const BottomSheet = ({
   visible,
   title,

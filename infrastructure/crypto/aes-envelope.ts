@@ -13,6 +13,10 @@ export interface Envelope {
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
 
+/**
+ * Converts a 64-character hex string into a 32-byte `Uint8Array` suitable for
+ * use as an AES-256-GCM key. Throws if the input is not exactly 64 hex chars.
+ */
 export function keyFromHex(hex: string): Uint8Array {
   if (!/^[0-9a-fA-F]{64}$/.test(hex)) {
     throw new Error('AES key must be 64 hex chars (32 bytes)');
@@ -44,6 +48,10 @@ function fromBase64(b64: string): Uint8Array {
   return new Uint8Array(Buffer.from(b64, 'base64'));
 }
 
+/**
+ * Thrown when AES-GCM decryption of an envelope fails, either because the
+ * ciphertext is malformed or the auth tag does not match (tampered payload).
+ */
 export class EnvelopeDecryptError extends Error {
   constructor(message: string) {
     super(message);
@@ -51,6 +59,11 @@ export class EnvelopeDecryptError extends Error {
   }
 }
 
+/**
+ * Serialises `plain` to JSON and encrypts it with AES-256-GCM using a fresh
+ * random 12-byte IV per call. Returns an `Envelope` whose `payload` and `iv`
+ * fields are base64-encoded for wire transport.
+ */
 export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
   const iv = randomBytes(IV_BYTES);
   const cipher = gcm(key, iv);
@@ -62,6 +75,11 @@ export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
   };
 }
 
+/**
+ * Decrypts an `Envelope` produced by `encryptEnvelope` and returns the
+ * deserialised plain-text value. Throws `EnvelopeDecryptError` if the IV or
+ * payload are malformed, or if the GCM auth tag check fails.
+ */
 export function decryptEnvelope(envelope: Envelope, key: Uint8Array): unknown {
   if (typeof envelope.payload !== 'string' || typeof envelope.iv !== 'string') {
     throw new EnvelopeDecryptError('Envelope missing payload or iv');

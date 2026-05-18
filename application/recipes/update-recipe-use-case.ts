@@ -7,6 +7,10 @@ import type {
   CreateRecipeProgressCallback,
 } from '@domain/recipes/i-recipe-repository';
 
+/**
+ * Updates an existing recipe by its `id`. When a new `imageUri` is supplied
+ * the image is uploaded separately before patching the recipe fields.
+ */
 export class UpdateRecipeUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 

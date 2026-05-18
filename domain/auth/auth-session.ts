@@ -11,6 +11,11 @@ export interface AuthSessionProps {
   user: User;
 }
 
+/**
+ * Domain entity that represents an authenticated user session, bundling the
+ * access token, its expiry, and the associated `User`. Validates that `id`,
+ * `accessToken`, and `expiresAt` are well-formed before construction.
+ */
 export class AuthSession extends Entity<AuthSessionProps> {
   private constructor(props: AuthSessionProps) {
     super(props);
@@ -45,6 +50,10 @@ export class AuthSession extends Entity<AuthSessionProps> {
     return this.props.user;
   }
 
+  /**
+   * Returns `true` when `now` is at or past `expiresAt`, indicating the token
+   * should be refreshed or the user prompted to sign in again.
+   */
   isExpired(now: Date = new Date()): boolean {
     return now.getTime() >= this.props.expiresAt.getTime();
   }

@@ -11,6 +11,7 @@ export interface CommentCardProps {
   onDelete?: () => void;
 }
 
+/** Displays a single recipe comment with a delete button for the comment owner. */
 export const CommentCard = ({
   body,
   createdAt,

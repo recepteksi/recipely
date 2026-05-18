@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
 
 /**
- * Use case for adding a recipe to user's favorites.
+ * Marks a recipe as a favorite for the given user.
  */
 export class AddFavoriteUseCase {
   constructor(private readonly repo: IFavoritesRepository) {}

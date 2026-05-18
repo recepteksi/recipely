@@ -3,6 +3,11 @@ import { ValidationFailure } from '@core/failure';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Value object wrapping a validated email address string. Use `Email.create` to
+ * parse and validate; the constructor is intentionally private to prevent
+ * unvalidated instances from being created.
+ */
 export class Email {
   private constructor(private readonly raw: string) {}
 

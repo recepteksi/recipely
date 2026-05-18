@@ -1,3 +1,8 @@
+/**
+ * Lightweight dependency-injection container that maps symbol tokens to lazy
+ * singleton factories. Resolving an unregistered token throws immediately
+ * because that is always a programmer error, not a recoverable runtime failure.
+ */
 export class Container {
   private factories = new Map<symbol, () => unknown>();
   private instances = new Map<symbol, unknown>();

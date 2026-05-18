@@ -21,6 +21,8 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { MediaPicker } from '@presentation/base/widgets/media-picker';
 import { Slider } from '@presentation/base/widgets/slider';
+import { TimeSliderCard } from '@presentation/screens/create-recipe/time-slider-card';
+import { ReviewRowItem } from '@presentation/screens/create-recipe/review-row-item';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, type ThemeColors } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -36,9 +38,6 @@ type WizardStep = 0 | 1 | 2 | 3 | 4 | 5;
 
 const SERVINGS_MIN = 1;
 const SERVINGS_MAX = 20;
-const TIME_MIN = 0;
-const TIME_MAX = 120;
-const TIME_STEP = 5;
 
 const DIFFICULTY_TO_DOMAIN: Record<Difficulty, 'EASY' | 'MEDIUM' | 'HARD'> = {
   Easy: 'EASY',
@@ -110,94 +109,6 @@ const stepLabels = (): readonly string[] => [
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, value));
-
-interface TimeSliderCardProps {
-  label: string;
-  value: number;
-  icon: 'time-outline' | 'flame-outline';
-  onChange: (next: number) => void;
-  colors: ThemeColors;
-}
-
-const TimeSliderCard = ({
-  label,
-  value,
-  icon,
-  onChange,
-  colors,
-}: TimeSliderCardProps): React.JSX.Element => {
-  return (
-    <View
-      style={[
-        styles.timeCard,
-        { backgroundColor: colors.surface, borderColor: colors.cardBorder },
-      ]}
-    >
-      <View style={styles.timeCardHeader}>
-        <Ionicons name={icon} size={14} color={colors.primary} />
-        <ThemedText
-          variant="caption"
-          style={[styles.timeCardLabel, { color: colors.textMuted }]}
-        >
-          {label}
-        </ThemedText>
-      </View>
-      <View style={styles.timeCardValueRow}>
-        <ThemedText style={[styles.timeCardValue, { color: colors.text }]}>
-          {value}
-        </ThemedText>
-        <ThemedText
-          variant="caption"
-          style={[styles.timeCardUnit, { color: colors.textMuted }]}
-        >
-          {' '}
-          {t().recipes.minutes}
-        </ThemedText>
-      </View>
-      <Slider
-        value={value}
-        min={TIME_MIN}
-        max={TIME_MAX}
-        step={TIME_STEP}
-        onChange={onChange}
-      />
-    </View>
-  );
-};
-
-interface ReviewRowItemProps {
-  label: string;
-  count: number;
-  unitLabel: string;
-  onPress: () => void;
-  colors: ThemeColors;
-}
-
-const ReviewRowItem = ({
-  label,
-  count,
-  unitLabel,
-  onPress,
-  colors,
-}: ReviewRowItemProps): React.JSX.Element => (
-  <Pressable
-    onPress={onPress}
-    style={[
-      styles.reviewRow,
-      { backgroundColor: colors.surface, borderColor: colors.cardBorder },
-    ]}
-  >
-    <View style={styles.reviewRowBody}>
-      <ThemedText variant="body" style={styles.reviewRowLabel}>
-        {label}
-      </ThemedText>
-      <ThemedText variant="caption" muted style={styles.reviewRowCount}>
-        {count} {unitLabel}
-      </ThemedText>
-    </View>
-    <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-  </Pressable>
-);
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -1442,12 +1353,6 @@ const styles = StyleSheet.create<{
   stepperBtnLabel: TextStyle;
   stepperSliderWrap: ViewStyle;
   timeCardsRow: ViewStyle;
-  timeCard: ViewStyle;
-  timeCardHeader: ViewStyle;
-  timeCardLabel: TextStyle;
-  timeCardValueRow: ViewStyle;
-  timeCardValue: TextStyle;
-  timeCardUnit: TextStyle;
   listHeader: ViewStyle;
   listBody: ViewStyle;
   ingredientRow: ViewStyle;
@@ -1469,10 +1374,6 @@ const styles = StyleSheet.create<{
   reviewChipsRow: ViewStyle;
   reviewChip: ViewStyle;
   reviewChipLabel: TextStyle;
-  reviewRow: ViewStyle;
-  reviewRowBody: ViewStyle;
-  reviewRowLabel: TextStyle;
-  reviewRowCount: TextStyle;
   reviewError: TextStyle;
   reviewCaption: TextStyle;
 }>({
@@ -1758,36 +1659,6 @@ const styles = StyleSheet.create<{
     flexDirection: 'row',
     gap: spacing.md,
   },
-  timeCard: {
-    flex: 1,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    padding: spacing.md,
-    gap: 6,
-  },
-  timeCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timeCardLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  timeCardValueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  timeCardValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 28,
-  },
-  timeCardUnit: {
-    fontSize: 12,
-  },
   // List shared (steps 3 and 4)
   listHeader: {
     flexDirection: 'row',
@@ -1904,24 +1775,6 @@ const styles = StyleSheet.create<{
   reviewChipLabel: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  reviewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-  },
-  reviewRowBody: {
-    flexShrink: 1,
-  },
-  reviewRowLabel: {
-    fontWeight: '600',
-  },
-  reviewRowCount: {
-    marginTop: 2,
   },
   reviewError: {
     textAlign: 'center',

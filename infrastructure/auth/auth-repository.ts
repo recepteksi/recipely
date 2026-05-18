@@ -11,6 +11,12 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
 
 const FALLBACK_EXPIRES_MS = 3_600_000;
 
+/**
+ * Implements `IAuthRepository` against the Recipely backend. Handles sign-in,
+ * sign-up, and sign-out by posting to the auth endpoints, mapping the JWT
+ * response into an `AuthSession`, and persisting the session via
+ * `SecureTokenStorage`.
+ */
 export class AuthRepository implements IAuthRepository {
   constructor(
     private readonly http: HttpClient,

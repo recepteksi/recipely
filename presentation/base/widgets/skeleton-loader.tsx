@@ -15,6 +15,7 @@ export interface SkeletonLoaderProps {
   style?: ViewStyle;
 }
 
+/** Shimmer placeholder block used while content is loading. */
 export const SkeletonLoader = ({
   width,
   height,

@@ -20,6 +20,7 @@ export interface RecipeCardProps {
   onPress: () => void;
 }
 
+/** Animated pressable card showing recipe image, cuisine badge, rating stars, and tags. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags, onPress,
 }: RecipeCardProps): React.JSX.Element => {

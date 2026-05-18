@@ -8,6 +8,7 @@ export interface ThemedTextProps extends TextProps {
   muted?: boolean;
 }
 
+/** Theme-aware text primitive that applies variant typography and adaptive color. */
 export const ThemedText = ({
   variant = 'body',
   muted = false,

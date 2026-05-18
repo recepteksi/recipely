@@ -4,15 +4,16 @@ import type { HttpClient } from '@infrastructure/network/http-client';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
 
 interface FavoritesListResponse {
-  items: Array<{ id: string }>;
+  items: { id: string }[];
   total: number;
   page: number;
   pageSize: number;
 }
 
 /**
- * Favorites repository implementation.
- * Calls the backend API to add/remove recipe favorites.
+ * Implements `IFavoritesRepository` against the Recipely backend. Persists
+ * favorite additions and removals per recipe and loads the current user's
+ * full set of favorited recipe IDs.
  */
 export class FavoritesRepository implements IFavoritesRepository {
   constructor(private readonly http: HttpClient) {}
@@ -51,13 +52,13 @@ export class FavoritesRepository implements IFavoritesRepository {
     });
 
     if (!result.ok) {
-      // eslint-disable-next-line no-console
+       
       console.error('[FavoritesRepository] getFavoritesIds failed:', result.failure);
       return fail(result.failure);
     }
 
     const ids = new Set(result.value.items.map((r) => r.id));
-    // eslint-disable-next-line no-console
+     
     console.log('[FavoritesRepository] getFavoritesIds loaded:', Array.from(ids));
     return ok(ids);
   }

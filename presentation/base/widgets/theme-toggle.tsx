@@ -15,6 +15,7 @@ const options: { key: 'system' | 'light' | 'dark'; labelKey: 'themeSystem' | 'th
   { key: 'dark', labelKey: 'themeDark' },
 ];
 
+/** Three-segment toggle for selecting system, light, or dark colour scheme. */
 export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.Element => {
   const colors = useTheme().colors;
 

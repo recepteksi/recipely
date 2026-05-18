@@ -10,6 +10,10 @@ export interface UserProps {
   photoUrl?: string;
 }
 
+/**
+ * Domain entity representing an authenticated application user. Validates that
+ * `id` and `displayName` are non-empty before construction.
+ */
 export class User extends Entity<UserProps> {
   private constructor(props: UserProps) {
     super(props);

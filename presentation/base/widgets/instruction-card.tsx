@@ -44,6 +44,7 @@ export const splitStepWithTimers = (text: string): TextPart[] => {
   return out;
 };
 
+/** Numbered instruction step card that detects time references and renders inline countdown timers. */
 export const InstructionCard = ({
   index,
   step,
