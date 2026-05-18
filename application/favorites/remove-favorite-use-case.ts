@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
 
 /**
- * Use case for removing a recipe from user's favorites.
+ * Removes a recipe from the given user's favorites.
  */
 export class RemoveFavoriteUseCase {
   constructor(private readonly repo: IFavoritesRepository) {}

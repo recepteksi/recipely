@@ -8,6 +8,11 @@ export interface IHealthCheckService {
   check(): Promise<HealthStatus>;
 }
 
+/**
+ * Probes the backend health endpoint with a 5-second timeout to determine
+ * whether the server is reachable. Returns `'connected'`, `'disconnected'`, or
+ * `'unknown'` — never throws.
+ */
 export class HealthCheckService implements IHealthCheckService {
   async check(): Promise<HealthStatus> {
     try {

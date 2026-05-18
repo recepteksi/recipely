@@ -19,6 +19,7 @@ export interface ThemeGridProps {
 const CHIP_WIDTH = 76;
 const SWATCH_SIZE = 56;
 
+/** Horizontal scrollable grid of colour-swatch chips for selecting the active theme. */
 export const ThemeGrid = ({
   selectedThemeId,
   onSelect,

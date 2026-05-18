@@ -16,6 +16,7 @@ const formatTime = (totalSeconds: number): string => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
+/** Inline text-embedded timer chip that expands from a time label into an active countdown. */
 export const InlineTimer = ({
   minutes,
 }: InlineTimerProps): React.JSX.Element => {

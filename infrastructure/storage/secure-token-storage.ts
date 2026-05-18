@@ -20,6 +20,12 @@ interface SerializedSession {
   };
 }
 
+/**
+ * Persists and restores the authenticated `AuthSession` using the platform
+ * key-value store (Expo SecureStore on native, localStorage on web). The
+ * session is serialised as JSON under a versioned key so stale formats can be
+ * flushed by bumping the key suffix.
+ */
 export class SecureTokenStorage {
   async saveSession(session: AuthSession): Promise<Result<void, Failure>> {
     try {

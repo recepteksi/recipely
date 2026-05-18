@@ -23,6 +23,12 @@ export interface GenerateRecipeCall {
   locale: string;
 }
 
+/**
+ * In-memory test double for `IRecipeRepository`. Returns pre-configured
+ * `Result` values for each operation. The `generateRecipe` method additionally
+ * records call arguments in `lastGenerateCall` and increments `generateCallCount`
+ * so tests can assert on invocation details without a spy framework.
+ */
 export class FakeRecipeRepository implements IRecipeRepository {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;

@@ -11,6 +11,7 @@ export interface SelectChipProps {
   flex?: boolean;
 }
 
+/** Toggleable pill chip that fills with the primary color when selected. */
 export const SelectChip = ({
   label,
   selected,

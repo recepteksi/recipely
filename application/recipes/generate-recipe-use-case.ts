@@ -8,6 +8,11 @@ export interface GenerateRecipeInput {
   locale: string;
 }
 
+/**
+ * Generates a recipe from a free-text AI prompt. Returns a
+ * `ValidationFailure` immediately when the prompt is blank, without hitting
+ * the network.
+ */
 export class GenerateRecipeUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 

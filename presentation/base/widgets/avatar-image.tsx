@@ -17,6 +17,7 @@ const initialsFor = (name: string): string => {
   return (first + second).toUpperCase();
 };
 
+/** Circular avatar that shows a remote image or falls back to initials on a primary-gradient background. */
 export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const borderRadius = size / 2;
@@ -37,7 +38,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
-        <Text style={{ fontSize: size * 0.36, fontWeight: '700', color: '#FFFFFF' }}>
+        <Text style={[styles.initials, { fontSize: size * 0.36, color: colors.primaryText }]}>
           {initialsFor(name)}
         </Text>
       </View>
@@ -53,5 +54,8 @@ const styles = StyleSheet.create({
   innerOverlay: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  initials: {
+    fontWeight: '700',
   },
 });

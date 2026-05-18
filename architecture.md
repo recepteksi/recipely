@@ -1,6 +1,9 @@
 # Architecture
 
-Recipely follows **Domain-Driven Design (DDD)** with a **Layered Architecture** inspired by Eric Evans' _Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
+Recipely follows **Domain-Driven Design (DDD)** with a **Layered Architecture** inspired by Eric Evans'
+_Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
+
+---
 
 ## Layer Overview
 
@@ -26,12 +29,14 @@ core/                 Framework-agnostic building blocks (Result, Failure, Entit
 
 Each layer may only depend on layers **below** it. Never import upward:
 
-- `domain/` never imports from `application/`, `infrastructure/`, or `presentation/`.
-- `application/` never imports from `infrastructure/` or `presentation/`.
-- `infrastructure/` never imports from `presentation/`.
-- `core/` imports from nothing else in the project.
+- `domain/` — never imports from `application/`, `infrastructure/`, or `presentation/`.
+- `application/` — never imports from `infrastructure/` or `presentation/`.
+- `infrastructure/` — never imports from `presentation/`.
+- `core/` — imports nothing else from the project.
 
-The `presentation/app/` directory exists solely for expo-router's file-based routing (configured via `"root": "presentation/app"` in `app.json`). Every file in `presentation/app/` must be a **single-line re-export** from `presentation/screens/` or `presentation/navigation/`. No logic, no styling, no imports beyond the re-export.
+`presentation/app/` exists solely for expo-router's file-based routing (`"root": "presentation/app"` in
+`app.json`). Every file inside must be a **single-line re-export** from `presentation/screens/` or
+`presentation/navigation/`. No logic, no styling, no extra imports.
 
 ---
 
@@ -55,91 +60,290 @@ Framework-agnostic building blocks shared across all layers.
 
 The heart of the application. Pure TypeScript, no framework dependencies.
 
-- **Entities**: `Recipe`, `Task`, `AuthSession`, `User` — extend `Entity<Props>` with factory `create()` methods returning `Result`.
-- **Value Objects**: `Email` — extends `ValueObject<Props>` with validation.
-- **Enums / Literals**: `RecipeState`, `TaskState`, `WorkType` — typed string unions in their own files.
-- **Repository Interfaces**: `IRecipeRepository`, `ITaskRepository`, `IAuthRepository` — define contracts; implementations live in `infrastructure/`.
+- **Entities** — `Recipe`, `AuthSession`, `User`, `Comment` extend `Entity<Props>` with factory `create()`
+  methods returning `Result`.
+- **Value Objects** — `Email` extends `ValueObject<Props>` with validation.
+- **Enums / Literals** — typed string unions in their own files.
+- **Repository Interfaces** — `IRecipeRepository`, `IAuthRepository`, `ICommentRepository` define contracts;
+  implementations live in `infrastructure/`.
 
 ### `application/`
 
 Orchestrates domain logic through use cases and manages UI state.
 
-- **Use Cases**: Single-responsibility classes with an `execute(...)` method returning `Promise<Result<T, Failure>>`.
-  - `SignInUseCase`, `SignOutUseCase`, `GetSessionUseCase`
-  - `ListRecipesUseCase`, `GetRecipeUseCase`
-  - `ListTasksUseCase`, `GetTaskUseCase`
-- **Stores**: Zustand stores that call use cases and expose state to the presentation layer.
-  - `authStore`, `recipeListStore`, `recipeDetailStore`, `taskListStore`, `taskDetailStore`
-- **DI Registration**: `application/di/register.ts` wires use cases and stores into the container.
-- **Test Fixtures**: `application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
+- **Use Cases** — Single-responsibility classes with an `execute(...)` method returning
+  `Promise<Result<T, Failure>>`.
+- **Stores** — Zustand stores that call use cases and expose state to the presentation layer.
+- **DI Registration** — `application/di/register.ts` wires use cases and stores into the container.
+- **Test Fixtures** — `application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
 
 ### `infrastructure/`
 
 Implements domain interfaces with concrete I/O.
 
-- **Repositories**: `AuthRepository`, `RecipeRepository`, `TaskRepository` — implement domain interfaces using `HttpClient`.
-- **DTOs**: One interface per file (`RecipeDto`, `TodoDto`, `RecipesListDto`, `TodosListDto`, `DummyJsonLoginDto`).
-- **Mappers**: Pure functions (`toRecipe`, `toTask`, `toUser`) that convert DTOs to domain entities, returning `Result`.
-- **Network**: `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
-- **Storage**: `SecureTokenStorage` for session persistence; platform-specific `kv-store.ts` / `kv-store.web.ts` (React Native file extension resolution).
-- **Constants**: `infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
-- **DI Registration**: `infrastructure/di/register.ts` wires repositories and HTTP client into the container.
+- **Repositories** — `AuthRepository`, `RecipeRepository` implement domain interfaces using `HttpClient`.
+- **DTOs** — One interface per file (`RecipeDto`, `RecipesListDto`, …).
+- **Mappers** — Pure functions (`toRecipe`, `toUser`) that convert DTOs to domain entities, returning
+  `Result`. Mappers are stateless and have no dependencies, so plain exported functions are idiomatic.
+- **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
+- **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
+- **Constants** — `infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
+- **DI Registration** — `infrastructure/di/register.ts` wires repositories and HTTP client.
 
 ### `presentation/`
 
 All UI and user-facing logic.
 
-- **Screens**: One component per file in `presentation/screens/{feature}/`.
-- **Navigation**: `presentation/navigation/root-layout.tsx` — the real root layout with Stack navigator and i18n-driven titles.
-- **Bootstrap**: `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
-- **Widgets**: Reusable UI components in `presentation/base/widgets/` (`ThemedText`, `ThemedView`, `ScreenContainer`, `PrimaryButton`, `StateView`).
-- **Theme**: `presentation/base/theme/colors.ts` (light/dark palettes), `spacing.ts` (spacing, radii, fontSizes).
-- **i18n**: `presentation/i18n/` — `en.ts` (English), `tr.ts` (Turkish), `i18n.ts` (locale detection via `expo-localization`), barrel `index.ts`.
-- **Utils**: `presentation/base/utils/format-date.ts`.
+- **Screens** — One component per file in `presentation/screens/{feature}/`. Complex screens are split into
+  sub-components kept in the same feature folder.
+- **Navigation** — `presentation/navigation/root-layout.tsx` — root layout with Stack navigator.
+- **Bootstrap** — `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
+- **Widgets** — Reusable UI components in `presentation/base/widgets/`.
+- **Theme** — `presentation/base/theme/colors.ts` (palettes), `spacing.ts` (sizes), `shadows.ts`, `themes.ts`.
+- **i18n** — `presentation/i18n/en.ts`, `presentation/i18n/tr.ts`, `presentation/i18n/i18n.ts`.
+- **Utils** — `presentation/base/utils/`.
 
 ---
 
-## Coding Rules
+## Coding Standards
 
-### One declaration per file
+These rules are **mandatory**. Every agent and every human contributor must follow them. The `code-reviewer`
+agent must flag any violation as a blocking issue.
 
-Each file contains exactly **one** class, interface, type alias, or component. The only exceptions are barrel `index.ts` files that re-export.
+---
 
-### Static values in constants files
+### 1. One Declaration Per File
 
-Hardcoded values (URLs, storage keys, limits, magic numbers) must live in dedicated constants files:
+Each file contains exactly **one** top-level declaration: one class, one interface, one type alias, one
+React component, or one enum. The only exceptions are:
 
-- `infrastructure/constants/api.ts` — API endpoints, pagination limits
-- `infrastructure/constants/storage.ts` — storage keys
-- `presentation/base/theme/spacing.ts` — spacing, border radii, font sizes
-- `presentation/base/theme/colors.ts` — color palettes
+- Barrel `index.ts` files that only re-export.
+- A `ComponentNameProps` interface that lives in the same file as its component.
+- A simple helper type that is only meaningful alongside the class in the same file.
 
-### Internationalization (i18n)
+```ts
+// ✅ recipe.ts — one entity class
+export class Recipe extends Entity<RecipeProps> { ... }
 
-- Minimum two languages: **English (en)** and **Turkish (tr)**.
+// ❌ recipe.ts — two unrelated declarations
+export class Recipe extends Entity<RecipeProps> { ... }
+export class RecipeMapper { ... }   // move to recipe-mapper.ts
+```
+
+---
+
+### 2. Class vs. Function — When to Use Each
+
+Use **classes** for any construct that has constructor dependencies, manages state, or represents a
+long-lived object: use cases, repositories, HTTP clients, storage adapters, domain entities.
+
+Use **pure functions** for stateless, dependency-free data transformers (mappers, formatters, validators)
+where a class would add no value.
+
+| Construct | Form |
+|-----------|------|
+| Use case | `class GetRecipeUseCase { execute(...) }` |
+| Repository | `class RecipeRepository implements IRecipeRepository { ... }` |
+| HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
+| Domain entity | `class Recipe extends Entity<RecipeProps> { ... }` |
+| DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<Recipe, ...> => { ... }` |
+| Date formatter | `export const formatDate = (d: Date): string => { ... }` |
+
+Never create a class whose only method is a static or standalone transform — use a plain function instead.
+
+---
+
+### 3. JSDoc on Classes and Non-Obvious Public Methods
+
+Every **class** must have a JSDoc summary. Public methods and exported functions get a JSDoc when the
+signature alone does not fully communicate intent, edge cases, or failure modes.
+
+Rules:
+
+- Use `/** ... */` style.
+- First line is imperative: "Returns …", "Fetches …", "Validates …".
+- Add `@param` / `@returns` only when the type names alone are not enough.
+- Do **not** document the trivially obvious (a `constructor`, a one-line getter, a pass-through `execute`).
+
+```ts
+/**
+ * Retrieves a single recipe by its identifier.
+ * Fails with NotFoundFailure when the recipe does not exist on the server.
+ */
+export class GetRecipeUseCase {
+  constructor(private readonly repo: IRecipeRepository) {}
+
+  // No JSDoc needed — signature is self-explanatory.
+  execute(id: string): Promise<Result<Recipe, Failure>> {
+    return this.repo.getRecipe(id);
+  }
+}
+
+/**
+ * Maps a raw API DTO to a domain Recipe entity.
+ * Promotes the single `image` field into a one-item media gallery so the
+ * MediaGallery widget always has data to render.
+ */
+export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => { ... };
+```
+
+---
+
+### 4. Files Must Stay Simple and Focused
+
+A file is too complex when a reader cannot understand its purpose at a glance.
+
+- **Domain entity / value object** — ~80 lines max.
+- **Use case / mapper** — ~120 lines max.
+- **Screen component** — extract sub-components into the same feature folder when the file grows unwieldy.
+  There is no hard line limit for screens because form-heavy screens are inherently large, but each
+  logical section (form section, list item, modal) must live in its own sub-component file.
+- No nested class definitions anywhere.
+- No more than 2 levels of callback nesting inside a method — extract a private helper instead.
+
+---
+
+### 5. Constants — No Magic Values in Business Logic
+
+Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated constants files.
+
+#### Where constants live
+
+| Constant type | File |
+|---------------|------|
+| API endpoints, page sizes, timeouts | `infrastructure/constants/api.ts` |
+| Storage keys | `infrastructure/constants/storage.ts` |
+| Spacing, radii, font sizes, icon/avatar sizes | `presentation/base/theme/spacing.ts` |
+| Colour palettes (light & dark) | `presentation/base/theme/colors.ts` / `themes.ts` |
+| Shadow definitions | `presentation/base/theme/shadows.ts` |
+
+```ts
+// ✅ correct
+import { spacing, fontSizes } from '@presentation/base/theme/spacing';
+import { colors } from '@presentation/base/theme/themes';
+
+const styles = StyleSheet.create({
+  title: { fontSize: fontSizes.title, marginBottom: spacing.md },
+  card:  { backgroundColor: colors.card },
+});
+
+// ❌ wrong — magic numbers and hex codes inline
+const styles = StyleSheet.create({
+  title: { fontSize: 24, marginBottom: 12 },
+  card:  { backgroundColor: '#F5F5F5' },
+});
+```
+
+---
+
+### 6. React Native — Styles
+
+- **Always use `StyleSheet.create()`** for static style objects. Inline style objects (`style={{ margin: 8 }}`) are forbidden for static values because they create a new object on every render.
+- **Dynamic styles** (values that depend on runtime state or theme) may use inline objects only for the
+  dynamic portion. Static portions must still live in `StyleSheet.create()`.
+- Combine static and dynamic styles with an array: `style={[styles.base, { backgroundColor: color }]}`.
+
+```tsx
+// ✅
+const styles = StyleSheet.create({ container: { flex: 1, padding: spacing.md } });
+<View style={[styles.container, { backgroundColor: theme.colors.background }]} />
+
+// ❌
+<View style={{ flex: 1, padding: 16, backgroundColor: theme.colors.background }} />
+```
+
+---
+
+### 7. React Native — Component Props Interface
+
+- Every React component's props must be typed with an interface named `ComponentNameProps`.
+- Export the `Props` interface so callers can reference it.
+- Place the interface directly above the component function in the same file.
+
+```tsx
+// ✅
+export interface RecipeCardProps {
+  recipe: Recipe;
+  onPress: (id: string) => void;
+}
+
+export const RecipeCard = ({ recipe, onPress }: RecipeCardProps): React.JSX.Element => { ... };
+```
+
+---
+
+### 8. React Native — Custom Hooks
+
+- Custom hooks must be named with the `use` prefix (`useRecipeList`, `useTheme`).
+- A custom hook file must export exactly one hook function.
+- Hooks that depend on a store must accept no arguments and read the store internally; they must not
+  accept store state as props.
+
+---
+
+### 9. React Native — Lists
+
+- `FlatList` and `SectionList` must always declare a `keyExtractor` prop that returns a stable, unique key.
+- Never use the array index as a key for mutable lists.
+
+```tsx
+// ✅
+<FlatList keyExtractor={(item) => item.id} ... />
+
+// ❌
+<FlatList keyExtractor={(_, index) => String(index)} ... />
+```
+
+---
+
+### 10. React Native — Accessibility
+
+Every interactive element (`Pressable`, `TouchableOpacity`, button widget) must declare at minimum:
+
+- `accessibilityRole` — describes the element type (`"button"`, `"link"`, `"checkbox"`, …).
+- `accessibilityLabel` — human-readable description when the visual label is not text.
+
+---
+
+### 11. Internationalization (i18n)
+
 - All user-visible strings in `presentation/` must come from `t()` (never hardcoded).
-- Translation files: `presentation/i18n/en.ts`, `presentation/i18n/tr.ts`.
+- Translation files: `presentation/i18n/en.ts` (English), `presentation/i18n/tr.ts` (Turkish).
 - Locale detection via `expo-localization` at app startup (`initLocale()`).
+- Both languages must remain in sync at all times — adding a key to `en.ts` requires the same key in
+  `tr.ts` in the same commit.
 
-### Colors and sizes in theme files
+---
 
-- Colors: `presentation/base/theme/colors.ts` with light/dark schemes.
-- Spacing, radii, font sizes: `presentation/base/theme/spacing.ts`.
-- Screens reference these constants instead of inline numbers.
+### 12. Error Handling — `Result<T, Failure>`
 
-### Error handling
+- Use `Result<T, Failure>` everywhere; never throw exceptions in domain or application code.
+- Domain `create()` factory methods return `Result<Entity, ValidationFailure>`.
+- Infrastructure maps HTTP errors to typed `Failure` subclasses (`NetworkFailure`,
+  `UnauthorizedFailure`, `NotFoundFailure`, `UnknownFailure`).
+- `presentation/` may `throw` only inside error boundaries.
 
-- Use `Result<T, Failure>` everywhere instead of throwing exceptions.
-- Domain validation returns `Result` from `create()` factory methods.
-- Infrastructure maps HTTP errors to typed `Failure` subclasses (`NetworkFailure`, `UnauthorizedFailure`, `NotFoundFailure`, `UnknownFailure`).
+---
 
-### Testing
+### 13. Testing
 
-- Tests live next to the code in `__tests__/` directories.
-- Domain and core tests are pure unit tests with no mocks.
+- Tests live next to the code they test in `__tests__/` directories.
+- Domain and core tests are pure unit tests — no mocks, no external I/O.
 - Application tests use fakes (`FakeAuthRepository`) for repository dependencies.
-- Infrastructure mapper tests validate DTO-to-entity mapping.
+- Infrastructure mapper tests validate DTO-to-entity mapping with known fixture data.
 - Test runner: Jest via `jest-expo`.
+
+---
+
+## Pre-Commit Quality Gate
+
+A pre-commit hook (Husky + lint-staged) runs automatically on every `git commit`:
+
+1. **lint-staged** — runs `eslint --fix` on every staged `.ts` / `.tsx` file. Commit is blocked if any
+   ESLint error remains after auto-fix.
+2. **TypeScript** — runs `tsc --noEmit` against the full project. Commit is blocked on any type error.
+
+To bypass in an emergency: `git commit --no-verify` (use sparingly; document why in the commit message).
 
 ---
 
@@ -154,8 +358,12 @@ Hardcoded values (URLs, storage keys, limits, magic numbers) must live in dedica
 | `expo-web-browser` | In-app browser for external links |
 | `axios` | HTTP client |
 | `zustand` | State management |
+| `husky` | Git hooks management |
+| `lint-staged` | Run linters only on staged files |
 
-## API
+---
+
+## External API
 
 DummyJSON (`https://dummyjson.com`) — free, public, zero configuration.
 

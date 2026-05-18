@@ -25,6 +25,7 @@ const clamp = (value: number, min: number, max: number): number =>
 const snap = (value: number, step: number): number =>
   step > 0 ? Math.round(value / step) * step : value;
 
+/** Custom pan-gesture slider with configurable min, max, and step values. */
 export const Slider = ({
   value,
   min,

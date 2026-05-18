@@ -19,6 +19,7 @@ interface TabConfig {
   icon: keyof typeof Ionicons.glyphMap;
 }
 
+/** Bottom navigation bar with icon-and-label tabs for the main app sections. */
 export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();

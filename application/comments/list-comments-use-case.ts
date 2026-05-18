@@ -8,6 +8,9 @@ export interface ListCommentsInput {
   pageSize: number;
 }
 
+/**
+ * Fetches a paginated page of comments for a given recipe.
+ */
 export class ListCommentsUseCase {
   constructor(private readonly repo: ICommentRepository) {}
 

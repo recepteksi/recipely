@@ -3,6 +3,10 @@ import type { Failure } from '@core/failure';
 import type { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 
+/**
+ * Registers a new user account with the given credentials and display name,
+ * returning a persisted `AuthSession` on success.
+ */
 export class SignUpUseCase {
   constructor(private readonly repo: IAuthRepository) {}
 

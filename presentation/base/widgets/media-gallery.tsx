@@ -2,14 +2,13 @@ import { useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  Image,
   StyleSheet,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { MediaSlide } from '@presentation/base/widgets/media-slide';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import type { MediaItem } from '@domain/recipes/media-item';
@@ -19,39 +18,7 @@ export interface MediaGalleryProps {
   height?: number;
 }
 
-interface MediaSlideProps {
-  item: MediaItem;
-  width: number;
-  height: number;
-}
-
-const VideoSlide = ({ item, width, height }: MediaSlideProps): React.JSX.Element => {
-  const player = useVideoPlayer(item.url, (p) => {
-    p.loop = false;
-    p.muted = true;
-  });
-  return (
-    <VideoView
-      style={{ width, height }}
-      player={player}
-      contentFit="cover"
-      nativeControls
-    />
-  );
-};
-
-const MediaSlide = ({ item, width, height }: MediaSlideProps): React.JSX.Element => {
-  if (item.type === 'video') {
-    return <VideoSlide item={item} width={width} height={height} />;
-  }
-  return (
-    <Image
-      source={{ uri: item.url }}
-      style={{ width, height, resizeMode: 'cover' }}
-    />
-  );
-};
-
+/** Horizontally paginated gallery supporting both images and videos with dot indicators. */
 export const MediaGallery = ({
   media,
   height = sizes.heroImageHeight,
@@ -72,7 +39,7 @@ export const MediaGallery = ({
     <View style={{ height }}>
       <FlatList
         data={media as MediaItem[]}
-        keyExtractor={(_, i) => String(i)}
+        keyExtractor={(item) => item.url}
         renderItem={({ item }) => (
           <MediaSlide item={item} width={width} height={height} />
         )}
@@ -93,7 +60,7 @@ export const MediaGallery = ({
                   styles.dot,
                   {
                     backgroundColor:
-                      i === active ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
+                      i === active ? colors.onOverlay : colors.onOverlay + '66',
                     width: i === active ? 18 : 6,
                   },
                 ]}

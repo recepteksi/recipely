@@ -102,7 +102,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   }, [commentInput, commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
-    // eslint-disable-next-line no-console
+     
     console.log('[SaveButton] handleToggleSave called!', { isLoading, userId, recipeId });
     if (isLoading || !userId) {
       console.log('[SaveButton] Skipping: isLoading=' + isLoading + ', userId=' + userId);
@@ -484,7 +484,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               { backgroundColor: colors.surface, opacity: pressed ? 0.75 : 1 },
             ]}
           >
-            <ThemedText variant="body" style={{ fontWeight: '600' }}>
+            <ThemedText variant="body" style={styles.semiBold}>
               {t().common.cancel}
             </ThemedText>
           </Pressable>
@@ -497,7 +497,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               { opacity: pressed || isDeleting ? 0.7 : 1 },
             ]}
           >
-            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, { fontWeight: '600' }]}>
+            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold]}>
               {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
             </ThemedText>
           </Pressable>
@@ -685,5 +685,8 @@ const styles = StyleSheet.create({
   },
   submitError: {
     marginTop: spacing.xs,
+  },
+  semiBold: {
+    fontWeight: '600' as const,
   },
 });
