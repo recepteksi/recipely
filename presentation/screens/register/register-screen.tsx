@@ -344,12 +344,12 @@ export const RegisterScreen = (): React.JSX.Element => {
             </View>
             <ThemedText variant="caption" muted style={styles.termsText}>
               {t().register.agreeText}{' '}
-              <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+              <ThemedText variant="caption" style={[styles.linkWeight, { color: colors.primary }]}>
                 {t().register.terms}
               </ThemedText>
               {' '}
               {t().register.and}{' '}
-              <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+              <ThemedText variant="caption" style={[styles.linkWeight, { color: colors.primary }]}>
                 {t().register.privacy}
               </ThemedText>
             </ThemedText>
@@ -542,5 +542,8 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontWeight: '600',
+  },
+  linkWeight: {
+    fontWeight: '600' as const,
   },
 });

@@ -9,6 +9,7 @@ export interface SearchBarProps {
   placeholder: string;
 }
 
+/** Rounded search input with a leading icon and a clear button that appears when text is present. */
 export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps): React.JSX.Element => {
   const colors = useTheme().colors;
 

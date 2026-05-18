@@ -18,6 +18,7 @@ const formatTime = (totalSeconds: number): string => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
+/** Countdown timer card with play/pause and reset controls for a recipe time step. */
 export const TimeCard = ({
   label,
   minutes,

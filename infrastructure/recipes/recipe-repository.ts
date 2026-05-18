@@ -14,6 +14,12 @@ import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 
+/**
+ * Implements `IRecipeRepository` against the Recipely backend. Handles
+ * listing, fetching, creating, updating, deleting, and AI-generating recipes
+ * via HTTP. Image uploads are handled as multipart form-data with
+ * platform-specific blob construction for web vs. native.
+ */
 export class RecipeRepository implements IRecipeRepository {
   constructor(private readonly http: HttpClient) {}
 

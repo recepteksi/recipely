@@ -11,6 +11,7 @@ export interface CheckboxItemProps {
   disabled?: boolean;
 }
 
+/** Labelled checkbox row that applies strikethrough styling when checked. */
 export const CheckboxItem = ({
   label,
   checked,

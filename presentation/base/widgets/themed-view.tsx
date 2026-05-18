@@ -5,6 +5,7 @@ export interface ThemedViewProps extends ViewProps {
   surface?: boolean;
 }
 
+/** Theme-aware container that fills with background or surface color depending on the `surface` prop. */
 export const ThemedView = ({ surface = false, style, ...rest }: ThemedViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const backgroundColor = surface ? colors.surface : colors.background;

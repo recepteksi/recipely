@@ -26,14 +26,56 @@ TypeScript is strict; the `@/*` path alias maps to the repo root.
 - `infrastructure/` — Repository implementations, DTOs, mappers, HTTP client, storage, constants.
 - `core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, `ValueObject`, DI container.
 
-### Key rules
+### Mandatory coding standards (see `architecture.md` §Coding Standards for full detail)
 
-- **Dependency rule**: layers only import downward, never upward.
-- **One declaration per file** (class, interface, component). Barrel `index.ts` for re-exports.
-- **Static values** in constants files (`infrastructure/constants/`, `presentation/base/theme/`).
-- **i18n**: all user-visible strings via `t()` from `presentation/i18n/`.
-- **Error handling**: `Result<T, Failure>` everywhere, no thrown exceptions.
-- **Platform files**: `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g., `kv-store`).
+These rules apply to every agent and every contributor. A `code-reviewer` agent must flag any violation as
+blocking.
+
+1. **One declaration per file** — one class, interface, type alias, or component per `.ts`/`.tsx` file.
+   Barrel `index.ts` files and a component's `Props` interface are the only exceptions.
+
+2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities.
+   Pure stateless data transformers (mappers, formatters) are plain exported functions.
+
+3. **JSDoc on classes and non-obvious public methods** — `/** ... */` when the signature alone doesn't
+   communicate intent, edge cases, or failure modes. Trivial pass-throughs don't need a comment.
+
+4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers. Complex screens
+   are split into sub-components in the same feature folder. No nested classes, no deep nesting (> 2 levels).
+
+5. **No magic values** — hex codes, pixel numbers, and string keys are forbidden outside constants files:
+   - API endpoints / limits → `infrastructure/constants/api.ts`
+   - Storage keys → `infrastructure/constants/storage.ts`
+   - Spacing / radii / font sizes / icon sizes → `presentation/base/theme/spacing.ts`
+   - Colours → `presentation/base/theme/colors.ts` / `themes.ts`
+
+6. **StyleSheet.create() for static styles** — inline style objects are forbidden for static values.
+   Dynamic portions may be inline; combine with `[styles.base, { color: dynamic }]`.
+
+7. **Component props interface** — every component's props typed as `ComponentNameProps`, exported,
+   placed above the component in the same file.
+
+8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
+
+9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.
+
+10. **Accessibility** — every `Pressable` / `TouchableOpacity` must have `accessibilityRole` and
+    `accessibilityLabel` (when the visual label is not plain text).
+
+11. **i18n** — all user-visible strings via `t()` from `presentation/i18n/`. Minimum en + tr in sync.
+
+12. **Error handling** — `Result<T, Failure>` everywhere; no thrown exceptions in domain / application code.
+
+13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g., `kv-store`).
+
+### Pre-commit quality gate
+
+Husky runs on every `git commit`:
+
+- **lint-staged** → `eslint --fix` on staged `.ts` / `.tsx` files (blocks on unfixed ESLint errors).
+- **tsc --noEmit** → full project type check (blocks on type errors).
+
+Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
 
 ### External API
 

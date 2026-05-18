@@ -10,6 +10,10 @@ export interface CommentProps {
   createdAt: Date;
 }
 
+/**
+ * Domain entity representing a user comment on a recipe. Validates that `id`,
+ * `body`, `authorId`, and `recipeId` are all non-empty before construction.
+ */
 export class Comment extends Entity<CommentProps> {
   private constructor(props: CommentProps) {
     super(props);

@@ -10,6 +10,7 @@ export interface VideoSectionProps {
   videos: readonly MediaItem[];
 }
 
+/** Video player section with optional thumbnail strip for multi-video recipes. */
 export const VideoSection = ({
   videos,
 }: VideoSectionProps): React.JSX.Element | null => {

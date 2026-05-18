@@ -11,6 +11,7 @@ export interface ProgressBarProps {
   label?: string;
 }
 
+/** Animated horizontal progress bar that smoothly transitions between values. */
 export const ProgressBar = ({ current, total, label }: ProgressBarProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const progress = useSharedValue(0);

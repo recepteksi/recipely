@@ -7,6 +7,10 @@ import type {
   IRecipeRepository,
 } from '@domain/recipes/i-recipe-repository';
 
+/**
+ * Creates a new recipe by uploading a cover image and recipe fields as
+ * multipart form-data. An optional progress callback reports upload progress.
+ */
 export class CreateRecipeUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 

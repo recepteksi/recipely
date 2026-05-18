@@ -8,11 +8,12 @@ export interface LanguageSelectorProps {
   onChange: (value: 'en' | 'tr') => void;
 }
 
-const options: Array<{ key: 'en' | 'tr'; label: string }> = [
+const options: { key: 'en' | 'tr'; label: string }[] = [
   { key: 'en', label: 'EN' },
   { key: 'tr', label: 'TR' },
 ];
 
+/** Segmented EN / TR language picker that highlights the active locale. */
 export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): React.JSX.Element => {
   const colors = useTheme().colors;
 

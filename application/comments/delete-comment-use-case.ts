@@ -7,6 +7,10 @@ export interface DeleteCommentInput {
   commentId: string;
 }
 
+/**
+ * Removes a comment from a recipe, scoped by both `recipeId` and `commentId`
+ * to match the backend's nested-resource URL scheme.
+ */
 export class DeleteCommentUseCase {
   constructor(private readonly repo: ICommentRepository) {}
 

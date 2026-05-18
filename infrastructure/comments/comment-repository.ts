@@ -5,6 +5,10 @@ import type { CommentPage, ICommentRepository } from '@domain/comments/i-comment
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { CommentDto, CommentPageDto } from '@infrastructure/comments/comment-dto';
 
+/**
+ * Implements `ICommentRepository` against the Recipely backend. Supports
+ * paginated listing, adding, and removing comments scoped to a recipe.
+ */
 export class CommentRepository implements ICommentRepository {
   constructor(private readonly http: HttpClient) {}
 

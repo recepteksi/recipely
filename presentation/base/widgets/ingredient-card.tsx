@@ -36,6 +36,7 @@ export const parseIngredient = (raw: string): ParsedIngredient => {
   return { qty: qtyChunk, name: rest };
 };
 
+/** Tappable ingredient row with parsed quantity chip and strikethrough-on-check behaviour. */
 export const IngredientCard = ({
   raw,
   checked,

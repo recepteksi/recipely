@@ -8,6 +8,10 @@ export interface AddCommentInput {
   body: string;
 }
 
+/**
+ * Posts a new comment body to the specified recipe and returns the created
+ * `Comment` entity.
+ */
 export class AddCommentUseCase {
   constructor(private readonly repo: ICommentRepository) {}
 

@@ -14,6 +14,7 @@ export interface StateViewProps {
   children?: ReactNode;
 }
 
+/** Renders loading, error, empty, or content branches based on the discriminated `status` prop. */
 export const StateView = ({
   status,
   failure,

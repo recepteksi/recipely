@@ -10,6 +10,11 @@ export interface FakeAuthRepositoryConfig {
   currentSessionResult?: Result<AuthSession | null, Failure>;
 }
 
+/**
+ * In-memory test double for `IAuthRepository`. Each method returns the
+ * pre-configured `Result` from `FakeAuthRepositoryConfig`, defaulting to an
+ * `UnknownFailure` (sign-in/up) or `ok(null)` (session) when not configured.
+ */
 export class FakeAuthRepository implements IAuthRepository {
   constructor(private readonly config: FakeAuthRepositoryConfig = {}) {}
 

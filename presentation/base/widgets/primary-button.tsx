@@ -10,6 +10,7 @@ export interface PrimaryButtonProps {
   disabled?: boolean;
 }
 
+/** Full-width themed button with loading spinner support. */
 export const PrimaryButton = ({
   label,
   onPress,

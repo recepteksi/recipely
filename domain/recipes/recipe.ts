@@ -20,6 +20,10 @@ export interface RecipeProps {
   ownerId: string;
 }
 
+/**
+ * Domain entity representing a recipe. Validates that `id` and `name` are
+ * non-empty before construction; use `Recipe.create` to obtain an instance.
+ */
 export class Recipe extends Entity<RecipeProps> {
   private constructor(props: RecipeProps) {
     super(props);
