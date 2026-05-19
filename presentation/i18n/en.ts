@@ -48,6 +48,9 @@ export const en = {
     results: 'recipes',
     clearFilters: 'Clear',
     showResults: 'Show',
+    like: 'Like',
+    unlike: 'Unlike',
+    likes: 'likes',
   },
   settings: {
     title: 'Settings',

@@ -10,6 +10,9 @@ import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-us
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { HealthCheckService } from '@infrastructure/network/health-check-service';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
+import { LikeRepository } from '@infrastructure/likes/like-repository';
+import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
+import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 
@@ -71,5 +74,20 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.CommentRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new CommentRepository(http);
+  });
+
+  container.register(TOKENS.LikeRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new LikeRepository(http);
+  });
+
+  container.register(TOKENS.LikeRecipeUseCase, () => {
+    const repo = container.resolve<LikeRepository>(TOKENS.LikeRepository);
+    return new LikeRecipeUseCase(repo);
+  });
+
+  container.register(TOKENS.UnlikeRecipeUseCase, () => {
+    const repo = container.resolve<LikeRepository>(TOKENS.LikeRepository);
+    return new UnlikeRecipeUseCase(repo);
   });
 };

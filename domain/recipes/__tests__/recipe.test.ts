@@ -15,6 +15,8 @@ const validProps = {
   tags: ['Pizza', 'Italian'],
   mealType: ['Dinner'],
   ownerId: 'o1',
+  likeCount: 0,
+  likedByMe: false,
 };
 
 describe('Recipe.create', () => {

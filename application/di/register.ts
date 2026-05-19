@@ -45,6 +45,12 @@ import {
   type CommentsStore,
 } from '@application/comments/comments-store';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
+import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import {
+  configureLikesStore,
+  type LikesStore,
+} from '@application/likes/likes-store';
 
 export interface ApplicationStores {
   authStore: AuthStore;
@@ -54,6 +60,7 @@ export interface ApplicationStores {
   createdRecipesStore: CreatedRecipesStore;
   favoritesStore: FavoritesStore;
   commentsStore: CommentsStore;
+  likesStore: LikesStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
@@ -79,6 +86,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
   const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
   const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
+  const likeRecipeUseCase = container.resolve<LikeRecipeUseCase>(TOKENS.LikeRecipeUseCase);
+  const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
   const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore });
@@ -101,6 +110,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
     addComment: addCommentUseCase,
     deleteComment: deleteCommentUseCase,
   });
+  const likesStore = configureLikesStore({
+    likeRecipe: likeRecipeUseCase,
+    unlikeRecipe: unlikeRecipeUseCase,
+  });
   return {
     authStore,
     recipeListStore,
@@ -109,6 +122,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createdRecipesStore,
     favoritesStore,
     commentsStore,
+    likesStore,
     loadFavoritesUseCase,
   };
 };

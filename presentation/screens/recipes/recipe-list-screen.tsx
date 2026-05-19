@@ -12,7 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ScreenContainer } from '@presentation/base/widgets/screen-container';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeCard } from '@presentation/base/widgets/recipe-card';
+import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
@@ -148,15 +148,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const renderItem = useCallback(
     ({ item }: { item: Recipe }) => (
-      <RecipeCard
-        name={item.name}
-        image={item.image}
-        cuisine={item.cuisine}
-        difficulty={item.difficulty}
-        rating={item.rating}
-        tags={item.tags}
-        onPress={() => openRecipe(item.id)}
-      />
+      <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />
     ),
     [openRecipe],
   );

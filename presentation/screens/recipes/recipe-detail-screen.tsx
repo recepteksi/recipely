@@ -58,7 +58,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
@@ -66,6 +66,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
   const isDeleting = deleteState.status === 'deleting';
@@ -124,6 +125,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     }
   }, [isSaved, isLoading, recipeId, userId]);
 
+  const handleToggleLike = useCallback(() => {
+    if (!userId) return;
+    void likesStore.getState().toggle(recipeId);
+  }, [userId, recipeId, likesStore]);
+
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
 
@@ -149,6 +155,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       void commentsStore.getState().load(recipeId);
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
+
+  useEffect(() => {
+    if (recipeState?.status === 'loaded') {
+      const { likeCount, likedByMe } = recipeState.recipe;
+      likesStore.getState().seed(recipeId, likeCount, likedByMe);
+    }
+  }, [recipeState, recipeId, likesStore]);
 
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
@@ -241,6 +254,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         icon="star"
                         label={recipe.rating.toFixed(1)}
                         iconColor={colors.starFilled}
+                        chipBg={colors.chipBackground}
+                        chipTextColor={colors.chipText}
+                      />
+                      <InfoChip
+                        icon="heart"
+                        label={String(likeState?.likeCount ?? recipe.likeCount)}
+                        iconColor={likeState?.likedByMe ?? recipe.likedByMe ? '#F43F5E' : colors.chipText}
                         chipBg={colors.chipBackground}
                         chipTextColor={colors.chipText}
                       />
@@ -505,22 +525,34 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       </BottomSheet>
 
       {current.status === 'loaded' ? (
-        <Pressable
-          onPress={handleToggleSave}
-          accessibilityRole="button"
-          accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-          disabled={isLoading || !userId}
-          style={[
-            styles.saveButton,
-            { top: insets.top + 8, opacity: isLoading || !userId ? 0.5 : 1 },
-          ]}
-        >
-          <Ionicons
-            name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={20}
-            color={isLoading || !userId ? '#CCCCCC' : '#FFFFFF'}
-          />
-        </Pressable>
+        <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
+          <Pressable
+            onPress={handleToggleLike}
+            accessibilityRole="button"
+            accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
+            disabled={!userId}
+            style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1 }]}
+          >
+            <MaterialCommunityIcons
+              name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
+              size={20}
+              color={likeState?.likedByMe ? '#F43F5E' : '#FFFFFF'}
+            />
+          </Pressable>
+          <Pressable
+            onPress={handleToggleSave}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
+            disabled={isLoading || !userId}
+            style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1 }]}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={20}
+              color={isLoading || !userId ? '#CCCCCC' : '#FFFFFF'}
+            />
+          </Pressable>
+        </View>
       ) : null}
     </View>
   );
@@ -632,9 +664,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saveButton: {
+  floatingActions: {
     position: 'absolute',
     right: spacing.lg,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  floatingBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,

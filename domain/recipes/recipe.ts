@@ -18,6 +18,8 @@ export interface RecipeProps {
   tags: string[];
   mealType: string[];
   ownerId: string;
+  likeCount: number;
+  likedByMe: boolean;
 }
 
 /**
@@ -77,5 +79,11 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get ownerId(): string {
     return this.props.ownerId;
+  }
+  get likeCount(): number {
+    return this.props.likeCount;
+  }
+  get likedByMe(): boolean {
+    return this.props.likedByMe;
   }
 }
