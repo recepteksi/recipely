@@ -5,21 +5,18 @@ import type { MediaItem } from '@domain/recipes/media-item';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 
 /**
- * Maps a `RecipeDto` from the API into a domain `Recipe` entity. Because the
- * backend does not yet return an explicit `media[]` array, the cover `image`
- * URL is promoted into a single-item media gallery so that `MediaGallery`
- * widgets always have at least one item to render. When the backend ships
- * native media, replace this synthetic array with `dto.media` and retain
- * the fallback for legacy rows.
+ * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
+ * backend sends a `media[]` array it is used directly; otherwise the cover
+ * `image` is promoted into a single-item gallery so `MediaGallery` always
+ * has at least one item to render.
  */
 // WHY: domain's Recipe uses a plain string for difficulty; no need to promote the
 // backend's string-union into a domain enum just to swap a remote.
 export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
-  // Backend doesn't send a media[] yet; promote the cover `image` into a
-  // single-item media gallery so the UI's MediaGallery widget always has
-  // something to render. When the backend ships explicit media, swap this for
-  // a passthrough on dto.media (and keep the fallback for legacy rows).
-  const media: MediaItem[] = [{ type: 'image', url: dto.image }];
+  const media: MediaItem[] =
+    dto.media && dto.media.length > 0
+      ? dto.media.map((m) => ({ type: m.type, url: m.url }))
+      : [{ type: 'image', url: dto.image }];
 
   return Recipe.create({
     id: dto.id,
@@ -36,5 +33,7 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     tags: dto.tags,
     mealType: dto.mealType,
     ownerId: dto.ownerId,
+    likeCount: dto.likeCount ?? 0,
+    likedByMe: dto.likedByMe ?? false,
   });
 };

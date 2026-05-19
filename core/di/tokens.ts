@@ -11,4 +11,7 @@ export const TOKENS = {
   LoadFavoritesUseCase: Symbol.for('LoadFavoritesUseCase'),
   HealthCheckService: Symbol.for('HealthCheckService'),
   CommentRepository: Symbol.for('CommentRepository'),
+  LikeRepository: Symbol.for('LikeRepository'),
+  LikeRecipeUseCase: Symbol.for('LikeRecipeUseCase'),
+  UnlikeRecipeUseCase: Symbol.for('UnlikeRecipeUseCase'),
 } as const;

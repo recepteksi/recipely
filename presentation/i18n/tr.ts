@@ -50,6 +50,9 @@ export const tr: Translations = {
     results: 'tarif',
     clearFilters: 'Temizle',
     showResults: 'Göster',
+    like: 'Beğen',
+    unlike: 'Beğeniyi kaldır',
+    likes: 'beğeni',
   },
   settings: {
     title: 'Ayarlar',

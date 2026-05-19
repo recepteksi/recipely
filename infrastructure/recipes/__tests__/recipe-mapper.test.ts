@@ -16,6 +16,8 @@ const fullDto: RecipeDto = {
   mealType: ['Dinner'],
   ownerId: 'b1c2d3e4-f567-4890-abcd-ef0123456789',
   categoryId: null,
+  likeCount: 12,
+  likedByMe: false,
   createdAt: '2026-04-01T12:00:00.000Z',
   updatedAt: '2026-04-01T12:00:00.000Z',
 };

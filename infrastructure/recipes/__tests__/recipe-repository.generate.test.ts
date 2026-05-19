@@ -20,6 +20,8 @@ const validDto: RecipeDto = {
   mealType: ['Dinner'],
   ownerId: 'owner-7',
   categoryId: null,
+  likeCount: 0,
+  likedByMe: false,
   createdAt: '2026-05-11T12:00:00.000Z',
   updatedAt: '2026-05-11T12:00:00.000Z',
 };
