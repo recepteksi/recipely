@@ -14,9 +14,16 @@ export interface LikesStoreState {
   /**
    * Seed the store with the like state that arrived from the API. No-op when
    * the entry is already present so that in-flight optimistic updates are not
-   * overwritten by a stale network response.
+   * overwritten by a stale network response. Use this from list views.
    */
   seed: (recipeId: string, likeCount: number, likedByMe: boolean) => void;
+  /**
+   * Sync the store from a fresh authoritative API response (e.g. recipe detail
+   * endpoint). Unlike `seed`, this always writes the new values — unless an
+   * optimistic toggle is currently in-flight — so the detail screen always
+   * reflects the server-confirmed like state.
+   */
+  syncFromApi: (recipeId: string, likeCount: number, likedByMe: boolean) => void;
   /** Toggle like with optimistic update; rolls back on failure. */
   toggle: (recipeId: string) => Promise<void>;
 }
@@ -34,6 +41,18 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
 
     seed: (recipeId, likeCount, likedByMe) => {
       if (get().byRecipe[recipeId] !== undefined) return;
+      set((s) => ({
+        byRecipe: {
+          ...s.byRecipe,
+          [recipeId]: { likeCount, likedByMe, isLoading: false },
+        },
+      }));
+    },
+
+    syncFromApi: (recipeId, likeCount, likedByMe) => {
+      // WHY: skip when an optimistic toggle is in-flight — we don't want a
+      // concurrent detail-fetch to clobber the count the user just changed.
+      if (get().byRecipe[recipeId]?.isLoading) return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,

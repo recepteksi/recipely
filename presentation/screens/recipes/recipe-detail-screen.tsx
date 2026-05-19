@@ -159,7 +159,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   useEffect(() => {
     if (recipeState?.status === 'loaded') {
       const { likeCount, likedByMe } = recipeState.recipe;
-      likesStore.getState().seed(recipeId, likeCount, likedByMe);
+      // WHY: syncFromApi (not seed) — the detail endpoint is authoritative; we
+      // always want its likedByMe/likeCount to win unless a toggle is in-flight.
+      likesStore.getState().syncFromApi(recipeId, likeCount, likedByMe);
     }
   }, [recipeState, recipeId, likesStore]);
 
