@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { spacing } from '@presentation/base/theme';
 
 export interface ScreenContainerProps {
   children: ReactNode;
@@ -64,6 +65,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   padded: {
-    padding: 16,
+    padding: spacing.lg,
   },
 });

@@ -9,7 +9,7 @@ import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
@@ -128,7 +128,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
                     styles.countPill,
                     {
                       backgroundColor: isActive
-                        ? 'rgba(255,255,255,0.25)'
+                        ? colors.gradientBorder
                         : colors.chipBackground,
                     },
                   ]}
@@ -205,9 +205,9 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 40,
-    paddingHorizontal: 14,
+    gap: spacing.xs2,
+    height: sizes.floatingBtn,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
   },
   createLabel: {
@@ -218,34 +218,34 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
     marginBottom: spacing.md,
-    padding: 4,
+    padding: spacing.xs,
     borderRadius: radii.round,
     borderWidth: 1,
   },
   segment: {
     flex: 1,
-    height: 36,
+    height: sizes.iconBtn,
     borderRadius: radii.round,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: spacing.xs2,
   },
   segmentLabel: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   countPill: {
-    minWidth: 20,
-    height: 18,
-    paddingHorizontal: 6,
-    borderRadius: 9,
+    minWidth: sizes.iconMd,
+    height: sizes.iconXxs,
+    paddingHorizontal: spacing.xs2,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   countText: {
     fontWeight: '700',
-    fontSize: 11,
+    fontSize: fontSizes.micro,
   },
   listContent: {
     paddingHorizontal: spacing.lg,

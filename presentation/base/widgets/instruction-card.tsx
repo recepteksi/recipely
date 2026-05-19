@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { InlineTimer } from '@presentation/base/widgets/inline-timer';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 
 export interface InstructionCardProps {
   index: number;
@@ -122,15 +122,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   numberCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: sizes.badgeSm,
+    height: sizes.badgeSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numberText: {
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   body: {
     flex: 1,
