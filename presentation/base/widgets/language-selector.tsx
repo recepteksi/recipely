@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { radii } from '@presentation/base/theme';
+import { radii, sizes } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
 
 export interface LanguageSelectorProps {
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: radii.round,
-    height: 34,
+    height: sizes.selectorHeight,
     width: 100,
     overflow: 'hidden',
   },

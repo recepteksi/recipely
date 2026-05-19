@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { radii } from '@presentation/base/theme';
+import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { ThemedText } from './themed-text';
 import { t } from '@presentation/i18n';
 
@@ -53,21 +53,21 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: radii.round,
-    height: 34,
-    padding: 3,
+    height: sizes.selectorHeight,
+    padding: spacing.xxs,
     overflow: 'hidden',
-    gap: 2,
+    gap: spacing.xxs,
   },
   segment: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.round,
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.xs,
     overflow: 'hidden',
   },
   segmentLabel: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
 });

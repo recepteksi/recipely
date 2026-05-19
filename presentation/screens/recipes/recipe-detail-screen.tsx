@@ -19,7 +19,7 @@ import {
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { MediaItem } from '@domain/recipes/media-item';
 
@@ -262,7 +262,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       <InfoChip
                         icon="heart"
                         label={String(likeState?.likeCount ?? recipe.likeCount)}
-                        iconColor={likeState?.likedByMe ?? recipe.likedByMe ? '#F43F5E' : colors.chipText}
+                        iconColor={likeState?.likedByMe ?? recipe.likedByMe ? colors.likeActive : colors.chipText}
                         chipBg={colors.chipBackground}
                         chipTextColor={colors.chipText}
                       />
@@ -353,7 +353,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           style={({ pressed }) => [
                             styles.ownerBtn,
                             styles.ownerBtnDanger,
-                            { opacity: pressed ? 0.75 : 1 },
+                            { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
                           ]}
                         >
                           <Ionicons name="trash-outline" size={16} color={colors.danger} />
@@ -450,7 +450,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                             },
                           ]}
                         >
-                          <Ionicons name="send" size={16} color="#fff" />
+                          <Ionicons name="send" size={16} color={colors.onOverlay} />
                         </Pressable>
                       </View>
                     ) : (
@@ -479,9 +479,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       <Pressable
         accessibilityRole="button"
         onPress={() => router.back()}
-        style={[styles.backButton, { top: insets.top + 8 }]}
+        style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
       >
-        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
       </Pressable>
 
       <BottomSheet
@@ -516,10 +516,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             style={({ pressed }) => [
               styles.deleteSheetBtn,
               styles.deleteSheetBtnDanger,
-              { opacity: pressed || isDeleting ? 0.7 : 1 },
+              { opacity: pressed || isDeleting ? 0.7 : 1, backgroundColor: colors.dangerLight },
             ]}
           >
-            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold]}>
+            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold, { color: colors.danger }]}>
               {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
             </ThemedText>
           </Pressable>
@@ -533,12 +533,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             accessibilityRole="button"
             accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
             disabled={!userId}
-            style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1 }]}
+            style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
           >
             <MaterialCommunityIcons
               name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
               size={20}
-              color={likeState?.likedByMe ? '#F43F5E' : '#FFFFFF'}
+              color={likeState?.likedByMe ? colors.likeActive : colors.onOverlay}
             />
           </Pressable>
           <Pressable
@@ -546,12 +546,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             accessibilityRole="button"
             accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
             disabled={isLoading || !userId}
-            style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1 }]}
+            style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
           >
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={20}
-              color={isLoading || !userId ? '#CCCCCC' : '#FFFFFF'}
+              color={isLoading || !userId ? colors.textMuted : colors.onOverlay}
             />
           </Pressable>
         </View>
@@ -578,18 +578,18 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
     marginTop: spacing.md,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radii.round,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs2,
   },
   chipIcon: {
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   timeRow: {
     flexDirection: 'row',
@@ -604,8 +604,8 @@ const styles = StyleSheet.create({
   },
   tag: {
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   cardsList: {
     gap: spacing.sm,
@@ -620,16 +620,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    height: 44,
-    borderRadius: radii.lg,
+    gap: spacing.xs2,
+    height: sizes.searchBarHeight,
+    borderRadius: radii.round,
   },
-  ownerBtnDanger: {
-    backgroundColor: 'rgba(217,48,37,0.1)',
-  },
+  ownerBtnDanger: {},
   ownerBtnLabel: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   deleteSheetBody: {
     marginBottom: spacing.md,
@@ -645,24 +643,19 @@ const styles = StyleSheet.create({
   },
   deleteSheetBtn: {
     flex: 1,
-    height: 48,
+    height: sizes.buttonSmHeight,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteSheetBtnDanger: {
-    backgroundColor: 'rgba(217,48,37,0.12)',
-  },
-  deleteSheetBtnDangerLabel: {
-    color: '#D93025',
-  },
+  deleteSheetBtnDanger: {},
+  deleteSheetBtnDangerLabel: {},
   backButton: {
     position: 'absolute',
     left: spacing.lg,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: sizes.floatingBtn,
+    height: sizes.floatingBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -673,10 +666,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   floatingBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: sizes.floatingBtn,
+    height: sizes.floatingBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -709,11 +701,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    minHeight: 44,
+    minHeight: sizes.searchBarHeight,
   },
   commentSendBtn: {
-    width: 44,
-    height: 44,
+    width: sizes.searchBarHeight,
+    height: sizes.searchBarHeight,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',

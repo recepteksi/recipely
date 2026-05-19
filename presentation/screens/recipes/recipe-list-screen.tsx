@@ -21,7 +21,7 @@ import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 
@@ -189,7 +189,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {t().recipes.filter}
           </ThemedText>
           {activeFilterCount > 0 ? (
-            <View style={styles.pillBadge}>
+            <View style={[styles.pillBadge, { backgroundColor: colors.gradientBorder }]}>
               <ThemedText
                 variant="caption"
                 style={[styles.pillBadgeText, { color: colors.primaryText }]}
@@ -482,44 +482,43 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 34,
-    paddingHorizontal: 12,
+    gap: spacing.xs2,
+    height: sizes.selectorHeight,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: 1.5,
   },
   pillLabel: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   pillBadge: {
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 5,
-    borderRadius: 9,
+    minWidth: sizes.iconXxs,
+    height: sizes.iconXxs,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   pillBadgeText: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     fontWeight: '700',
   },
   activeChipsRow: {
-    gap: 6,
+    gap: spacing.xs2,
     alignItems: 'center',
     paddingRight: spacing.lg,
   },
   activeChip: {
-    height: 30,
-    paddingHorizontal: 10,
+    height: sizes.chipHeight,
+    paddingHorizontal: spacing.sm2,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   activeChipText: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   countRow: {
     paddingBottom: spacing.sm,
@@ -558,11 +557,11 @@ const styles = StyleSheet.create({
   chipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.xs2,
   },
   chipsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.xs2,
   },
   sheetCta: {
     marginTop: spacing.md,
@@ -575,6 +574,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
 });
