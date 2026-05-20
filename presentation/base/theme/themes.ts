@@ -69,6 +69,16 @@ export interface ThemeColors {
    * is always a green tinted toward 0.4-0.5 luminance and requires dark text.
    */
   onSuccess: string;
+  /** Rose-red used for liked/active heart icons — consistent across all themes. */
+  likeActive: string;
+  /** Semi-transparent dark overlay for image overlays and floating buttons. */
+  overlayLight: string;
+  /** Danger color at 10% opacity, used for danger-tinted button backgrounds. */
+  dangerLight: string;
+  /** Frosted glass surface for gradient section cards and modals. */
+  gradientSurface: string;
+  /** Frosted glass border for elements on top of gradient backgrounds. */
+  gradientBorder: string;
 }
 
 export type ThemeVariant = 'light' | 'dark';
@@ -91,6 +101,10 @@ interface VariantSemantics {
   shadow: string;
   onOverlay: string;
   onSuccess: string;
+  likeActive: string;
+  overlayLight: string;
+  gradientSurface: string;
+  gradientBorder: string;
 }
 
 interface Palette {
@@ -146,6 +160,10 @@ const darkSemantics: VariantSemantics = {
   shadow: '#000000',
   onOverlay: '#FFFFFF',
   onSuccess: '#0F1B0F',
+  likeActive: '#F43F5E',
+  overlayLight: 'rgba(0,0,0,0.4)',
+  gradientSurface: 'rgba(255,255,255,0.18)',
+  gradientBorder: 'rgba(255,255,255,0.28)',
 };
 
 const lightSemantics: VariantSemantics = {
@@ -157,6 +175,10 @@ const lightSemantics: VariantSemantics = {
   shadow: '#0F172A',
   onOverlay: '#FFFFFF',
   onSuccess: '#0F1B0F',
+  likeActive: '#F43F5E',
+  overlayLight: 'rgba(0,0,0,0.4)',
+  gradientSurface: 'rgba(255,255,255,0.18)',
+  gradientBorder: 'rgba(255,255,255,0.28)',
 };
 
 const makeColors = (palette: Palette, semantics: VariantSemantics, surface: string): ThemeColors => ({
@@ -198,6 +220,11 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   sectionBackground: surface,
   onOverlay: semantics.onOverlay,
   onSuccess: semantics.onSuccess,
+  likeActive: semantics.likeActive,
+  overlayLight: semantics.overlayLight,
+  dangerLight: semantics.danger + '1A',
+  gradientSurface: semantics.gradientSurface,
+  gradientBorder: semantics.gradientBorder,
 });
 
 interface DarkArgs {

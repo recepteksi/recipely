@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { sizes } from '@presentation/base/theme';
+import { sizes, spacing, fontSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { t } from '@presentation/i18n';
 
@@ -78,10 +78,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 8,
-    gap: 2,
+    paddingTop: spacing.sm,
+    gap: spacing.xxs,
   },
   label: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
   },
 });

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { radii } from '@presentation/base/theme';
+import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface InlineTimerProps {
@@ -76,7 +76,7 @@ export const InlineTimer = ({
       </ThemedText>
       <Pressable
         onPress={() => setRunning((r) => !r)}
-        style={styles.activeBtn}
+        style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
       >
         <Ionicons
           name={running ? 'pause' : 'play'}
@@ -90,7 +90,7 @@ export const InlineTimer = ({
           setRunning(false);
           setRemaining(minutes * 60);
         }}
-        style={styles.activeBtn}
+        style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
       >
         <Ionicons
           name="close"
@@ -106,36 +106,35 @@ const styles = StyleSheet.create({
   idle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignSelf: 'flex-start',
   },
   idleLabel: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   active: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingLeft: 10,
-    paddingRight: 4,
-    paddingVertical: 2,
+    gap: spacing.xs,
+    paddingLeft: spacing.sm2,
+    paddingRight: spacing.xs,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignSelf: 'flex-start',
   },
   activeText: {
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: fontSizes.small,
     fontVariant: ['tabular-nums'],
   },
   activeBtn: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    width: sizes.iconXxs,
+    height: sizes.iconXxs,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { spacing } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 
 export type StateViewStatus = 'loading' | 'error' | 'empty' | 'content';
@@ -66,13 +67,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: spacing.xl,
   },
   message: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: 'center',
   },
   retry: {
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
 });

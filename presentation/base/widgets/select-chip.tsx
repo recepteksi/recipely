@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { radii } from '@presentation/base/theme';
+import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
 
 export interface SelectChipProps {
   label: string;
@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    height: 36,
-    paddingHorizontal: 14,
+    gap: spacing.xs,
+    height: sizes.iconBtn,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: 1.5,
   },
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
 });

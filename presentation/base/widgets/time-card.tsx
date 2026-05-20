@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface TimeCardProps {
@@ -128,9 +128,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -139,27 +139,27 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   label: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
   },
   value: {
-    fontSize: 16,
+    fontSize: fontSizes.heading,
     fontWeight: '700',
   },
   actions: {
     flexDirection: 'row',
-    gap: 4,
+    gap: spacing.xs,
   },
   playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: sizes.iconBtnSm,
+    height: sizes.iconBtnSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resetButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: sizes.iconBtnSm,
+    height: sizes.iconBtnSm,
+    borderRadius: radii.round,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

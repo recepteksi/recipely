@@ -109,6 +109,7 @@ export const Slider = ({
               borderRadius: handleSize / 2,
               backgroundColor: colors.primary,
               borderColor: colors.surface,
+              shadowColor: colors.shadow,
               left: clamp(
                 fillRatio * trackWidth - handleSize / 2,
                 -handleSize / 2,
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     marginTop: -10,
     borderWidth: 2,
     elevation: 2,
-    shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 2,

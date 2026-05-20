@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 export interface VideoSectionProps {
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   thumb: {
-    width: 80,
-    height: 56,
+    width: sizes.avatarLg,
+    height: sizes.avatarMd,
     borderRadius: radii.md,
     overflow: 'hidden',
     position: 'relative',
@@ -103,14 +103,14 @@ const styles = StyleSheet.create({
   },
   thumbBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    paddingHorizontal: 6,
+    top: spacing.xs,
+    right: spacing.xs,
+    paddingHorizontal: spacing.xs2,
     paddingVertical: 1,
     borderRadius: radii.round,
   },
   thumbBadgeText: {
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: '700',
   },
 });
