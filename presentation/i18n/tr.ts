@@ -46,6 +46,8 @@ export const tr: Translations = {
     sortRating: 'En yüksek puan',
     sortTime: 'En hızlı',
     sortName: 'A → Z',
+    sortNewest: 'En yeni',
+    sortMostLiked: 'En çok beğenilen',
     maxTime: 'En fazla süre',
     any: 'Hepsi',
     results: 'tarif',

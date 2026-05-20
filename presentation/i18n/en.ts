@@ -44,6 +44,8 @@ export const en = {
     sortRating: 'Top rated',
     sortTime: 'Quickest',
     sortName: 'A → Z',
+    sortNewest: 'Newest',
+    sortMostLiked: 'Most liked',
     maxTime: 'Max time',
     any: 'Any',
     results: 'recipes',

@@ -131,8 +131,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
     popular: t().recipes.sortPopular,
     rating: t().recipes.sortRating,
     time: t().recipes.sortTime,
-    newest: t().recipes.sortName,
-    mostLiked: t().recipes.sortPopular,
+    newest: t().recipes.sortNewest,
+    mostLiked: t().recipes.sortMostLiked,
   };
 
   const togglePendingCuisine = (c: CuisineKey): void =>
@@ -373,13 +373,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   } else if (filteredRecipes.length === 0 && state.recipes.length === 0) {
     body = (
       <ScreenContainer padded={false}>
+        {activeFilterCount > 0 ? headerControls : null}
         <View style={styles.center}>
           <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.errorTitle}>
-            {t().recipes.empty}
+            {activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
           </ThemedText>
           <View style={styles.retryButton}>
-            <PrimaryButton label={t().common.retry} onPress={onRefresh} />
+            {activeFilterCount > 0 ? (
+              <PrimaryButton label={t().recipes.clearFilters} onPress={resetFilters} />
+            ) : (
+              <PrimaryButton label={t().common.retry} onPress={onRefresh} />
+            )}
           </View>
         </View>
       </ScreenContainer>
