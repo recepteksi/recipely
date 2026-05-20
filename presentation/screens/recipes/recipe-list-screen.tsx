@@ -24,17 +24,35 @@ import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
+import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
+import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
+import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
-type SortKey = 'popular' | 'rating' | 'timeAsc' | 'nameAsc';
+type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
 
-interface Filters {
-  cuisines: string[];
-  difficulties: string[];
+interface UiFilters {
+  cuisines: CuisineKey[];
+  categories: RecipeCategory[];
+  difficulties: Difficulty[];
   maxTime: number;
 }
 
-const DIFFICULTIES: readonly string[] = ['Easy', 'Medium', 'Hard'];
 const TIME_OPTIONS: readonly number[] = [0, 15, 30, 45, 60, 90];
+
+const SORT_TO_API: Record<SortKey, RecipeFilters['sort']> = {
+  popular: 'popular',
+  rating: 'rating',
+  time: 'time',
+  newest: 'newest',
+  mostLiked: 'mostLiked',
+};
+
+const emptyFilters: UiFilters = { cuisines: [], categories: [], difficulties: [], maxTime: 0 };
+
+/** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
+const formatLabel = (key: string): string =>
+  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
@@ -55,11 +73,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('popular');
-  const [filters, setFilters] = useState<Filters>({
-    cuisines: [],
-    difficulties: [],
-    maxTime: 0,
-  });
+  const [filters, setFilters] = useState<UiFilters>(emptyFilters);
+  const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
   const [sheetOpen, setSheetOpen] = useState<'filter' | 'sort' | null>(null);
 
   useEffect(() => {
@@ -69,8 +84,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
   }, [state.status, load]);
 
   const onRefresh = useCallback(() => {
-    void load();
-  }, [load]);
+    void load(buildApiFilters(filters, sortBy));
+  }, [load, filters, sortBy]);
 
   const openRecipe = useCallback(
     (id: string) => {
@@ -79,67 +94,106 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [router],
   );
 
-  const allCuisines = useMemo(() => {
-    if (state.status !== 'loaded') return [];
-    const set = new Set<string>();
-    for (const r of state.recipes) set.add(r.cuisine);
-    return Array.from(set).sort();
-  }, [state]);
+  const buildApiFilters = (f: UiFilters, sort: SortKey): RecipeFilters => ({
+    ...(f.cuisines.length > 0 ? { cuisines: f.cuisines } : {}),
+    ...(f.categories.length > 0 ? { categories: f.categories } : {}),
+    ...(f.difficulties.length > 0 ? { difficulties: f.difficulties } : {}),
+    ...(f.maxTime > 0 ? { maxTime: f.maxTime } : {}),
+    sort: SORT_TO_API[sort],
+  });
+
+  const applyFilters = (): void => {
+    setFilters(pendingFilters);
+    setSheetOpen(null);
+    void load(buildApiFilters(pendingFilters, sortBy));
+  };
+
+  const openFilterSheet = (): void => {
+    setPendingFilters(filters);
+    setSheetOpen('filter');
+  };
 
   const activeFilterCount =
-    filters.cuisines.length + filters.difficulties.length + (filters.maxTime > 0 ? 1 : 0);
+    filters.cuisines.length +
+    filters.categories.length +
+    filters.difficulties.length +
+    (filters.maxTime > 0 ? 1 : 0);
 
+  // Client-side search for responsiveness; API handles all other filters.
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
     const query = search.trim().toLowerCase();
-    let list = state.recipes.filter((r) =>
-      query.length === 0 ? true : r.name.toLowerCase().includes(query),
-    );
-    if (filters.cuisines.length > 0) {
-      list = list.filter((r) => filters.cuisines.includes(r.cuisine));
-    }
-    if (filters.difficulties.length > 0) {
-      list = list.filter((r) => filters.difficulties.includes(r.difficulty));
-    }
-    if (filters.maxTime > 0) {
-      list = list.filter(
-        (r) => r.prepTimeMinutes + r.cookTimeMinutes <= filters.maxTime,
-      );
-    }
-    const sorters: Record<SortKey, (a: Recipe, b: Recipe) => number> = {
-      popular: (a, b) => b.rating - a.rating,
-      rating: (a, b) => b.rating - a.rating,
-      timeAsc: (a, b) =>
-        a.prepTimeMinutes + a.cookTimeMinutes - (b.prepTimeMinutes + b.cookTimeMinutes),
-      nameAsc: (a, b) => a.name.localeCompare(b.name),
-    };
-    return [...list].sort(sorters[sortBy]);
-  }, [state, search, filters, sortBy]);
+    if (query.length === 0) return state.recipes;
+    return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
+  }, [state, search]);
 
   const sortLabels: Record<SortKey, string> = {
     popular: t().recipes.sortPopular,
     rating: t().recipes.sortRating,
-    timeAsc: t().recipes.sortTime,
-    nameAsc: t().recipes.sortName,
+    time: t().recipes.sortTime,
+    newest: t().recipes.sortName,
+    mostLiked: t().recipes.sortPopular,
   };
 
-  const toggleCuisine = (c: string): void =>
-    setFilters((f) => ({
+  const togglePendingCuisine = (c: CuisineKey): void =>
+    setPendingFilters((f) => ({
       ...f,
-      cuisines: f.cuisines.includes(c)
-        ? f.cuisines.filter((x) => x !== c)
-        : [...f.cuisines, c],
+      cuisines: f.cuisines.includes(c) ? f.cuisines.filter((x) => x !== c) : [...f.cuisines, c],
     }));
-  const toggleDifficulty = (d: string): void =>
-    setFilters((f) => ({
+
+  const togglePendingCategory = (c: RecipeCategory): void =>
+    setPendingFilters((f) => ({
+      ...f,
+      categories: f.categories.includes(c)
+        ? f.categories.filter((x) => x !== c)
+        : [...f.categories, c],
+    }));
+
+  const togglePendingDifficulty = (d: Difficulty): void =>
+    setPendingFilters((f) => ({
       ...f,
       difficulties: f.difficulties.includes(d)
         ? f.difficulties.filter((x) => x !== d)
         : [...f.difficulties, d],
     }));
-  const setMaxTime = (m: number): void => setFilters((f) => ({ ...f, maxTime: m }));
-  const resetFilters = (): void =>
-    setFilters({ cuisines: [], difficulties: [], maxTime: 0 });
+
+  const setPendingMaxTime = (m: number): void =>
+    setPendingFilters((f) => ({ ...f, maxTime: m }));
+
+  const resetFilters = (): void => {
+    const reset = emptyFilters;
+    setFilters(reset);
+    setPendingFilters(reset);
+    void load();
+  };
+
+  const removeCuisineFilter = (c: CuisineKey): void => {
+    const next = { ...filters, cuisines: filters.cuisines.filter((x) => x !== c) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeDifficultyFilter = (d: Difficulty): void => {
+    const next = { ...filters, difficulties: filters.difficulties.filter((x) => x !== d) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeCategoryFilter = (c: RecipeCategory): void => {
+    const next = { ...filters, categories: filters.categories.filter((x) => x !== c) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeMaxTimeFilter = (): void => {
+    const next = { ...filters, maxTime: 0 };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'myRecipes') router.replace('/my-recipes');
@@ -165,7 +219,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
       <View style={styles.pillRow}>
         <Pressable
-          onPress={() => setSheetOpen('filter')}
+          onPress={openFilterSheet}
           style={[
             styles.pill,
             {
@@ -225,34 +279,48 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {filters.cuisines.map((c) => (
               <Pressable
                 key={c}
-                onPress={() => toggleCuisine(c)}
+                onPress={() => removeCuisineFilter(c)}
                 style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
               >
                 <ThemedText
                   variant="caption"
                   style={[styles.activeChipText, { color: colors.chipText }]}
                 >
-                  {c} ×
+                  {formatLabel(c)} ×
+                </ThemedText>
+              </Pressable>
+            ))}
+            {filters.categories.map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => removeCategoryFilter(c)}
+                style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
+              >
+                <ThemedText
+                  variant="caption"
+                  style={[styles.activeChipText, { color: colors.chipText }]}
+                >
+                  {formatLabel(c)} ×
                 </ThemedText>
               </Pressable>
             ))}
             {filters.difficulties.map((d) => (
               <Pressable
                 key={d}
-                onPress={() => toggleDifficulty(d)}
+                onPress={() => removeDifficultyFilter(d)}
                 style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
               >
                 <ThemedText
                   variant="caption"
                   style={[styles.activeChipText, { color: colors.chipText }]}
                 >
-                  {d} ×
+                  {formatLabel(d)} ×
                 </ThemedText>
               </Pressable>
             ))}
             {filters.maxTime > 0 ? (
               <Pressable
-                onPress={() => setMaxTime(0)}
+                onPress={removeMaxTimeFilter}
                 style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
               >
                 <ThemedText
@@ -363,35 +431,49 @@ export const RecipeListScreen = (): React.JSX.Element => {
             : undefined
         }
       >
-        {allCuisines.length > 0 ? (
-          <View style={styles.sheetSection}>
-            <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-              {t().recipes.cuisine}
-            </ThemedText>
-            <View style={styles.chipsWrap}>
-              {allCuisines.map((c) => (
-                <SelectChip
-                  key={c}
-                  label={c}
-                  selected={filters.cuisines.includes(c)}
-                  onToggle={() => toggleCuisine(c)}
-                />
-              ))}
-            </View>
+        <View style={styles.sheetSection}>
+          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
+            {t().recipes.cuisine}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {CUISINE_KEY_VALUES.map((c) => (
+              <SelectChip
+                key={c}
+                label={formatLabel(c)}
+                selected={pendingFilters.cuisines.includes(c)}
+                onToggle={() => togglePendingCuisine(c)}
+              />
+            ))}
           </View>
-        ) : null}
+        </View>
+
+        <View style={styles.sheetSection}>
+          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
+            {t().recipes.category}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {RECIPE_CATEGORY_VALUES.map((c) => (
+              <SelectChip
+                key={c}
+                label={formatLabel(c)}
+                selected={pendingFilters.categories.includes(c)}
+                onToggle={() => togglePendingCategory(c)}
+              />
+            ))}
+          </View>
+        </View>
 
         <View style={styles.sheetSection}>
           <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
             {t().recipes.difficulty}
           </ThemedText>
           <View style={styles.chipsRow}>
-            {DIFFICULTIES.map((d) => (
+            {DIFFICULTY_VALUES.map((d) => (
               <SelectChip
                 key={d}
-                label={d}
-                selected={filters.difficulties.includes(d)}
-                onToggle={() => toggleDifficulty(d)}
+                label={formatLabel(d)}
+                selected={pendingFilters.difficulties.includes(d)}
+                onToggle={() => togglePendingDifficulty(d)}
                 flex
               />
             ))}
@@ -407,8 +489,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
               <SelectChip
                 key={m}
                 label={m === 0 ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
-                selected={filters.maxTime === m}
-                onToggle={() => setMaxTime(m)}
+                selected={pendingFilters.maxTime === m}
+                onToggle={() => setPendingMaxTime(m)}
               />
             ))}
           </View>
@@ -416,8 +498,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
         <View style={styles.sheetCta}>
           <PrimaryButton
-            label={`${t().recipes.showResults} ${filteredRecipes.length}`}
-            onPress={() => setSheetOpen(null)}
+            label={`${t().recipes.showResults}`}
+            onPress={applyFilters}
           />
         </View>
       </BottomSheet>
@@ -434,6 +516,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               key={key}
               onPress={() => {
                 setSortBy(key);
+                void load(buildApiFilters(filters, key));
                 setSheetOpen(null);
               }}
               style={[

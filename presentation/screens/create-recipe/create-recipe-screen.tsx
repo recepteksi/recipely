@@ -24,39 +24,37 @@ import { Slider } from '@presentation/base/widgets/slider';
 import { TimeSliderCard } from '@presentation/screens/create-recipe/time-slider-card';
 import { ReviewRowItem } from '@presentation/screens/create-recipe/review-row-item';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, type ThemeColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes, type ThemeColors } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { UpdateRecipeInput } from '@domain/recipes/i-recipe-repository';
-
-type Difficulty = 'Easy' | 'Medium' | 'Hard';
-const DIFFICULTIES: readonly Difficulty[] = ['Easy', 'Medium', 'Hard'];
+import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
+import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
+import { type Difficulty } from '@domain/recipes/difficulty';
 
 type WizardStep = 0 | 1 | 2 | 3 | 4 | 5;
 
 const SERVINGS_MIN = 1;
 const SERVINGS_MAX = 20;
 
-const DIFFICULTY_TO_DOMAIN: Record<Difficulty, 'EASY' | 'MEDIUM' | 'HARD'> = {
-  Easy: 'EASY',
-  Medium: 'MEDIUM',
-  Hard: 'HARD',
-};
+const DIFFICULTIES: readonly Difficulty[] = ['EASY', 'MEDIUM', 'HARD'];
 
-const DOMAIN_TO_DIFFICULTY: Record<string, Difficulty> = {
+const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   EASY: 'Easy',
   MEDIUM: 'Medium',
   HARD: 'Hard',
-  Easy: 'Easy',
-  Medium: 'Medium',
-  Hard: 'Hard',
 };
+
+/** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
+const formatLabel = (key: string): string =>
+  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 interface RecipeFormState {
   name: string;
-  cuisine: string;
+  cuisine: CuisineKey | '';
+  category: RecipeCategory | '';
   difficulty: Difficulty;
   prepTimeMinutes: number;
   cookTimeMinutes: number;
@@ -69,7 +67,8 @@ interface RecipeFormState {
 const emptyForm: RecipeFormState = {
   name: '',
   cuisine: '',
-  difficulty: 'Easy',
+  category: '',
+  difficulty: 'EASY',
   prepTimeMinutes: 15,
   cookTimeMinutes: 20,
   servings: 4,
@@ -84,20 +83,18 @@ const emptyForm: RecipeFormState = {
 const recipeToForm = (
   recipe: Recipe,
   prevMedia: MediaItem[],
-): RecipeFormState => {
-  const difficulty = DOMAIN_TO_DIFFICULTY[recipe.difficulty] ?? 'Easy';
-  return {
-    name: recipe.name,
-    cuisine: recipe.cuisine,
-    difficulty,
-    prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : emptyForm.prepTimeMinutes,
-    cookTimeMinutes: recipe.cookTimeMinutes > 0 ? recipe.cookTimeMinutes : emptyForm.cookTimeMinutes,
-    servings: emptyForm.servings,
-    ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [''],
-    instructions: recipe.instructions.length > 0 ? recipe.instructions : [''],
-    media: prevMedia,
-  };
-};
+): RecipeFormState => ({
+  name: recipe.name,
+  cuisine: recipe.cuisine,
+  category: recipe.category,
+  difficulty: recipe.difficulty,
+  prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : emptyForm.prepTimeMinutes,
+  cookTimeMinutes: recipe.cookTimeMinutes > 0 ? recipe.cookTimeMinutes : emptyForm.cookTimeMinutes,
+  servings: emptyForm.servings,
+  ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [''],
+  instructions: recipe.instructions.length > 0 ? recipe.instructions : [''],
+  media: prevMedia,
+});
 
 const stepLabels = (): readonly string[] => [
   t().createRecipe.stepBasics,
@@ -254,7 +251,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     }
     setMissing(false);
     const locale = getLocale();
-    const cuisine = form.cuisine.trim() || 'Custom';
+    const cuisine = form.cuisine || 'OTHER';
+    const category = form.category || 'DINNER';
     const uri = coverImage.url;
     const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
     const mimeMap: Record<string, string> = {
@@ -274,8 +272,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
     await createdRecipesStore.getState().createRecipe({
       name: { [locale]: form.name.trim() },
-      cuisine: { [locale]: cuisine },
-      difficulty: DIFFICULTY_TO_DOMAIN[form.difficulty],
+      cuisine,
+      category,
+      difficulty: form.difficulty,
       ingredients: { [locale]: cleanIngredients },
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: form.prepTimeMinutes,
@@ -283,7 +282,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       imageUri: uri,
       imageFileName: `recipe-${Date.now()}.${ext}`,
       imageMimeType: mime,
-      tags: { [locale]: [cuisine, form.difficulty] },
+      tags: { [locale]: [DIFFICULTY_LABELS[form.difficulty]] },
       mealType: { [locale]: [] },
       isPublished: true,
       locale,
@@ -298,19 +297,19 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
   const handleUpdate = async (): Promise<void> => {
     const locale = getLocale();
-    const cuisine = form.cuisine.trim() || 'Custom';
     const cleanIngredients = form.ingredients.map((s) => s.trim()).filter((s) => s.length > 0);
     const cleanInstructions = form.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
 
     const input: UpdateRecipeInput = {
       name: { [locale]: form.name.trim() },
-      cuisine: { [locale]: cuisine },
-      difficulty: DIFFICULTY_TO_DOMAIN[form.difficulty],
+      ...(form.cuisine ? { cuisine: form.cuisine } : {}),
+      ...(form.category ? { category: form.category } : {}),
+      difficulty: form.difficulty,
       ingredients: { [locale]: cleanIngredients },
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: form.prepTimeMinutes,
       cookTimeMinutes: form.cookTimeMinutes,
-      tags: { [locale]: [cuisine, form.difficulty] },
+      tags: { [locale]: [DIFFICULTY_LABELS[form.difficulty]] },
       mealType: { [locale]: [] },
       isPublished: true,
       locale,
@@ -439,7 +438,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         style={styles.stepScroll}
         contentContainerStyle={[
           styles.stepScrollInner,
-          { paddingBottom: 96 + insets.bottom },
+          { paddingBottom: sizes.heroSquare + insets.bottom },
         ]}
         keyboardShouldPersistTaps="handled"
       >
@@ -530,7 +529,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
                 style={[
                   styles.bottomPrimaryLabel,
                   {
-                    color: continueDisabled ? colors.textMuted : '#FFFFFF',
+                    color: continueDisabled ? colors.textMuted : colors.primaryText,
                   },
                 ]}
               >
@@ -552,7 +551,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             >
               <ThemedText
                 variant="body"
-                style={[styles.bottomPrimaryLabel, { color: '#FFFFFF' }]}
+                style={[styles.bottomPrimaryLabel, { color: colors.primaryText }]}
               >
                 {isEditMode
                   ? (updateState.status === 'updating' ? t().createRecipe.updating : t().createRecipe.updateSave)
@@ -645,7 +644,7 @@ const renderPromptStep = (args: PromptStepArgs): React.JSX.Element => {
             end={{ x: 1, y: 1 }}
             style={[styles.heroSquare, shadows.lg]}
           >
-            <ThemedText style={styles.heroSparkle}>✨</ThemedText>
+            <ThemedText style={[styles.heroSparkle, { color: colors.primaryText }]}>✨</ThemedText>
           </LinearGradient>
 
           <View style={styles.promptHeadingBlock}>
@@ -723,7 +722,7 @@ const renderPromptStep = (args: PromptStepArgs): React.JSX.Element => {
               >
                 <ThemedText
                   variant="body"
-                  style={[styles.promptCtaLabel, { color: '#FFFFFF' }]}
+                  style={[styles.promptCtaLabel, { color: colors.primaryText }]}
                 >
                   {aiLoading
                     ? t().createRecipe.aiGenerating
@@ -790,13 +789,13 @@ interface Step1Args {
 const renderStep1 = (args: Step1Args): React.JSX.Element => {
   const { form, colors, updateField } = args;
   const fieldStyle: StyleProp<TextStyle> = {
-    height: 48,
+    height: sizes.buttonSmHeight,
     backgroundColor: colors.inputBackground,
     borderWidth: 1.5,
     borderColor: colors.inputBorder,
     borderRadius: radii.lg,
-    paddingHorizontal: 14,
-    fontSize: 15,
+    paddingHorizontal: spacing.md,
+    fontSize: fontSizes.body,
     color: colors.text,
   };
 
@@ -825,13 +824,65 @@ const renderStep1 = (args: Step1Args): React.JSX.Element => {
         >
           {t().createRecipe.cuisine}
         </ThemedText>
-        <TextInput
-          value={form.cuisine}
-          onChangeText={(v) => updateField('cuisine', v)}
-          placeholder="Italian"
-          placeholderTextColor={colors.textMuted}
-          style={fieldStyle}
-        />
+        <View style={styles.chipsWrap}>
+          {CUISINE_KEY_VALUES.map((c) => {
+            const isActive = form.cuisine === c;
+            return (
+              <Pressable
+                key={c}
+                onPress={() => updateField('cuisine', c)}
+                style={[
+                  styles.enumChip,
+                  {
+                    borderColor: isActive ? colors.primary : colors.border,
+                    backgroundColor: isActive ? colors.primary : colors.surface,
+                  },
+                ]}
+              >
+                <ThemedText
+                  variant="caption"
+                  style={[styles.enumChipLabel, { color: isActive ? colors.primaryText : colors.text }]}
+                >
+                  {formatLabel(c)}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View>
+        <ThemedText
+          variant="label"
+          style={[styles.fieldLabel, { color: colors.textMuted }]}
+        >
+          {t().createRecipe.category}
+        </ThemedText>
+        <View style={styles.chipsWrap}>
+          {RECIPE_CATEGORY_VALUES.map((c) => {
+            const isActive = form.category === c;
+            return (
+              <Pressable
+                key={c}
+                onPress={() => updateField('category', c)}
+                style={[
+                  styles.enumChip,
+                  {
+                    borderColor: isActive ? colors.primary : colors.border,
+                    backgroundColor: isActive ? colors.primary : colors.surface,
+                  },
+                ]}
+              >
+                <ThemedText
+                  variant="caption"
+                  style={[styles.enumChipLabel, { color: isActive ? colors.primaryText : colors.text }]}
+                >
+                  {formatLabel(c)}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <View>
@@ -867,7 +918,7 @@ const renderStep1 = (args: Step1Args): React.JSX.Element => {
                     },
                   ]}
                 >
-                  {d}
+                  {DIFFICULTY_LABELS[d]}
                 </ThemedText>
               </Pressable>
             );
@@ -1116,7 +1167,7 @@ const renderStep4 = (args: Step4Args): React.JSX.Element => {
               end={{ x: 1, y: 1 }}
               style={styles.instructionBadge}
             >
-              <ThemedText style={styles.instructionBadgeLabel}>
+              <ThemedText style={[styles.instructionBadgeLabel, { color: colors.primaryText }]}>
                 {i + 1}
               </ThemedText>
             </LinearGradient>
@@ -1186,8 +1237,9 @@ const renderStep5 = (args: Step5Args): React.JSX.Element => {
   const cleanInstructions = form.instructions.filter((s) => s.trim().length > 0);
   const totalTime = form.prepTimeMinutes + form.cookTimeMinutes;
   const chips: string[] = [];
-  if (form.cuisine.trim().length > 0) chips.push(form.cuisine.trim());
-  chips.push(form.difficulty);
+  if (form.cuisine.length > 0) chips.push(formatLabel(form.cuisine));
+  if (form.category.length > 0) chips.push(formatLabel(form.category));
+  chips.push(DIFFICULTY_LABELS[form.difficulty]);
   chips.push(`${form.servings} ${t().recipes.servings}`);
   chips.push(`${totalTime} ${t().recipes.minutes}`);
 
@@ -1343,6 +1395,9 @@ const styles = StyleSheet.create<{
   bottomPrimaryLabel: TextStyle;
   fieldGroup: ViewStyle;
   fieldLabel: TextStyle;
+  chipsWrap: ViewStyle;
+  enumChip: ViewStyle;
+  enumChipLabel: TextStyle;
   difficultyRow: ViewStyle;
   difficultyBtn: ViewStyle;
   difficultyLabel: TextStyle;
@@ -1392,8 +1447,8 @@ const styles = StyleSheet.create<{
     textAlign: 'center',
   },
   headerSpacer: {
-    width: 36,
-    height: 36,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
   },
   promptScroll: {
     paddingHorizontal: spacing.lg,
@@ -1406,15 +1461,14 @@ const styles = StyleSheet.create<{
     paddingTop: spacing.xl,
   },
   heroSquare: {
-    width: 96,
-    height: 96,
-    borderRadius: 28,
+    width: sizes.heroSquare,
+    height: sizes.heroSquare,
+    borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroSparkle: {
-    fontSize: 44,
-    color: '#FFFFFF',
+    fontSize: fontSizes.hero,
   },
   promptHeadingBlock: {
     alignItems: 'center',
@@ -1434,35 +1488,35 @@ const styles = StyleSheet.create<{
     borderRadius: radii.xl,
   },
   promptInput: {
-    minHeight: 110,
+    minHeight: sizes.promptInputMin,
     borderRadius: radii.xl,
     borderWidth: 1.5,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    fontSize: fontSizes.body,
     textAlignVertical: 'top',
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.xs2,
     marginTop: spacing.sm,
   },
   ideaChip: {
-    height: 30,
-    paddingHorizontal: 12,
+    height: sizes.chipHeight,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ideaChipLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.small,
     fontWeight: '500',
   },
   promptCta: {
     marginTop: spacing.md,
-    height: 52,
+    height: sizes.buttonHeight,
     borderRadius: radii.lg,
     overflow: 'hidden',
   },
@@ -1473,7 +1527,7 @@ const styles = StyleSheet.create<{
   },
   promptCtaLabel: {
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: fontSizes.heading,
   },
   promptError: {
     marginTop: spacing.sm,
@@ -1490,11 +1544,11 @@ const styles = StyleSheet.create<{
     height: 1,
   },
   dividerLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   manualBtn: {
     width: '100%',
-    height: 48,
+    height: sizes.buttonSmHeight,
     borderRadius: radii.lg,
     borderWidth: 1.5,
     alignItems: 'center',
@@ -1502,7 +1556,7 @@ const styles = StyleSheet.create<{
   },
   manualBtnLabel: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: fontSizes.medium,
   },
   // Wizard header
   wizardHeader: {
@@ -1514,38 +1568,38 @@ const styles = StyleSheet.create<{
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconBtnBordered: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconBtnGhost: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: sizes.iconBtnSm,
+    height: sizes.iconBtnSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   wizardHeaderCenter: {
     alignItems: 'center',
-    gap: 2,
+    gap: spacing.xxs,
   },
   wizardHeaderCount: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     fontWeight: '600',
     letterSpacing: 0.5,
   },
   wizardHeaderTitle: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
   progressTrack: {
     height: 3,
@@ -1575,8 +1629,8 @@ const styles = StyleSheet.create<{
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   bottomBackBtn: {
-    height: 52,
-    paddingHorizontal: 20,
+    height: sizes.buttonHeight,
+    paddingHorizontal: spacing.lg2,
     borderRadius: radii.lg,
     borderWidth: 1.5,
     alignItems: 'center',
@@ -1584,11 +1638,11 @@ const styles = StyleSheet.create<{
   },
   bottomBackLabel: {
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
   bottomPrimary: {
     flex: 1,
-    height: 52,
+    height: sizes.buttonHeight,
     borderRadius: radii.lg,
     overflow: 'hidden',
   },
@@ -1599,7 +1653,7 @@ const styles = StyleSheet.create<{
   },
   bottomPrimaryLabel: {
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: fontSizes.body,
   },
   // Step 1 fields
   fieldGroup: {
@@ -1608,20 +1662,37 @@ const styles = StyleSheet.create<{
   fieldLabel: {
     marginBottom: spacing.sm,
   },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs2,
+  },
+  enumChip: {
+    height: sizes.chipHeight,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.round,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  enumChipLabel: {
+    fontWeight: '600',
+    fontSize: fontSizes.caption,
+  },
   difficultyRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.xs2,
   },
   difficultyBtn: {
     flex: 1,
-    height: 44,
+    height: sizes.searchBarHeight,
     borderRadius: radii.lg,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   difficultyLabel: {
-    fontSize: 14,
+    fontSize: fontSizes.medium,
     fontWeight: '600',
   },
   servingsHeaderRow: {
@@ -1631,7 +1702,7 @@ const styles = StyleSheet.create<{
     marginBottom: spacing.sm,
   },
   servingsValue: {
-    fontSize: 22,
+    fontSize: fontSizes.display,
     fontWeight: '700',
   },
   stepperRow: {
@@ -1640,15 +1711,15 @@ const styles = StyleSheet.create<{
     gap: spacing.sm,
   },
   stepperBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: sizes.floatingBtn,
+    height: sizes.floatingBtn,
+    borderRadius: radii.round,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepperBtnLabel: {
-    fontSize: 20,
+    fontSize: fontSizes.subheading,
     fontWeight: '600',
     lineHeight: 22,
   },
@@ -1672,26 +1743,26 @@ const styles = StyleSheet.create<{
   ingredientRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 8,
+    gap: spacing.sm,
+    padding: spacing.sm,
     borderRadius: radii.lg,
     borderWidth: 1,
   },
   ingredientBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: sizes.badgeSm,
+    height: sizes.badgeSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ingredientBadgeLabel: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     fontWeight: '700',
   },
   ingredientInput: {
     flex: 1,
-    height: 36,
-    fontSize: 14,
+    height: sizes.iconBtn,
+    fontSize: fontSizes.medium,
     paddingVertical: 0,
   },
   instructionCard: {
@@ -1703,22 +1774,21 @@ const styles = StyleSheet.create<{
     borderWidth: 1,
   },
   instructionBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: sizes.iconBtnSm,
+    height: sizes.iconBtnSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   instructionBadgeLabel: {
-    fontSize: 13,
+    fontSize: fontSizes.caption,
     fontWeight: '700',
-    color: '#FFFFFF',
   },
   instructionInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: fontSizes.medium,
     lineHeight: 20,
-    minHeight: 60,
+    minHeight: sizes.textAreaMin,
     paddingVertical: 0,
     textAlignVertical: 'top',
   },
@@ -1726,17 +1796,17 @@ const styles = StyleSheet.create<{
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    height: 48,
+    gap: spacing.xs2,
+    height: sizes.buttonSmHeight,
     borderRadius: radii.lg,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     backgroundColor: 'transparent',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   dashedAddLabel: {
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: fontSizes.medium,
   },
   // Step 5 review
   reviewWrap: {
@@ -1750,11 +1820,11 @@ const styles = StyleSheet.create<{
   },
   reviewImage: {
     width: '100%',
-    height: 160,
+    height: sizes.reviewImageHeight,
   },
   reviewImagePlaceholder: {
     width: '100%',
-    height: 160,
+    height: sizes.reviewImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1765,15 +1835,15 @@ const styles = StyleSheet.create<{
   reviewChipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.xs2,
   },
   reviewChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
     borderRadius: radii.round,
   },
   reviewChipLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.small,
     fontWeight: '500',
   },
   reviewError: {
