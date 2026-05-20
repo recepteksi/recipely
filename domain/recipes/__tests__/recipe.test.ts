@@ -1,10 +1,14 @@
 import { Recipe } from '@domain/recipes/recipe';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
 
 const validProps = {
   id: 'r1',
   name: 'Margherita Pizza',
-  cuisine: 'Italian',
-  difficulty: 'Easy',
+  cuisine: CuisineKey.Italian,
+  category: RecipeCategory.Dinner,
+  difficulty: Difficulty.Easy,
   ingredients: ['Flour', 'Tomato', 'Mozzarella'],
   instructions: ['Make dough', 'Add toppings', 'Bake'],
   prepTimeMinutes: 20,
@@ -27,8 +31,9 @@ describe('Recipe.create', () => {
     if (r.ok) {
       expect(r.value.id).toBe('r1');
       expect(r.value.name).toBe('Margherita Pizza');
-      expect(r.value.cuisine).toBe('Italian');
-      expect(r.value.difficulty).toBe('Easy');
+      expect(r.value.cuisine).toBe(CuisineKey.Italian);
+      expect(r.value.category).toBe(RecipeCategory.Dinner);
+      expect(r.value.difficulty).toBe(Difficulty.Easy);
       expect(r.value.ingredients).toEqual(['Flour', 'Tomato', 'Mozzarella']);
     }
   });

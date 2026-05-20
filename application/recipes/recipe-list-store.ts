@@ -1,6 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 
 export type RecipeListState =
@@ -11,7 +12,7 @@ export type RecipeListState =
 
 export interface RecipeListStoreState {
   state: RecipeListState;
-  load: () => Promise<void>;
+  load: (filters?: RecipeFilters) => Promise<void>;
 }
 
 export interface RecipeListStoreDeps {
@@ -23,9 +24,9 @@ export type RecipeListStore = UseBoundStore<StoreApi<RecipeListStoreState>>;
 export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListStore => {
   return create<RecipeListStoreState>((set) => ({
     state: { status: 'idle' },
-    load: async () => {
+    load: async (filters?: RecipeFilters) => {
       set({ state: { status: 'loading' } });
-      const result = await deps.listRecipes.execute();
+      const result = await deps.listRecipes.execute(filters);
       if (!result.ok) {
         set({ state: { status: 'error', failure: result.failure } });
         return;

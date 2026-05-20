@@ -2,12 +2,16 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media-item';
+import type { CuisineKey } from '@domain/recipes/cuisine-key';
+import type { RecipeCategory } from '@domain/recipes/recipe-category';
+import type { Difficulty } from '@domain/recipes/difficulty';
 
 export interface RecipeProps {
   id: string;
   name: string;
-  cuisine: string;
-  difficulty: string;
+  cuisine: CuisineKey;
+  category: RecipeCategory;
+  difficulty: Difficulty;
   ingredients: string[];
   instructions: string[];
   prepTimeMinutes: number;
@@ -44,10 +48,13 @@ export class Recipe extends Entity<RecipeProps> {
   get name(): string {
     return this.props.name;
   }
-  get cuisine(): string {
+  get cuisine(): CuisineKey {
     return this.props.cuisine;
   }
-  get difficulty(): string {
+  get category(): RecipeCategory {
+    return this.props.category;
+  }
+  get difficulty(): Difficulty {
     return this.props.difficulty;
   }
   get ingredients(): string[] {

@@ -10,8 +10,6 @@ import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
  * `image` is promoted into a single-item gallery so `MediaGallery` always
  * has at least one item to render.
  */
-// WHY: domain's Recipe uses a plain string for difficulty; no need to promote the
-// backend's string-union into a domain enum just to swap a remote.
 export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
   const media: MediaItem[] =
     dto.media && dto.media.length > 0
@@ -22,6 +20,7 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     id: dto.id,
     name: dto.name,
     cuisine: dto.cuisine,
+    category: dto.category,
     difficulty: dto.difficulty,
     ingredients: dto.ingredients,
     instructions: dto.instructions,

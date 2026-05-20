@@ -4,6 +4,7 @@ import type {
   CreateRecipeInput,
   CreateRecipeProgressCallback,
   IRecipeRepository,
+  RecipeFilters,
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import type { Recipe } from '@domain/recipes/recipe';
@@ -36,7 +37,7 @@ export class FakeRecipeRepository implements IRecipeRepository {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(): Promise<Result<Recipe[], Failure>> {
+  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
     );

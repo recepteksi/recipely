@@ -6,6 +6,7 @@ import type {
   CreateRecipeInput,
   CreateRecipeProgressCallback,
   IRecipeRepository,
+  RecipeFilters,
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import type { HttpClient } from '@infrastructure/network/http-client';
@@ -23,11 +24,20 @@ import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 export class RecipeRepository implements IRecipeRepository {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(): Promise<Result<Recipe[], Failure>> {
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
+    const params: Record<string, unknown> = { page: 1, pageSize: RECIPES_PAGE_SIZE };
+    if (filters?.search) params['search'] = filters.search;
+    if (filters?.cuisines?.length) params['cuisines'] = filters.cuisines.join(',');
+    if (filters?.categories?.length) params['categories'] = filters.categories.join(',');
+    if (filters?.difficulties?.length) params['difficulties'] = filters.difficulties.join(',');
+    if (filters?.maxTime) params['maxTime'] = filters.maxTime;
+    if (filters?.sort) params['sort'] = filters.sort;
+    if (filters?.sortOrder) params['sortOrder'] = filters.sortOrder;
+
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: '/recipes',
-      params: { page: 1, pageSize: RECIPES_PAGE_SIZE },
+      params,
     });
     if (!result.ok) {
       return result;
@@ -99,9 +109,9 @@ export class RecipeRepository implements IRecipeRepository {
       } as unknown as Blob);
     }
 
-    // Localized string fields — backend expects JSON-stringified Record<string, string>
     formData.append('name', JSON.stringify(input.name));
-    formData.append('cuisine', JSON.stringify(input.cuisine));
+    formData.append('cuisine', input.cuisine);
+    formData.append('category', input.category);
     formData.append('difficulty', input.difficulty);
     formData.append('ingredients', JSON.stringify(input.ingredients));
     formData.append('instructions', JSON.stringify(input.instructions));
@@ -114,19 +124,11 @@ export class RecipeRepository implements IRecipeRepository {
     if (input.tags) {
       formData.append('tags', JSON.stringify(input.tags));
     }
-    // Only send mealType when at least one locale has a non-empty list; an
-    // all-empty mealType is meaningless and wastes bytes.
     if (
       input.mealType &&
       Object.values(input.mealType).some((arr) => arr.length > 0)
     ) {
       formData.append('mealType', JSON.stringify(input.mealType));
-    }
-    // Only send categoryId when it is an actual UUID string — null means
-    // "no category" which is the backend default, and the string literal
-    // 'null' would fail z.string().uuid() validation.
-    if (typeof input.categoryId === 'string') {
-      formData.append('categoryId', input.categoryId);
     }
     if (input.isPublished !== undefined) {
       formData.append('isPublished', String(input.isPublished));
@@ -189,20 +191,19 @@ export class RecipeRepository implements IRecipeRepository {
       imageUrl = uploadResult.value.url;
     }
 
-    const body: Record<string, unknown> = {
-      name: input.name,
-      cuisine: input.cuisine,
-      difficulty: input.difficulty,
-      ingredients: input.ingredients,
-      instructions: input.instructions,
-      prepTimeMinutes: input.prepTimeMinutes,
-      cookTimeMinutes: input.cookTimeMinutes,
-    };
+    const body: Record<string, unknown> = {};
+    if (input.name !== undefined) body['name'] = input.name;
+    if (input.cuisine !== undefined) body['cuisine'] = input.cuisine;
+    if (input.category !== undefined) body['category'] = input.category;
+    if (input.difficulty !== undefined) body['difficulty'] = input.difficulty;
+    if (input.ingredients !== undefined) body['ingredients'] = input.ingredients;
+    if (input.instructions !== undefined) body['instructions'] = input.instructions;
+    if (input.prepTimeMinutes !== undefined) body['prepTimeMinutes'] = input.prepTimeMinutes;
+    if (input.cookTimeMinutes !== undefined) body['cookTimeMinutes'] = input.cookTimeMinutes;
     if (imageUrl !== undefined) body['image'] = imageUrl;
     if (input.rating !== undefined) body['rating'] = input.rating;
     if (input.tags !== undefined) body['tags'] = input.tags;
     if (input.mealType !== undefined) body['mealType'] = input.mealType;
-    if (input.categoryId !== undefined) body['categoryId'] = input.categoryId;
     if (input.isPublished !== undefined) body['isPublished'] = input.isPublished;
     if (input.locale !== undefined) body['locale'] = input.locale;
 

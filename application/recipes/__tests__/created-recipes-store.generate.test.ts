@@ -12,13 +12,17 @@ import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
   const result = Recipe.create({
     id: 'r1',
     name: 'AI Recipe',
-    cuisine: 'Italian',
-    difficulty: 'EASY',
+    cuisine: CuisineKey.Italian,
+    category: RecipeCategory.Dinner,
+    difficulty: Difficulty.Easy,
     ingredients: ['flour'],
     instructions: ['mix'],
     prepTimeMinutes: 10,
