@@ -64,3 +64,52 @@ jobs:
           name: web-build
           path: dist
           retention-days: 1
+
+  distribute:
+    name: Distribute Android APK
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
+    # Only ship a build when quality gates pass on a push to main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+    steps:
+      # Full history so app.config.ts can derive versionCode from the commit count.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - run: npm ci
+
+      - name: Restore google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" | base64 --decode > google-services.json
+
+      - name: Expo prebuild (Android)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: testers
+          file: android/app/build/outputs/apk/release/app-release.apk
+          releaseNotes: ${{ github.event.head_commit.message }}
