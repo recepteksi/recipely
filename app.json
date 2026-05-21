@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.recipely"
+      "bundleIdentifier": "com.recepeksi.recipely",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +22,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.recipely"
+      "package": "com.recepeksi.recipely",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -34,7 +36,8 @@
           "ios": {
             "infoPlist": {
               "NSAllowsArbitraryLoads": true
-            }
+            },
+            "useFrameworks": "static"
           },
           "android": {
             "usesCleartextTraffic": true
@@ -62,12 +65,23 @@
       "expo-localization",
       "expo-video",
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#ffffff",
+          "sounds": [],
+          "iosDisplayInForeground": true
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Recipely accesses your photos to add them to recipes.",
           "cameraPermission": "Recipely accesses your camera to take photos and videos for recipes."
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics"
     ],
     "experiments": {
       "typedRoutes": true

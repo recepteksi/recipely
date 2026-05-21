@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
+import { ActiveTimersBar } from '@presentation/base/widgets/active-timers-bar';
 import { initLocale, t } from '@presentation/i18n';
 
 initLocale();
@@ -47,6 +48,7 @@ const RootStack = (): React.JSX.Element => {
           options={{ title: t().navigation.settings, headerBackVisible: false }}
         />
       </Stack>
+      <ActiveTimersBar />
       <StatusBar style="auto" />
     </ThemeProvider>
   );

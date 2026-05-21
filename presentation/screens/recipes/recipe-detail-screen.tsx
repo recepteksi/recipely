@@ -17,6 +17,7 @@ import {
   type StateViewStatus,
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -156,14 +157,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
+  // WHY: use primitives instead of recipeState object — the local-recipe path
+  // creates a fresh wrapper object every render, so an object dependency would
+  // re-fire syncFromApi on every render and trigger an infinite update loop.
+  const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
+  const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
+
   useEffect(() => {
-    if (recipeState?.status === 'loaded') {
-      const { likeCount, likedByMe } = recipeState.recipe;
-      // WHY: syncFromApi (not seed) — the detail endpoint is authoritative; we
-      // always want its likedByMe/likeCount to win unless a toggle is in-flight.
-      likesStore.getState().syncFromApi(recipeId, likeCount, likedByMe);
+    if (syncLikeCount !== null && syncLikedByMe !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe);
     }
-  }, [recipeState, recipeId, likesStore]);
+  }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
 
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
@@ -273,11 +277,25 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         label={t().recipes.prepTime}
                         minutes={recipe.prepTimeMinutes}
                         iconName="time-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="prep"
                       />
                       <TimeCard
                         label={t().recipes.cookTime}
                         minutes={recipe.cookTimeMinutes}
                         iconName="flame-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="cook"
+                      />
+                    </View>
+
+                    <View style={styles.nutritionRow}>
+                      <NutritionCard
+                        caloriesPerServing={recipe.caloriesPerServing}
+                        servings={recipe.servings}
+                        nutrition={recipe.nutrition}
                       />
                     </View>
 
@@ -330,6 +348,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           step={step}
                           completed={completedSteps[i] ?? false}
                           onToggle={() => toggleStep(i)}
+                          recipeId={recipeId}
+                          recipeName={recipe.name}
                         />
                       ))}
                     </View>
@@ -594,6 +614,9 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  nutritionRow: {
     marginTop: spacing.md,
   },
   tagsRow: {

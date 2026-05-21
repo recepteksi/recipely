@@ -6,6 +6,13 @@ import type { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
+export interface RecipeNutrition {
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+}
+
 export interface RecipeProps {
   id: string;
   name: string;
@@ -16,6 +23,9 @@ export interface RecipeProps {
   instructions: string[];
   prepTimeMinutes: number;
   cookTimeMinutes: number;
+  servings: number;
+  caloriesPerServing: number;
+  nutrition?: RecipeNutrition;
   image: string;
   media: MediaItem[];
   rating: number;
@@ -41,6 +51,12 @@ export class Recipe extends Entity<RecipeProps> {
     }
     if (props.name.trim().length === 0) {
       return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
+    }
+    if (props.caloriesPerServing < 0) {
+      return fail(new ValidationFailure('Calories must be non-negative', 'caloriesPerServing'));
+    }
+    if (props.servings < 1) {
+      return fail(new ValidationFailure('Servings must be at least 1', 'servings'));
     }
     return ok(new Recipe(props));
   }
@@ -68,6 +84,15 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get cookTimeMinutes(): number {
     return this.props.cookTimeMinutes;
+  }
+  get servings(): number {
+    return this.props.servings;
+  }
+  get caloriesPerServing(): number {
+    return this.props.caloriesPerServing;
+  }
+  get nutrition(): RecipeNutrition | undefined {
+    return this.props.nutrition;
   }
   get image(): string {
     return this.props.image;

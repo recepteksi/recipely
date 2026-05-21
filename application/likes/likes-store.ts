@@ -52,7 +52,17 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
     syncFromApi: (recipeId, likeCount, likedByMe) => {
       // WHY: skip when an optimistic toggle is in-flight — we don't want a
       // concurrent detail-fetch to clobber the count the user just changed.
-      if (get().byRecipe[recipeId]?.isLoading) return;
+      const current = get().byRecipe[recipeId];
+      if (current?.isLoading) return;
+      // WHY: skip when values are identical — calling set() unconditionally
+      // triggers a re-render on every call, which feeds an infinite loop when
+      // the caller's useEffect has a non-primitive dependency on recipeState.
+      if (
+        current !== undefined &&
+        current.likeCount === likeCount &&
+        current.likedByMe === likedByMe
+      )
+        return;
       set((s) => ({
         byRecipe: {
           ...s.byRecipe,

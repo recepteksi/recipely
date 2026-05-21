@@ -13,6 +13,8 @@ const validProps = {
   instructions: ['Make dough', 'Add toppings', 'Bake'],
   prepTimeMinutes: 20,
   cookTimeMinutes: 15,
+  servings: 4,
+  caloriesPerServing: 320,
   image: 'https://cdn.dummyjson.com/recipe-images/1.webp',
   media: [{ type: 'image' as const, url: 'https://cdn.dummyjson.com/recipe-images/1.webp' }],
   rating: 4.6,
