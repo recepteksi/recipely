@@ -4,6 +4,7 @@ export const Difficulty = {
   Hard: 'HARD',
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
 export type Difficulty = (typeof Difficulty)[keyof typeof Difficulty];
 
 export const DIFFICULTY_VALUES: readonly Difficulty[] = [

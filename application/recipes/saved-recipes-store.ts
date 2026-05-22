@@ -45,7 +45,7 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
         return { savedIds: next };
       }),
     setSavedIds: (ids) => {
-      // eslint-disable-next-line no-console
+       
       console.log('[SavedRecipesStore] setSavedIds called:', Array.from(ids));
       set({ savedIds: ids });
     },

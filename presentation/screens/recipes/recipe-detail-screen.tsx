@@ -89,7 +89,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
-  }, [recipeId, router]);
+  }, [recipeId, router, createdRecipesStore]);
 
   const handleAddComment = useCallback(async () => {
     const trimmed = commentInput.trim();
@@ -124,7 +124,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
-  }, [isSaved, isLoading, recipeId, userId]);
+  }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
 
   const handleToggleLike = useCallback(() => {
     if (!userId) return;

@@ -35,7 +35,7 @@ export const decodeJwtPayload = (token: string): Result<JwtClaims, ValidationFai
 const base64UrlDecode = (input: string): string => {
   const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
   const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
-  // eslint-disable-next-line no-undef
+   
   const binary = atob(padded);
   let out = '';
   for (let i = 0; i < binary.length; i++) {
