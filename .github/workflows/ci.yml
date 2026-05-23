@@ -110,6 +110,6 @@ jobs:
         with:
           appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          groups: testers
+          groups: android-testers
           file: android/app/build/outputs/apk/release/app-release.apk
           releaseNotes: ${{ github.event.head_commit.message }}
