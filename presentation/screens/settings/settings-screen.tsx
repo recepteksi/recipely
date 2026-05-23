@@ -13,7 +13,7 @@ import { ThemeGrid } from '@presentation/base/widgets/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
 
 export const SettingsScreen = (): React.JSX.Element => {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: 54,
+    marginLeft: sizes.searchBarHeight + spacing.sm2,
   },
   bottomSpacer: {
     height: spacing.xxl,

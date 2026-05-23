@@ -17,9 +17,10 @@ import {
   type StateViewStatus,
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { MediaItem } from '@domain/recipes/media-item';
 
@@ -58,7 +59,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
@@ -66,6 +67,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
   const isDeleting = deleteState.status === 'deleting';
@@ -87,7 +89,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
-  }, [recipeId, router]);
+  }, [recipeId, router, createdRecipesStore]);
 
   const handleAddComment = useCallback(async () => {
     const trimmed = commentInput.trim();
@@ -122,7 +124,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
-  }, [isSaved, isLoading, recipeId, userId]);
+  }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
+
+  const handleToggleLike = useCallback(() => {
+    if (!userId) return;
+    void likesStore.getState().toggle(recipeId);
+  }, [userId, recipeId, likesStore]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
@@ -149,6 +156,18 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       void commentsStore.getState().load(recipeId);
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
+
+  // WHY: use primitives instead of recipeState object — the local-recipe path
+  // creates a fresh wrapper object every render, so an object dependency would
+  // re-fire syncFromApi on every render and trigger an infinite update loop.
+  const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
+  const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
+
+  useEffect(() => {
+    if (syncLikeCount !== null && syncLikedByMe !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe);
+    }
+  }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
 
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
@@ -244,6 +263,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         chipBg={colors.chipBackground}
                         chipTextColor={colors.chipText}
                       />
+                      <InfoChip
+                        icon="heart"
+                        label={String(likeState?.likeCount ?? recipe.likeCount)}
+                        iconColor={likeState?.likedByMe ?? recipe.likedByMe ? colors.likeActive : colors.chipText}
+                        chipBg={colors.chipBackground}
+                        chipTextColor={colors.chipText}
+                      />
                     </View>
 
                     <View style={styles.timeRow}>
@@ -251,11 +277,25 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         label={t().recipes.prepTime}
                         minutes={recipe.prepTimeMinutes}
                         iconName="time-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="prep"
                       />
                       <TimeCard
                         label={t().recipes.cookTime}
                         minutes={recipe.cookTimeMinutes}
                         iconName="flame-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="cook"
+                      />
+                    </View>
+
+                    <View style={styles.nutritionRow}>
+                      <NutritionCard
+                        caloriesPerServing={recipe.caloriesPerServing}
+                        servings={recipe.servings}
+                        nutrition={recipe.nutrition}
                       />
                     </View>
 
@@ -308,6 +348,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           step={step}
                           completed={completedSteps[i] ?? false}
                           onToggle={() => toggleStep(i)}
+                          recipeId={recipeId}
+                          recipeName={recipe.name}
                         />
                       ))}
                     </View>
@@ -331,7 +373,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           style={({ pressed }) => [
                             styles.ownerBtn,
                             styles.ownerBtnDanger,
-                            { opacity: pressed ? 0.75 : 1 },
+                            { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
                           ]}
                         >
                           <Ionicons name="trash-outline" size={16} color={colors.danger} />
@@ -428,7 +470,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                             },
                           ]}
                         >
-                          <Ionicons name="send" size={16} color="#fff" />
+                          <Ionicons name="send" size={16} color={colors.onOverlay} />
                         </Pressable>
                       </View>
                     ) : (
@@ -457,9 +499,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       <Pressable
         accessibilityRole="button"
         onPress={() => router.back()}
-        style={[styles.backButton, { top: insets.top + 8 }]}
+        style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
       >
-        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
       </Pressable>
 
       <BottomSheet
@@ -494,10 +536,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             style={({ pressed }) => [
               styles.deleteSheetBtn,
               styles.deleteSheetBtnDanger,
-              { opacity: pressed || isDeleting ? 0.7 : 1 },
+              { opacity: pressed || isDeleting ? 0.7 : 1, backgroundColor: colors.dangerLight },
             ]}
           >
-            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold]}>
+            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold, { color: colors.danger }]}>
               {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
             </ThemedText>
           </Pressable>
@@ -505,22 +547,34 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       </BottomSheet>
 
       {current.status === 'loaded' ? (
-        <Pressable
-          onPress={handleToggleSave}
-          accessibilityRole="button"
-          accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-          disabled={isLoading || !userId}
-          style={[
-            styles.saveButton,
-            { top: insets.top + 8, opacity: isLoading || !userId ? 0.5 : 1 },
-          ]}
-        >
-          <Ionicons
-            name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={20}
-            color={isLoading || !userId ? '#CCCCCC' : '#FFFFFF'}
-          />
-        </Pressable>
+        <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
+          <Pressable
+            onPress={handleToggleLike}
+            accessibilityRole="button"
+            accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
+            disabled={!userId}
+            style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+          >
+            <MaterialCommunityIcons
+              name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
+              size={20}
+              color={likeState?.likedByMe ? colors.likeActive : colors.onOverlay}
+            />
+          </Pressable>
+          <Pressable
+            onPress={handleToggleSave}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
+            disabled={isLoading || !userId}
+            style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+          >
+            <Ionicons
+              name={isSaved ? 'bookmark' : 'bookmark-outline'}
+              size={20}
+              color={isLoading || !userId ? colors.textMuted : colors.onOverlay}
+            />
+          </Pressable>
+        </View>
       ) : null}
     </View>
   );
@@ -544,22 +598,25 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
     marginTop: spacing.md,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radii.round,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs2,
   },
   chipIcon: {
-    marginRight: 4,
+    marginRight: spacing.xs,
   },
   timeRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  nutritionRow: {
     marginTop: spacing.md,
   },
   tagsRow: {
@@ -570,8 +627,8 @@ const styles = StyleSheet.create({
   },
   tag: {
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   cardsList: {
     gap: spacing.sm,
@@ -586,16 +643,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    height: 44,
-    borderRadius: radii.lg,
+    gap: spacing.xs2,
+    height: sizes.searchBarHeight,
+    borderRadius: radii.round,
   },
-  ownerBtnDanger: {
-    backgroundColor: 'rgba(217,48,37,0.1)',
-  },
+  ownerBtnDanger: {},
   ownerBtnLabel: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   deleteSheetBody: {
     marginBottom: spacing.md,
@@ -611,34 +666,32 @@ const styles = StyleSheet.create({
   },
   deleteSheetBtn: {
     flex: 1,
-    height: 48,
+    height: sizes.buttonSmHeight,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteSheetBtnDanger: {
-    backgroundColor: 'rgba(217,48,37,0.12)',
-  },
-  deleteSheetBtnDangerLabel: {
-    color: '#D93025',
-  },
+  deleteSheetBtnDanger: {},
+  deleteSheetBtnDangerLabel: {},
   backButton: {
     position: 'absolute',
     left: spacing.lg,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: sizes.floatingBtn,
+    height: sizes.floatingBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saveButton: {
+  floatingActions: {
     position: 'absolute',
     right: spacing.lg,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  floatingBtn: {
+    width: sizes.floatingBtn,
+    height: sizes.floatingBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -671,11 +724,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    minHeight: 44,
+    minHeight: sizes.searchBarHeight,
   },
   commentSendBtn: {
-    width: 44,
-    height: 44,
+    width: sizes.searchBarHeight,
+    height: sizes.searchBarHeight,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',

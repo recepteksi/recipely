@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { Slider } from '@presentation/base/widgets/slider';
-import { spacing, radii, type ThemeColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, type ThemeColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface TimeSliderCardProps {
@@ -70,15 +70,15 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     borderWidth: 1,
     padding: spacing.md,
-    gap: 6,
+    gap: spacing.xs2,
   },
   timeCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: spacing.xs2,
   },
   timeCardLabel: {
-    fontSize: 11,
+    fontSize: fontSizes.micro,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -88,11 +88,11 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   timeCardValue: {
-    fontSize: 24,
+    fontSize: fontSizes.title,
     fontWeight: '700',
     lineHeight: 28,
   },
   timeCardUnit: {
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
 });

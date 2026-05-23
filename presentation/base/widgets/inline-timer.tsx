@@ -1,102 +1,72 @@
-import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { radii } from '@presentation/base/theme';
+import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
+import { formatTimer } from '@presentation/base/utils/format-timer';
+import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface InlineTimerProps {
+  /** Stable unique key — `${recipeId}:step${stepIndex}:${durationMin}min` */
+  timerId: string;
+  recipeId: string;
+  recipeName: string;
   minutes: number;
 }
 
-const formatTime = (totalSeconds: number): string => {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-};
-
-/** Inline text-embedded timer chip that expands from a time label into an active countdown. */
+/** Persistent per-step countdown chip that survives screen navigation and app backgrounding. */
 export const InlineTimer = ({
+  timerId,
+  recipeId,
+  recipeName,
   minutes,
 }: InlineTimerProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const [active, setActive] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [remaining, setRemaining] = useState(minutes * 60);
+  const timer = useRecipeTimer({ timerId, recipeId, recipeName, minutes });
 
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(() => setRemaining((r) => Math.max(0, r - 1)), 1000);
-    return () => clearInterval(id);
-  }, [running]);
-
-  useEffect(() => {
-    if (remaining === 0 && running) setRunning(false);
-  }, [remaining, running]);
-
-  if (!active) {
+  if (!timer.isActive) {
     return (
       <Pressable
-        onPress={() => {
-          setActive(true);
-          setRunning(true);
-        }}
+        accessibilityRole="button"
+        accessibilityLabel={`${t().timer.start} — ${String(minutes)} ${t().recipes.minutes}`}
+        onPress={() => void timer.start()}
         style={[styles.idle, { backgroundColor: colors.chipBackground }]}
       >
         <Ionicons name="time-outline" size={12} color={colors.primary} />
-        <ThemedText
-          variant="caption"
-          style={[styles.idleLabel, { color: colors.primary }]}
-        >
-          {minutes} {t().recipes.minutes}
+        <ThemedText variant="caption" style={[styles.idleLabel, { color: colors.primary }]}>
+          {String(minutes)} {t().recipes.minutes}
         </ThemedText>
       </Pressable>
     );
   }
 
-  const done = remaining === 0;
+  const done = timer.isDone;
   return (
-    <View
-      style={[
-        styles.active,
-        {
-          backgroundColor: done ? colors.successLight : colors.primary,
-        },
-      ]}
-    >
+    <View style={[styles.active, { backgroundColor: done ? colors.successLight : colors.primary }]}>
       <ThemedText
         variant="caption"
-        style={[
-          styles.activeText,
-          { color: done ? colors.success : colors.primaryText },
-        ]}
+        style={[styles.activeText, { color: done ? colors.success : colors.primaryText }]}
       >
-        {done ? '✓' : formatTime(remaining)}
+        {done ? `✓ ${t().timer.done}` : formatTimer(timer.remainingSeconds)}
       </ThemedText>
+      {!done ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={timer.isPaused ? 'Resume timer' : 'Pause timer'}
+          onPress={() => void (timer.isPaused ? timer.resume() : timer.pause())}
+          style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
+        >
+          <Ionicons name={timer.isPaused ? 'play' : 'pause'} size={10} color={colors.primaryText} />
+        </Pressable>
+      ) : null}
       <Pressable
-        onPress={() => setRunning((r) => !r)}
-        style={styles.activeBtn}
+        accessibilityRole="button"
+        accessibilityLabel="Stop timer"
+        onPress={() => void timer.stop()}
+        style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
       >
-        <Ionicons
-          name={running ? 'pause' : 'play'}
-          size={10}
-          color={done ? colors.success : colors.primaryText}
-        />
-      </Pressable>
-      <Pressable
-        onPress={() => {
-          setActive(false);
-          setRunning(false);
-          setRemaining(minutes * 60);
-        }}
-        style={styles.activeBtn}
-      >
-        <Ionicons
-          name="close"
-          size={12}
-          color={done ? colors.success : colors.primaryText}
-        />
+        <Ionicons name="close" size={12} color={done ? colors.success : colors.primaryText} />
       </Pressable>
     </View>
   );
@@ -106,36 +76,35 @@ const styles = StyleSheet.create({
   idle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignSelf: 'flex-start',
   },
   idleLabel: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   active: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingLeft: 10,
-    paddingRight: 4,
-    paddingVertical: 2,
+    gap: spacing.xs,
+    paddingLeft: spacing.sm2,
+    paddingRight: spacing.xs,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignSelf: 'flex-start',
   },
   activeText: {
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: fontSizes.small,
     fontVariant: ['tabular-nums'],
   },
   activeBtn: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    width: sizes.iconXxs,
+    height: sizes.iconXxs,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },

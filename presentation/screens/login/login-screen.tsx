@@ -16,6 +16,7 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export const LoginScreen = (): React.JSX.Element => {
@@ -72,14 +73,14 @@ export const LoginScreen = (): React.JSX.Element => {
           <MaterialCommunityIcons
             name="silverware-fork-knife"
             size={48}
-            color="#FFFFFF"
+            color={colors.onOverlay}
           />
-          <ThemedText variant="headline" style={[styles.appName, { color: '#FFFFFF' }]}>
+          <ThemedText variant="headline" style={[styles.appName, { color: colors.onOverlay }]}>
             {t().login.title}
           </ThemedText>
           <ThemedText
             variant="body"
-            style={[styles.gradientSubtitle, { color: '#FFFFFF' }]}
+            style={[styles.gradientSubtitle, { color: colors.onOverlay }]}
           >
             {t().login.subtitle}
           </ThemedText>
@@ -127,7 +128,7 @@ export const LoginScreen = (): React.JSX.Element => {
             />
           </View>
 
-          <View style={[styles.inputWrapper, { marginTop: 12 }]}>
+          <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
             <MaterialCommunityIcons
               name="lock-outline"
               size={20}
@@ -224,26 +225,26 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '40%',
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    borderBottomLeftRadius: radii.xxxl,
+    borderBottomRightRadius: radii.xxxl,
   },
   gradientContent: {
     alignItems: 'center',
     paddingTop: '15%',
   },
   appName: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   gradientSubtitle: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xxl,
     opacity: 0.8,
   },
   card: {
-    borderRadius: 24,
-    padding: 24,
-    marginHorizontal: 16,
+    borderRadius: radii.xxl,
+    padding: spacing.xl,
+    marginHorizontal: spacing.lg,
     marginTop: '10%',
   },
   inputWrapper: {
@@ -256,23 +257,23 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   input: {
-    height: 52,
+    height: sizes.inputHeight,
     borderWidth: 1.5,
-    borderRadius: 12,
-    paddingLeft: 48,
-    paddingRight: 16,
-    fontSize: 15,
+    borderRadius: radii.lg,
+    paddingLeft: spacing.xxxl,
+    paddingRight: spacing.lg,
+    fontSize: fontSizes.body,
   },
   error: {
-    marginTop: 12,
+    marginTop: spacing.md,
     textAlign: 'center',
   },
   signInButton: {
-    height: 52,
-    borderRadius: 12,
+    height: sizes.buttonHeight,
+    borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -284,14 +285,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
-    gap: 4,
+    marginTop: spacing.lg,
+    gap: spacing.xs,
   },
   signUpLink: {
     fontWeight: '600',
   },
   hint: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     textAlign: 'center',
   },
 });

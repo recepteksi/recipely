@@ -2,22 +2,38 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media-item';
+import type { CuisineKey } from '@domain/recipes/cuisine-key';
+import type { RecipeCategory } from '@domain/recipes/recipe-category';
+import type { Difficulty } from '@domain/recipes/difficulty';
+
+export interface RecipeNutrition {
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fiber?: number;
+}
 
 export interface RecipeProps {
   id: string;
   name: string;
-  cuisine: string;
-  difficulty: string;
+  cuisine: CuisineKey;
+  category: RecipeCategory;
+  difficulty: Difficulty;
   ingredients: string[];
   instructions: string[];
   prepTimeMinutes: number;
   cookTimeMinutes: number;
+  servings: number;
+  caloriesPerServing: number;
+  nutrition?: RecipeNutrition;
   image: string;
   media: MediaItem[];
   rating: number;
   tags: string[];
   mealType: string[];
   ownerId: string;
+  likeCount: number;
+  likedByMe: boolean;
 }
 
 /**
@@ -36,16 +52,25 @@ export class Recipe extends Entity<RecipeProps> {
     if (props.name.trim().length === 0) {
       return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
     }
+    if (props.caloriesPerServing < 0) {
+      return fail(new ValidationFailure('Calories must be non-negative', 'caloriesPerServing'));
+    }
+    if (props.servings < 1) {
+      return fail(new ValidationFailure('Servings must be at least 1', 'servings'));
+    }
     return ok(new Recipe(props));
   }
 
   get name(): string {
     return this.props.name;
   }
-  get cuisine(): string {
+  get cuisine(): CuisineKey {
     return this.props.cuisine;
   }
-  get difficulty(): string {
+  get category(): RecipeCategory {
+    return this.props.category;
+  }
+  get difficulty(): Difficulty {
     return this.props.difficulty;
   }
   get ingredients(): string[] {
@@ -59,6 +84,15 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get cookTimeMinutes(): number {
     return this.props.cookTimeMinutes;
+  }
+  get servings(): number {
+    return this.props.servings;
+  }
+  get caloriesPerServing(): number {
+    return this.props.caloriesPerServing;
+  }
+  get nutrition(): RecipeNutrition | undefined {
+    return this.props.nutrition;
   }
   get image(): string {
     return this.props.image;
@@ -77,5 +111,11 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get ownerId(): string {
     return this.props.ownerId;
+  }
+  get likeCount(): number {
+    return this.props.likeCount;
+  }
+  get likedByMe(): boolean {
+    return this.props.likedByMe;
   }
 }

@@ -2,13 +2,16 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
+import { t } from '@presentation/i18n';
 import { ThemedText } from './themed-text';
+import { recipeImageSource } from './recipe-image-source';
 
 export interface RecipeCardProps {
   name: string;
@@ -17,24 +20,41 @@ export interface RecipeCardProps {
   difficulty: string;
   rating: number;
   tags: string[];
+  likeCount?: number;
+  likedByMe?: boolean;
   onPress: () => void;
+  onLike?: () => void;
 }
 
-/** Animated pressable card showing recipe image, cuisine badge, rating stars, and tags. */
+/** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
-  name, image, cuisine, difficulty, rating, tags, onPress,
+  name, image, cuisine, difficulty, rating, tags,
+  likeCount = 0, likedByMe = false,
+  onPress, onLike,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
+  const heartScale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
   }));
 
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
   const fullStars = Math.floor(rating);
   const hasHalf = rating - fullStars >= 0.5;
+
+  const handleLike = () => {
+    heartScale.value = withSpring(1.4, { damping: 4 }, () => {
+      heartScale.value = withSpring(1);
+    });
+    onLike?.();
+  };
 
   return (
     <Animated.View style={animatedStyle}>
@@ -55,7 +75,7 @@ export const RecipeCard = ({
       ]}
     >
       <View style={styles.imageContainer}>
-        <Image source={{ uri: image }} style={styles.image} />
+        <Image source={recipeImageSource(image)} style={styles.image} />
         <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
           <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: '600' }}>
             {cuisine}
@@ -77,21 +97,45 @@ export const RecipeCard = ({
               </View>
             ))}
           </View>
-          <View style={styles.ratingRow}>
-            {Array.from({ length: 5 }, (_, i) => {
-              const iconName = i < fullStars ? 'star' : i === fullStars && hasHalf ? 'star-half-full' : 'star-outline';
-              return (
-                <MaterialCommunityIcons
-                  key={i}
-                  name={iconName}
-                  size={14}
-                  color={i < fullStars || (i === fullStars && hasHalf) ? colors.starFilled : colors.starEmpty}
-                />
-              );
-            })}
-            <ThemedText variant="caption" muted style={styles.ratingText}>
-              {rating.toFixed(1)}
-            </ThemedText>
+          <View style={styles.metaRow}>
+            <View style={styles.ratingRow}>
+              {Array.from({ length: 5 }, (_, i) => {
+                const iconName = i < fullStars ? 'star' : i === fullStars && hasHalf ? 'star-half-full' : 'star-outline';
+                return (
+                  <MaterialCommunityIcons
+                    key={i}
+                    name={iconName}
+                    size={14}
+                    color={i < fullStars || (i === fullStars && hasHalf) ? colors.starFilled : colors.starEmpty}
+                  />
+                );
+              })}
+              <ThemedText variant="caption" muted style={styles.ratingText}>
+                {rating.toFixed(1)}
+              </ThemedText>
+            </View>
+            {onLike !== undefined ? (
+              <Pressable
+                onPress={handleLike}
+                accessibilityRole="button"
+                accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
+                hitSlop={8}
+                style={styles.likeBtn}
+              >
+                <Animated.View style={[styles.likeInner, heartStyle]}>
+                  <MaterialCommunityIcons
+                    name={likedByMe ? 'heart' : 'heart-outline'}
+                    size={16}
+                    color={likedByMe ? colors.likeActive : colors.textMuted}
+                  />
+                  {likeCount > 0 ? (
+                    <ThemedText variant="caption" muted style={styles.likeCount}>
+                      {likeCount}
+                    </ThemedText>
+                  ) : null}
+                </Animated.View>
+              </Pressable>
+            ) : null}
           </View>
         </View>
       </View>
@@ -119,16 +163,16 @@ const styles = StyleSheet.create({
     top: spacing.md,
     right: spacing.md,
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   difficultyChip: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   info: {
     padding: spacing.md,
@@ -146,14 +190,31 @@ const styles = StyleSheet.create({
   },
   tag: {
     borderRadius: radii.round,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   ratingText: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
+  },
+  likeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
+  },
+  likeCount: {
+    fontSize: fontSizes.small,
   },
 });

@@ -4,22 +4,30 @@ import { Recipe } from '@domain/recipes/recipe';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
 
 const validDto: RecipeDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
   name: 'AI Spicy Pasta',
-  cuisine: 'Italian',
-  difficulty: 'EASY',
+  cuisine: CuisineKey.Italian,
+  category: RecipeCategory.Dinner,
+  difficulty: Difficulty.Easy,
   ingredients: ['Pasta', 'Chili'],
   instructions: ['Boil', 'Toss'],
   prepTimeMinutes: 5,
   cookTimeMinutes: 10,
+  servings: 2,
+  caloriesPerServing: 450,
   image: 'https://cdn.recipely.io/recipe-images/ai-1.webp',
   rating: 4.2,
   tags: ['AI', 'Quick'],
   mealType: ['Dinner'],
   ownerId: 'owner-7',
-  categoryId: null,
+  likeCount: 0,
+  likedByMe: false,
+  commentCount: 0,
   createdAt: '2026-05-11T12:00:00.000Z',
   updatedAt: '2026-05-11T12:00:00.000Z',
 };
@@ -57,7 +65,7 @@ describe('RecipeRepository.generateRecipe', () => {
       expect(r.value).toBeInstanceOf(Recipe);
       expect(r.value.id).toBe(validDto.id);
       expect(r.value.name).toBe('AI Spicy Pasta');
-      expect(r.value.cuisine).toBe('Italian');
+      expect(r.value.cuisine).toBe(CuisineKey.Italian);
       expect(r.value.media).toEqual([
         { type: 'image', url: validDto.image },
       ]);

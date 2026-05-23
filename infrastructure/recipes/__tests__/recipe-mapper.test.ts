@@ -1,21 +1,29 @@
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
 
 const fullDto: RecipeDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
   name: 'Classic Margherita Pizza',
-  cuisine: 'Italian',
-  difficulty: 'EASY',
+  cuisine: CuisineKey.Italian,
+  category: RecipeCategory.Dinner,
+  difficulty: Difficulty.Easy,
   ingredients: ['Flour', 'Tomato', 'Mozzarella'],
   instructions: ['Make dough', 'Add toppings', 'Bake'],
   prepTimeMinutes: 20,
   cookTimeMinutes: 15,
+  servings: 4,
+  caloriesPerServing: 320,
   image: 'https://cdn.recipely.io/recipe-images/1.webp',
   rating: 4.6,
   tags: ['Pizza', 'Italian'],
   mealType: ['Dinner'],
   ownerId: 'b1c2d3e4-f567-4890-abcd-ef0123456789',
-  categoryId: null,
+  likeCount: 12,
+  likedByMe: false,
+  commentCount: 3,
   createdAt: '2026-04-01T12:00:00.000Z',
   updatedAt: '2026-04-01T12:00:00.000Z',
 };
@@ -28,8 +36,9 @@ describe('toRecipe', () => {
     if (r.ok) {
       expect(r.value.id).toBe('7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234');
       expect(r.value.name).toBe('Classic Margherita Pizza');
-      expect(r.value.cuisine).toBe('Italian');
-      expect(r.value.difficulty).toBe('EASY');
+      expect(r.value.cuisine).toBe(CuisineKey.Italian);
+      expect(r.value.category).toBe(RecipeCategory.Dinner);
+      expect(r.value.difficulty).toBe(Difficulty.Easy);
       expect(r.value.ingredients).toEqual(['Flour', 'Tomato', 'Mozzarella']);
       expect(r.value.instructions).toEqual(['Make dough', 'Add toppings', 'Bake']);
       expect(r.value.prepTimeMinutes).toBe(20);

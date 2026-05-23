@@ -1,15 +1,16 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository, RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
 /**
  * Fetches the paginated list of publicly active recipes for the discovery feed.
+ * Optional filters are forwarded to the backend as query params.
  */
 export class ListRecipesUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 
-  execute(): Promise<Result<Recipe[], Failure>> {
-    return this.repo.listActiveRecipes();
+  execute(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
+    return this.repo.listActiveRecipes(filters);
   }
 }

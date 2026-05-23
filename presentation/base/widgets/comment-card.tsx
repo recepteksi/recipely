@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deleteBtn: {
-    paddingTop: 2,
+    paddingTop: spacing.xxs,
   },
   date: {
     marginTop: spacing.xs,

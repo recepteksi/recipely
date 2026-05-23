@@ -8,7 +8,7 @@ import {
   getThemeDefinition,
   type ThemeId,
 } from '@presentation/base/theme/themes';
-import { spacing } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
 
 export interface ThemeGridProps {
@@ -111,16 +111,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -2,
     right: -2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: sizes.iconMd,
+    height: sizes.iconMd,
+    borderRadius: radii.round,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    marginTop: 8,
-    fontSize: 11,
+    marginTop: spacing.sm,
+    fontSize: fontSizes.micro,
     textAlign: 'center',
     lineHeight: 13,
   },

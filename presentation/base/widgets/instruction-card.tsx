@@ -4,13 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { InlineTimer } from '@presentation/base/widgets/inline-timer';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 
 export interface InstructionCardProps {
   index: number;
   step: string;
   completed: boolean;
   onToggle: () => void;
+  recipeId: string;
+  recipeName: string;
 }
 
 const TIME_RE = /(\d+(?:\.\d+)?)\s*(minutes?|mins?|dakika|dk)/gi;
@@ -50,6 +52,8 @@ export const InstructionCard = ({
   step,
   completed,
   onToggle,
+  recipeId,
+  recipeName,
 }: InstructionCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const parts = splitStepWithTimers(step);
@@ -99,7 +103,12 @@ export const InstructionCard = ({
             if (part.kind === 'timer' && part.minutes !== undefined) {
               return (
                 <Fragment key={i}>
-                  <InlineTimer minutes={part.minutes} />
+                  <InlineTimer
+                    timerId={`${recipeId}:step${String(index)}:${String(Math.round(part.minutes))}min`}
+                    recipeId={recipeId}
+                    recipeName={recipeName}
+                    minutes={part.minutes}
+                  />
                 </Fragment>
               );
             }
@@ -122,15 +131,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   numberCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: sizes.badgeSm,
+    height: sizes.badgeSm,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numberText: {
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   body: {
     flex: 1,

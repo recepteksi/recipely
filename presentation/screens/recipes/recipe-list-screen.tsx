@@ -7,12 +7,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ScreenContainer } from '@presentation/base/widgets/screen-container';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeCard } from '@presentation/base/widgets/recipe-card';
+import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
@@ -21,26 +21,45 @@ import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { shadows } from '@presentation/base/theme/shadows';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
+import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
+import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
+import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
-type SortKey = 'popular' | 'rating' | 'timeAsc' | 'nameAsc';
+type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
 
-interface Filters {
-  cuisines: string[];
-  difficulties: string[];
+interface UiFilters {
+  cuisines: CuisineKey[];
+  categories: RecipeCategory[];
+  difficulties: Difficulty[];
   maxTime: number;
 }
 
-const DIFFICULTIES: readonly string[] = ['Easy', 'Medium', 'Hard'];
 const TIME_OPTIONS: readonly number[] = [0, 15, 30, 45, 60, 90];
+
+const SORT_TO_API: Record<SortKey, RecipeFilters['sort']> = {
+  popular: 'popular',
+  rating: 'rating',
+  time: 'time',
+  newest: 'newest',
+  mostLiked: 'mostLiked',
+};
+
+const emptyFilters: UiFilters = { cuisines: [], categories: [], difficulties: [], maxTime: 0 };
+
+/** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
+const formatLabel = (key: string): string =>
+  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
 const LoadingSkeleton = (): React.JSX.Element => (
   <ScrollView contentContainerStyle={styles.skeletonContainer}>
-    {Array.from({ length: 3 }, (_, i) => (
+    {Array.from({ length: 4 }, (_, i) => (
       <SkeletonCard key={i} />
     ))}
   </ScrollView>
@@ -55,11 +74,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('popular');
-  const [filters, setFilters] = useState<Filters>({
-    cuisines: [],
-    difficulties: [],
-    maxTime: 0,
-  });
+  const [filters, setFilters] = useState<UiFilters>(emptyFilters);
+  const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
   const [sheetOpen, setSheetOpen] = useState<'filter' | 'sort' | null>(null);
 
   useEffect(() => {
@@ -68,9 +84,20 @@ export const RecipeListScreen = (): React.JSX.Element => {
     }
   }, [state.status, load]);
 
+  const buildApiFilters = useCallback(
+    (f: UiFilters, sort: SortKey): RecipeFilters => ({
+      ...(f.cuisines.length > 0 ? { cuisines: f.cuisines } : {}),
+      ...(f.categories.length > 0 ? { categories: f.categories } : {}),
+      ...(f.difficulties.length > 0 ? { difficulties: f.difficulties } : {}),
+      ...(f.maxTime > 0 ? { maxTime: f.maxTime } : {}),
+      sort: SORT_TO_API[sort],
+    }),
+    [],
+  );
+
   const onRefresh = useCallback(() => {
-    void load();
-  }, [load]);
+    void load(buildApiFilters(filters, sortBy));
+  }, [load, filters, sortBy, buildApiFilters]);
 
   const openRecipe = useCallback(
     (id: string) => {
@@ -79,67 +106,96 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [router],
   );
 
-  const allCuisines = useMemo(() => {
-    if (state.status !== 'loaded') return [];
-    const set = new Set<string>();
-    for (const r of state.recipes) set.add(r.cuisine);
-    return Array.from(set).sort();
-  }, [state]);
+  const applyFilters = (): void => {
+    setFilters(pendingFilters);
+    setSheetOpen(null);
+    void load(buildApiFilters(pendingFilters, sortBy));
+  };
+
+  const openFilterSheet = (): void => {
+    setPendingFilters(filters);
+    setSheetOpen('filter');
+  };
 
   const activeFilterCount =
-    filters.cuisines.length + filters.difficulties.length + (filters.maxTime > 0 ? 1 : 0);
+    filters.cuisines.length +
+    filters.categories.length +
+    filters.difficulties.length +
+    (filters.maxTime > 0 ? 1 : 0);
 
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
     const query = search.trim().toLowerCase();
-    let list = state.recipes.filter((r) =>
-      query.length === 0 ? true : r.name.toLowerCase().includes(query),
-    );
-    if (filters.cuisines.length > 0) {
-      list = list.filter((r) => filters.cuisines.includes(r.cuisine));
-    }
-    if (filters.difficulties.length > 0) {
-      list = list.filter((r) => filters.difficulties.includes(r.difficulty));
-    }
-    if (filters.maxTime > 0) {
-      list = list.filter(
-        (r) => r.prepTimeMinutes + r.cookTimeMinutes <= filters.maxTime,
-      );
-    }
-    const sorters: Record<SortKey, (a: Recipe, b: Recipe) => number> = {
-      popular: (a, b) => b.rating - a.rating,
-      rating: (a, b) => b.rating - a.rating,
-      timeAsc: (a, b) =>
-        a.prepTimeMinutes + a.cookTimeMinutes - (b.prepTimeMinutes + b.cookTimeMinutes),
-      nameAsc: (a, b) => a.name.localeCompare(b.name),
-    };
-    return [...list].sort(sorters[sortBy]);
-  }, [state, search, filters, sortBy]);
+    if (query.length === 0) return state.recipes;
+    return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
+  }, [state, search]);
 
   const sortLabels: Record<SortKey, string> = {
     popular: t().recipes.sortPopular,
     rating: t().recipes.sortRating,
-    timeAsc: t().recipes.sortTime,
-    nameAsc: t().recipes.sortName,
+    time: t().recipes.sortTime,
+    newest: t().recipes.sortNewest,
+    mostLiked: t().recipes.sortMostLiked,
   };
 
-  const toggleCuisine = (c: string): void =>
-    setFilters((f) => ({
+  const togglePendingCuisine = (c: CuisineKey): void =>
+    setPendingFilters((f) => ({
       ...f,
-      cuisines: f.cuisines.includes(c)
-        ? f.cuisines.filter((x) => x !== c)
-        : [...f.cuisines, c],
+      cuisines: f.cuisines.includes(c) ? f.cuisines.filter((x) => x !== c) : [...f.cuisines, c],
     }));
-  const toggleDifficulty = (d: string): void =>
-    setFilters((f) => ({
+
+  const togglePendingCategory = (c: RecipeCategory): void =>
+    setPendingFilters((f) => ({
+      ...f,
+      categories: f.categories.includes(c)
+        ? f.categories.filter((x) => x !== c)
+        : [...f.categories, c],
+    }));
+
+  const togglePendingDifficulty = (d: Difficulty): void =>
+    setPendingFilters((f) => ({
       ...f,
       difficulties: f.difficulties.includes(d)
         ? f.difficulties.filter((x) => x !== d)
         : [...f.difficulties, d],
     }));
-  const setMaxTime = (m: number): void => setFilters((f) => ({ ...f, maxTime: m }));
-  const resetFilters = (): void =>
-    setFilters({ cuisines: [], difficulties: [], maxTime: 0 });
+
+  const setPendingMaxTime = (m: number): void =>
+    setPendingFilters((f) => ({ ...f, maxTime: m }));
+
+  const resetFilters = (): void => {
+    setFilters(emptyFilters);
+    setPendingFilters(emptyFilters);
+    void load();
+  };
+
+  const removeCuisineFilter = (c: CuisineKey): void => {
+    const next = { ...filters, cuisines: filters.cuisines.filter((x) => x !== c) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeDifficultyFilter = (d: Difficulty): void => {
+    const next = { ...filters, difficulties: filters.difficulties.filter((x) => x !== d) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeCategoryFilter = (c: RecipeCategory): void => {
+    const next = { ...filters, categories: filters.categories.filter((x) => x !== c) };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  const removeMaxTimeFilter = (): void => {
+    const next = { ...filters, maxTime: 0 };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'myRecipes') router.replace('/my-recipes');
@@ -148,21 +204,14 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const renderItem = useCallback(
     ({ item }: { item: Recipe }) => (
-      <RecipeCard
-        name={item.name}
-        image={item.image}
-        cuisine={item.cuisine}
-        difficulty={item.difficulty}
-        rating={item.rating}
-        tags={item.tags}
-        onPress={() => openRecipe(item.id)}
-      />
+      <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />
     ),
     [openRecipe],
   );
 
-  const headerControls = (
-    <View>
+  // ─── Sticky header (always visible, never scrolls away) ────────────────────
+  const stickyHeader = (
+    <View style={[styles.stickyHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
       <View style={styles.searchWrapper}>
         <SearchBar
           value={search}
@@ -173,7 +222,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
       <View style={styles.pillRow}>
         <Pressable
-          onPress={() => setSheetOpen('filter')}
+          onPress={openFilterSheet}
           style={[
             styles.pill,
             {
@@ -181,6 +230,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
               borderColor: activeFilterCount > 0 ? colors.primary : colors.border,
             },
           ]}
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.filter}
         >
           <Ionicons
             name="funnel-outline"
@@ -189,19 +240,13 @@ export const RecipeListScreen = (): React.JSX.Element => {
           />
           <ThemedText
             variant="caption"
-            style={[
-              styles.pillLabel,
-              { color: activeFilterCount > 0 ? colors.primaryText : colors.text },
-            ]}
+            style={[styles.pillLabel, { color: activeFilterCount > 0 ? colors.primaryText : colors.text }]}
           >
             {t().recipes.filter}
           </ThemedText>
           {activeFilterCount > 0 ? (
-            <View style={styles.pillBadge}>
-              <ThemedText
-                variant="caption"
-                style={[styles.pillBadgeText, { color: colors.primaryText }]}
-              >
+            <View style={[styles.pillBadge, { backgroundColor: colors.gradientBorder }]}>
+              <ThemedText variant="caption" style={[styles.pillBadgeText, { color: colors.primaryText }]}>
                 {activeFilterCount}
               </ThemedText>
             </View>
@@ -210,156 +255,159 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
         <Pressable
           onPress={() => setSheetOpen('sort')}
-          style={[
-            styles.pill,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
+          style={[styles.pill, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.sortBy}
         >
           <Ionicons name="swap-vertical" size={14} color={colors.text} />
-          <ThemedText
-            variant="caption"
-            style={[styles.pillLabel, { color: colors.text }]}
-          >
+          <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
             {sortLabels[sortBy]}
           </ThemedText>
         </Pressable>
 
-        {activeFilterCount > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.activeChipsRow}
-          >
-            {filters.cuisines.map((c) => (
-              <Pressable
-                key={c}
-                onPress={() => toggleCuisine(c)}
-                style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
-              >
-                <ThemedText
-                  variant="caption"
-                  style={[styles.activeChipText, { color: colors.chipText }]}
-                >
-                  {c} ×
-                </ThemedText>
-              </Pressable>
-            ))}
-            {filters.difficulties.map((d) => (
-              <Pressable
-                key={d}
-                onPress={() => toggleDifficulty(d)}
-                style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
-              >
-                <ThemedText
-                  variant="caption"
-                  style={[styles.activeChipText, { color: colors.chipText }]}
-                >
-                  {d} ×
-                </ThemedText>
-              </Pressable>
-            ))}
-            {filters.maxTime > 0 ? (
-              <Pressable
-                onPress={() => setMaxTime(0)}
-                style={[styles.activeChip, { backgroundColor: colors.chipBackground }]}
-              >
-                <ThemedText
-                  variant="caption"
-                  style={[styles.activeChipText, { color: colors.chipText }]}
-                >
-                  ≤ {filters.maxTime} {t().recipes.minutes} ×
-                </ThemedText>
-              </Pressable>
-            ) : null}
-          </ScrollView>
+        {state.status === 'loaded' ? (
+          <ThemedText variant="caption" muted style={styles.countInline}>
+            {filteredRecipes.length} {t().recipes.results}
+          </ThemedText>
         ) : null}
       </View>
 
-      {state.status === 'loaded' ? (
-        <View style={styles.countRow}>
-          <ThemedText variant="caption" muted>
-            {filteredRecipes.length} {t().recipes.results}
-          </ThemedText>
-        </View>
+      {activeFilterCount > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.activeChipsScroll}
+        >
+          {filters.cuisines.map((c) => (
+            <Pressable
+              key={c}
+              onPress={() => removeCuisineFilter(c)}
+              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
+            >
+              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+                {formatLabel(c)}
+              </ThemedText>
+              <Ionicons name="close-circle" size={14} color={colors.primary} />
+            </Pressable>
+          ))}
+          {filters.categories.map((c) => (
+            <Pressable
+              key={c}
+              onPress={() => removeCategoryFilter(c)}
+              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
+            >
+              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+                {formatLabel(c)}
+              </ThemedText>
+              <Ionicons name="close-circle" size={14} color={colors.primary} />
+            </Pressable>
+          ))}
+          {filters.difficulties.map((d) => (
+            <Pressable
+              key={d}
+              onPress={() => removeDifficultyFilter(d)}
+              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${formatLabel(d)} filtreni kaldır`}
+            >
+              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+                {formatLabel(d)}
+              </ThemedText>
+              <Ionicons name="close-circle" size={14} color={colors.primary} />
+            </Pressable>
+          ))}
+          {filters.maxTime > 0 ? (
+            <Pressable
+              onPress={removeMaxTimeFilter}
+              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+              accessibilityRole="button"
+              accessibilityLabel="Süre filtresini kaldır"
+            >
+              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+                ≤ {filters.maxTime} {t().recipes.minutes}
+              </ThemedText>
+              <Ionicons name="close-circle" size={14} color={colors.primary} />
+            </Pressable>
+          ) : null}
+          <Pressable
+            onPress={resetFilters}
+            style={[styles.activeChip, styles.clearChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={t().recipes.clearFilters}
+          >
+            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.textMuted }]}>
+              {t().recipes.clearFilters}
+            </ThemedText>
+          </Pressable>
+        </ScrollView>
       ) : null}
     </View>
   );
 
+  // ─── Body (varies by state) ─────────────────────────────────────────────────
   let body: React.JSX.Element;
   if (state.status === 'idle' || state.status === 'loading') {
-    body = (
-      <ScreenContainer padded={false}>
-        <LoadingSkeleton />
-      </ScreenContainer>
-    );
+    body = <LoadingSkeleton />;
   } else if (state.status === 'error') {
     const failure: Failure = state.failure;
     body = (
-      <ScreenContainer padded={false}>
-        <View style={styles.center}>
-          <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
-          <ThemedText variant="subtitle" style={styles.errorTitle}>
-            {t().common.error}
-          </ThemedText>
-          <ThemedText variant="body" muted style={styles.errorMessage}>
-            {failure.message}
-          </ThemedText>
-          <View style={styles.retryButton}>
-            <PrimaryButton label={t().common.retry} onPress={onRefresh} />
-          </View>
+      <View style={styles.center}>
+        <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
+        <ThemedText variant="subtitle" style={styles.feedbackTitle}>
+          {t().common.error}
+        </ThemedText>
+        <ThemedText variant="body" muted style={styles.feedbackSub}>
+          {failure.message}
+        </ThemedText>
+        <View style={styles.retryButton}>
+          <PrimaryButton label={t().common.retry} onPress={onRefresh} />
         </View>
-      </ScreenContainer>
-    );
-  } else if (filteredRecipes.length === 0 && state.recipes.length === 0) {
-    body = (
-      <ScreenContainer padded={false}>
-        <View style={styles.center}>
-          <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
-          <ThemedText variant="body" muted style={styles.errorTitle}>
-            {t().recipes.empty}
-          </ThemedText>
-          <View style={styles.retryButton}>
-            <PrimaryButton label={t().common.retry} onPress={onRefresh} />
-          </View>
-        </View>
-      </ScreenContainer>
+      </View>
     );
   } else if (filteredRecipes.length === 0) {
     body = (
-      <ScreenContainer padded={false}>
-        {headerControls}
-        <View style={styles.center}>
-          <Ionicons name="search" size={48} color={colors.textMuted} />
-          <ThemedText variant="body" muted style={styles.errorTitle}>
-            {t().recipes.noResults}
-          </ThemedText>
+      <View style={styles.center}>
+        {state.recipes.length === 0
+          ? <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
+          : <Ionicons name="search" size={48} color={colors.textMuted} />
+        }
+        <ThemedText variant="body" muted style={styles.feedbackTitle}>
+          {activeFilterCount > 0 || search.trim().length > 0
+            ? t().recipes.noResults
+            : t().recipes.empty}
+        </ThemedText>
+        <View style={styles.retryButton}>
           {activeFilterCount > 0 ? (
-            <View style={styles.retryButton}>
-              <PrimaryButton label={t().recipes.clearFilters} onPress={resetFilters} />
-            </View>
-          ) : null}
+            <PrimaryButton label={t().recipes.clearFilters} onPress={resetFilters} />
+          ) : (
+            <PrimaryButton label={t().common.retry} onPress={onRefresh} />
+          )}
         </View>
-      </ScreenContainer>
+      </View>
     );
   } else {
     body = (
-      <ScreenContainer padded={false}>
-        <FlatList
-          data={filteredRecipes}
-          keyExtractor={(c) => c.id}
-          renderItem={renderItem}
-          ListHeaderComponent={headerControls}
-          ItemSeparatorComponent={ItemSeparator}
-          contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
-        />
-      </ScreenContainer>
+      <FlatList
+        data={filteredRecipes}
+        keyExtractor={(r) => r.id}
+        renderItem={renderItem}
+        ItemSeparatorComponent={ItemSeparator}
+        contentContainerStyle={styles.listContent}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+      />
     );
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {body}
+    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
+      {stickyHeader}
+      <View style={styles.bodyContainer}>
+        {body}
+      </View>
 
       <BottomSheet
         visible={sheetOpen === 'filter'}
@@ -371,35 +419,49 @@ export const RecipeListScreen = (): React.JSX.Element => {
             : undefined
         }
       >
-        {allCuisines.length > 0 ? (
-          <View style={styles.sheetSection}>
-            <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-              {t().recipes.cuisine}
-            </ThemedText>
-            <View style={styles.chipsWrap}>
-              {allCuisines.map((c) => (
-                <SelectChip
-                  key={c}
-                  label={c}
-                  selected={filters.cuisines.includes(c)}
-                  onToggle={() => toggleCuisine(c)}
-                />
-              ))}
-            </View>
+        <View style={styles.sheetSection}>
+          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
+            {t().recipes.cuisine}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {CUISINE_KEY_VALUES.map((c) => (
+              <SelectChip
+                key={c}
+                label={formatLabel(c)}
+                selected={pendingFilters.cuisines.includes(c)}
+                onToggle={() => togglePendingCuisine(c)}
+              />
+            ))}
           </View>
-        ) : null}
+        </View>
+
+        <View style={styles.sheetSection}>
+          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
+            {t().recipes.category}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {RECIPE_CATEGORY_VALUES.map((c) => (
+              <SelectChip
+                key={c}
+                label={formatLabel(c)}
+                selected={pendingFilters.categories.includes(c)}
+                onToggle={() => togglePendingCategory(c)}
+              />
+            ))}
+          </View>
+        </View>
 
         <View style={styles.sheetSection}>
           <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
             {t().recipes.difficulty}
           </ThemedText>
           <View style={styles.chipsRow}>
-            {DIFFICULTIES.map((d) => (
+            {DIFFICULTY_VALUES.map((d) => (
               <SelectChip
                 key={d}
-                label={d}
-                selected={filters.difficulties.includes(d)}
-                onToggle={() => toggleDifficulty(d)}
+                label={formatLabel(d)}
+                selected={pendingFilters.difficulties.includes(d)}
+                onToggle={() => togglePendingDifficulty(d)}
                 flex
               />
             ))}
@@ -415,18 +477,15 @@ export const RecipeListScreen = (): React.JSX.Element => {
               <SelectChip
                 key={m}
                 label={m === 0 ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
-                selected={filters.maxTime === m}
-                onToggle={() => setMaxTime(m)}
+                selected={pendingFilters.maxTime === m}
+                onToggle={() => setPendingMaxTime(m)}
               />
             ))}
           </View>
         </View>
 
         <View style={styles.sheetCta}>
-          <PrimaryButton
-            label={`${t().recipes.showResults} ${filteredRecipes.length}`}
-            onPress={() => setSheetOpen(null)}
-          />
+          <PrimaryButton label={t().recipes.showResults} onPress={applyFilters} />
         </View>
       </BottomSheet>
 
@@ -442,12 +501,14 @@ export const RecipeListScreen = (): React.JSX.Element => {
               key={key}
               onPress={() => {
                 setSortBy(key);
+                void load(buildApiFilters(filters, key));
                 setSheetOpen(null);
               }}
               style={[
                 styles.sortRow,
                 { backgroundColor: isActive ? colors.chipBackground : 'transparent' },
               ]}
+              accessibilityRole="menuitem"
             >
               <ThemedText
                 variant="body"
@@ -464,7 +525,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       </BottomSheet>
 
       <TabBar active="recipes" onChange={onTabChange} />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -472,12 +533,13 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  listContent: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
+  // ─── Sticky header ──────────────────────────────────────────────────────────
+  stickyHeader: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    ...shadows.sm,
   },
   searchWrapper: {
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
   },
@@ -485,52 +547,70 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    height: 34,
-    paddingHorizontal: 12,
+    gap: spacing.xs2,
+    height: sizes.selectorHeight,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: 1.5,
   },
   pillLabel: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: fontSizes.caption,
   },
   pillBadge: {
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 5,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.3)',
-  },
-  pillBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  activeChipsRow: {
-    gap: 6,
-    alignItems: 'center',
-    paddingRight: spacing.lg,
-  },
-  activeChip: {
-    height: 30,
-    paddingHorizontal: 10,
+    minWidth: sizes.iconXxs,
+    height: sizes.iconXxs,
+    paddingHorizontal: spacing.xs,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  pillBadgeText: {
+    fontSize: fontSizes.micro,
+    fontWeight: '700',
+  },
+  countInline: {
+    marginLeft: 'auto',
+    fontSize: fontSizes.small,
+  },
+  // Active filter chips — own full-width row
+  activeChipsScroll: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+    gap: spacing.xs2,
+    alignItems: 'center',
+  },
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    height: sizes.selectorHeight,
+    paddingHorizontal: spacing.sm2,
+    borderRadius: radii.round,
+    borderWidth: 1,
+  },
   activeChipText: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
-  countRow: {
-    paddingBottom: spacing.sm,
+  clearChip: {
+    marginLeft: spacing.xs2,
+  },
+  // ─── Body ───────────────────────────────────────────────────────────────────
+  bodyContainer: {
+    flex: 1,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   separator: {
     height: spacing.md,
@@ -541,11 +621,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.xl,
   },
-  errorTitle: {
+  feedbackTitle: {
     marginTop: spacing.md,
     textAlign: 'center',
   },
-  errorMessage: {
+  feedbackSub: {
     marginTop: spacing.sm,
     textAlign: 'center',
   },
@@ -557,6 +637,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     gap: spacing.md,
   },
+  // ─── Filter bottom sheet ────────────────────────────────────────────────────
   sheetSection: {
     marginBottom: spacing.lg,
   },
@@ -566,16 +647,17 @@ const styles = StyleSheet.create({
   chipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.xs2,
   },
   chipsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.xs2,
   },
   sheetCta: {
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
+  // ─── Sort bottom sheet ──────────────────────────────────────────────────────
   sortRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -583,6 +665,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
 });

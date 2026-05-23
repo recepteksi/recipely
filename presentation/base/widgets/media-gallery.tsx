@@ -10,7 +10,7 @@ import {
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { MediaSlide } from '@presentation/base/widgets/media-slide';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 export interface MediaGalleryProps {
@@ -89,22 +89,22 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   dot: {
-    height: 6,
-    borderRadius: 3,
+    height: sizes.progressBarHeight,
+    borderRadius: radii.round,
   },
   counter: {
     position: 'absolute',
     top: spacing.md,
     right: spacing.md,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
   },
   counterText: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
 });

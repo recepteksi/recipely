@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Redirect } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 

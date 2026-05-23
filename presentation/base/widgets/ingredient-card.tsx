@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 
 export interface IngredientCardProps {
   raw: string;
@@ -119,13 +119,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   qtyChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.sm,
   },
   qtyText: {
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   name: {
     flex: 1,
