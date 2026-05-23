@@ -8,6 +8,8 @@ export interface FakeAuthRepositoryConfig {
   signUpResult?: Result<AuthSession, Failure>;
   signOutResult?: Result<void, Failure>;
   currentSessionResult?: Result<AuthSession | null, Failure>;
+  signInWithGoogleResult?: Result<AuthSession, Failure>;
+  signInWithAppleResult?: Result<AuthSession, Failure>;
 }
 
 /**
@@ -40,5 +42,17 @@ export class FakeAuthRepository implements IAuthRepository {
 
   getCurrentSession(): Promise<Result<AuthSession | null, Failure>> {
     return Promise.resolve(this.config.currentSessionResult ?? ok(null));
+  }
+
+  signInWithGoogle(): Promise<Result<AuthSession, Failure>> {
+    return Promise.resolve(
+      this.config.signInWithGoogleResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
+  signInWithApple(): Promise<Result<AuthSession, Failure>> {
+    return Promise.resolve(
+      this.config.signInWithAppleResult ?? fail(new UnknownFailure('not configured')),
+    );
   }
 }

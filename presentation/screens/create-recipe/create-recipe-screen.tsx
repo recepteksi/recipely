@@ -90,7 +90,7 @@ const recipeToForm = (
   difficulty: recipe.difficulty,
   prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : emptyForm.prepTimeMinutes,
   cookTimeMinutes: recipe.cookTimeMinutes > 0 ? recipe.cookTimeMinutes : emptyForm.cookTimeMinutes,
-  servings: emptyForm.servings,
+  servings: recipe.servings > 0 ? recipe.servings : emptyForm.servings,
   ingredients: recipe.ingredients.length > 0 ? recipe.ingredients : [''],
   instructions: recipe.instructions.length > 0 ? recipe.instructions : [''],
   media: prevMedia,
@@ -115,6 +115,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const createState = createdRecipesStore((s) => s.createState);
   const generateState = createdRecipesStore((s) => s.generateState);
   const updateState = createdRecipesStore((s) => s.updateState);
+  const aiDraft = createdRecipesStore((s) => s.aiDraft);
 
   const { recipeId } = useLocalSearchParams<{ recipeId?: string }>();
   const isEditMode = typeof recipeId === 'string' && recipeId.length > 0;
@@ -128,7 +129,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const [wasAiUsed, setWasAiUsed] = useState(false);
 
   const [form, setForm] = useState<RecipeFormState>(() =>
-    isEditMode && existingRecipe !== undefined ? recipeToForm(existingRecipe, []) : emptyForm,
+    isEditMode && existingRecipe !== undefined
+      ? recipeToForm(existingRecipe, [...existingRecipe.media])
+      : emptyForm,
   );
   const [missing, setMissing] = useState(false);
   const [hasNewImage, setHasNewImage] = useState(false);
@@ -343,10 +346,26 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     }
   };
 
-  const handlePublishAi = (): void => {
-    // WHY: backend already persisted this as a draft when generate succeeded.
-    // We don't have an update endpoint yet, so media/edits on this screen are
-    // intentionally not synced back. The draft is already in My Recipes.
+  const handlePublishAi = async (): Promise<void> => {
+    if (hasNewImage && aiDraft !== null) {
+      const coverImage = form.media.find((m) => m.type === 'image');
+      if (coverImage !== undefined) {
+        const uri = coverImage.url;
+        const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+        const mimeMap: Record<string, string> = {
+          jpg: 'image/jpeg',
+          jpeg: 'image/jpeg',
+          png: 'image/png',
+          webp: 'image/webp',
+          heic: 'image/heic',
+        };
+        await createdRecipesStore.getState().updateRecipe(aiDraft.id, {
+          imageUri: uri,
+          imageFileName: `recipe-${Date.now()}.${ext}`,
+          imageMimeType: mimeMap[ext] ?? 'image/jpeg',
+        });
+      }
+    }
     createdRecipesStore.getState().clearAiDraft();
     router.replace('/my-recipes');
   };
@@ -382,7 +401,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const currentLabel = labels[step - 1] ?? '';
   const progress = step / 5;
   const isPublishing = createState.status === 'creating';
-  const isSaving = isEditMode ? updateState.status === 'updating' : isPublishing;
+  const isSaving = isEditMode
+    ? updateState.status === 'updating'
+    : isPublishing || (wasAiUsed && updateState.status === 'updating');
   const continueDisabled = !canNext();
 
   return (
@@ -555,7 +576,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
               >
                 {isEditMode
                   ? (updateState.status === 'updating' ? t().createRecipe.updating : t().createRecipe.updateSave)
-                  : isPublishing
+                  : isSaving
                     ? t().createRecipe.publishing
                     : t().createRecipe.save}
               </ThemedText>

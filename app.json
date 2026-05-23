@@ -81,7 +81,15 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/crashlytics"
+      "@react-native-firebase/crashlytics",
+      "@react-native-firebase/auth",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.421167568469-0feh6ch8d1e6a41mij96rbl3u2vg73ju"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

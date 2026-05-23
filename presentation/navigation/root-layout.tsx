@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
 import { ActiveTimersBar } from '@presentation/base/widgets/active-timers-bar';
-import { initLocale, t } from '@presentation/i18n';
+import { initLocale } from '@presentation/i18n';
 
 initLocale();
 
@@ -27,26 +27,11 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="recipes/index"
-          options={{ title: t().navigation.recipes }}
-        />
-        <Stack.Screen
-          name="recipes/[recipeId]/index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="my-recipes"
-          options={{ title: t().navigation.myRecipes, headerBackVisible: false }}
-        />
-        <Stack.Screen
-          name="create-recipe"
-          options={{ title: t().createRecipe.title }}
-        />
-        <Stack.Screen
-          name="settings"
-          options={{ title: t().navigation.settings, headerBackVisible: false }}
-        />
+        <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="my-recipes" options={{ headerShown: false }} />
+        <Stack.Screen name="create-recipe" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
       <ActiveTimersBar />
       <StatusBar style="auto" />

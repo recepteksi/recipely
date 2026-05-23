@@ -1,20 +1,21 @@
 import { Platform } from 'react-native';
-import {
-  getAnalytics,
-  logEvent,
-  logScreenView,
-  setAnalyticsCollectionEnabled,
-} from '@react-native-firebase/analytics';
 
-// Thin guarded wrappers around Firebase Analytics. Every call fails silently
-// when the native module is unavailable (web, or Expo Go without a dev build),
-// so callers never need to branch on platform or Firebase availability.
+// WHY: a top-level static import of @react-native-firebase/analytics causes the
+// native RNFBAppModule to be initialised at module-load time. On Expo Go (or any
+// build that lacks the Firebase native layer) this throws before any try/catch
+// can intervene, crashing the app on startup. Wrapping require() in an IIFE
+// catches that throw once — all exported functions then no-op when the module is
+// unavailable, while Jest's jest.mock() hoisting keeps unit-tests working.
+type AnalyticsModule = typeof import('@react-native-firebase/analytics');
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mod: AnalyticsModule | null = (() => { try { return require('@react-native-firebase/analytics') as AnalyticsModule; } catch { return null; } })();
 
 /** Enables or disables analytics collection (kept off in development). */
 export const setAnalyticsEnabled = async (enabled: boolean): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    await setAnalyticsCollectionEnabled(getAnalytics(), enabled);
+    await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), enabled);
   } catch {
     // Firebase native module unavailable — no-op.
   }
@@ -25,9 +26,9 @@ export const logAnalyticsEvent = async (
   name: string,
   params?: Record<string, string | number | boolean>,
 ): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    await logEvent(getAnalytics(), name, params);
+    await mod.logEvent(mod.getAnalytics(), name, params);
   } catch {
     // no-op
   }
@@ -35,9 +36,9 @@ export const logAnalyticsEvent = async (
 
 /** Logs a screen view for screen-flow analytics. */
 export const logScreen = async (screenName: string, screenClass?: string): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    await logScreenView(getAnalytics(), {
+    await mod.logScreenView(mod.getAnalytics(), {
       screen_name: screenName,
       screen_class: screenClass ?? screenName,
     });

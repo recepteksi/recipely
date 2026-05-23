@@ -5,7 +5,10 @@ import * as Notifications from 'expo-notifications';
 // unavailable in Expo Go (SDK 53+). Local notifications still work. This
 // suppresses the noise so the dev overlay doesn't show a false alarm.
 if (__DEV__) {
-  LogBox.ignoreLogs(['expo-notifications: Android Push notifications']);
+  LogBox.ignoreLogs([
+    'expo-notifications: Android Push notifications',
+    '`expo-notifications` functionality is not fully supported',
+  ]);
 }
 
 // Two channels: the live countdown is re-posted every second so it must be
