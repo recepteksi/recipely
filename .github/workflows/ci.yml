@@ -73,6 +73,11 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      # OAuth web client ID (type=3) used by GoogleSignin.configure on Android
+      # to request an idToken. Not sensitive — same value is bundled into the
+      # APK via google-services.json. Must match Firebase Authentication → Web
+      # client ID.
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
       # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber so the
       # workflow can stay on a shallow checkout (avoids the auth issues that
       # fetch-depth: 0 hits with GITHUB_TOKEN on this runner).
