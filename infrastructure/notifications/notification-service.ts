@@ -1,15 +1,20 @@
 import { LogBox, Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsType from 'expo-notifications';
 
-// WHY: expo-notifications logs console.error about push notifications being
-// unavailable in Expo Go (SDK 53+). Local notifications still work. This
-// suppresses the noise so the dev overlay doesn't show a false alarm.
+// WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
+// module load time. ES `import` is hoisted before any code, so suppression
+// registered after the import comes too late. `import type` is erased at
+// runtime (no module loading), so LogBox.ignoreLogs registers first and the
+// pattern is active before `require` triggers expo-notifications initialization.
 if (__DEV__) {
   LogBox.ignoreLogs([
     'expo-notifications: Android Push notifications',
     '`expo-notifications` functionality is not fully supported',
   ]);
 }
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const Notifications = require('expo-notifications') as typeof NotificationsType;
 
 // Two channels: the live countdown is re-posted every second so it must be
 // silent + low importance; the one-shot completion alert is high importance.
@@ -51,7 +56,7 @@ const progressContent = (
   recipeName: string,
   remainingSeconds: number,
   paused: boolean,
-): Notifications.NotificationContentInput => ({
+): NotificationsType.NotificationContentInput => ({
   title: `${paused ? '⏸' : '⏱'} ${recipeName}`,
   body: formatMMSS(remainingSeconds),
   data: { type: TIMER_PROGRESS, timerId },

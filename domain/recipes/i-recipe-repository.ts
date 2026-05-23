@@ -52,6 +52,7 @@ export interface UpdateRecipeInput {
   instructions?: Record<string, string[]>;
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
+  servings?: number;
   imageUri?: string;
   imageFileName?: string;
   imageMimeType?: string;

@@ -397,6 +397,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         renderItem={renderItem}
         ItemSeparatorComponent={ItemSeparator}
         contentContainerStyle={styles.listContent}
+        style={styles.list}
         refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
       />
     );
@@ -604,6 +605,9 @@ const styles = StyleSheet.create({
   },
   // ─── Body ───────────────────────────────────────────────────────────────────
   bodyContainer: {
+    flex: 1,
+  },
+  list: {
     flex: 1,
   },
   listContent: {

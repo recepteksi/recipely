@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -67,6 +67,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
+  const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
@@ -75,6 +77,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const confirmDelete = useCallback(async () => {
     setDeleteError(null);
@@ -169,6 +172,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     }
   }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
 
+  // WHY: when the user reaches this screen from the main list (not My Recipes),
+  // createdRecipesStore is empty, so isLocal is false and the edit form won't
+  // pre-fill. Loading my recipes here ensures the store is populated before
+  // the user taps Edit.
+  useEffect(() => {
+    if (isOwner && !isLocal) {
+      void createdRecipesStore.getState().loadMyRecipes();
+    }
+  }, [isOwner, isLocal, createdRecipesStore]);
+
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
   const instructionCount =
@@ -219,8 +232,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     current.status === 'error' ? current.failure : undefined;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <KeyboardAvoidingView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scroll}>
         <StateView status={status} failure={failure} onRetry={onRetry}>
           {current.status === 'loaded' ? (
             (() => {
@@ -354,9 +370,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       ))}
                     </View>
 
-                    {isLocal ? (
+                    {isOwner ? (
                       <View style={styles.ownerActions}>
                         <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t().myRecipes.editRecipe}
                           onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
                           style={({ pressed }) => [
                             styles.ownerBtn,
@@ -369,6 +387,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           </ThemedText>
                         </Pressable>
                         <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t().myRecipes.deleteRecipe}
                           onPress={() => setShowDeleteSheet(true)}
                           style={({ pressed }) => [
                             styles.ownerBtn,
@@ -450,6 +470,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           ]}
                           multiline
                           maxLength={2000}
+                          onFocus={() => {
+                            setTimeout(
+                              () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                              150,
+                            );
+                          }}
                         />
                         <Pressable
                           onPress={() => void handleAddComment()}
@@ -576,7 +602,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           </Pressable>
         </View>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

@@ -312,6 +312,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: form.prepTimeMinutes,
       cookTimeMinutes: form.cookTimeMinutes,
+      servings: form.servings,
       tags: { [locale]: [DIFFICULTY_LABELS[form.difficulty]] },
       mealType: { [locale]: [] },
       isPublished: true,
@@ -364,6 +365,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           imageFileName: `recipe-${Date.now()}.${ext}`,
           imageMimeType: mimeMap[ext] ?? 'image/jpeg',
         });
+        // If the image update failed, stay on review so the error is visible.
+        if (createdRecipesStore.getState().updateState.status === 'error') return;
       }
     }
     createdRecipesStore.getState().clearAiDraft();
@@ -493,8 +496,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
                     colors,
                     missing,
                     wasAiUsed,
-                    createError: createState.status === 'error',
-                    updateError: updateState.status === 'error',
+                    createError: !isEditMode && !wasAiUsed && createState.status === 'error',
+                    updateError: (isEditMode || wasAiUsed) && updateState.status === 'error',
+                    onEditMedia: () => setStep(2),
                     onEditIngredients: () => setStep(3),
                     onEditInstructions: () => setStep(4),
                   })}
@@ -1238,6 +1242,7 @@ interface Step5Args {
   wasAiUsed: boolean;
   createError: boolean;
   updateError: boolean;
+  onEditMedia: () => void;
   onEditIngredients: () => void;
   onEditInstructions: () => void;
 }
@@ -1250,6 +1255,7 @@ const renderStep5 = (args: Step5Args): React.JSX.Element => {
     wasAiUsed,
     createError,
     updateError,
+    onEditMedia,
     onEditIngredients,
     onEditInstructions,
   } = args;
@@ -1276,22 +1282,39 @@ const renderStep5 = (args: Step5Args): React.JSX.Element => {
           { backgroundColor: colors.surface, borderColor: colors.cardBorder },
         ]}
       >
-        {coverImage !== undefined ? (
-          <Image
-            source={{ uri: coverImage.url }}
-            style={styles.reviewImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View
-            style={[
-              styles.reviewImagePlaceholder,
-              { backgroundColor: colors.chipBackground },
-            ]}
-          >
-            <Ionicons name="image-outline" size={32} color={colors.textMuted} />
-          </View>
-        )}
+        <Pressable
+          onPress={onEditMedia}
+          accessibilityRole="button"
+          accessibilityLabel={t().mediaPicker.add}
+        >
+          {coverImage !== undefined ? (
+            <View>
+              <Image
+                source={{ uri: coverImage.url }}
+                style={styles.reviewImage}
+                resizeMode="cover"
+              />
+              <View style={[styles.reviewEditBadge, { backgroundColor: colors.overlay }]}>
+                <Ionicons name="camera-outline" size={16} color={colors.onOverlay} />
+              </View>
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.reviewImagePlaceholder,
+                { backgroundColor: colors.chipBackground },
+              ]}
+            >
+              <Ionicons name="camera-outline" size={32} color={colors.primary} />
+              <ThemedText
+                variant="caption"
+                style={[styles.reviewEditHint, { color: colors.primary }]}
+              >
+                {t().mediaPicker.add}
+              </ThemedText>
+            </View>
+          )}
+        </Pressable>
         <View style={styles.reviewCardBody}>
           <ThemedText variant="title" style={{ color: colors.text }}>
             {form.name.trim().length > 0 ? form.name.trim() : '—'}
@@ -1452,6 +1475,8 @@ const styles = StyleSheet.create<{
   reviewChipLabel: TextStyle;
   reviewError: TextStyle;
   reviewCaption: TextStyle;
+  reviewEditBadge: ViewStyle;
+  reviewEditHint: TextStyle;
 }>({
   root: {
     flex: 1,
@@ -1872,5 +1897,18 @@ const styles = StyleSheet.create<{
   },
   reviewCaption: {
     textAlign: 'center',
+  },
+  reviewEditBadge: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    right: spacing.sm,
+    width: sizes.iconBtnSm,
+    height: sizes.iconBtnSm,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewEditHint: {
+    marginTop: spacing.xs,
   },
 });
