@@ -16,8 +16,20 @@ const runGit = (command: string): string | null => {
   }
 };
 
-/** Total commit count — a monotonically increasing integer for the build number. */
+/** Monotonically increasing build number.
+ *
+ * CI sets `BUILD_NUMBER` (e.g. from `GITHUB_RUN_NUMBER`) so we don't depend on
+ * a full git history being available on the runner. Local dev falls back to
+ * the commit count, which keeps `expo start` and manual builds working without
+ * any environment configuration. */
 const getBuildNumber = (): number => {
+  const fromEnv = process.env.BUILD_NUMBER;
+  if (fromEnv !== undefined && fromEnv.length > 0) {
+    const parsedEnv = Number.parseInt(fromEnv, 10);
+    if (Number.isFinite(parsedEnv) && parsedEnv > 0) {
+      return parsedEnv;
+    }
+  }
   const raw = runGit('git rev-list --count HEAD');
   const parsed = raw !== null ? Number.parseInt(raw, 10) : Number.NaN;
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
