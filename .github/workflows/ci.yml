@@ -94,7 +94,21 @@ jobs:
       - name: Restore google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo "$GOOGLE_SERVICES_JSON" | base64 --decode > google-services.json
+        run: |
+          # The secret may be stored as raw JSON or as base64; accept either.
+          # Whitespace from copy/paste line wraps is stripped before decoding.
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is empty"
+            exit 1
+          fi
+          first_char="${GOOGLE_SERVICES_JSON:0:1}"
+          if [ "$first_char" = "{" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" | tr -d ' \t\r\n' | base64 -d > google-services.json
+          fi
+          node -e "JSON.parse(require('fs').readFileSync('google-services.json','utf8'))" \
+            || { echo "::error::google-services.json is not valid JSON after decode"; exit 1; }
 
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
