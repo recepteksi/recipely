@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -26,6 +27,8 @@ export const LoginScreen = (): React.JSX.Element => {
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
   const signIn = authStore((s) => s.signIn);
+  const signInWithGoogle = authStore((s) => s.signInWithGoogle);
+  const signInWithApple = authStore((s) => s.signInWithApple);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -200,6 +203,37 @@ export const LoginScreen = (): React.JSX.Element => {
               </ThemedText>
             </Pressable>
           </View>
+
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
+            <ThemedText variant="caption" muted style={styles.dividerLabel}>
+              {t().login.orContinueWith}
+            </ThemedText>
+            <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
+          </View>
+
+          <Pressable
+            onPress={() => { void signInWithGoogle(); }}
+            disabled={isLoading}
+            style={[styles.socialButton, { borderColor: colors.inputBorder, backgroundColor: colors.cardBackground }]}
+            accessibilityRole="button"
+            accessibilityLabel={t().login.signInWithGoogle}
+          >
+            <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
+            <ThemedText variant="body" style={[styles.socialLabel, { color: colors.text }]}>
+              {t().login.signInWithGoogle}
+            </ThemedText>
+          </Pressable>
+
+          {Platform.OS === 'ios' && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={radii.lg}
+              style={styles.appleButton}
+              onPress={() => { void signInWithApple(); }}
+            />
+          )}
         </View>
 
         {t().login.hint ? (
@@ -294,5 +328,35 @@ const styles = StyleSheet.create({
   hint: {
     marginTop: spacing.lg,
     textAlign: 'center',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  dividerLabel: {
+    flexShrink: 0,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: sizes.buttonHeight,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  socialLabel: {
+    fontWeight: '500',
+  },
+  appleButton: {
+    height: sizes.buttonHeight,
+    marginTop: spacing.md,
   },
 });

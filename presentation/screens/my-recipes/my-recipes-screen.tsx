@@ -181,6 +181,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             )}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             contentContainerStyle={styles.listContent}
+            style={styles.list}
           />
         )}
       </ScreenContainer>
@@ -250,6 +251,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
+  },
+  list: {
+    flex: 1,
   },
   separator: {
     height: spacing.md,

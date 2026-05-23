@@ -6,6 +6,8 @@ import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
+import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
+import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
@@ -71,6 +73,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const signUp = new SignUpUseCase(authRepo);
   const signOut = new SignOutUseCase(authRepo);
   const getSession = new GetSessionUseCase(authRepo);
+  const signInWithGoogle = new SignInWithGoogleUseCase(authRepo);
+  const signInWithApple = new SignInWithAppleUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
   const getRecipe = new GetRecipeUseCase(recipeRepo);
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
@@ -90,7 +94,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore });
+  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const favoritesStore = configureFavoritesStore({

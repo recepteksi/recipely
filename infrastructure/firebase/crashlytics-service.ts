@@ -1,19 +1,16 @@
 import { Platform } from 'react-native';
-import {
-  getCrashlytics,
-  log,
-  recordError,
-  setCrashlyticsCollectionEnabled,
-} from '@react-native-firebase/crashlytics';
 
-// Thin guarded wrappers around Firebase Crashlytics. Every call fails silently
-// when the native module is unavailable (web, or Expo Go without a dev build).
+// WHY: same lazy-require pattern as analytics-service — see that file for rationale.
+type CrashlyticsModule = typeof import('@react-native-firebase/crashlytics');
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mod: CrashlyticsModule | null = (() => { try { return require('@react-native-firebase/crashlytics') as CrashlyticsModule; } catch { return null; } })();
 
 /** Enables or disables crash reporting collection (kept off in development). */
 export const setCrashReportingEnabled = async (enabled: boolean): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    await setCrashlyticsCollectionEnabled(getCrashlytics(), enabled);
+    await mod.setCrashlyticsCollectionEnabled(mod.getCrashlytics(), enabled);
   } catch {
     // Firebase native module unavailable — no-op.
   }
@@ -21,11 +18,11 @@ export const setCrashReportingEnabled = async (enabled: boolean): Promise<void> 
 
 /** Records a non-fatal error to Crashlytics, optionally preceded by a context breadcrumb. */
 export const recordCrash = (error: unknown, context?: string): void => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    const crashlytics = getCrashlytics();
-    if (context !== undefined) log(crashlytics, context);
-    recordError(crashlytics, error instanceof Error ? error : new Error(String(error)));
+    const crashlytics = mod.getCrashlytics();
+    if (context !== undefined) mod.log(crashlytics, context);
+    mod.recordError(crashlytics, error instanceof Error ? error : new Error(String(error)));
   } catch {
     // no-op
   }
@@ -33,9 +30,9 @@ export const recordCrash = (error: unknown, context?: string): void => {
 
 /** Adds a breadcrumb attached to the next crash report. */
 export const logCrashBreadcrumb = (message: string): void => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || mod === null) return;
   try {
-    log(getCrashlytics(), message);
+    mod.log(mod.getCrashlytics(), message);
   } catch {
     // no-op
   }

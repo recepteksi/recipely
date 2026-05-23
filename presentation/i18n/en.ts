@@ -19,6 +19,9 @@ export const en = {
     emptyFields: 'Please enter email and password.',
     invalidCredentials: 'Invalid email or password',
     noAccount: "Don't have an account?",
+    orContinueWith: 'or continue with',
+    signInWithGoogle: 'Continue with Google',
+    signInWithApple: 'Continue with Apple',
   },
   recipes: {
     title: 'Recipes',

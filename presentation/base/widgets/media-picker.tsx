@@ -32,7 +32,7 @@ const pickAssets = async (
   mediaTypes: 'images' | 'videos' | 'all',
 ): Promise<MediaItem[]> => {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (perm.status !== 'granted') return [];
+  if (!perm.granted) return [];
   const result = await ImagePicker.launchImageLibraryAsync({
     allowsMultipleSelection: mediaTypes !== 'videos',
     mediaTypes:

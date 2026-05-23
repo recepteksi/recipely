@@ -4,6 +4,8 @@ import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
+import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
+import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
 import { UnauthorizedFailure } from '@core/failure';
@@ -41,6 +43,8 @@ const makeStore = (repo: FakeAuthRepository) => {
     getSession: new GetSessionUseCase(repo),
     loadFavorites: fakeLoadFavorites,
     savedRecipesStore,
+    signInWithGoogle: new SignInWithGoogleUseCase(repo),
+    signInWithApple: new SignInWithAppleUseCase(repo),
   });
 };
 

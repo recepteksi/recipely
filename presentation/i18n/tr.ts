@@ -21,6 +21,9 @@ export const tr: Translations = {
     emptyFields: 'Lütfen e-posta ve şifre girin.',
     invalidCredentials: 'Geçersiz e-posta veya şifre',
     noAccount: 'Hesabınız yok mu?',
+    orContinueWith: 'veya şununla devam et',
+    signInWithGoogle: 'Google ile devam et',
+    signInWithApple: 'Apple ile devam et',
   },
   recipes: {
     title: 'Tarifler',
