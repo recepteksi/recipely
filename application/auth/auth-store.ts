@@ -5,6 +5,8 @@ import type { SignInUseCase } from '@application/auth/sign-in-use-case';
 import type { SignUpUseCase } from '@application/auth/sign-up-use-case';
 import type { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/get-session-use-case';
+import type { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
+import type { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
@@ -21,6 +23,8 @@ export interface AuthStoreState {
   register: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
   hydrate: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
 }
 
 export interface AuthStoreDeps {
@@ -30,6 +34,8 @@ export interface AuthStoreDeps {
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
   savedRecipesStore: SavedRecipesStore;
+  signInWithGoogle: SignInWithGoogleUseCase;
+  signInWithApple: SignInWithAppleUseCase;
 }
 
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
@@ -52,20 +58,20 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       set({ state: { status: 'authenticated', session: result.value } });
       // Pre-load favorites in background
       try {
-        // eslint-disable-next-line no-console
+         
         console.log('[AuthStore] hydrate: loading favorites...');
         const favResult = await deps.loadFavorites.execute();
         if (favResult.ok) {
-          // eslint-disable-next-line no-console
+           
           console.log('[AuthStore] hydrate: favorites loaded:', Array.from(favResult.value));
           const { setSavedIds } = deps.savedRecipesStore.getState();
           setSavedIds(favResult.value);
         } else {
-          // eslint-disable-next-line no-console
+           
           console.error('[AuthStore] hydrate: failed to load favorites:', favResult.failure);
         }
       } catch (e) {
-        // eslint-disable-next-line no-console
+         
         console.error('[AuthStore] hydrate: error loading favorites:', e);
       }
     },
@@ -98,6 +104,26 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'unauthenticated' } });
+    },
+
+    signInWithGoogle: async () => {
+      set({ state: { status: 'loading' } });
+      const result = await deps.signInWithGoogle.execute();
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return;
+      }
+      set({ state: { status: 'authenticated', session: result.value } });
+    },
+
+    signInWithApple: async () => {
+      set({ state: { status: 'loading' } });
+      const result = await deps.signInWithApple.execute();
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return;
+      }
+      set({ state: { status: 'authenticated', session: result.value } });
     },
   }));
 };

@@ -5,7 +5,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
 
@@ -32,7 +32,7 @@ const pickAssets = async (
   mediaTypes: 'images' | 'videos' | 'all',
 ): Promise<MediaItem[]> => {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (perm.status !== 'granted') return [];
+  if (!perm.granted) return [];
   const result = await ImagePicker.launchImageLibraryAsync({
     allowsMultipleSelection: mediaTypes !== 'videos',
     mediaTypes:
@@ -137,9 +137,9 @@ export const MediaPicker = ({
           )}
 
           {m.type === 'video' ? (
-            <View style={styles.videoOverlay} pointerEvents="none">
-              <View style={styles.playPill}>
-                <Ionicons name="play" size={12} color="#FFFFFF" />
+            <View style={[styles.videoOverlay, { backgroundColor: colors.overlayLight }]} pointerEvents="none">
+              <View style={[styles.playPill, { backgroundColor: colors.overlay }]}>
+                <Ionicons name="play" size={12} color={colors.onOverlay} />
               </View>
             </View>
           ) : null}
@@ -155,13 +155,13 @@ export const MediaPicker = ({
             </View>
           ) : null}
 
-          <Pressable onPress={() => onRemove(i)} style={styles.removeBtn}>
-            <Ionicons name="close" size={14} color="#FFFFFF" />
+          <Pressable onPress={() => onRemove(i)} style={[styles.removeBtn, { backgroundColor: colors.overlay }]}>
+            <Ionicons name="close" size={14} color={colors.onOverlay} />
           </Pressable>
 
           {i !== 0 ? (
-            <Pressable onPress={() => onSetCover(i)} style={styles.setCoverBtn}>
-              <ThemedText variant="caption" style={styles.setCoverText}>
+            <Pressable onPress={() => onSetCover(i)} style={[styles.setCoverBtn, { backgroundColor: colors.overlay }]}>
+              <ThemedText variant="caption" style={[styles.setCoverText, { color: colors.onOverlay }]}>
                 {t().mediaPicker.setCover}
               </ThemedText>
             </Pressable>
@@ -196,9 +196,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dropIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: sizes.buttonSmHeight,
+    height: sizes.buttonSmHeight,
+    borderRadius: radii.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -216,20 +216,20 @@ const styles = StyleSheet.create({
   miniBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: spacing.xs2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs2,
     borderRadius: radii.round,
     borderWidth: 1,
   },
   miniBtnLabel: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.xs2,
   },
   tile: {
     width: '32%',
@@ -246,53 +246,48 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   playPill: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: sizes.chipHeight,
+    height: sizes.chipHeight,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.55)',
   },
   coverBadge: {
     position: 'absolute',
-    top: 4,
-    left: 4,
-    paddingHorizontal: 6,
+    top: spacing.xs,
+    left: spacing.xs,
+    paddingHorizontal: spacing.xs2,
     paddingVertical: 1,
-    borderRadius: 4,
+    borderRadius: radii.xs,
   },
   coverText: {
-    fontSize: 9,
+    fontSize: fontSizes.nano,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   removeBtn: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: spacing.xs,
+    right: spacing.xs,
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: 'rgba(0,0,0,0.65)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   setCoverBtn: {
     position: 'absolute',
-    bottom: 4,
-    left: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    bottom: spacing.xs,
+    left: spacing.xs,
+    paddingHorizontal: spacing.xs2,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.xs,
   },
   setCoverText: {
-    color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: fontSizes.micro,
     fontWeight: '600',
   },
   addTile: {
@@ -300,10 +295,10 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   addLabel: {
     fontWeight: '600',
-    fontSize: 11,
+    fontSize: fontSizes.micro,
   },
 });

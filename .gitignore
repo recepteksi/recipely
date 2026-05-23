@@ -33,6 +33,10 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Firebase config (contains client API keys — injected from CI secrets)
+google-services.json
+GoogleService-Info.plist
+
 # typescript
 *.tsbuildinfo
 

@@ -20,6 +20,7 @@ export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 
 export const AUTH_LOGIN_PATH = '/auth/login';
 export const AUTH_REGISTER_PATH = '/auth/register';
+export const AUTH_SOCIAL_PATH = '/auth/social';
 
 export const RECIPES_PAGE_SIZE = 30;
 
@@ -35,3 +36,9 @@ const DEFAULT_AES_KEY_HEX =
 
 export const API_AES_KEY_HEX: string =
   process.env.EXPO_PUBLIC_API_AES_KEY?.toLowerCase() ?? DEFAULT_AES_KEY_HEX;
+
+// OAuth 2.0 Web client ID from Firebase Console (Authentication → Sign-in method → Google).
+// Required for Android Google Sign-In and for verifying the ID token.
+// Override at build time via EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.
+export const GOOGLE_WEB_CLIENT_ID: string =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';

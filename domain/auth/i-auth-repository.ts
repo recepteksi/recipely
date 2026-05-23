@@ -7,4 +7,6 @@ export interface IAuthRepository {
   signUp(email: string, password: string, displayName: string): Promise<Result<AuthSession, Failure>>;
   signOut(): Promise<Result<void, Failure>>;
   getCurrentSession(): Promise<Result<AuthSession | null, Failure>>;
+  signInWithGoogle(): Promise<Result<AuthSession, Failure>>;
+  signInWithApple(): Promise<Result<AuthSession, Failure>>;
 }

@@ -27,6 +27,8 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
     instructions: ['mix'],
     prepTimeMinutes: 10,
     cookTimeMinutes: 20,
+    servings: 2,
+    caloriesPerServing: 0,
     image: 'https://cdn.example.com/r1.webp',
     media: [{ type: 'image', url: 'https://cdn.example.com/r1.webp' }],
     rating: 4.5,

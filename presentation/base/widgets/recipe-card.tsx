@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from './themed-text';
@@ -25,8 +25,6 @@ export interface RecipeCardProps {
   onPress: () => void;
   onLike?: () => void;
 }
-
-const LIKE_RED = '#F43F5E';
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
@@ -128,7 +126,7 @@ export const RecipeCard = ({
                   <MaterialCommunityIcons
                     name={likedByMe ? 'heart' : 'heart-outline'}
                     size={16}
-                    color={likedByMe ? LIKE_RED : colors.textMuted}
+                    color={likedByMe ? colors.likeActive : colors.textMuted}
                   />
                   {likeCount > 0 ? (
                     <ThemedText variant="caption" muted style={styles.likeCount}>
@@ -165,16 +163,16 @@ const styles = StyleSheet.create({
     top: spacing.md,
     right: spacing.md,
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   difficultyChip: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
     borderRadius: radii.round,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xs,
   },
   info: {
     padding: spacing.md,
@@ -192,8 +190,8 @@ const styles = StyleSheet.create({
   },
   tag: {
     borderRadius: radii.round,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
   },
   metaRow: {
     flexDirection: 'row',
@@ -205,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingText: {
-    marginLeft: 4,
+    marginLeft: spacing.xs,
   },
   likeBtn: {
     flexDirection: 'row',
@@ -214,9 +212,9 @@ const styles = StyleSheet.create({
   likeInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: spacing.xxs,
   },
   likeCount: {
-    fontSize: 12,
+    fontSize: fontSizes.small,
   },
 });

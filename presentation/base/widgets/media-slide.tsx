@@ -1,5 +1,6 @@
 import { Image, StyleSheet } from 'react-native';
 import { VideoSlide } from '@presentation/base/widgets/video-slide';
+import { recipeImageSource } from '@presentation/base/widgets/recipe-image-source';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 interface MediaSlideProps {
@@ -15,7 +16,7 @@ export const MediaSlide = ({ item, width, height }: MediaSlideProps): React.JSX.
   }
   return (
     <Image
-      source={{ uri: item.url }}
+      source={recipeImageSource(item.url)}
       style={[styles.coverImage, { width, height }]}
     />
   );

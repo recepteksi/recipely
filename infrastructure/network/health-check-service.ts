@@ -1,5 +1,3 @@
-import type { Failure } from '@core/failure';
-import { NetworkFailure } from '@core/failure';
 import { HEALTH_URL } from '@infrastructure/constants/api';
 
 export type HealthStatus = 'unknown' | 'connected' | 'disconnected';

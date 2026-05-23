@@ -11,6 +11,8 @@ export interface InstructionCardProps {
   step: string;
   completed: boolean;
   onToggle: () => void;
+  recipeId: string;
+  recipeName: string;
 }
 
 const TIME_RE = /(\d+(?:\.\d+)?)\s*(minutes?|mins?|dakika|dk)/gi;
@@ -50,6 +52,8 @@ export const InstructionCard = ({
   step,
   completed,
   onToggle,
+  recipeId,
+  recipeName,
 }: InstructionCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const parts = splitStepWithTimers(step);
@@ -99,7 +103,12 @@ export const InstructionCard = ({
             if (part.kind === 'timer' && part.minutes !== undefined) {
               return (
                 <Fragment key={i}>
-                  <InlineTimer minutes={part.minutes} />
+                  <InlineTimer
+                    timerId={`${recipeId}:step${String(index)}:${String(Math.round(part.minutes))}min`}
+                    recipeId={recipeId}
+                    recipeName={recipeName}
+                    minutes={part.minutes}
+                  />
                 </Fragment>
               );
             }

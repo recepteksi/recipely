@@ -159,10 +159,11 @@ export class RecipeRepository implements IRecipeRepository {
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
-    let imageUrl: string | undefined;
-
-    // If a new local image is provided, upload it to /upload first to get a URL.
-    // The backend update endpoint only accepts image as a URL string in the JSON body.
+    // WHY: the backend exposes POST /with-image only for creation. For updates
+    // we upload the file to POST /upload (server root, outside /api/v1, plain
+    // multipart) to obtain a hosted URL, then PATCH /:id with that URL in the
+    // encrypted JSON body. Two requests but reuses the existing endpoints.
+    let uploadedImageUrl: string | undefined;
     if (input.imageUri !== undefined) {
       const formData = new FormData();
       if (Platform.OS === 'web') {
@@ -177,7 +178,8 @@ export class RecipeRepository implements IRecipeRepository {
           type: input.imageMimeType,
         } as unknown as Blob);
       }
-      const uploadResult = await this.http.request<{ url: string }>({
+
+      const uploadResult = await this.http.request<{ url: string; filename: string }>({
         method: 'POST',
         url: UPLOAD_URL,
         data: formData,
@@ -185,10 +187,8 @@ export class RecipeRepository implements IRecipeRepository {
           ? { onUploadProgress: (event) => onProgress(event.loaded ?? 0, event.total ?? 0) }
           : {}),
       });
-      if (!uploadResult.ok) {
-        return uploadResult;
-      }
-      imageUrl = uploadResult.value.url;
+      if (!uploadResult.ok) return uploadResult;
+      uploadedImageUrl = uploadResult.value.url;
     }
 
     const body: Record<string, unknown> = {};
@@ -200,12 +200,18 @@ export class RecipeRepository implements IRecipeRepository {
     if (input.instructions !== undefined) body['instructions'] = input.instructions;
     if (input.prepTimeMinutes !== undefined) body['prepTimeMinutes'] = input.prepTimeMinutes;
     if (input.cookTimeMinutes !== undefined) body['cookTimeMinutes'] = input.cookTimeMinutes;
-    if (imageUrl !== undefined) body['image'] = imageUrl;
+    if (input.servings !== undefined) body['servings'] = input.servings;
     if (input.rating !== undefined) body['rating'] = input.rating;
     if (input.tags !== undefined) body['tags'] = input.tags;
-    if (input.mealType !== undefined) body['mealType'] = input.mealType;
+    if (
+      input.mealType !== undefined &&
+      Object.values(input.mealType).some((arr) => arr.length > 0)
+    ) {
+      body['mealType'] = input.mealType;
+    }
     if (input.isPublished !== undefined) body['isPublished'] = input.isPublished;
     if (input.locale !== undefined) body['locale'] = input.locale;
+    if (uploadedImageUrl !== undefined) body['image'] = uploadedImageUrl;
 
     const result = await this.http.request<RecipeDto>({
       method: 'PATCH',

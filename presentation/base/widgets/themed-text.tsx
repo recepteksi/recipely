@@ -1,5 +1,6 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { fontSizes } from '@presentation/base/theme';
 
 export type ThemedTextVariant = 'headline' | 'title' | 'subtitle' | 'body' | 'caption' | 'label';
 
@@ -22,34 +23,34 @@ export const ThemedText = ({
 
 const styles = StyleSheet.create<Record<ThemedTextVariant, TextStyle>>({
   headline: {
-    fontSize: 32,
+    fontSize: fontSizes.headline,
     fontWeight: '800',
     lineHeight: 40,
     letterSpacing: -0.5,
   },
   title: {
-    fontSize: 24,
+    fontSize: fontSizes.title,
     fontWeight: '700',
     lineHeight: 32,
     letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: fontSizes.subtitle,
     fontWeight: '600',
     lineHeight: 26,
   },
   body: {
-    fontSize: 15,
+    fontSize: fontSizes.body,
     fontWeight: '400',
     lineHeight: 22,
   },
   caption: {
-    fontSize: 13,
+    fontSize: fontSizes.caption,
     fontWeight: '400',
     lineHeight: 18,
   },
   label: {
-    fontSize: 13,
+    fontSize: fontSizes.label,
     fontWeight: '600',
     lineHeight: 18,
     letterSpacing: 0.5,

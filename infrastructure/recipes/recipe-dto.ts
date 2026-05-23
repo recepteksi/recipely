@@ -23,6 +23,12 @@ export interface RecipeDto {
   cookTimeMinutes: number;
   servings: number;
   caloriesPerServing: number;
+  nutrition?: {
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    fiber?: number;
+  };
   image: string;
   rating: number;
   tags: string[];

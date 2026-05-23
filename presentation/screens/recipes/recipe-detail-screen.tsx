@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -17,6 +17,7 @@ import {
   type StateViewStatus,
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -66,6 +67,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
+  const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
@@ -74,6 +77,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const confirmDelete = useCallback(async () => {
     setDeleteError(null);
@@ -88,7 +92,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
-  }, [recipeId, router]);
+  }, [recipeId, router, createdRecipesStore]);
 
   const handleAddComment = useCallback(async () => {
     const trimmed = commentInput.trim();
@@ -123,7 +127,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
-  }, [isSaved, isLoading, recipeId, userId]);
+  }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
 
   const handleToggleLike = useCallback(() => {
     if (!userId) return;
@@ -156,14 +160,27 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
+  // WHY: use primitives instead of recipeState object — the local-recipe path
+  // creates a fresh wrapper object every render, so an object dependency would
+  // re-fire syncFromApi on every render and trigger an infinite update loop.
+  const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
+  const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
+
   useEffect(() => {
-    if (recipeState?.status === 'loaded') {
-      const { likeCount, likedByMe } = recipeState.recipe;
-      // WHY: syncFromApi (not seed) — the detail endpoint is authoritative; we
-      // always want its likedByMe/likeCount to win unless a toggle is in-flight.
-      likesStore.getState().syncFromApi(recipeId, likeCount, likedByMe);
+    if (syncLikeCount !== null && syncLikedByMe !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe);
     }
-  }, [recipeState, recipeId, likesStore]);
+  }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
+
+  // WHY: when the user reaches this screen from the main list (not My Recipes),
+  // createdRecipesStore is empty, so isLocal is false and the edit form won't
+  // pre-fill. Loading my recipes here ensures the store is populated before
+  // the user taps Edit.
+  useEffect(() => {
+    if (isOwner && !isLocal) {
+      void createdRecipesStore.getState().loadMyRecipes();
+    }
+  }, [isOwner, isLocal, createdRecipesStore]);
 
   const ingredientCount =
     recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
@@ -215,8 +232,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     current.status === 'error' ? current.failure : undefined;
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <KeyboardAvoidingView
+      style={[styles.root, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scroll}>
         <StateView status={status} failure={failure} onRetry={onRetry}>
           {current.status === 'loaded' ? (
             (() => {
@@ -273,11 +293,25 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         label={t().recipes.prepTime}
                         minutes={recipe.prepTimeMinutes}
                         iconName="time-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="prep"
                       />
                       <TimeCard
                         label={t().recipes.cookTime}
                         minutes={recipe.cookTimeMinutes}
                         iconName="flame-outline"
+                        recipeId={recipeId}
+                        recipeName={recipe.name}
+                        slot="cook"
+                      />
+                    </View>
+
+                    <View style={styles.nutritionRow}>
+                      <NutritionCard
+                        caloriesPerServing={recipe.caloriesPerServing}
+                        servings={recipe.servings}
+                        nutrition={recipe.nutrition}
                       />
                     </View>
 
@@ -330,13 +364,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           step={step}
                           completed={completedSteps[i] ?? false}
                           onToggle={() => toggleStep(i)}
+                          recipeId={recipeId}
+                          recipeName={recipe.name}
                         />
                       ))}
                     </View>
 
-                    {isLocal ? (
+                    {isOwner ? (
                       <View style={styles.ownerActions}>
                         <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t().myRecipes.editRecipe}
                           onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
                           style={({ pressed }) => [
                             styles.ownerBtn,
@@ -349,6 +387,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           </ThemedText>
                         </Pressable>
                         <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={t().myRecipes.deleteRecipe}
                           onPress={() => setShowDeleteSheet(true)}
                           style={({ pressed }) => [
                             styles.ownerBtn,
@@ -430,6 +470,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           ]}
                           multiline
                           maxLength={2000}
+                          onFocus={() => {
+                            setTimeout(
+                              () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                              150,
+                            );
+                          }}
                         />
                         <Pressable
                           onPress={() => void handleAddComment()}
@@ -556,7 +602,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           </Pressable>
         </View>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -594,6 +640,9 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  nutritionRow: {
     marginTop: spacing.md,
   },
   tagsRow: {

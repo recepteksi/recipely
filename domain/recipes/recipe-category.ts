@@ -12,6 +12,7 @@ export const RecipeCategory = {
   MainCourse: 'MAIN_COURSE',
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
 export type RecipeCategory = (typeof RecipeCategory)[keyof typeof RecipeCategory];
 
 export const RECIPE_CATEGORY_VALUES: readonly RecipeCategory[] = [

@@ -1,116 +1,143 @@
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
+import { formatTimer } from '@presentation/base/utils/format-timer';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface TimeCardProps {
   label: string;
   minutes: number;
   iconName: keyof typeof Ionicons.glyphMap;
+  recipeId: string;
+  recipeName: string;
+  /** Distinguishes the prep vs cook timer for the same recipe (`'prep'` | `'cook'`). */
+  slot: string;
 }
 
-const formatTime = (totalSeconds: number): string => {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-};
+interface ControlButtonProps {
+  icon: keyof typeof Ionicons.glyphMap;
+  bg: string;
+  iconColor: string;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}
 
-/** Countdown timer card with play/pause and reset controls for a recipe time step. */
+const ControlButton = ({
+  icon,
+  bg,
+  iconColor,
+  label,
+  onPress,
+  disabled,
+}: ControlButtonProps): React.JSX.Element => (
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    onPress={onPress}
+    disabled={disabled}
+    style={({ pressed }) => [
+      styles.ctrlBtn,
+      { backgroundColor: bg, opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
+    ]}
+  >
+    <Ionicons name={icon} size={sizes.iconSm} color={iconColor} />
+  </Pressable>
+);
+
+/**
+ * Vertical countdown card for a recipe prep/cook time. The timer is backed by
+ * the persistent `timerStore`, so it keeps running across screen navigation
+ * and app backgrounding, and surfaces in system notifications.
+ */
 export const TimeCard = ({
   label,
   minutes,
   iconName,
+  recipeId,
+  recipeName,
+  slot,
 }: TimeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const [running, setRunning] = useState(false);
-  const [remaining, setRemaining] = useState(minutes * 60);
+  const timer = useRecipeTimer({
+    timerId: `${recipeId}:${slot}`,
+    recipeId,
+    recipeName,
+    minutes,
+  });
 
-  useEffect(() => {
-    if (!running) return;
-    const id = setInterval(
-      () => setRemaining((r) => Math.max(0, r - 1)),
-      1000,
-    );
-    return () => clearInterval(id);
-  }, [running]);
+  const { isActive, isPaused, isDone, remainingSeconds } = timer;
+  const borderColor = isDone
+    ? colors.success
+    : isActive
+      ? colors.primary
+      : colors.cardBorder;
+  const iconBg = isDone ? colors.successLight : colors.chipBackground;
+  const iconTint = isDone ? colors.success : colors.primary;
 
-  useEffect(() => {
-    if (remaining === 0 && running) setRunning(false);
-  }, [remaining, running]);
-
-  const done = remaining === 0;
-  const active = running || remaining < minutes * 60;
+  const valueText = isDone
+    ? t().timer.done
+    : isActive
+      ? formatTimer(remainingSeconds)
+      : `${String(minutes)} ${t().recipes.minutes}`;
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: active ? colors.primary : colors.cardBorder,
-        },
-      ]}
-    >
-      <View
-        style={[
-          styles.iconWrap,
-          {
-            backgroundColor: done ? colors.successLight : colors.chipBackground,
-          },
-        ]}
-      >
-        <Ionicons
-          name={done ? 'checkmark' : iconName}
-          size={18}
-          color={done ? colors.success : colors.primary}
-        />
-      </View>
-      <View style={styles.body}>
-        <ThemedText variant="label" muted style={styles.label}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor }]}>
+      <View style={styles.header}>
+        <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+          <Ionicons name={isDone ? 'checkmark' : iconName} size={18} color={iconTint} />
+        </View>
+        <ThemedText variant="label" muted style={styles.label} numberOfLines={2}>
           {label}
         </ThemedText>
-        <ThemedText
-          variant="subtitle"
-          style={[
-            styles.value,
-            { fontVariant: active ? ['tabular-nums'] : undefined },
-          ]}
-        >
-          {active ? formatTime(remaining) : `${minutes} ${t().recipes.minutes}`}
-        </ThemedText>
       </View>
-      <View style={styles.actions}>
-        <Pressable
-          onPress={() => setRunning((r) => !r)}
-          disabled={done}
-          style={[
-            styles.playButton,
-            {
-              backgroundColor: running ? colors.warning : colors.primary,
-              opacity: done ? 0.4 : 1,
-            },
-          ]}
-        >
-          <Ionicons
-            name={running ? 'pause' : 'play'}
-            size={11}
-            color="#FFFFFF"
+
+      <ThemedText
+        style={[styles.value, { color: isDone ? colors.success : colors.text }]}
+        numberOfLines={1}
+      >
+        {valueText}
+      </ThemedText>
+
+      <View style={styles.controls}>
+        {!isActive ? (
+          <ControlButton
+            icon="play"
+            bg={colors.primary}
+            iconColor={colors.onOverlay}
+            label={t().timer.start}
+            onPress={() => void timer.start()}
+            disabled={minutes <= 0}
           />
-        </Pressable>
-        {active ? (
-          <Pressable
-            onPress={() => {
-              setRunning(false);
-              setRemaining(minutes * 60);
-            }}
-            style={[styles.resetButton, { borderColor: colors.border }]}
-          >
-            <Ionicons name="refresh" size={14} color={colors.textMuted} />
-          </Pressable>
-        ) : null}
+        ) : isDone ? (
+          <ControlButton
+            icon="checkmark-done"
+            bg={colors.successLight}
+            iconColor={colors.success}
+            label={t().timer.done}
+            onPress={() => void timer.stop()}
+          />
+        ) : (
+          <>
+            <ControlButton
+              icon={isPaused ? 'play' : 'pause'}
+              bg={isPaused ? colors.primary : colors.warning}
+              iconColor={colors.onOverlay}
+              label={t().timer.start}
+              onPress={() => void (isPaused ? timer.resume() : timer.pause())}
+            />
+            <ControlButton
+              icon="close"
+              bg={colors.chipBackground}
+              iconColor={colors.textMuted}
+              label={t().common.cancel}
+              onPress={() => void timer.stop()}
+            />
+          </>
+        )}
       </View>
     </View>
   );
@@ -119,50 +146,48 @@ export const TimeCard = ({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: spacing.sm,
-    padding: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm2,
     borderRadius: radii.lg,
     borderWidth: 1.5,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    alignSelf: 'stretch',
+  },
   iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  body: {
-    flex: 1,
-    minWidth: 0,
   },
   label: {
-    fontSize: 11,
+    flex: 1,
+    fontSize: fontSizes.micro,
   },
   value: {
-    fontSize: 16,
+    fontSize: fontSizes.display,
     fontWeight: '700',
+    // WHY: kept static (never toggled to undefined) — React Native sends `null`
+    // to the native side when clearing fontVariant, and processFontVariant
+    // crashes on null. tabular-nums is harmless on non-digit text.
+    fontVariant: ['tabular-nums'],
   },
-  actions: {
+  controls: {
     flexDirection: 'row',
-    gap: 4,
+    gap: spacing.sm,
   },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resetButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
+  ctrlBtn: {
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
 });
-

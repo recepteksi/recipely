@@ -16,7 +16,7 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -120,12 +120,12 @@ export const RegisterScreen = (): React.JSX.Element => {
     field: string,
     extra: { paddingRight?: number } = {},
   ): React.ComponentProps<typeof TextInput>['style'] => ({
-    height: 52,
+    height: sizes.inputHeight,
     borderWidth: 1.5,
     borderRadius: radii.lg,
-    paddingLeft: 48,
-    paddingRight: extra.paddingRight ?? 14,
-    fontSize: 15,
+    paddingLeft: spacing.xxxl,
+    paddingRight: extra.paddingRight ?? spacing.lg,
+    fontSize: fontSizes.body,
     backgroundColor: colors.inputBackground,
     color: colors.text,
     borderColor:
@@ -152,21 +152,21 @@ export const RegisterScreen = (): React.JSX.Element => {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
-          style={styles.backButton}
+          style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >
-          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
         </Pressable>
 
         <View style={styles.gradientContent}>
-          <View style={styles.heroIconWrap}>
-            <Ionicons name="person-outline" size={26} color="#FFFFFF" />
+          <View style={[styles.heroIconWrap, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
+            <Ionicons name="person-outline" size={26} color={colors.onOverlay} />
           </View>
-          <ThemedText variant="headline" style={[styles.title, { color: '#FFFFFF' }]}>
+          <ThemedText variant="headline" style={[styles.title, { color: colors.onOverlay }]}>
             {t().register.title}
           </ThemedText>
           <ThemedText
             variant="body"
-            style={[styles.subtitle, { color: '#FFFFFF' }]}
+            style={[styles.subtitle, { color: colors.onOverlay }]}
           >
             {t().register.subtitle}
           </ThemedText>
@@ -209,7 +209,7 @@ export const RegisterScreen = (): React.JSX.Element => {
             />
             <TextInput
               ref={emailRef}
-              style={inputStyle('email', { paddingRight: 44 })}
+              style={inputStyle('email', { paddingRight: sizes.iconBtn + spacing.sm })}
               placeholder={t().register.emailPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={email}
@@ -241,7 +241,7 @@ export const RegisterScreen = (): React.JSX.Element => {
             />
             <TextInput
               ref={passwordRef}
-              style={inputStyle('password', { paddingRight: 44 })}
+              style={inputStyle('password', { paddingRight: sizes.iconBtn + spacing.sm })}
               placeholder={t().register.passwordPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={password}
@@ -284,7 +284,7 @@ export const RegisterScreen = (): React.JSX.Element => {
               </View>
               <ThemedText
                 variant="caption"
-                style={{ color: strengthColor, marginTop: 4 }}
+                style={{ color: strengthColor, marginTop: spacing.xs }}
               >
                 {strengthLabel}
               </ThemedText>
@@ -300,7 +300,7 @@ export const RegisterScreen = (): React.JSX.Element => {
             />
             <TextInput
               ref={confirmRef}
-              style={inputStyle('confirm', { paddingRight: 44 })}
+              style={inputStyle('confirm', { paddingRight: sizes.iconBtn + spacing.sm })}
               placeholder={t().register.confirmPlaceholder}
               placeholderTextColor={colors.textMuted}
               value={confirm}
@@ -416,53 +416,49 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 260,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    height: sizes.gradientHeight,
+    borderBottomLeftRadius: radii.xxxl,
+    borderBottomRightRadius: radii.xxxl,
   },
   backButton: {
     position: 'absolute',
-    top: 56,
+    top: sizes.tabBarHeight,
     left: spacing.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
   },
   gradientContent: {
     alignItems: 'center',
-    paddingTop: 76,
-    paddingBottom: 24,
+    paddingTop: sizes.heroPaddingTop,
+    paddingBottom: spacing.xl,
   },
   heroIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: sizes.avatarMd,
+    height: sizes.avatarMd,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    marginTop: 10,
+    marginTop: spacing.sm2,
   },
   subtitle: {
-    marginTop: 6,
+    marginTop: spacing.xs2,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: spacing.xxl,
     opacity: 0.88,
   },
   card: {
-    borderRadius: 24,
-    padding: 24,
-    marginHorizontal: 16,
-    marginTop: -40,
+    borderRadius: radii.xxl,
+    padding: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginTop: -sizes.cardOverlap,
   },
   inputWrapper: {
     position: 'relative',
@@ -470,18 +466,18 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     position: 'absolute',
-    left: 16,
+    left: spacing.lg,
     zIndex: 1,
   },
   inputStatusIcon: {
     position: 'absolute',
-    right: 14,
+    right: spacing.lg,
   },
   eyeButton: {
     position: 'absolute',
-    right: 8,
-    width: 36,
-    height: 36,
+    right: spacing.sm,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -490,12 +486,12 @@ const styles = StyleSheet.create({
   },
   strengthSegments: {
     flexDirection: 'row',
-    gap: 4,
+    gap: spacing.xs,
   },
   strengthSegment: {
     flex: 1,
-    height: 4,
-    borderRadius: 2,
+    height: spacing.xs,
+    borderRadius: radii.xs,
   },
   termsRow: {
     flexDirection: 'row',
@@ -506,7 +502,7 @@ const styles = StyleSheet.create({
   termsBox: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: radii.sm,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
@@ -521,8 +517,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   submitButton: {
-    height: 52,
-    borderRadius: 12,
+    height: sizes.buttonHeight,
+    borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.md,
@@ -538,7 +534,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.md,
-    gap: 4,
+    gap: spacing.xs,
   },
   signInLink: {
     fontWeight: '600',

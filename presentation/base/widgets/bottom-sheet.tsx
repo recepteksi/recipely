@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, sizes } from '@presentation/base/theme';
 
 export interface BottomSheetProps {
   visible: boolean;
@@ -35,7 +35,7 @@ export const BottomSheet = ({
       statusBarTranslucent
     >
       <View style={styles.root}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
         <View
           style={[
             styles.sheet,
@@ -93,7 +93,6 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   sheet: {
     borderTopLeftRadius: radii.xl,
@@ -106,9 +105,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xs,
   },
   grabber: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    width: sizes.iconBtn,
+    height: spacing.xs,
+    borderRadius: radii.xs,
   },
   header: {
     flexDirection: 'row',
