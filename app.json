@@ -71,7 +71,7 @@
         {
           "icon": "./assets/images/icon.png",
           "color": "#ffffff",
-          "sounds": [],
+          "sounds": ["./assets/sounds/alarm.mp3"],
           "iosDisplayInForeground": true
         }
       ],

@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 import { timerStore } from '@application/timers/timer-store';
 import { alarmStore } from '@application/timers/alarm-store';
-import { TIMER_COMPLETE } from '@infrastructure/notifications/notification-service';
+import {
+  TIMER_COMPLETE,
+  DISMISS_ALARM_ACTION,
+} from '@infrastructure/notifications/notification-service';
+import { stopTimer } from '@presentation/base/timers/timer-controls';
 import type * as NotificationsType from 'expo-notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -35,6 +39,14 @@ const handleNotificationResponse = (
   if (data?.['type'] !== TIMER_COMPLETE) return;
   const timerId = typeof data['timerId'] === 'string' ? data['timerId'] : 'unknown';
   const recipeName = typeof data['recipeName'] === 'string' ? data['recipeName'] : '';
+
+  if (response.actionIdentifier === DISMISS_ALARM_ACTION) {
+    // User tapped "Kapat" on the notification — stop the timer and cancel
+    // all remaining reminder notifications without opening the alarm screen.
+    void stopTimer(timerId);
+    return;
+  }
+
   alarmStore.getState().trigger(timerId, recipeName);
 };
 

@@ -16,13 +16,17 @@ if (__DEV__) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
 
-// Android channel uses USAGE_ALARM (numeric 4) so the OS routes the sound
-// through the Alarm volume slider, not the Notification slider. This means
-// the alarm fires even if the user has notification volume low, matching the
-// behaviour of system alarm clocks.
-const ALERT_CHANNEL = 'recipely-timer-alert-v2';
+// WHY: channel ID bumped to v3 because Android does not allow changing the
+// sound of an existing channel — a new ID is the only way to apply the
+// custom alarm.mp3 sound to future notifications.
+const ALERT_CHANNEL = 'recipely-timer-alert-v3';
 
 export const TIMER_COMPLETE = 'timer-complete';
+
+// Notification category / action identifiers — shared with the sync hook so
+// there are no magic strings at the call site.
+export const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
+export const DISMISS_ALARM_ACTION = 'DISMISS_ALARM';
 
 // How many reminder notifications to schedule after the main one, and the
 // gap between them. 5 reminders × 2 min = alarm rings every 2 min for 10 min.
@@ -42,11 +46,29 @@ export const initNotifications = async (): Promise<void> => {
       }),
     });
 
+    // Register the "Kapat" action button — shown on both iOS (long-press /
+    // expanded notification) and Android (notification action row).
+    await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
+      {
+        identifier: DISMISS_ALARM_ACTION,
+        buttonTitle: 'Kapat',
+        options: {
+          isDestructive: true,
+          // opensAppToForeground: false lets the action run without bringing
+          // the app to the foreground. If the app is fully killed the OS may
+          // still open it briefly, but the intent is minimal interruption.
+          opensAppToForeground: false,
+        },
+      },
+    ]);
+
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
         name: 'Cooking Timer (alarm)',
         importance: Notifications.AndroidImportance.MAX,
-        sound: 'default',
+        // 'alarm' references assets/sounds/alarm.mp3 bundled via expo-notifications
+        // sounds config (extension omitted per Android convention).
+        sound: 'alarm',
         enableVibrate: true,
         vibrationPattern: [0, 500, 300, 500, 300, 500],
         // Route audio through the Alarm volume stream so it rings loudly
@@ -86,7 +108,10 @@ const scheduleSingle = async (
       content: {
         title: `⏰ ${recipeName}`,
         body: 'Timer is done! Tap to dismiss.',
-        sound: 'default',
+        // iOS uses the sound field in the content; Android reads sound from
+        // the channel (setting it here on Android is a no-op).
+        sound: Platform.OS === 'ios' ? 'alarm.mp3' : undefined,
+        categoryIdentifier: TIMER_ALERT_CATEGORY,
         data: { type: TIMER_COMPLETE, timerId, recipeName },
       },
       trigger: {
