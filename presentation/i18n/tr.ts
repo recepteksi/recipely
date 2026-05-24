@@ -181,6 +181,11 @@ export const tr: Translations = {
     resume: 'Devam',
     cancel: 'İptal',
   },
+  alarm: {
+    title: 'Süre doldu!',
+    dismiss: 'Kapat',
+    notificationBody: 'Zamanlayıcı bitti!',
+  },
   nutrition: {
     title: 'Besin Değerleri',
     perServing: 'porsiyon başına',

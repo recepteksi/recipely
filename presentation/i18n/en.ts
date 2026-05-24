@@ -179,6 +179,11 @@ export const en = {
     resume: 'Resume',
     cancel: 'Cancel',
   },
+  alarm: {
+    title: 'Time is up!',
+    dismiss: 'Dismiss',
+    notificationBody: 'Timer is done!',
+  },
   nutrition: {
     title: 'Nutritional Info',
     perServing: 'per serving',
