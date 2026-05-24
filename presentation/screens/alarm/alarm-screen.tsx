@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { alarmStore } from '@application/timers/alarm-store';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
+import { startAlarmAudio, stopAlarmAudio } from '@infrastructure/audio/alarm-audio-service';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -45,6 +46,9 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     );
     pulse.start();
 
+    // Looping alarm tone — bypasses silent switch on iOS.
+    void startAlarmAudio();
+
     // Repeating haptic so the phone buzzes even when on silent mode.
     hapticActive.current = true;
     const buzz = async (): Promise<void> => {
@@ -58,11 +62,13 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     return () => {
       pulse.stop();
       hapticActive.current = false;
+      void stopAlarmAudio();
     };
   }, [scale]);
 
   const dismiss = useCallback(() => {
     hapticActive.current = false;
+    void stopAlarmAudio();
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     void stopTimer(timerId);
     alarmStore.getState().dismiss();

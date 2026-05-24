@@ -35,7 +35,8 @@
         {
           "ios": {
             "infoPlist": {
-              "NSAllowsArbitraryLoads": true
+              "NSAllowsArbitraryLoads": true,
+              "UIBackgroundModes": ["audio"]
             },
             "useFrameworks": "static"
           },
@@ -64,6 +65,7 @@
       ],
       "expo-localization",
       "expo-video",
+      "expo-av",
       [
         "expo-notifications",
         {
