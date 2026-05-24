@@ -10,7 +10,6 @@ import { registerApplication } from '@application/di/register';
 import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
 import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
 import { getLocale } from '@presentation/i18n/i18n';
-import { t } from '@presentation/i18n';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -33,11 +32,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       console.error('[AppBootstrap] hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.authStore.hydrate');
     });
-    void initNotifications({
-      pause: t().timer.pause,
-      resume: t().timer.resume,
-      cancel: t().timer.cancel,
-    });
+    void initNotifications();
     timerStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');
