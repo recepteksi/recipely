@@ -33,6 +33,10 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       }
       return result.value.accessToken;
     },
+    // WHY: dev-only HTTP traces — strips automatically from release bundles
+    // (Metro replaces __DEV__ with false in production). Helps diagnose
+    // network errors on real devices without leaking PII to logcat in prod.
+    enableLogging: __DEV__,
   };
   if (opts?.localeProvider) {
     httpClientOptions.localeProvider = opts.localeProvider;

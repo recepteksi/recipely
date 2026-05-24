@@ -12,6 +12,8 @@ export type RecipeDetailState =
 export interface RecipeDetailStoreState {
   byId: Record<string, RecipeDetailState>;
   load: (id: string) => Promise<void>;
+  replace: (recipe: Recipe) => void;
+  remove: (id: string) => void;
 }
 
 export interface RecipeDetailStoreDeps {
@@ -36,5 +38,19 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): RecipeD
         byId: { ...get().byId, [id]: { status: 'loaded', recipe: result.value } },
       });
     },
+    // WHY: lets owner-mutation flows patch a cached detail in-place so the
+    // detail screen reflects the edit on back-navigation without a re-fetch.
+    // Overwrites even error/loading entries — the latest mutation is truth.
+    replace: (recipe) =>
+      set((s) => ({
+        byId: { ...s.byId, [recipe.id]: { status: 'loaded', recipe } },
+      })),
+    remove: (id) =>
+      set((s) => {
+        if (s.byId[id] === undefined) return s;
+        const next = { ...s.byId };
+        delete next[id];
+        return { byId: next };
+      }),
   }));
 };

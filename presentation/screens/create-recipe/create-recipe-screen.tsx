@@ -206,7 +206,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     setForm((f) => ({ ...f, instructions: [...f.instructions, ''] }));
 
   const onMediaAdd = (items: MediaItem[]): void => {
-    setForm((f) => ({ ...f, media: [...f.media, ...items] }));
+    setForm((f) => ({
+      ...f,
+      // In edit mode put new items first so they auto-become the cover image.
+      media: isEditMode ? [...items, ...f.media] : [...f.media, ...items],
+    }));
     setHasNewImage(true);
   };
   const onMediaRemove = (i: number): void =>
@@ -320,9 +324,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     };
 
     if (hasNewImage) {
-      const coverImage = form.media.find((m) => m.type === 'image');
-      if (coverImage !== undefined) {
-        const uri = coverImage.url;
+      // WHY: only upload a LOCAL file — remote https:// URLs are already on the
+      // server and re-uploading them via RN FormData { uri } fails on iOS/Android
+      // because native XHR does not reliably stream remote URIs as multipart.
+      const localImage = form.media.find(
+        (m) => m.type === 'image' && !m.url.startsWith('http'),
+      );
+      if (localImage !== undefined) {
+        const uri = localImage.url;
         const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
         const mimeMap: Record<string, string> = {
           jpg: 'image/jpeg',
@@ -498,6 +507,12 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
                     wasAiUsed,
                     createError: !isEditMode && !wasAiUsed && createState.status === 'error',
                     updateError: (isEditMode || wasAiUsed) && updateState.status === 'error',
+                    failureMessage:
+                      createState.status === 'error'
+                        ? createState.failure.message
+                        : updateState.status === 'error'
+                          ? updateState.failure.message
+                          : undefined,
                     onEditMedia: () => setStep(2),
                     onEditIngredients: () => setStep(3),
                     onEditInstructions: () => setStep(4),
@@ -1242,6 +1257,7 @@ interface Step5Args {
   wasAiUsed: boolean;
   createError: boolean;
   updateError: boolean;
+  failureMessage: string | undefined;
   onEditMedia: () => void;
   onEditIngredients: () => void;
   onEditInstructions: () => void;
@@ -1255,6 +1271,7 @@ const renderStep5 = (args: Step5Args): React.JSX.Element => {
     wasAiUsed,
     createError,
     updateError,
+    failureMessage,
     onEditMedia,
     onEditIngredients,
     onEditInstructions,
@@ -1377,6 +1394,14 @@ const renderStep5 = (args: Step5Args): React.JSX.Element => {
           style={[styles.reviewError, { color: colors.danger }]}
         >
           {t().createRecipe.updateError}
+        </ThemedText>
+      ) : null}
+      {(createError || updateError) && failureMessage !== undefined ? (
+        <ThemedText
+          variant="caption"
+          style={[styles.reviewError, { color: colors.danger }]}
+        >
+          {failureMessage}
         </ThemedText>
       ) : null}
       {wasAiUsed ? (

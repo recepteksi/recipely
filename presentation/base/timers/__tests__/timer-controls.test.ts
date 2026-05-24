@@ -1,13 +1,7 @@
 /**
- * timer-controls orchestration tests — verify the timer store ends up in the
- * right state and the notification service is invoked. The notification
- * service and kv-store are mocked so no native modules are touched.
+ * timer-controls orchestration tests.
  */
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-
-// ──────────────────────────────────────────────────────────
-// Mocks (declared before the imports that use them)
-// ──────────────────────────────────────────────────────────
 
 const mockKvStore: Record<string, string> = {};
 
@@ -26,15 +20,9 @@ jest.mock('@infrastructure/constants/storage', () => ({
 
 jest.mock('@infrastructure/notifications/notification-service', () => ({
   requestNotificationPermissions: jest.fn(async () => true),
-  showTimerNotification: jest.fn(async () => 'start-notif'),
-  updateTimerNotification: jest.fn(async () => undefined),
-  scheduleTimerCompleteNotification: jest.fn(async () => 'complete-notif'),
-  cancelNotification: jest.fn(async () => undefined),
+  scheduleTimerCompleteNotification: jest.fn(async () => ['notif-1', 'notif-2', 'notif-3']),
+  cancelNotifications: jest.fn(async () => undefined),
 }));
-
-// ──────────────────────────────────────────────────────────
-// Imports (after mocks)
-// ──────────────────────────────────────────────────────────
 
 import { timerStore } from '@application/timers/timer-store';
 import {
@@ -44,9 +32,8 @@ import {
   resumeTimer,
 } from '@presentation/base/timers/timer-controls';
 import {
-  showTimerNotification,
   scheduleTimerCompleteNotification,
-  cancelNotification,
+  cancelNotifications,
 } from '@infrastructure/notifications/notification-service';
 
 const resetAll = (): void => {
@@ -58,50 +45,39 @@ const resetAll = (): void => {
 describe('timer-controls', () => {
   beforeEach(resetAll);
 
-  // ── startTimer ───────────────────────────────────────────
-
   describe('startTimer', () => {
-    it('adds a timer entry with notification ids and a future endTimeMs', async () => {
+    it('adds entry with all notification ids and a future endTimeMs', async () => {
       const before = Date.now();
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
 
       const entry = timerStore.getState().timers['r1:prep'];
       expect(entry).toBeDefined();
       expect(entry?.recipeId).toBe('r1');
-      expect(entry?.recipeName).toBe('Pasta');
       expect(entry?.durationSeconds).toBe(300);
       expect(entry?.isPaused).toBe(false);
-      expect(entry?.startNotifId).toBe('start-notif');
-      expect(entry?.completionNotifId).toBe('complete-notif');
+      expect(entry?.completionNotifIds).toEqual(['notif-1', 'notif-2', 'notif-3']);
       expect(entry?.endTimeMs).toBeGreaterThanOrEqual(before + 300_000);
     });
 
-    it('schedules both the running and completion notifications', async () => {
+    it('schedules alarm notifications', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
-
-      expect(showTimerNotification).toHaveBeenCalledTimes(1);
       expect(scheduleTimerCompleteNotification).toHaveBeenCalledTimes(1);
     });
 
     it('is a no-op for a non-positive duration', async () => {
       await startTimer('r1:cook', 'r1', 'Pasta', 0);
-
       expect(timerStore.getState().timers['r1:cook']).toBeUndefined();
-      expect(showTimerNotification).not.toHaveBeenCalled();
+      expect(scheduleTimerCompleteNotification).not.toHaveBeenCalled();
     });
   });
 
-  // ── stopTimer ────────────────────────────────────────────
-
   describe('stopTimer', () => {
-    it('removes the timer and cancels its notifications', async () => {
+    it('removes the timer and cancels all notifications', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       await stopTimer('r1:prep');
 
       expect(timerStore.getState().timers['r1:prep']).toBeUndefined();
-      // start + completion notification both cancelled
-      expect(cancelNotification).toHaveBeenCalledWith('start-notif');
-      expect(cancelNotification).toHaveBeenCalledWith('complete-notif');
+      expect(cancelNotifications).toHaveBeenCalledWith(['notif-1', 'notif-2', 'notif-3']);
     });
 
     it('is a no-op when the timer does not exist', async () => {
@@ -109,10 +85,8 @@ describe('timer-controls', () => {
     });
   });
 
-  // ── pauseTimer / resumeTimer ─────────────────────────────
-
   describe('pauseTimer', () => {
-    it('pauses a running timer and records the remaining time', async () => {
+    it('pauses a running timer and records remaining time', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       await pauseTimer('r1:prep');
 
@@ -126,13 +100,12 @@ describe('timer-controls', () => {
       await pauseTimer('r1:prep');
       const firstRemaining = timerStore.getState().timers['r1:prep']?.remainingMsOnPause;
       await pauseTimer('r1:prep');
-
       expect(timerStore.getState().timers['r1:prep']?.remainingMsOnPause).toBe(firstRemaining);
     });
   });
 
   describe('resumeTimer', () => {
-    it('resumes a paused timer with a fresh endTimeMs', async () => {
+    it('resumes a paused timer with a fresh endTimeMs and new notification ids', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       await pauseTimer('r1:prep');
       const before = Date.now();
@@ -141,13 +114,13 @@ describe('timer-controls', () => {
       const entry = timerStore.getState().timers['r1:prep'];
       expect(entry?.isPaused).toBe(false);
       expect(entry?.endTimeMs).toBeGreaterThanOrEqual(before);
+      expect(entry?.completionNotifIds).toEqual(['notif-1', 'notif-2', 'notif-3']);
     });
 
     it('is a no-op when the timer is not paused', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       const originalEnd = timerStore.getState().timers['r1:prep']?.endTimeMs;
       await resumeTimer('r1:prep');
-
       expect(timerStore.getState().timers['r1:prep']?.endTimeMs).toBe(originalEnd);
     });
   });
