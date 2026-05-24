@@ -16,10 +16,13 @@ if (__DEV__) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
 
-// WHY: channel ID bumped to v3 because Android does not allow changing the
-// sound of an existing channel — a new ID is the only way to apply the
-// custom alarm.mp3 sound to future notifications.
-const ALERT_CHANNEL = 'recipely-timer-alert-v3';
+// WHY: channel ID bumped to v4. v3 was created on devices with sound:'alarm'
+// (custom file that doesn't exist) and then patched to sound:'default' (string).
+// Android channel properties are immutable after creation, AND 'default' as a
+// string looks for a res/raw file named "default" — which doesn't exist, so
+// the channel is silent. v4 uses sound:true (boolean) which is the correct
+// API value for "use the device's default notification sound".
+const ALERT_CHANNEL = 'recipely-timer-alert-v4';
 
 export const TIMER_COMPLETE = 'timer-complete';
 
@@ -67,11 +70,12 @@ export const initNotifications = async (): Promise<void> => {
       await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
         name: 'Cooking Timer (alarm)',
         importance: Notifications.AndroidImportance.MAX,
-        // WHY: 'alarm' (custom sound) requires the mp3 to be bundled in a
-        // native build. Using 'default' so the notification makes noise on
-        // devices that haven't rebuilt yet. Bump channel ID to v4 when a
-        // build with alarm.mp3 in res/raw is released.
-        sound: 'default',
+        // WHY: omitting `sound` causes the Android channel manager to set
+        // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
+        // notification sound. Passing 'default' (string) mistakenly calls
+        // mSoundResolver.resolve('default') which returns null (file not in
+        // res/raw) → silent channel. Passing `true` is a TypeScript error.
+        // So the only correct way for default sound is to omit the key.
         enableVibrate: true,
         vibrationPattern: [0, 500, 300, 500, 300, 500],
         // Route audio through the Alarm volume stream so it rings loudly
