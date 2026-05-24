@@ -108,6 +108,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     generateRecipeUseCase,
     updateRecipeUseCase,
     deleteRecipeUseCase,
+    recipeListStore,
+    recipeDetailStore,
   });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,

@@ -9,6 +9,8 @@ import type {
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
+import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
@@ -61,6 +63,16 @@ const fakeDeleteUseCase = {
   execute: () => Promise.resolve(ok(undefined)),
 } as unknown as DeleteRecipeUseCase;
 
+// Generate flow never touches these — provide no-op stubs that satisfy the
+// interface so the store constructs without exercising the sibling caches.
+const fakeRecipeListStore = {
+  getState: () => ({ replace: () => undefined, remove: () => undefined }),
+} as unknown as RecipeListStore;
+
+const fakeRecipeDetailStore = {
+  getState: () => ({ replace: () => undefined, remove: () => undefined }),
+} as unknown as RecipeDetailStore;
+
 interface DeferredGenerateUseCase {
   useCase: GenerateRecipeUseCase;
   resolve: (r: Result<Recipe, Failure>) => void;
@@ -97,6 +109,8 @@ const makeStoreWithGenerateResult = (result: Result<Recipe, Failure>) => {
     generateRecipeUseCase: generateUseCase,
     updateRecipeUseCase: fakeUpdateUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
+    recipeListStore: fakeRecipeListStore,
+    recipeDetailStore: fakeRecipeDetailStore,
   });
 };
 
@@ -117,6 +131,8 @@ describe('createdRecipesStore.generateRecipe', () => {
       generateRecipeUseCase: deferred.useCase,
       updateRecipeUseCase: fakeUpdateUseCase,
       deleteRecipeUseCase: fakeDeleteUseCase,
+      recipeListStore: fakeRecipeListStore,
+      recipeDetailStore: fakeRecipeDetailStore,
     });
 
     const pending = store.getState().generateRecipe('pasta', 'en');
