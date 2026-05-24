@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, AxiosHeaders, type AxiosProgressEvent } from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, AxiosHeaders } from 'axios';
 import { fail, ok, type Result } from '@core/result/result';
 import {
   type Failure,
@@ -8,7 +8,11 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
-import { API_AES_KEY_HEX, DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import {
+  API_AES_KEY_HEX,
+  DEFAULT_REQUEST_TIMEOUT_MS,
+  MULTIPART_UPLOAD_TIMEOUT_MS,
+} from '@infrastructure/constants/api';
 import {
   decryptEnvelope,
   encryptEnvelope,
@@ -36,6 +40,15 @@ interface RecipelyErrorBody {
 
 interface RecipelyDataBody<T> {
   data: T;
+}
+
+/**
+ * Progress callback shape for multipart uploads. Decoupled from axios so
+ * callers don't need to import axios types just to receive byte counts.
+ */
+export interface UploadProgressEvent {
+  loaded: number;
+  total: number;
 }
 
 function isEnvelope(body: unknown): body is Envelope {
@@ -98,6 +111,18 @@ export class HttpClient {
         if (config.headers instanceof AxiosHeaders) {
           config.headers.delete('Content-Type');
         }
+        // WHY: axios v1's default transformRequest detects FormData by
+        // `Object.prototype.toString.call(data) === '[object FormData]'` and by
+        // `instanceof FormData`. On React Native (Hermes) the polyfilled FormData
+        // does not always pass these checks reliably, which makes axios fall
+        // through to `JSON.stringify(data)` — the server then receives `"{}"`
+        // instead of multipart. Setting transformRequest to identity bypasses
+        // every default transformer and guarantees FormData is sent untouched.
+        config.transformRequest = [(data) => data];
+        // WHY: bump timeout to the upload budget — multipart uploads over
+        // cellular routinely take longer than the 10s JSON default, which
+        // surfaces as `ECONNABORTED` → "Network error" in the UI.
+        config.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
         return config;
       }
 
@@ -160,19 +185,109 @@ export class HttpClient {
     }
   }
 
-  // Routes through this.instance so the request interceptor handles auth +
-  // Content-Type omission for FormData, and the response interceptor handles
-  // AES decryption — no duplicate logic here.
-  uploadMultipart<T>(
+  /**
+   * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios
+   * entirely. axios v1's XHR adapter is unreliable for RN multipart on Android:
+   * its FormData detection (`Object.prototype.toString.call`) misses RN's
+   * polyfilled FormData and the request body is JSON-stringified to `"{}"`,
+   * which surfaces to the user as "Network error". XHR is what every reliable
+   * RN upload library uses under the hood.
+   *
+   * `url` may be relative (resolved against `baseUrl`) or absolute (used as-is,
+   * needed for endpoints mounted outside `/api/v1` like `/upload`).
+   */
+  async uploadMultipart<T>(
     url: string,
     formData: FormData,
-    onProgress?: (event: AxiosProgressEvent) => void,
+    onProgress?: (event: UploadProgressEvent) => void,
   ): Promise<Result<T, Failure>> {
-    return this.request<T>({
-      method: 'POST',
-      url,
-      data: formData,
-      ...(onProgress !== undefined ? { onUploadProgress: onProgress } : {}),
+    const fullUrl = /^https?:\/\//i.test(url)
+      ? url
+      : `${this.options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+    const token = await this.options.tokenProvider();
+    const locale = this.options.localeProvider ? this.options.localeProvider() : 'en';
+    const enableLogging = this.options.enableLogging === true;
+    const aesKey = this.aesKey;
+
+    return new Promise<Result<T, Failure>>((resolve) => {
+      if (enableLogging) {
+
+        console.log(`[HTTP → multipart] POST ${fullUrl}`);
+      }
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', fullUrl, true);
+      xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.setRequestHeader('Accept-Language', locale);
+      if (token !== null) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+      // WHY: deliberately NOT setting Content-Type — the XHR runtime sets it
+      // to `multipart/form-data; boundary=...` from the FormData object. Any
+      // explicit value breaks the boundary contract and the backend's
+      // multer/decryptBody middleware rejects the request.
+
+      if (onProgress !== undefined && xhr.upload) {
+        xhr.upload.onprogress = (ev: ProgressEvent): void => {
+          onProgress({ loaded: ev.loaded, total: ev.total });
+        };
+      }
+
+      xhr.onload = (): void => {
+        const status = xhr.status;
+        const responseText = xhr.responseText;
+        if (enableLogging) {
+
+          console.log(`[HTTP ← multipart] ${status} ${fullUrl}`);
+        }
+        let body: unknown;
+        try {
+          body = JSON.parse(responseText);
+        } catch {
+          body = responseText;
+        }
+        if (isEnvelope(body)) {
+          try {
+            body = decryptEnvelope(body, aesKey);
+          } catch (err) {
+            if (enableLogging) {
+
+              console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`);
+            }
+          }
+        }
+        if (status >= 200 && status < 300) {
+          if (isRecipelyDataBody<T>(body)) {
+            resolve(ok(body.data));
+            return;
+          }
+          resolve(ok(body as T));
+          return;
+        }
+        resolve(fail(failureFromResponse(status, body)));
+      };
+
+      xhr.onerror = (): void => {
+        if (enableLogging) {
+
+          console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
+        }
+        // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
+        // unreadable file URI, cleartext blocked). Surface as NetworkFailure
+        // with the status (0 == no response) so the UI can show something
+        // concrete instead of axios's opaque "Network Error" string.
+        resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || 0})`)));
+      };
+
+      xhr.ontimeout = (): void => {
+        if (enableLogging) {
+
+          console.log(`[HTTP ← multipart] timeout ${fullUrl}`);
+        }
+        resolve(fail(new NetworkFailure('Request timed out')));
+      };
+
+      xhr.send(formData);
     });
   }
 }

@@ -6,6 +6,8 @@ import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-
 import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
+import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
 import type {
   CreateRecipeInput,
   CreateRecipeProgressCallback,
@@ -65,6 +67,11 @@ export interface CreatedRecipesStoreDeps {
   generateRecipeUseCase: GenerateRecipeUseCase;
   updateRecipeUseCase: UpdateRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
+  // WHY: owner-mutation flows must keep the public feed and detail cache in
+  // sync. Without this, the recipe list at /recipes and the detail page show
+  // stale data after an edit until the next full reload.
+  recipeListStore: RecipeListStore;
+  recipeDetailStore: RecipeDetailStore;
 }
 
 export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreState>>;
@@ -128,6 +135,9 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       }
       const recipe = result.value;
       get().replace(recipe);
+      // Propagate the edit to sibling caches so every screen sees fresh data.
+      deps.recipeListStore.getState().replace(recipe);
+      deps.recipeDetailStore.getState().replace(recipe);
       set({ updateState: { status: 'success', recipe } });
     },
     deleteRecipe: async (id) => {
@@ -138,6 +148,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         return;
       }
       get().remove(id);
+      deps.recipeListStore.getState().remove(id);
+      deps.recipeDetailStore.getState().remove(id);
       set({ deleteState: { status: 'success' } });
     },
     resetCreateState: () => set({ createState: { status: 'idle' } }),

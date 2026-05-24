@@ -140,9 +140,7 @@ export class RecipeRepository implements IRecipeRepository {
     const result = await this.http.uploadMultipart<RecipeDto>(
       '/recipes/with-image',
       formData,
-      onProgress
-      ? (event) => onProgress(event.loaded ?? 0, event.total ?? 0)
-      : undefined,
+      onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
     );
     if (!result.ok) {
       return result;
@@ -179,14 +177,13 @@ export class RecipeRepository implements IRecipeRepository {
         } as unknown as Blob);
       }
 
-      const uploadResult = await this.http.request<{ url: string; filename: string }>({
-        method: 'POST',
-        url: UPLOAD_URL,
-        data: formData,
-        ...(onProgress !== undefined
-          ? { onUploadProgress: (event) => onProgress(event.loaded ?? 0, event.total ?? 0) }
-          : {}),
-      });
+      // WHY: uploadMultipart accepts absolute URLs verbatim and uses raw XHR
+      // (not axios), which is the only reliable multipart transport on RN.
+      const uploadResult = await this.http.uploadMultipart<{ url: string; filename: string }>(
+        UPLOAD_URL,
+        formData,
+        onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
+      );
       if (!uploadResult.ok) return uploadResult;
       uploadedImageUrl = uploadResult.value.url;
     }

@@ -26,6 +26,12 @@ export const RECIPES_PAGE_SIZE = 30;
 
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
+// WHY: image uploads regularly exceed 10s on cellular (a 3 MB JPEG at 1 Mbps
+// upload is ~25s). The default 10s budget surfaces as `ECONNABORTED` →
+// NetworkFailure('Request timed out'), which mobile users see as "Network
+// error". Give multipart its own headroom independent of JSON timeouts.
+export const MULTIPART_UPLOAD_TIMEOUT_MS = 60_000;
+
 // Shared AES-256-GCM key for the /api/v1 envelope. Must equal the backend's
 // API_AES_KEY (`openssl rand -hex 32`). Override at build time via
 // EXPO_PUBLIC_API_AES_KEY. NOTE: this key lives in the binary and is
