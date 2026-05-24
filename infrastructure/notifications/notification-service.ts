@@ -28,10 +28,11 @@ export const TIMER_COMPLETE = 'timer-complete';
 export const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
 export const DISMISS_ALARM_ACTION = 'DISMISS_ALARM';
 
-// How many reminder notifications to schedule after the main one, and the
-// gap between them. 5 reminders × 2 min = alarm rings every 2 min for 10 min.
-const REMINDER_COUNT = 5;
-const REMINDER_INTERVAL_MS = 2 * 60 * 1000;
+// WHY: only one notification — the in-app expo-av loop is the continuous
+// alarm. Reminder notifications caused repeated dings every 2 min which
+// felt like spam rather than an alarm. User dismisses via the alarm screen
+// or the "Kapat" action on the single notification.
+const REMINDER_COUNT = 0;
 
 /** Must be called once at app startup (no-op on web). */
 export const initNotifications = async (): Promise<void> => {
@@ -66,9 +67,11 @@ export const initNotifications = async (): Promise<void> => {
       await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
         name: 'Cooking Timer (alarm)',
         importance: Notifications.AndroidImportance.MAX,
-        // 'alarm' references assets/sounds/alarm.mp3 bundled via expo-notifications
-        // sounds config (extension omitted per Android convention).
-        sound: 'alarm',
+        // WHY: 'alarm' (custom sound) requires the mp3 to be bundled in a
+        // native build. Using 'default' so the notification makes noise on
+        // devices that haven't rebuilt yet. Bump channel ID to v4 when a
+        // build with alarm.mp3 in res/raw is released.
+        sound: 'default',
         enableVibrate: true,
         vibrationPattern: [0, 500, 300, 500, 300, 500],
         // Route audio through the Alarm volume stream so it rings loudly
@@ -108,9 +111,9 @@ const scheduleSingle = async (
       content: {
         title: `⏰ ${recipeName}`,
         body: 'Timer is done! Tap to dismiss.',
-        // iOS uses the sound field in the content; Android reads sound from
-        // the channel (setting it here on Android is a no-op).
-        sound: Platform.OS === 'ios' ? 'alarm.mp3' : undefined,
+        // iOS reads sound from content; Android ignores it (channel sets sound).
+        // Using 'default' until a native build bundles alarm.mp3 in the app.
+        sound: Platform.OS === 'ios' ? 'default' : undefined,
         categoryIdentifier: TIMER_ALERT_CATEGORY,
         data: { type: TIMER_COMPLETE, timerId, recipeName },
       },
@@ -126,9 +129,8 @@ const scheduleSingle = async (
 };
 
 /**
- * Schedules the completion notification plus follow-up reminders so the alarm
- * keeps firing every 2 minutes until the user dismisses it from the app.
- * Returns all scheduled notification IDs (main first, then reminders).
+ * Schedules the timer completion notification.
+ * Returns the scheduled notification ID(s) so they can be cancelled on dismiss.
  */
 export const scheduleTimerCompleteNotification = async (
   timerId: string,
@@ -139,7 +141,7 @@ export const scheduleTimerCompleteNotification = async (
   const ids: string[] = [];
   const all = [endTimeMs];
   for (let i = 1; i <= REMINDER_COUNT; i++) {
-    all.push(endTimeMs + i * REMINDER_INTERVAL_MS);
+    all.push(endTimeMs + (i * 2 * 60 * 1000));
   }
   const results = await Promise.all(all.map((t) => scheduleSingle(timerId, recipeName, t)));
   for (const id of results) {
