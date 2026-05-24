@@ -16,7 +16,8 @@ const AlarmOverlay = (): React.JSX.Element | null => {
   const activeAlarm = alarmStore((s) => s.activeAlarm);
   if (activeAlarm === null) return null;
   return (
-    <View style={StyleSheet.absoluteFillObject}>
+    // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.
+    <View style={[StyleSheet.absoluteFillObject, { zIndex: 201 }]}>
       <AlarmScreen timerId={activeAlarm.timerId} recipeName={activeAlarm.recipeName} />
     </View>
   );

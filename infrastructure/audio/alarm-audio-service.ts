@@ -1,7 +1,10 @@
 import { Platform } from 'react-native';
 import { Audio, type AVPlaybackSource } from 'expo-av';
 
-const ALARM_SOURCE: AVPlaybackSource = require('@/assets/sounds/alarm.mp3') as AVPlaybackSource;
+// WHY: Metro does not resolve path aliases (@/) for binary assets — only for
+// JS/TS modules. A relative path is required so the bundler can include the
+// file at build time.
+const ALARM_SOURCE: AVPlaybackSource = require('../../assets/sounds/alarm.mp3') as AVPlaybackSource;
 
 let _sound: Audio.Sound | null = null;
 
