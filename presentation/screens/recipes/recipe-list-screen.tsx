@@ -13,6 +13,9 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
+import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
+import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
+import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
@@ -202,6 +205,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
     else if (key === 'profile') router.replace('/profile');
   };
 
+  const toggleCuisineQuick = (cuisine: CuisineKey): void => {
+    const next = {
+      ...filters,
+      cuisines: filters.cuisines.includes(cuisine)
+        ? filters.cuisines.filter((x) => x !== cuisine)
+        : [...filters.cuisines, cuisine],
+    };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
   const renderItem = useCallback(
     ({ item }: { item: Recipe }) => (
       <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />
@@ -348,6 +363,23 @@ export const RecipeListScreen = (): React.JSX.Element => {
     </View>
   );
 
+  // ─── List header (AI banner, cuisine strip, trending heading) ──────────────
+  const listHeader = (
+    <>
+      <AiBannerCard onPress={() => router.push('/ai-generate')} />
+      <CuisineStrip
+        selectedCuisines={filters.cuisines}
+        onToggle={toggleCuisineQuick}
+      />
+      <View style={[styles.trendingRow, { borderBottomColor: colors.border }]}>
+        <Ionicons name="flame" size={sizes.iconMd} color={colors.primary} />
+        <ThemedText variant="body" style={styles.trendingTitle}>
+          {t().recipes.trending}
+        </ThemedText>
+      </View>
+    </>
+  );
+
   // ─── Body (varies by state) ─────────────────────────────────────────────────
   let body: React.JSX.Element;
   if (state.status === 'idle' || state.status === 'loading') {
@@ -396,6 +428,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         keyExtractor={(r) => r.id}
         renderItem={renderItem}
         ItemSeparatorComponent={ItemSeparator}
+        ListHeaderComponent={listHeader}
         contentContainerStyle={styles.listContent}
         style={styles.list}
         refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
@@ -405,6 +438,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
+      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} />
       {stickyHeader}
       <View style={styles.bodyContainer}>
         {body}
@@ -602,6 +636,20 @@ const styles = StyleSheet.create({
   },
   clearChip: {
     marginLeft: spacing.xs2,
+  },
+  // ─── List header (AI banner, cuisine strip, trending) ───────────────────────
+  trendingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    paddingTop: spacing.xs,
+    marginBottom: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  trendingTitle: {
+    fontWeight: '700',
   },
   // ─── Body ───────────────────────────────────────────────────────────────────
   bodyContainer: {

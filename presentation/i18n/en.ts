@@ -59,6 +59,10 @@ export const en = {
     like: 'Like',
     unlike: 'Unlike',
     likes: 'likes',
+    browseCuisines: 'Browse cuisines',
+    trending: 'Trending this week',
+    aiPromo: 'Generate a recipe with AI',
+    aiPromoSub: "Describe what you want — I'll handle the rest",
   },
   settings: {
     title: 'Settings',

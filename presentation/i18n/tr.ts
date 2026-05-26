@@ -61,6 +61,10 @@ export const tr: Translations = {
     like: 'Beğen',
     unlike: 'Beğeniyi kaldır',
     likes: 'beğeni',
+    browseCuisines: 'Mutfak türleri',
+    trending: 'Bu hafta trendler',
+    aiPromo: 'AI ile tarif oluştur',
+    aiPromoSub: 'Ne istediğini anlat — gerisini ben hallederim',
   },
   settings: {
     title: 'Ayarlar',

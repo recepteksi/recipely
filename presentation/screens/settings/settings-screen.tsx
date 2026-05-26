@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -13,7 +13,7 @@ import { ThemeGrid } from '@presentation/base/widgets/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
 
 export const SettingsScreen = (): React.JSX.Element => {
@@ -50,6 +50,20 @@ export const SettingsScreen = (): React.JSX.Element => {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+          accessibilityRole="button"
+          accessibilityLabel={t().navigation.settings}
+        >
+          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.text} />
+        </Pressable>
+        <ThemedText variant="subtitle" style={styles.headerTitle}>
+          {t().settings.title}
+        </ThemedText>
+        <View style={styles.headerSpacer} />
+      </View>
       <ScreenContainer scrollable padded={false}>
         <View style={styles.profileSection}>
           <AvatarImage uri={photoUrl} name={displayName} size={80} />
@@ -119,6 +133,29 @@ export const SettingsScreen = (): React.JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  backBtn: {
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: sizes.iconBtn / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontWeight: '700',
+    fontSize: fontSizes.heading,
+  },
+  headerSpacer: {
+    width: sizes.iconBtn,
   },
   profileSection: {
     alignItems: 'center',
