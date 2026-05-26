@@ -173,6 +173,17 @@ export const LoginScreen = (): React.JSX.Element => {
           ) : null}
 
           <Pressable
+            onPress={() => router.push('/forgot-password')}
+            style={styles.forgotRow}
+            accessibilityRole="button"
+            accessibilityLabel={t().login.forgotPassword}
+          >
+            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+              {t().login.forgot}
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
             onPress={handleSignIn}
             disabled={fieldsEmpty || isLoading}
             style={[
@@ -358,5 +369,10 @@ const styles = StyleSheet.create({
   appleButton: {
     height: sizes.buttonHeight,
     marginTop: spacing.md,
+  },
+  forgotRow: {
+    alignSelf: 'flex-end',
+    marginTop: spacing.xs,
+    paddingVertical: 4,
   },
 });

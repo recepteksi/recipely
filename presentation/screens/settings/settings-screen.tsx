@@ -38,6 +38,7 @@ export const SettingsScreen = (): React.JSX.Element => {
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'recipes') router.replace('/recipes');
     else if (key === 'myRecipes') router.replace('/my-recipes');
+    else if (key === 'profile') router.replace('/profile');
   };
 
   const displayName =
@@ -110,7 +111,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
-      <TabBar active="settings" onChange={onTabChange} />
+      <TabBar active="profile" onChange={onTabChange} />
     </View>
   );
 };
