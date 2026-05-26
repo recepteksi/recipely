@@ -18,6 +18,7 @@ import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { t } from '@presentation/i18n';
 
 type ProfileTab = 'recipes' | 'saved' | 'activity';
@@ -44,13 +45,6 @@ const MOCK_PROFILE_RECIPES: MockProfileRecipe[] = [
   { id: 'p4', name: 'Chocolate Cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300', rating: 4.9, prepTimeMinutes: 20, cookTimeMinutes: 35 },
 ];
 
-const ACTIVITY_EVENTS: ActivityEvent[] = [
-  { icon: 'sparkles', label: 'Generated 3 recipes with AI', daysAgo: 0 },
-  { icon: 'chatbubble', label: 'Got 7 new comments this week', daysAgo: 1 },
-  { icon: 'heart', label: 'Reached 1,000 total likes', daysAgo: 3 },
-  { icon: 'trophy', label: 'Earned "Top Mediterranean" badge', daysAgo: 7 },
-];
-
 export const ProfileScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
@@ -66,6 +60,18 @@ export const ProfileScreen = (): React.JSX.Element => {
   const displayName = user?.displayName ?? 'Recipely User';
   const email = user?.email.value ?? '';
   const photoUri = user?.photoUrl ?? undefined;
+
+  const activityEvents: ActivityEvent[] = [
+    { icon: 'sparkles', label: t().profile.activityAi, daysAgo: 0 },
+    { icon: 'chatbubble', label: t().profile.activityComments, daysAgo: 1 },
+    { icon: 'heart', label: t().profile.activityLikes, daysAgo: 3 },
+    { icon: 'trophy', label: t().profile.activityBadge, daysAgo: 7 },
+  ];
+
+  const onTabChange = (key: TabBarKey): void => {
+    if (key === 'recipes') router.replace('/recipes');
+    else if (key === 'myRecipes') router.replace('/my-recipes');
+  };
 
   const recipeGridItems: MockProfileRecipe[] =
     createdRecipes.length > 0
@@ -85,7 +91,7 @@ export const ProfileScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + sizes.tabBarHeight + spacing.xxl }}
         showsVerticalScrollIndicator={false}
       >
         <LinearGradient
@@ -129,9 +135,9 @@ export const ProfileScreen = (): React.JSX.Element => {
 
           <View style={styles.badgesRow}>
             {[
-              { icon: 'trophy-outline' as keyof typeof Ionicons.glyphMap, label: 'Early adopter' },
-              { icon: 'shield-checkmark-outline' as keyof typeof Ionicons.glyphMap, label: 'Verified' },
-              { icon: 'flame-outline' as keyof typeof Ionicons.glyphMap, label: '12-day streak' },
+              { icon: 'trophy-outline' as keyof typeof Ionicons.glyphMap, label: t().profile.badgeEarlyAdopter },
+              { icon: 'shield-checkmark-outline' as keyof typeof Ionicons.glyphMap, label: t().profile.badgeVerified },
+              { icon: 'flame-outline' as keyof typeof Ionicons.glyphMap, label: t().profile.badgeStreak },
             ].map((b) => (
               <View
                 key={b.label}
@@ -158,7 +164,7 @@ export const ProfileScreen = (): React.JSX.Element => {
           <Pressable
             style={[styles.shareBtn, { borderColor: colors.cardBorder, backgroundColor: colors.surface }]}
             accessibilityRole="button"
-            accessibilityLabel="Share profile"
+            accessibilityLabel={t().profile.shareProfile}
           >
             <Ionicons name="share-outline" size={20} color={colors.text} />
           </Pressable>
@@ -173,9 +179,10 @@ export const ProfileScreen = (): React.JSX.Element => {
           <RecipeGrid items={savedGridItems} />
         )}
         {activeTab === 'activity' && (
-          <ActivityTimeline events={ACTIVITY_EVENTS} />
+          <ActivityTimeline events={activityEvents} />
         )}
       </ScrollView>
+      <TabBar active="profile" onChange={onTabChange} />
     </View>
   );
 };

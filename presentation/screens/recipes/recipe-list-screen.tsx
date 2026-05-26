@@ -299,7 +299,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={() => removeCuisineFilter(c)}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
+              accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 {formatLabel(c)}
@@ -313,7 +313,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={() => removeCategoryFilter(c)}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
+              accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 {formatLabel(c)}
@@ -327,7 +327,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={() => removeDifficultyFilter(d)}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(d)} filtreni kaldır`}
+              accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 {formatLabel(d)}
@@ -340,7 +340,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={removeMaxTimeFilter}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel="Süre filtresini kaldır"
+              accessibilityLabel={t().recipes.removeTimeFilter}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 ≤ {filters.maxTime} {t().recipes.minutes}
@@ -361,23 +361,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
         </ScrollView>
       ) : null}
     </View>
-  );
-
-  // ─── List header (AI banner, cuisine strip, trending heading) ──────────────
-  const listHeader = (
-    <>
-      <AiBannerCard onPress={() => router.push('/ai-generate')} />
-      <CuisineStrip
-        selectedCuisines={filters.cuisines}
-        onToggle={toggleCuisineQuick}
-      />
-      <View style={[styles.trendingRow, { borderBottomColor: colors.border }]}>
-        <Ionicons name="flame" size={sizes.iconMd} color={colors.primary} />
-        <ThemedText variant="body" style={styles.trendingTitle}>
-          {t().recipes.trending}
-        </ThemedText>
-      </View>
-    </>
   );
 
   // ─── Body (varies by state) ─────────────────────────────────────────────────
@@ -428,7 +411,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
         keyExtractor={(r) => r.id}
         renderItem={renderItem}
         ItemSeparatorComponent={ItemSeparator}
-        ListHeaderComponent={listHeader}
         contentContainerStyle={styles.listContent}
         style={styles.list}
         refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
@@ -440,6 +422,20 @@ export const RecipeListScreen = (): React.JSX.Element => {
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} />
       {stickyHeader}
+
+      {/* Always-visible header: stays stable while recipe list reloads */}
+      <AiBannerCard onPress={() => router.push('/ai-generate')} />
+      <CuisineStrip
+        selectedCuisines={filters.cuisines}
+        onToggle={toggleCuisineQuick}
+      />
+      <View style={[styles.trendingRow, { borderBottomColor: colors.border }]}>
+        <Ionicons name="flame" size={sizes.iconMd} color={colors.primary} />
+        <ThemedText variant="body" style={styles.trendingTitle}>
+          {t().recipes.trending}
+        </ThemedText>
+      </View>
+
       <View style={styles.bodyContainer}>
         {body}
       </View>

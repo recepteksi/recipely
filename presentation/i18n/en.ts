@@ -63,6 +63,8 @@ export const en = {
     trending: 'Trending this week',
     aiPromo: 'Generate a recipe with AI',
     aiPromoSub: "Describe what you want — I'll handle the rest",
+    removeFilter: 'remove filter',
+    removeTimeFilter: 'Remove time filter',
   },
   settings: {
     title: 'Settings',
@@ -303,6 +305,14 @@ export const en = {
     today: 'Today',
     daysAgo: 'days ago',
     nothingYet: 'Nothing here yet.',
+    shareProfile: 'Share profile',
+    badgeEarlyAdopter: 'Early adopter',
+    badgeVerified: 'Verified',
+    badgeStreak: '12-day streak',
+    activityAi: 'Generated 3 recipes with AI',
+    activityComments: 'Got 7 new comments this week',
+    activityLikes: 'Reached 1,000 total likes',
+    activityBadge: 'Earned "Top Mediterranean" badge',
   },
 };
 

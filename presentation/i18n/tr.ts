@@ -65,6 +65,8 @@ export const tr: Translations = {
     trending: 'Bu hafta trendler',
     aiPromo: 'AI ile tarif oluştur',
     aiPromoSub: 'Ne istediğini anlat — gerisini ben hallederim',
+    removeFilter: 'filtreni kaldır',
+    removeTimeFilter: 'Süre filtresini kaldır',
   },
   settings: {
     title: 'Ayarlar',
@@ -305,5 +307,13 @@ export const tr: Translations = {
     today: 'Bugün',
     daysAgo: 'gün önce',
     nothingYet: 'Henüz bir şey yok.',
+    shareProfile: 'Profili paylaş',
+    badgeEarlyAdopter: 'İlk kullanıcı',
+    badgeVerified: 'Onaylı',
+    badgeStreak: '12 günlük seri',
+    activityAi: 'AI ile 3 tarif oluşturuldu',
+    activityComments: 'Bu hafta 7 yeni yorum',
+    activityLikes: '1.000 toplam beğeniye ulaşıldı',
+    activityBadge: '"En İyi Akdeniz" rozeti kazanıldı',
   },
 };
