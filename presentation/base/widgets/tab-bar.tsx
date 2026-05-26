@@ -6,7 +6,7 @@ import { sizes, spacing, fontSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { t } from '@presentation/i18n';
 
-export type TabBarKey = 'recipes' | 'myRecipes' | 'settings';
+export type TabBarKey = 'recipes' | 'myRecipes' | 'profile';
 
 export interface TabBarProps {
   active: TabBarKey;
@@ -28,7 +28,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element => 
   const tabs: TabConfig[] = [
     { key: 'recipes', label: t().navigation.recipes, icon: 'restaurant-outline' },
     { key: 'myRecipes', label: t().navigation.myRecipes, icon: 'bookmark-outline' },
-    { key: 'settings', label: t().navigation.settings, icon: 'settings-outline' },
+    { key: 'profile', label: t().navigation.profile, icon: 'person-outline' },
   ];
 
   return (

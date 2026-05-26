@@ -199,7 +199,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'myRecipes') router.replace('/my-recipes');
-    else if (key === 'settings') router.replace('/settings');
+    else if (key === 'profile') router.replace('/profile');
   };
 
   const renderItem = useCallback(

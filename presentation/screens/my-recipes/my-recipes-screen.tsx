@@ -57,7 +57,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'recipes') router.replace('/recipes');
-    else if (key === 'settings') router.replace('/settings');
+    else if (key === 'profile') router.replace('/profile');
   };
 
   const openRecipe = (id: string): void => {
@@ -73,23 +73,43 @@ export const MyRecipesScreen = (): React.JSX.Element => {
       <ScreenContainer scrollable={false} padded={false}>
         <View style={styles.header}>
           <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
-          <Pressable
-            onPress={openCreate}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.createButton,
-              shadows.sm,
-              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
-            ]}
-          >
-            <Ionicons name="add" size={16} color={colors.primaryText} />
-            <ThemedText
-              variant="caption"
-              style={[styles.createLabel, { color: colors.primaryText }]}
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => router.push('/ai-generate')}
+              accessibilityRole="button"
+              accessibilityLabel={t().ai.title}
+              style={({ pressed }) => [
+                styles.aiButton,
+                shadows.sm,
+                { borderColor: colors.primary, opacity: pressed ? 0.85 : 1, backgroundColor: colors.chipBackground },
+              ]}
             >
-              {t().myRecipes.createNew}
-            </ThemedText>
-          </Pressable>
+              <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
+              <ThemedText
+                variant="caption"
+                style={[styles.aiLabel, { color: colors.primary }]}
+              >
+                {t().ai.title}
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              onPress={openCreate}
+              accessibilityRole="button"
+              style={({ pressed }) => [
+                styles.createButton,
+                shadows.sm,
+                { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <Ionicons name="add" size={16} color={colors.primaryText} />
+              <ThemedText
+                variant="caption"
+                style={[styles.createLabel, { color: colors.primaryText }]}
+              >
+                {t().myRecipes.createNew}
+              </ThemedText>
+            </Pressable>
+          </View>
         </View>
 
         <View
@@ -202,6 +222,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  aiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+    height: sizes.floatingBtn,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.round,
+    borderWidth: 1.5,
+  },
+  aiLabel: {
+    fontWeight: '600',
   },
   createButton: {
     flexDirection: 'row',
