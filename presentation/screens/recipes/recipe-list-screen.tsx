@@ -126,6 +126,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
     filters.difficulties.length +
     (filters.maxTime > 0 ? 1 : 0);
 
+  const nonCuisineFilterCount =
+    filters.categories.length +
+    filters.difficulties.length +
+    (filters.maxTime > 0 ? 1 : 0);
+
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
     const query = search.trim().toLowerCase();
@@ -170,13 +175,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
     void load();
-  };
-
-  const removeCuisineFilter = (c: CuisineKey): void => {
-    const next = { ...filters, cuisines: filters.cuisines.filter((x) => x !== c) };
-    setFilters(next);
-    setPendingFilters(next);
-    void load(buildApiFilters(next, sortBy));
   };
 
   const removeDifficultyFilter = (d: Difficulty): void => {
@@ -287,26 +285,12 @@ export const RecipeListScreen = (): React.JSX.Element => {
         ) : null}
       </View>
 
-      {activeFilterCount > 0 ? (
+      {nonCuisineFilterCount > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.activeChipsScroll}
         >
-          {filters.cuisines.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => removeCuisineFilter(c)}
-              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
-            >
-              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-                {formatLabel(c)}
-              </ThemedText>
-              <Ionicons name="close-circle" size={14} color={colors.primary} />
-            </Pressable>
-          ))}
           {filters.categories.map((c) => (
             <Pressable
               key={c}
