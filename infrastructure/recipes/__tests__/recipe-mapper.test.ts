@@ -24,6 +24,8 @@ const fullDto: RecipeDto = {
   likeCount: 12,
   likedByMe: false,
   commentCount: 3,
+  viewCount: 42,
+  moderationStatus: 'approved',
   createdAt: '2026-04-01T12:00:00.000Z',
   updatedAt: '2026-04-01T12:00:00.000Z',
 };

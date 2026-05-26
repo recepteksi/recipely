@@ -7,6 +7,7 @@ export interface RecipelyUserDto {
   displayName: string;
   photoUrl: string | null;
   createdAt: string;
+  role?: string;
 }
 
 export interface RecipelyAuthSessionDto {

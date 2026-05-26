@@ -28,6 +28,7 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
     ownerId: 'owner-1',
     likeCount: 0,
     likedByMe: false,
+    viewCount: 0,
     ...overrides,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');

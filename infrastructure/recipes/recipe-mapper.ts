@@ -37,5 +37,6 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     ownerId: dto.ownerId,
     likeCount: dto.likeCount ?? 0,
     likedByMe: dto.likedByMe ?? false,
+    viewCount: dto.viewCount ?? 0,
   });
 };

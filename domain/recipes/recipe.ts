@@ -34,6 +34,7 @@ export interface RecipeProps {
   ownerId: string;
   likeCount: number;
   likedByMe: boolean;
+  viewCount: number;
 }
 
 /**
@@ -117,5 +118,9 @@ export class Recipe extends Entity<RecipeProps> {
   }
   get likedByMe(): boolean {
     return this.props.likedByMe;
+  }
+
+  get viewCount(): number {
+    return this.props.viewCount;
   }
 }
