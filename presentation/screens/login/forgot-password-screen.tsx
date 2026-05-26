@@ -66,6 +66,14 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
             <Ionicons name="key-outline" size={26} color={colors.onOverlay} />
           </View>
+          <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
+            {t().forgotPassword.title}
+          </ThemedText>
+          <View style={styles.heroSubtitleWrap}>
+            <ThemedText variant="body" style={[styles.heroSubtitle, { color: colors.onOverlay }]}>
+              {t().forgotPassword.subtitle}
+            </ThemedText>
+          </View>
         </View>
 
         <View
@@ -116,14 +124,7 @@ const InputView = ({
   const colors = useTheme().colors;
   return (
     <>
-      <ThemedText variant="subtitle" style={styles.cardTitle}>
-        {t().forgotPassword.title}
-      </ThemedText>
-      <ThemedText variant="body" muted style={styles.subtitle}>
-        {t().forgotPassword.subtitle}
-      </ThemedText>
-
-      <View style={[styles.inputWrapper, { marginTop: spacing.lg }]}>
+      <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
         <Ionicons
           name="mail-outline"
           size={20}
@@ -198,7 +199,7 @@ const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps): React
         {t().forgotPassword.sentTitle}
       </ThemedText>
 
-      <ThemedText variant="body" muted style={styles.subtitle}>
+      <ThemedText variant="body" muted style={styles.cardSubtitle}>
         {t().forgotPassword.sentBody}{' '}
         <ThemedText variant="body" style={{ fontWeight: '700' }}>
           {email}
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 220,
+    height: 280,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -250,9 +251,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   gradientCenter: {
-    height: 220,
+    height: 280,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
   iconBadge: {
     width: 56,
@@ -260,6 +263,26 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  heroTitle: {
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  heroSubtitleWrap: {
+    opacity: 0.82,
+  },
+  heroSubtitle: {
+    textAlign: 'center',
+  },
+  cardTitle: {
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  cardSubtitle: {
+    textAlign: 'center',
+    paddingHorizontal: spacing.sm,
   },
   card: {
     borderRadius: radii.xxl,
@@ -267,15 +290,6 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: -40,
     marginBottom: spacing.xxl,
-  },
-  cardTitle: {
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    textAlign: 'center',
-    paddingHorizontal: spacing.sm,
   },
   inputWrapper: {
     position: 'relative',
