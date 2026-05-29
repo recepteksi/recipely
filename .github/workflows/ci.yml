@@ -99,10 +99,10 @@ jobs:
   build-web:
     name: Build Web
     runs-on: ubuntu-latest
-    # On main we wait for tag-release so app.config.ts sees the just-pushed
-    # tag; on dev / PRs we just chain off the quality gates.
     needs: [lint-and-typecheck, test, tag-release]
-    if: always() && needs.lint-and-typecheck.result == 'success' && needs.test.result == 'success' && (needs.tag-release.result == 'success' || needs.tag-release.result == 'skipped')
+    # Web build is a release artifact — only ship one when main moves, so dev
+    # / PRs don't burn CI minutes producing throw-away exports.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
       APP_VARIANT: production
       # Mirror the Android distribute job so app.config.ts derives the same
@@ -117,7 +117,7 @@ jobs:
           # the marketing version from the latest tag (including the one
           # tag-release just pushed).
           fetch-depth: 0
-          ref: ${{ needs.tag-release.outputs.tag || github.ref }}
+          ref: ${{ needs.tag-release.outputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
