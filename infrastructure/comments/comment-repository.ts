@@ -72,5 +72,7 @@ function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
     authorId: dto.authorId,
     recipeId: dto.recipeId,
     createdAt: new Date(dto.createdAt),
+    authorDisplayName: dto.authorDisplayName,
+    authorPhotoUrl: dto.authorPhotoUrl,
   });
 }

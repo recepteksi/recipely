@@ -6,7 +6,61 @@ on:
   pull_request:
     branches: [main, dev]
 
+# Tag-and-deploy on main needs write access to push the new annotated tag.
+permissions:
+  contents: write
+
 jobs:
+  tag-release:
+    name: Tag Release
+    runs-on: ubuntu-latest
+    # Only stamp a new version on a real merge to main. Everything else (dev,
+    # PRs) just reuses whatever tag is already on the commit.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Use a token that can push tags back. GITHUB_TOKEN with `contents:
+          # write` is enough; the push triggers no further workflow run because
+          # tag pushes are not in the `on:` matchers above.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute next version
+        id: bump
+        run: |
+          set -euo pipefail
+          # If HEAD already carries a vX.Y.Z tag (typical for `npm run
+          # release:*` flows), reuse it instead of double-bumping.
+          existing="$(git tag --points-at HEAD --list 'v*' | head -n1 || true)"
+          if [ -n "$existing" ]; then
+            tag="$existing"
+            echo "Reusing existing tag on HEAD: $tag"
+          else
+            # First-ever release uses v1.0.0 to match app.json's seed version.
+            # Subsequent releases patch-bump from the last tag.
+            last="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+            if [ -z "$last" ]; then
+              tag='v1.0.0'
+              echo "No existing tag — seeding initial release as $tag"
+            else
+              ver="${last#v}"
+              IFS='.' read -r major minor patch <<<"$ver"
+              patch=$((patch + 1))
+              tag="v${major}.${minor}.${patch}"
+              echo "Bumping from $last to $tag"
+            fi
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag -a "$tag" -m "$tag"
+            git push origin "$tag"
+          fi
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >>"$GITHUB_OUTPUT"
+
   lint-and-typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
@@ -42,11 +96,28 @@ jobs:
       - name: Run Tests
         run: npx jest --ci --coverage
 
-  build:
-    name: Build
+  build-web:
+    name: Build Web
     runs-on: ubuntu-latest
+    # On main we wait for tag-release so app.config.ts sees the just-pushed
+    # tag; on dev / PRs we just chain off the quality gates.
+    needs: [lint-and-typecheck, test, tag-release]
+    if: always() && needs.lint-and-typecheck.result == 'success' && needs.test.result == 'success' && (needs.tag-release.result == 'success' || needs.tag-release.result == 'skipped')
+    env:
+      APP_VARIANT: production
+      # Mirror the Android distribute job so app.config.ts derives the same
+      # versionCode / buildNumber for both targets on a single CI run.
+      BUILD_NUMBER: ${{ github.run_number }}
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so `git describe --tags` in app.config.ts can resolve
+          # the marketing version from the latest tag (including the one
+          # tag-release just pushed).
+          fetch-depth: 0
+          ref: ${{ needs.tag-release.outputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -56,34 +127,38 @@ jobs:
       - run: npm ci
 
       - name: Build Web
-        run: npx expo export --platform web
+        run: npm run build:web
 
       - name: Upload Web Build
         uses: actions/upload-artifact@v4
         with:
-          name: web-build
+          name: web-build-${{ github.ref_name }}-${{ github.run_number }}
           path: dist
-          retention-days: 1
+          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 7 }}
 
   distribute:
     name: Distribute Android APK
     runs-on: ubuntu-latest
-    needs: [lint-and-typecheck, test]
+    needs: [lint-and-typecheck, test, tag-release]
     # Only ship a build when quality gates pass on a push to main.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
+      APP_VARIANT: production
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
       # OAuth web client ID (type=3) used by GoogleSignin.configure on Android
       # to request an idToken. Not sensitive — same value is bundled into the
       # APK via google-services.json. Must match Firebase Authentication → Web
       # client ID.
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
-      # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber so the
-      # workflow can stay on a shallow checkout (avoids the auth issues that
-      # fetch-depth: 0 hits with GITHUB_TOKEN on this runner).
+      # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber.
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need history + the just-pushed tag so `git describe` reads the
+          # bumped version inside app.config.ts.
+          fetch-depth: 0
+          ref: ${{ needs.tag-release.outputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
@@ -132,4 +207,7 @@ jobs:
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           groups: android-testers
           file: android/app/build/outputs/apk/release/app-release.apk
-          releaseNotes: ${{ github.event.head_commit.message }}
+          releaseNotes: |
+            ${{ needs.tag-release.outputs.tag }} (build ${{ github.run_number }})
+
+            ${{ github.event.head_commit.message }}

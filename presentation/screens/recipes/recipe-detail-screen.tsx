@@ -18,6 +18,7 @@ import {
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -236,6 +237,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       style={[styles.root, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ResponsiveContainer route="recipeDetail" gutter={false} fill>
       <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scroll}>
         <StateView status={status} failure={failure} onRetry={onRetry}>
           {current.status === 'loaded' ? (
@@ -521,6 +523,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           ) : null}
         </StateView>
       </ScrollView>
+      </ResponsiveContainer>
 
       <Pressable
         accessibilityRole="button"

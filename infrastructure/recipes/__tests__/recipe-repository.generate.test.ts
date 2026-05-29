@@ -28,6 +28,8 @@ const validDto: RecipeDto = {
   likeCount: 0,
   likedByMe: false,
   commentCount: 0,
+  viewCount: 0,
+  moderationStatus: 'approved',
   createdAt: '2026-05-11T12:00:00.000Z',
   updatedAt: '2026-05-11T12:00:00.000Z',
 };

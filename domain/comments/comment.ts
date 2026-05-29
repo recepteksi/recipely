@@ -8,6 +8,8 @@ export interface CommentProps {
   authorId: string;
   recipeId: string;
   createdAt: Date;
+  authorDisplayName: string;
+  authorPhotoUrl: string | null;
 }
 
 /**
@@ -49,5 +51,13 @@ export class Comment extends Entity<CommentProps> {
 
   get createdAt(): Date {
     return this.props.createdAt;
+  }
+
+  get authorDisplayName(): string {
+    return this.props.authorDisplayName;
+  }
+
+  get authorPhotoUrl(): string | null {
+    return this.props.authorPhotoUrl;
   }
 }

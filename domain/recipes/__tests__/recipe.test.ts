@@ -23,6 +23,7 @@ const validProps = {
   ownerId: 'o1',
   likeCount: 0,
   likedByMe: false,
+  viewCount: 0,
 };
 
 describe('Recipe.create', () => {

@@ -13,6 +13,11 @@ import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { LikeRepository } from '@infrastructure/likes/like-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import { NotificationRepository } from '@infrastructure/notifications/notification-repository';
+import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
+import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
+import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 
@@ -93,5 +98,30 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.UnlikeRecipeUseCase, () => {
     const repo = container.resolve<LikeRepository>(TOKENS.LikeRepository);
     return new UnlikeRecipeUseCase(repo);
+  });
+
+  container.register(TOKENS.NotificationRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new NotificationRepository(http);
+  });
+
+  container.register(TOKENS.UserProfileRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new UserProfileRepository(http);
+  });
+
+  container.register(TOKENS.ListNotificationsUseCase, () => {
+    const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
+    return new ListNotificationsUseCase(repo);
+  });
+
+  container.register(TOKENS.MarkAllReadUseCase, () => {
+    const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
+    return new MarkAllReadUseCase(repo);
+  });
+
+  container.register(TOKENS.GetUserProfileUseCase, () => {
+    const repo = container.resolve<UserProfileRepository>(TOKENS.UserProfileRepository);
+    return new GetUserProfileUseCase(repo);
   });
 };

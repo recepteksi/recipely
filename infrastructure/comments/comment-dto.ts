@@ -4,6 +4,8 @@ export interface CommentDto {
   moderationStatus: string;
   recipeId: string;
   authorId: string;
+  authorDisplayName: string;
+  authorPhotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }

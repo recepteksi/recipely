@@ -40,4 +40,6 @@ export interface RecipeDto {
   media?: MediaDto[];
   createdAt: string;
   updatedAt: string;
+  viewCount: number;
+  moderationStatus: string;
 }

@@ -8,17 +8,23 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
 
+const RECIPE_CARD_MIN_WIDTH = 320;
+const GRID_GAP = spacing.lg2;
+
 type Tab = 'saved' | 'created';
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const { isWebShell, width } = useLayout();
   const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase } = useStores();
 
   const recipeListState = recipeListStore((s) => s.state);
@@ -27,6 +33,16 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const createdRecipes = createdRecipesStore((s) => s.recipes);
 
   const [tab, setTab] = useState<Tab>('saved');
+
+  // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
+  // We cap available width to the responsive container's max (1200) when
+  // computing the column count, so cards never become wider than 1 column on
+  // edge cases below the breakpoint.
+  const gridColumns = useMemo<number>(() => {
+    if (!isWebShell) return 1;
+    const available = Math.min(width, 1200) - spacing.xl * 2;
+    return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
+  }, [isWebShell, width]);
 
   useEffect(() => {
     if (recipeListState.status === 'idle') {
@@ -57,7 +73,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'recipes') router.replace('/recipes');
-    else if (key === 'settings') router.replace('/settings');
+    else if (key === 'profile') router.replace('/profile');
   };
 
   const openRecipe = (id: string): void => {
@@ -71,26 +87,49 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScreenContainer scrollable={false} padded={false}>
-        <View style={styles.header}>
-          <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
-          <Pressable
-            onPress={openCreate}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.createButton,
-              shadows.sm,
-              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
-            ]}
-          >
-            <Ionicons name="add" size={16} color={colors.primaryText} />
-            <ThemedText
-              variant="caption"
-              style={[styles.createLabel, { color: colors.primaryText }]}
-            >
-              {t().myRecipes.createNew}
-            </ThemedText>
-          </Pressable>
-        </View>
+        <ResponsiveContainer route="myRecipes" gutter={false} fill>
+        {isWebShell ? null : (
+          <View style={styles.header}>
+            <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={() => router.push('/ai-generate')}
+                accessibilityRole="button"
+                accessibilityLabel={t().ai.title}
+                style={({ pressed }) => [
+                  styles.aiButton,
+                  shadows.sm,
+                  { borderColor: colors.primary, opacity: pressed ? 0.85 : 1, backgroundColor: colors.chipBackground },
+                ]}
+              >
+                <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
+                <ThemedText
+                  variant="caption"
+                  style={[styles.aiLabel, { color: colors.primary }]}
+                >
+                  {t().ai.title}
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={openCreate}
+                accessibilityRole="button"
+                style={({ pressed }) => [
+                  styles.createButton,
+                  shadows.sm,
+                  { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+                ]}
+              >
+                <Ionicons name="add" size={16} color={colors.primaryText} />
+                <ThemedText
+                  variant="caption"
+                  style={[styles.createLabel, { color: colors.primaryText }]}
+                >
+                  {t().myRecipes.createNew}
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         <View
           style={[
@@ -166,24 +205,33 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           </View>
         ) : (
           <FlatList
+            key={`grid-${gridColumns}`}
             data={items as Recipe[]}
             keyExtractor={(r) => r.id}
+            numColumns={gridColumns}
             renderItem={({ item }) => (
-              <RecipeCard
-                name={item.name}
-                image={item.image}
-                cuisine={item.cuisine}
-                difficulty={item.difficulty}
-                rating={item.rating}
-                tags={item.tags}
-                onPress={() => openRecipe(item.id)}
-              />
+              <View style={gridColumns > 1 ? styles.gridCell : null}>
+                <RecipeCard
+                  name={item.name}
+                  image={item.image}
+                  cuisine={item.cuisine}
+                  difficulty={item.difficulty}
+                  rating={item.rating}
+                  tags={item.tags}
+                  onPress={() => openRecipe(item.id)}
+                />
+              </View>
             )}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            contentContainerStyle={styles.listContent}
+            columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
+            ItemSeparatorComponent={gridColumns === 1 ? () => <View style={styles.separator} /> : undefined}
+            contentContainerStyle={[
+              styles.listContent,
+              gridColumns > 1 ? styles.gridContent : null,
+            ]}
             style={styles.list}
           />
         )}
+        </ResponsiveContainer>
       </ScreenContainer>
 
       <TabBar active="myRecipes" onChange={onTabChange} />
@@ -202,6 +250,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  aiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+    height: sizes.floatingBtn,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.round,
+    borderWidth: 1.5,
+  },
+  aiLabel: {
+    fontWeight: '600',
   },
   createButton: {
     flexDirection: 'row',
@@ -257,6 +322,18 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
+  },
+  gridRow: {
+    gap: GRID_GAP,
+    paddingHorizontal: spacing.lg,
+  },
+  gridContent: {
+    paddingHorizontal: 0,
+    paddingTop: spacing.md,
+    gap: GRID_GAP,
+  },
+  gridCell: {
+    flex: 1,
   },
   empty: {
     alignItems: 'center',

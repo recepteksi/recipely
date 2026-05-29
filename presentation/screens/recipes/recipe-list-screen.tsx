@@ -13,12 +13,17 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
+import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
+import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
+import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
+import { useLayout } from '@presentation/base/responsive/layout-context';
+import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -29,6 +34,9 @@ import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key
 import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+
+const RECIPE_CARD_MIN_WIDTH = 320;
+const GRID_GAP = spacing.lg2;
 
 type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
 
@@ -71,8 +79,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const { recipeListStore } = useStores();
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
+  const { isWebShell, width } = useLayout();
+  const { searchQuery: webSearchQuery } = useWebShellState();
 
   const [search, setSearch] = useState('');
+
+  // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell,
+  // capped to the centered 1200px content max so cards stay readable.
+  const gridColumns = useMemo<number>(() => {
+    if (!isWebShell) return 1;
+    const available = Math.min(width, 1200) - spacing.xl * 2;
+    return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
+  }, [isWebShell, width]);
   const [sortBy, setSortBy] = useState<SortKey>('popular');
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
@@ -123,12 +141,19 @@ export const RecipeListScreen = (): React.JSX.Element => {
     filters.difficulties.length +
     (filters.maxTime > 0 ? 1 : 0);
 
+  const nonCuisineFilterCount =
+    filters.categories.length +
+    filters.difficulties.length +
+    (filters.maxTime > 0 ? 1 : 0);
+
+  const effectiveSearch = isWebShell ? webSearchQuery : search;
+
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
-    const query = search.trim().toLowerCase();
+    const query = effectiveSearch.trim().toLowerCase();
     if (query.length === 0) return state.recipes;
     return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
-  }, [state, search]);
+  }, [state, effectiveSearch]);
 
   const sortLabels: Record<SortKey, string> = {
     popular: t().recipes.sortPopular,
@@ -169,13 +194,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     void load();
   };
 
-  const removeCuisineFilter = (c: CuisineKey): void => {
-    const next = { ...filters, cuisines: filters.cuisines.filter((x) => x !== c) };
-    setFilters(next);
-    setPendingFilters(next);
-    void load(buildApiFilters(next, sortBy));
-  };
-
   const removeDifficultyFilter = (d: Difficulty): void => {
     const next = { ...filters, difficulties: filters.difficulties.filter((x) => x !== d) };
     setFilters(next);
@@ -199,26 +217,49 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'myRecipes') router.replace('/my-recipes');
-    else if (key === 'settings') router.replace('/settings');
+    else if (key === 'profile') router.replace('/profile');
+  };
+
+  const toggleCuisineQuick = (cuisine: CuisineKey): void => {
+    const next = {
+      ...filters,
+      cuisines: filters.cuisines.includes(cuisine)
+        ? filters.cuisines.filter((x) => x !== cuisine)
+        : [...filters.cuisines, cuisine],
+    };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: Recipe }) => (
-      <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />
-    ),
-    [openRecipe],
+    ({ item }: { item: Recipe }) => {
+      if (gridColumns > 1) {
+        return (
+          <View style={styles.gridCell}>
+            <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />
+          </View>
+        );
+      }
+      return <RecipeListItem recipe={item} onPress={() => openRecipe(item.id)} />;
+    },
+    [openRecipe, gridColumns],
   );
 
   // ─── Sticky header (always visible, never scrolls away) ────────────────────
+  // On the web shell the WebHeader already exposes a global search input, so
+  // we drop the local SearchBar here and let users filter via WebShellState.
   const stickyHeader = (
     <View style={[styles.stickyHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      <View style={styles.searchWrapper}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t().recipes.searchPlaceholder}
-        />
-      </View>
+      {isWebShell ? null : (
+        <View style={styles.searchWrapper}>
+          <SearchBar
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t().recipes.searchPlaceholder}
+          />
+        </View>
+      )}
 
       <View style={styles.pillRow}>
         <Pressable
@@ -272,33 +313,19 @@ export const RecipeListScreen = (): React.JSX.Element => {
         ) : null}
       </View>
 
-      {activeFilterCount > 0 ? (
+      {nonCuisineFilterCount > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.activeChipsScroll}
         >
-          {filters.cuisines.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => removeCuisineFilter(c)}
-              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
-            >
-              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-                {formatLabel(c)}
-              </ThemedText>
-              <Ionicons name="close-circle" size={14} color={colors.primary} />
-            </Pressable>
-          ))}
           {filters.categories.map((c) => (
             <Pressable
               key={c}
               onPress={() => removeCategoryFilter(c)}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} filtreni kaldır`}
+              accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 {formatLabel(c)}
@@ -312,7 +339,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={() => removeDifficultyFilter(d)}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(d)} filtreni kaldır`}
+              accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 {formatLabel(d)}
@@ -325,7 +352,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
               onPress={removeMaxTimeFilter}
               style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
               accessibilityRole="button"
-              accessibilityLabel="Süre filtresini kaldır"
+              accessibilityLabel={t().recipes.removeTimeFilter}
             >
               <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
                 ≤ {filters.maxTime} {t().recipes.minutes}
@@ -392,12 +419,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   } else {
     body = (
       <FlatList
+        key={`grid-${gridColumns}`}
         data={filteredRecipes}
         keyExtractor={(r) => r.id}
         renderItem={renderItem}
-        ItemSeparatorComponent={ItemSeparator}
-        contentContainerStyle={styles.listContent}
-        style={styles.list}
+        numColumns={gridColumns}
+        columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
+        ItemSeparatorComponent={gridColumns === 1 ? ItemSeparator : undefined}
+        contentContainerStyle={[
+          styles.listContent,
+          gridColumns > 1 ? styles.gridListContent : null,
+        ]}
+        style={[styles.list, isWebShell ? styles.listCenter : null]}
         refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
       />
     );
@@ -405,7 +438,16 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
+      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} />
       {stickyHeader}
+
+      {/* Always-visible header: stays stable while recipe list reloads */}
+      <AiBannerCard onPress={() => router.push('/ai-generate')} />
+      <CuisineStrip
+        selectedCuisines={filters.cuisines}
+        onToggle={toggleCuisineQuick}
+      />
+
       <View style={styles.bodyContainer}>
         {body}
       </View>
@@ -615,6 +657,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
+  },
+  listCenter: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1200,
+  },
+  gridListContent: {
+    paddingHorizontal: spacing.xl,
+    gap: GRID_GAP,
+  },
+  gridRow: {
+    gap: GRID_GAP,
+  },
+  gridCell: {
+    flex: 1,
+    minWidth: 0,
   },
   separator: {
     height: spacing.md,
