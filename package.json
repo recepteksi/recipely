@@ -4,13 +4,20 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "start:dev": "APP_VARIANT=development expo start",
     "android": "expo run:android",
+    "android:dev": "APP_VARIANT=development expo run:android",
     "ios": "expo run:ios",
+    "ios:dev": "APP_VARIANT=development expo run:ios",
     "web": "expo start --web",
+    "build:web": "expo export --platform web",
     "lint": "expo lint",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "release:patch": "npm version patch -m 'chore(release): v%s' && git push --follow-tags",
+    "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",
+    "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags"
   },
   "dependencies": {
     "@noble/ciphers": "^2.2.0",
@@ -52,6 +59,7 @@
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "sharp": "^0.34.5",
