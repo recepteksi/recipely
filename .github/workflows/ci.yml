@@ -147,6 +147,15 @@ jobs:
           path: dist
           retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 7 }}
 
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: recipely-c05fc
+          target: app-recipely
+          channelId: live
+
   distribute:
     name: Distribute Android APK
     runs-on: ubuntu-latest

@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "recipely-c05fc"
+  },
+  "targets": {
+    "recipely-c05fc": {
+      "hosting": {
+        "app-recipely": ["app-recipely"]
+      }
+    }
+  }
+}
