@@ -12,6 +12,7 @@ import { ThemeToggle } from '@presentation/base/widgets/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
@@ -50,6 +51,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <ResponsiveContainer route="settings" gutter={false} fill>
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Pressable
           onPress={() => router.back()}
@@ -125,6 +127,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
+      </ResponsiveContainer>
       <TabBar active="profile" onChange={onTabChange} />
     </View>
   );

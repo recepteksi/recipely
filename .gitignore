@@ -48,3 +48,6 @@ app-example
 
 # Claude Code
 .claude/
+
+# Local Claude Code agent memory (per-user, not project state).
+memory/

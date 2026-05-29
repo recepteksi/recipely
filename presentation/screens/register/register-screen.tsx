@@ -13,7 +13,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
+import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -21,6 +23,7 @@ import { t } from '@presentation/i18n';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD = 8;
+const AUTH_CARD_MAX_WIDTH = 520;
 
 const computeStrength = (password: string): number => {
   let s = 0;
@@ -34,6 +37,8 @@ const computeStrength = (password: string): number => {
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const { isWebShell, orientation } = useLayout();
+  const isLandscapeShell = isWebShell && orientation === 'landscape';
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
@@ -132,53 +137,60 @@ export const RegisterScreen = (): React.JSX.Element => {
       focusField === field ? colors.inputBorderFocused : colors.inputBorder,
   });
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}
-        style={{ backgroundColor: colors.background }}
+  const hero = (
+    <View style={[styles.gradientContent, isLandscapeShell ? styles.heroLandscape : null]}>
+      <RecipelyLogo size={isLandscapeShell ? 88 : 64} monochrome mono={colors.onOverlay} />
+      <ThemedText variant="headline" style={[styles.title, { color: colors.onOverlay }]}>
+        {t().register.title}
+      </ThemedText>
+      <ThemedText
+        variant="body"
+        style={[styles.subtitle, { color: colors.onOverlay }]}
       >
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        />
+        {t().register.subtitle}
+      </ThemedText>
+    </View>
+  );
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
-        >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
-        </Pressable>
-
-        <View style={styles.gradientContent}>
-          <View style={[styles.heroIconWrap, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
-            <Ionicons name="person-outline" size={26} color={colors.onOverlay} />
-          </View>
-          <ThemedText variant="headline" style={[styles.title, { color: colors.onOverlay }]}>
-            {t().register.title}
-          </ThemedText>
-          <ThemedText
-            variant="body"
-            style={[styles.subtitle, { color: colors.onOverlay }]}
+  if (isLandscapeShell) {
+    return (
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
+          <LinearGradient
+            colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.splitHero}
           >
-            {t().register.subtitle}
-          </ThemedText>
+            {hero}
+          </LinearGradient>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.splitFormContent}
+            style={styles.splitFormPane}
+          >
+            <View
+              style={[
+                styles.card,
+                styles.cardSplit,
+                { backgroundColor: colors.cardBackground, ...shadows.lg },
+              ]}
+            >
+              {renderFormFields()}
+            </View>
+          </ScrollView>
         </View>
+      </KeyboardAvoidingView>
+    );
+  }
 
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.cardBackground, ...shadows.lg },
-          ]}
-        >
-          <View style={styles.inputWrapper}>
+  function renderFormFields(): React.JSX.Element {
+    return (
+      <>
+        <View style={styles.inputWrapper}>
             <Ionicons
               name="person-outline"
               size={20}
@@ -385,19 +397,57 @@ export const RegisterScreen = (): React.JSX.Element => {
             )}
           </Pressable>
 
-          <View style={styles.signInRow}>
-            <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-              {t().register.haveAccount}
+        <View style={styles.signInRow}>
+          <ThemedText variant="caption" style={{ color: colors.textMuted }}>
+            {t().register.haveAccount}
+          </ThemedText>
+          <Pressable onPress={() => router.back()}>
+            <ThemedText
+              variant="caption"
+              style={[styles.signInLink, { color: colors.primary }]}
+            >
+              {t().register.signIn}
             </ThemedText>
-            <Pressable onPress={() => router.back()}>
-              <ThemedText
-                variant="caption"
-                style={[styles.signInLink, { color: colors.primary }]}
-              >
-                {t().register.signIn}
-              </ThemedText>
-            </Pressable>
-          </View>
+          </Pressable>
+        </View>
+      </>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
+        style={{ backgroundColor: colors.background }}
+      >
+        <LinearGradient
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        />
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
+        >
+          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+        </Pressable>
+
+        {hero}
+
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: colors.cardBackground, ...shadows.lg },
+          ]}
+        >
+          {renderFormFields()}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -436,14 +486,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: sizes.heroPaddingTop,
     paddingBottom: spacing.xl,
-  },
-  heroIconWrap: {
-    width: sizes.avatarMd,
-    height: sizes.avatarMd,
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     marginTop: spacing.sm2,
@@ -541,5 +583,36 @@ const styles = StyleSheet.create({
   },
   linkWeight: {
     fontWeight: '600' as const,
+  },
+  splitRoot: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  splitHero: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxl,
+  },
+  heroLandscape: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    maxWidth: 460,
+  },
+  splitFormPane: {
+    flex: 1,
+  },
+  splitFormContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xxl,
+  },
+  cardSplit: {
+    width: '100%',
+    maxWidth: AUTH_CARD_MAX_WIDTH,
+    marginHorizontal: 0,
+    marginTop: 0,
   },
 });

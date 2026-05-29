@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -19,15 +19,17 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, getLocale } from '@presentation/i18n';
+import type { Recipe } from '@domain/recipes/recipe';
 
-type Status = 'idle' | 'thinking' | 'result';
-
-interface MockRecipe {
+interface AiRecipeView {
   name: string;
   cuisine: string;
   difficulty: string;
@@ -39,66 +41,84 @@ interface MockRecipe {
   ingredientCount: number;
 }
 
-const BASE_RECIPE: MockRecipe = {
-  name: 'AI: Creamy Herb Fettuccine',
-  cuisine: 'Italian',
-  difficulty: 'Easy',
-  prepTimeMinutes: 15,
-  cookTimeMinutes: 20,
-  servings: 4,
-  caloriesPerServing: 380,
-  image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400',
-  ingredientCount: 6,
-};
-
-const SAMPLE_PROMPTS = [
-  'A cozy autumn pumpkin soup, vegan, under 40 min',
-  'Quick Italian pasta with herbs and garlic',
-  'Healthy grain bowl with roasted vegetables',
-  'Classic French omelette, under 10 minutes',
-];
+const toView = (recipe: Recipe): AiRecipeView => ({
+  name: recipe.name,
+  cuisine: String(recipe.cuisine),
+  difficulty: String(recipe.difficulty),
+  prepTimeMinutes: recipe.prepTimeMinutes,
+  cookTimeMinutes: recipe.cookTimeMinutes,
+  servings: recipe.servings,
+  caloriesPerServing: recipe.caloriesPerServing,
+  image: recipe.image,
+  ingredientCount: recipe.ingredients.length,
+});
 
 export const AIGenerateScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isWebShell } = useLayout();
+
+  const { createdRecipesStore } = useStores();
+  const generateState = createdRecipesStore((s) => s.generateState);
+  const generateRecipe = createdRecipesStore((s) => s.generateRecipe);
+  const resetGenerateState = createdRecipesStore((s) => s.resetGenerateState);
 
   const [prompt, setPrompt] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
-  const [result, setResult] = useState<MockRecipe | null>(null);
-  const [refining, setRefining] = useState(false);
 
   const spin = useSharedValue(0);
   const progressWidth = useSharedValue(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const status: 'idle' | 'thinking' | 'result' | 'error' =
+    generateState.status === 'generating'
+      ? 'thinking'
+      : generateState.status === 'success'
+        ? 'result'
+        : generateState.status === 'error'
+          ? 'error'
+          : 'idle';
+
+  const result: AiRecipeView | null =
+    generateState.status === 'success' ? toView(generateState.recipe) : null;
+  const refining = generateState.status === 'generating' && result !== null;
+  const generateError =
+    generateState.status === 'error' ? generateState.failure.message : null;
 
   useEffect(() => {
     spin.value = withRepeat(withTiming(1, { duration: 1400, easing: Easing.linear }), -1);
   }, [spin]);
 
+  useEffect(() => {
+    if (generateState.status === 'generating') {
+      progressWidth.value = withTiming(1, { duration: 2000 });
+    } else if (generateState.status !== 'success') {
+      progressWidth.value = 0;
+    }
+  }, [generateState.status, progressWidth]);
+
+  useEffect(() => {
+    return () => { resetGenerateState(); };
+  }, [resetGenerateState]);
+
   const generate = (text: string): void => {
     if (text.trim().length === 0) return;
-    setStatus('thinking');
-    progressWidth.value = withTiming(1, { duration: 2000 });
-    timerRef.current = setTimeout(() => {
-      setResult({ ...BASE_RECIPE });
-      setStatus('result');
-      progressWidth.value = 0;
-    }, 2200);
+    void generateRecipe(text.trim(), getLocale());
   };
 
   const refine = (instruction: string): void => {
-    if (!result) return;
-    setRefining(true);
-    setTimeout(() => {
-      setResult((prev) => prev ? { ...prev, name: `AI: ${instruction} ${prev.name.replace('AI: ', '')}` } : prev);
-      setRefining(false);
-    }, 1100);
+    const refined = `${instruction}: ${prompt.trim()}`.trim();
+    if (refined.length === 0) return;
+    void generateRecipe(refined, getLocale());
+  };
+
+  const openDraftInWizard = (): void => {
+    router.replace('/create-recipe');
   };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
+      <ResponsiveContainer route="aiGenerate" gutter={false} fill>
+      <View style={[styles.header, { paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
         <Pressable
           onPress={() => router.back()}
           style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
@@ -140,10 +160,30 @@ export const AIGenerateScreen = (): React.JSX.Element => {
             refining={refining}
             onRefine={refine}
             onRegenerate={() => generate(prompt)}
-            onSave={() => router.push('/my-recipes')}
+            onSave={openDraftInWizard}
           />
         )}
+
+        {status === 'error' && generateError !== null && (
+          <View style={[styles.thinkingSection]}>
+            <ThemedText variant="body" style={{ color: colors.danger, textAlign: 'center' }}>
+              {generateError}
+            </ThemedText>
+            <Pressable
+              onPress={() => generate(prompt)}
+              style={[styles.outlineBtn, { borderColor: colors.primary, marginTop: spacing.md }]}
+              accessibilityRole="button"
+              accessibilityLabel={t().common.retry}
+            >
+              <Ionicons name="refresh" size={16} color={colors.primary} />
+              <ThemedText variant="caption" style={[styles.outlineBtnLabel, { color: colors.primary }]}>
+                {t().common.retry}
+              </ThemedText>
+            </Pressable>
+          </View>
+        )}
       </ScrollView>
+      </ResponsiveContainer>
     </View>
   );
 };
@@ -242,12 +282,13 @@ interface SamplePromptsProps {
 
 const SamplePrompts = ({ onSelect }: SamplePromptsProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const samples = t().createRecipe.ideaChips;
   return (
     <View style={styles.samplesSection}>
       <ThemedText variant="caption" muted style={styles.samplesLabel}>
         {t().ai.try}
       </ThemedText>
-      {SAMPLE_PROMPTS.map((p) => (
+      {samples.map((p) => (
         <Pressable
           key={p}
           onPress={() => onSelect(p)}
@@ -301,7 +342,7 @@ const ThinkingView = ({ spinValue, progressValue }: ThinkingViewProps): React.JS
 };
 
 interface ResultViewProps {
-  recipe: MockRecipe;
+  recipe: AiRecipeView;
   refining: boolean;
   onRefine: (instruction: string) => void;
   onRegenerate: () => void;

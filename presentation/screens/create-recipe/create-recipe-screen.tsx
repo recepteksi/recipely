@@ -21,8 +21,10 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { MediaPicker } from '@presentation/base/widgets/media-picker';
 import { Slider } from '@presentation/base/widgets/slider';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { TimeSliderCard } from '@presentation/screens/create-recipe/time-slider-card';
 import { ReviewRowItem } from '@presentation/screens/create-recipe/review-row-item';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes, type ThemeColors } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -111,6 +113,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isWebShell } = useLayout();
   const { createdRecipesStore } = useStores();
   const createState = createdRecipesStore((s) => s.createState);
   const generateState = createdRecipesStore((s) => s.generateState);
@@ -423,13 +426,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       style={[styles.root, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ResponsiveContainer route="createRecipe" gutter={false} fill>
       <View
         style={[
           styles.wizardHeader,
           {
             backgroundColor: colors.background,
             borderBottomColor: colors.border,
-            paddingTop: insets.top + spacing.sm,
+            paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm,
           },
         ]}
       >
@@ -525,7 +529,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           {
             backgroundColor: colors.background,
             borderTopColor: colors.border,
-            paddingBottom: insets.bottom + spacing.md,
+            paddingBottom: isWebShell ? spacing.md : insets.bottom + spacing.md,
           },
         ]}
       >
@@ -603,6 +607,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           </Pressable>
         )}
       </View>
+      </ResponsiveContainer>
     </KeyboardAvoidingView>
   );
 };
@@ -643,6 +648,7 @@ const renderPromptStep = (args: PromptStepArgs): React.JSX.Element => {
       style={[styles.root, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <ResponsiveContainer route="createRecipe" gutter={false} fill>
       <View
         style={[
           styles.promptHeader,
@@ -811,6 +817,7 @@ const renderPromptStep = (args: PromptStepArgs): React.JSX.Element => {
           </Pressable>
         </View>
       </ScrollView>
+      </ResponsiveContainer>
     </KeyboardAvoidingView>
   );
 };

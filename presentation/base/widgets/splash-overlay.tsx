@@ -1,0 +1,124 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Easing,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
+import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { useTheme } from '@presentation/base/theme/theme-context';
+import { shadows } from '@presentation/base/theme/shadows';
+import { spacing } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
+
+const VISIBLE_MS = 1400;
+const FADE_MS = 400;
+const TILE_SIZE = 128;
+const TILE_RADIUS = 32;
+const LOGO_SIZE = 96;
+
+/**
+ * Auto-dismissing brand splash shown on app boot. Displays the Recipely logo
+ * inside a white tile on the primary gradient, with the localised tagline.
+ * Tap anywhere to skip; auto-fades after `VISIBLE_MS`.
+ */
+export const SplashOverlay = (): React.JSX.Element | null => {
+  const colors = useTheme().colors;
+  const [visible, setVisible] = useState(true);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  const dismiss = useCallback((): void => {
+    Animated.timing(opacity, {
+      toValue: 0,
+      duration: FADE_MS,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start(({ finished }) => {
+      if (finished) setVisible(false);
+    });
+  }, [opacity]);
+
+  useEffect(() => {
+    const id = setTimeout(dismiss, VISIBLE_MS);
+    return () => clearTimeout(id);
+  }, [dismiss]);
+
+  if (!visible) return null;
+
+  return (
+    <Animated.View
+      style={[styles.root, { opacity }]}
+      pointerEvents={visible ? 'auto' : 'none'}
+    >
+      <Pressable
+        style={StyleSheet.absoluteFill}
+        onPress={dismiss}
+        accessibilityRole="button"
+        accessibilityLabel="Dismiss splash"
+      >
+        <LinearGradient
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.fill}
+        >
+          <View style={styles.center}>
+            <View style={[styles.tile, shadows.lg]}>
+              <RecipelyLogo size={LOGO_SIZE} />
+            </View>
+            <ThemedText
+              variant="headline"
+              style={[styles.wordmark, { color: colors.onOverlay }]}
+            >
+              Recipely
+            </ThemedText>
+            <ThemedText
+              variant="caption"
+              style={[styles.tagline, { color: colors.onOverlay }]}
+            >
+              {t().splash.tagline}
+            </ThemedText>
+          </View>
+        </LinearGradient>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
+const styles = StyleSheet.create({
+  root: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 300,
+  },
+  fill: {
+    flex: 1,
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.lg,
+  },
+  tile: {
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    borderRadius: TILE_RADIUS,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wordmark: {
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+    marginTop: spacing.xs,
+  },
+  tagline: {
+    opacity: 0.88,
+    letterSpacing: 0.2,
+  },
+});

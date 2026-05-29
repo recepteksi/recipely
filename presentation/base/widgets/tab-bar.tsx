@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { sizes, spacing, fontSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { t } from '@presentation/i18n';
@@ -19,11 +20,16 @@ interface TabConfig {
   icon: keyof typeof Ionicons.glyphMap;
 }
 
-/** Bottom navigation bar with icon-and-label tabs for the main app sections. */
-export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element => {
+/**
+ * Bottom navigation bar with icon-and-label tabs for the main app sections.
+ * Returns null on the web shell breakpoint — the WebHeader replaces it there.
+ */
+export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isWebShell } = useLayout();
   const bottomPad = Math.max(insets.bottom, 12);
+  if (isWebShell) return null;
 
   const tabs: TabConfig[] = [
     { key: 'recipes', label: t().navigation.recipes, icon: 'restaurant-outline' },

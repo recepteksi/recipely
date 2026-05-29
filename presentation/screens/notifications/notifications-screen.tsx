@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import type { Notification } from '@domain/notifications/notification';
 
 type NotifKind =
   | 'comment'
@@ -15,10 +19,11 @@ type NotifKind =
   | 'ai_done'
   | 'moderation_approved'
   | 'moderation_pending'
-  | 'follow';
+  | 'follow'
+  | 'generic';
 
 interface NotifItem {
-  id: number;
+  id: string;
   kind: NotifKind;
   actor: string;
   recipeName?: string;
@@ -27,16 +32,33 @@ interface NotifItem {
   body?: string;
 }
 
-const MOCK_NOTIFICATIONS: NotifItem[] = [
-  { id: 1, kind: 'comment', actor: 'Marco R.', recipeName: 'Chicken Biryani', daysAgo: 0, read: false, body: 'This came out perfect!' },
-  { id: 2, kind: 'like', actor: 'Lina T.', recipeName: 'Chocolate Chip Cookies', daysAgo: 0, read: false },
-  { id: 3, kind: 'ai_done', actor: 'Recipely AI', recipeName: 'Lemon Garlic Pasta', daysAgo: 0, read: false, body: 'Your AI recipe is ready.' },
-  { id: 4, kind: 'moderation_approved', actor: 'Recipely', recipeName: 'Smoky Aubergine Dip', daysAgo: 1, read: false },
-  { id: 5, kind: 'favorite', actor: 'Sara K.', recipeName: 'Mushroom Risotto', daysAgo: 1, read: true },
-  { id: 6, kind: 'comment', actor: 'Devon A.', recipeName: 'Greek Salad', daysAgo: 2, read: true, body: 'Added lemon at the end — game changer.' },
-  { id: 7, kind: 'moderation_pending', actor: 'Recipely', recipeName: 'Spicy Tuna Bowl', daysAgo: 3, read: true, body: "We're reviewing your recipe." },
-  { id: 8, kind: 'follow', actor: 'Chef Yusuf', daysAgo: 4, read: true },
-];
+const KNOWN_KINDS = new Set<NotifKind>([
+  'comment',
+  'like',
+  'favorite',
+  'ai_done',
+  'moderation_approved',
+  'moderation_pending',
+  'follow',
+]);
+
+const resolveKind = (raw: string): NotifKind => {
+  return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : 'generic';
+};
+
+const daysSince = (createdAt: Date): number => {
+  const ms = Date.now() - createdAt.getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+};
+
+const toNotifItem = (n: Notification): NotifItem => ({
+  id: n.id,
+  kind: resolveKind(n.type),
+  actor: n.senderDisplayName ?? 'Recipely',
+  recipeName: n.recipeTitle ?? undefined,
+  daysAgo: daysSince(n.createdAt),
+  read: n.read,
+});
 
 interface SectionData {
   title: string;
@@ -65,12 +87,13 @@ const useKindMeta = (kind: NotifKind): KindMeta => {
   const colors = useTheme().colors;
   const map: Record<NotifKind, KindMeta> = {
     comment: { icon: 'chatbubble-outline', color: colors.primary },
-    like: { icon: 'heart', color: '#EF4444' },
+    like: { icon: 'heart', color: colors.danger },
     favorite: { icon: 'bookmark', color: colors.primary },
     ai_done: { icon: 'sparkles-outline', color: colors.primary },
     moderation_approved: { icon: 'shield-checkmark-outline', color: colors.success },
     moderation_pending: { icon: 'alert-circle-outline', color: colors.warning },
     follow: { icon: 'person-add-outline', color: colors.primary },
+    generic: { icon: 'notifications-outline', color: colors.primary },
   };
   return map[kind];
 };
@@ -85,12 +108,13 @@ const actionText = (n: NotifItem): string => {
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? ''}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? ''}`;
     case 'follow': return labels.followed;
+    case 'generic': return n.recipeName ?? '';
   }
 };
 
 interface NotifRowProps {
   item: NotifItem;
-  onTap: (id: number) => void;
+  onTap: (id: string) => void;
 }
 
 const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
@@ -140,24 +164,38 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isWebShell } = useLayout();
 
-  const [items, setItems] = useState<NotifItem[]>(MOCK_NOTIFICATIONS);
+  const { notificationsStore } = useStores();
+  const state = notificationsStore((s) => s.state);
+  const load = notificationsStore((s) => s.load);
+  const markAllRead = notificationsStore((s) => s.markAllRead);
+
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const unreadCount = items.filter((n) => !n.read).length;
+  useEffect(() => {
+    if (state.status === 'idle') void load();
+  }, [state.status, load]);
+
+  const items: NotifItem[] = useMemo(() => {
+    if (state.status !== 'loaded') return [];
+    return state.items.map(toNotifItem);
+  }, [state]);
+
+  const unreadCount =
+    state.status === 'loaded' ? state.unreadCount : 0;
   const sections = buildSections(items, filter);
 
-  const markAllRead = (): void => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const tap = (id: number): void => {
-    setItems((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  const tap = (_id: string): void => {
+    // Tapping a notification only routes to the underlying entity — the
+    // markOneRead endpoint is not yet wired through the store, and faking the
+    // read flag locally would diverge from the server source of truth.
   };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { paddingTop: insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
+      <ResponsiveContainer route="notifications" gutter={false} fill>
+      <View style={[styles.header, { paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
         <Pressable
           onPress={() => router.back()}
           style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
@@ -171,7 +209,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         </ThemedText>
         {unreadCount > 0 ? (
           <Pressable
-            onPress={markAllRead}
+            onPress={() => { void markAllRead(); }}
             style={styles.markReadBtn}
             accessibilityRole="button"
             accessibilityLabel={t().notifications.markRead}
@@ -237,6 +275,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
         ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />}
       />
+      </ResponsiveContainer>
     </View>
   );
 };

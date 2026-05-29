@@ -2,6 +2,7 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
@@ -9,8 +10,12 @@ export interface RecipesAppHeaderProps {
   onNotificationsPress: () => void;
 }
 
-export const RecipesAppHeader = ({ onNotificationsPress }: RecipesAppHeaderProps): React.JSX.Element => {
+export const RecipesAppHeader = ({
+  onNotificationsPress,
+}: RecipesAppHeaderProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
+  const { isWebShell } = useLayout();
+  if (isWebShell) return null;
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.titles}>
