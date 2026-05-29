@@ -33,9 +33,9 @@ export const WebHeaderTabs = ({ active, tabs, onPress }: WebHeaderTabsProps): Re
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
             accessibilityLabel={tab.label}
-            style={({ hovered }) => [
+            style={(state) => [
               styles.tab,
-              (hovered as boolean | undefined) === true && styles.hovered,
+              (state as { hovered?: boolean }).hovered === true && styles.hovered,
             ]}
           >
             <Ionicons name={tab.icon} size={16} color={tint} />
