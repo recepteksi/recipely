@@ -53,6 +53,17 @@ import {
   configureLikesStore,
   type LikesStore,
 } from '@application/likes/likes-store';
+import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
+import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import {
+  configureNotificationsStore,
+  type NotificationsStore,
+} from '@application/notifications/notifications-store';
+import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
+import {
+  configureUserProfileStore,
+  type UserProfileStore,
+} from '@application/user-profile/user-profile-store';
 
 export interface ApplicationStores {
   authStore: AuthStore;
@@ -63,6 +74,8 @@ export interface ApplicationStores {
   favoritesStore: FavoritesStore;
   commentsStore: CommentsStore;
   likesStore: LikesStore;
+  notificationsStore: NotificationsStore;
+  userProfileStore: UserProfileStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
@@ -120,6 +133,22 @@ export const registerApplication = (container: Container): ApplicationStores => 
     likeRecipe: likeRecipeUseCase,
     unlikeRecipe: unlikeRecipeUseCase,
   });
+  const listNotificationsUseCase = container.resolve<ListNotificationsUseCase>(
+    TOKENS.ListNotificationsUseCase,
+  );
+  const markAllReadUseCase = container.resolve<MarkAllReadUseCase>(
+    TOKENS.MarkAllReadUseCase,
+  );
+  const notificationsStore = configureNotificationsStore({
+    listNotifications: listNotificationsUseCase,
+    markAllRead: markAllReadUseCase,
+  });
+  const getUserProfileUseCase = container.resolve<GetUserProfileUseCase>(
+    TOKENS.GetUserProfileUseCase,
+  );
+  const userProfileStore = configureUserProfileStore({
+    getUserProfile: getUserProfileUseCase,
+  });
   return {
     authStore,
     recipeListStore,
@@ -129,6 +158,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     favoritesStore,
     commentsStore,
     likesStore,
+    notificationsStore,
+    userProfileStore,
     loadFavoritesUseCase,
   };
 };
