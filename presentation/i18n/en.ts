@@ -266,6 +266,8 @@ export const en = {
     resend: 'Resend code',
     resendIn: 'Resend in',
     seconds: 's',
+    expiresIn: 'Code expires in',
+    expired: 'Your code has expired. Request a new one.',
     resent: 'A new code is on its way.',
     changeEmail: 'Use a different email',
     errorCode: 'Enter the 6-digit code.',

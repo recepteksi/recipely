@@ -22,8 +22,23 @@ import { t } from '@presentation/i18n';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN_SECONDS = 30;
 const SECOND_MS = 1000;
+const SECONDS_PER_MINUTE = 60;
+
+/** Whole seconds until `iso`, floored at 0. Empty/invalid → 0. */
+const computeRemaining = (iso: string): number => {
+  if (iso.length === 0) return 0;
+  const ms = new Date(iso).getTime();
+  if (Number.isNaN(ms)) return 0;
+  return Math.max(0, Math.round((ms - Date.now()) / SECOND_MS));
+};
+
+/** Formats a second count as `M:SS`. */
+const formatCountdown = (totalSeconds: number): string => {
+  const minutes = Math.floor(totalSeconds / SECONDS_PER_MINUTE);
+  const seconds = totalSeconds % SECONDS_PER_MINUTE;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -31,8 +46,9 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const { isWebShell, orientation } = useLayout();
   const isLandscapeShell = isWebShell && orientation === 'landscape';
 
-  const params = useLocalSearchParams<{ email?: string }>();
+  const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
   const email = typeof params.email === 'string' ? params.email : '';
+  const initialExpiresAt = typeof params.expiresAt === 'string' ? params.expiresAt : '';
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
@@ -44,7 +60,10 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
-  const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+  // Absolute expiry of the current code; the countdown derives from it so it
+  // stays correct across re-renders and app backgrounding.
+  const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
+  const [remaining, setRemaining] = useState(() => computeRemaining(initialExpiresAt));
 
   useEffect(() => {
     if (state.status === 'authenticated') {
@@ -53,13 +72,11 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   }, [state.status, router]);
 
   useEffect(() => {
-    if (cooldown <= 0) return;
-    const id = setInterval(
-      () => setCooldown((c) => (c <= 1 ? 0 : c - 1)),
-      SECOND_MS,
-    );
+    setRemaining(computeRemaining(expiresAt));
+    if (expiresAt.length === 0) return;
+    const id = setInterval(() => setRemaining(computeRemaining(expiresAt)), SECOND_MS);
     return () => clearInterval(id);
-  }, [cooldown]);
+  }, [expiresAt]);
 
   const codeValid = code.length === CODE_LENGTH && /^\d+$/.test(code);
   const isLoading = state.status === 'loading';
@@ -75,17 +92,20 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
     await verifyRegistration(email, code);
   }, [codeValid, verifyRegistration, email, code]);
 
+  // Resend is locked until the current code expires.
+  const canResend = remaining <= 0 && !resending;
+
   const handleResend = useCallback(async () => {
-    if (cooldown > 0 || resending) return;
+    if (remaining > 0 || resending) return;
     setResending(true);
     setResent(false);
     const challenge = await resendRegistrationCode(email);
     setResending(false);
     if (challenge) {
       setResent(true);
-      setCooldown(RESEND_COOLDOWN_SECONDS);
+      setExpiresAt(challenge.expiresAt);
     }
-  }, [cooldown, resending, resendRegistrationCode, email]);
+  }, [remaining, resending, resendRegistrationCode, email]);
 
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
@@ -155,26 +175,36 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
         />
       </View>
 
+      <View style={styles.expiryRow}>
+        {remaining > 0 ? (
+          <ThemedText variant="caption" muted>
+            {t().verify.expiresIn} {formatCountdown(remaining)}
+          </ThemedText>
+        ) : (
+          <ThemedText variant="caption" style={{ color: colors.danger }}>
+            {t().verify.expired}
+          </ThemedText>
+        )}
+      </View>
+
       <View style={styles.resendRow}>
         <ThemedText variant="caption" muted>
           {t().verify.noCode}
         </ThemedText>
         <Pressable
           onPress={() => { void handleResend(); }}
-          disabled={cooldown > 0 || resending}
+          disabled={!canResend}
           accessibilityRole="button"
           accessibilityLabel={t().verify.resend}
         >
           <ThemedText
             variant="caption"
             style={{
-              color: cooldown > 0 ? colors.textMuted : colors.primary,
+              color: canResend ? colors.primary : colors.textMuted,
               fontWeight: '600',
             }}
           >
-            {cooldown > 0
-              ? `${t().verify.resendIn} ${cooldown}${t().verify.seconds}`
-              : t().verify.resend}
+            {t().verify.resend}
           </ThemedText>
         </Pressable>
       </View>
@@ -351,12 +381,16 @@ const styles = StyleSheet.create({
   buttonRow: {
     marginTop: spacing.lg,
   },
+  expiryRow: {
+    alignItems: 'center',
+    marginTop: spacing.lg,
+  },
   resendRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
   },
   textLink: {
     alignSelf: 'center',

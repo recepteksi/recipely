@@ -268,6 +268,8 @@ export const tr: Translations = {
     resend: 'Kodu tekrar gönder',
     resendIn: 'Tekrar gönder:',
     seconds: 'sn',
+    expiresIn: 'Kodun süresi:',
+    expired: 'Kodun süresi doldu. Yeni bir kod iste.',
     resent: 'Yeni kod gönderildi.',
     changeEmail: 'Farklı e-posta kullan',
     errorCode: '6 haneli kodu gir.',
