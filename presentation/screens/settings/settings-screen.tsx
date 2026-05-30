@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -15,7 +14,8 @@ import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
-import { t, getLocale, setLocale } from '@presentation/i18n';
+import { t, useLocale, setLocale } from '@presentation/i18n';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -24,12 +24,7 @@ export const SettingsScreen = (): React.JSX.Element => {
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
 
-  const [language, setLanguage] = useState<'en' | 'tr'>(getLocale() as 'en' | 'tr');
-
-  const handleLanguageChange = (lang: 'en' | 'tr') => {
-    setLocale(lang);
-    setLanguage(lang);
-  };
+  const language = useLocale() as 'en' | 'tr';
 
   const handleSignOut = async () => {
     await signOut();
@@ -93,7 +88,7 @@ export const SettingsScreen = (): React.JSX.Element => {
             icon="language-outline"
             label={t().settings.language}
             rightElement={
-              <LanguageSelector value={language} onChange={handleLanguageChange} />
+              <LanguageSelector value={language} onChange={setLocale} />
             }
           />
         </View>
@@ -122,6 +117,16 @@ export const SettingsScreen = (): React.JSX.Element => {
               </ThemedText>
             }
             showChevron={false}
+          />
+          <SettingsRow
+            icon="shield-checkmark-outline"
+            label={t().settings.privacyPolicy}
+            onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+          />
+          <SettingsRow
+            icon="document-text-outline"
+            label={t().settings.termsOfUse}
+            onPress={() => void Linking.openURL(TERMS_OF_USE_URL)}
           />
         </View>
 

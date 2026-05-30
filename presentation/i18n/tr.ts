@@ -89,6 +89,8 @@ export const tr: Translations = {
     signOutConfirm: 'Çıkış yapmak istediğinize emin misiniz?',
     about: 'Hakkında',
     version: 'Sürüm',
+    privacyPolicy: 'Gizlilik Politikası',
+    termsOfUse: 'Kullanım Koşulları',
   },
   navigation: {
     recipes: 'Tarifler',
@@ -156,7 +158,7 @@ export const tr: Translations = {
     aiUpdated: 'Güncellendi!',
     aiThinking: 'Düşünüyor…',
     aiFirstReply: 'Tarifin hazır! İstediğin değişikliği söyle.',
-    aiSavedDraft: 'Taslak Tariflerim’e kaydedildi.',
+    aiSavedDraft: 'Bu bir AI taslağı. Yayınlayınca Tariflerim’e kaydedilecek.',
     manualMode: 'Elle dolduruyorsun — istediğin zaman benden yardım isteyebilirsin.',
     manualButton: 'Ya da elle doldur',
     chatTitle: 'AI Asistan',
