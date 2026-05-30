@@ -25,10 +25,10 @@ export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
 export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
 
-// Fallback verification-code lifetime (seconds) used to seed the resend
-// countdown when the backend response omits expiresInSeconds. Mirrors the
-// backend CODE_TTL_MS (10 minutes).
-export const DEFAULT_CODE_TTL_SECONDS = 600;
+// Fallback verification-code lifetime (seconds) used only when the backend
+// response omits both expiresAt and expiresInSeconds. Mirrors the backend
+// CODE_TTL_MS (3 minutes).
+export const DEFAULT_CODE_TTL_SECONDS = 180;
 
 export const RECIPES_PAGE_SIZE = 30;
 

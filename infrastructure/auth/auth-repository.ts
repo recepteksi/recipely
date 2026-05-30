@@ -152,10 +152,18 @@ export class AuthRepository implements IAuthRepository {
 const toChallenge = (
   email: string,
   dto: RegistrationChallengeDto,
-): RegistrationChallenge => ({
-  email: dto.email ?? email,
-  expiresInSeconds: dto.expiresInSeconds ?? DEFAULT_CODE_TTL_SECONDS,
-});
+): RegistrationChallenge => {
+  const expiresInSeconds = dto.expiresInSeconds ?? DEFAULT_CODE_TTL_SECONDS;
+  // Prefer the backend's absolute expiry; synthesise one from the remaining
+  // seconds only when an older backend omits it.
+  const expiresAt =
+    dto.expiresAt ?? new Date(Date.now() + expiresInSeconds * 1000).toISOString();
+  return {
+    email: dto.email ?? email,
+    expiresInSeconds,
+    expiresAt,
+  };
+};
 
 const expiresAtFromToken = (token: string): Date => {
   const claims = decodeJwtPayload(token);
