@@ -6,5 +6,8 @@ export interface RegistrationChallengeDto {
   message: string;
   email?: string;
   expiresInSeconds?: number;
+  // Absolute ISO-8601 expiry of the verification code. The client drives its
+  // countdown off this so back/forward navigation keeps one stable timer.
+  expiresAt?: string;
   devCode?: string;
 }

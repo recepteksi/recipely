@@ -84,13 +84,21 @@ describe('auth-store', () => {
   it('register returns the challenge and stays unauthenticated on success', async () => {
     const store = makeStore(
       new FakeAuthRepository({
-        requestRegistrationResult: ok({ email: 'u@example.com', expiresInSeconds: 600 }),
+        requestRegistrationResult: ok({
+          email: 'u@example.com',
+          expiresInSeconds: 180,
+          expiresAt: '2026-01-01T00:03:00.000Z',
+        }),
       }),
     );
 
     const challenge = await store.getState().register('u@example.com', 'password1', 'U');
 
-    expect(challenge).toEqual({ email: 'u@example.com', expiresInSeconds: 600 });
+    expect(challenge).toEqual({
+      email: 'u@example.com',
+      expiresInSeconds: 180,
+      expiresAt: '2026-01-01T00:03:00.000Z',
+    });
     expect(store.getState().state.status).toBe('unauthenticated');
   });
 
@@ -137,13 +145,21 @@ describe('auth-store', () => {
   it('resendRegistrationCode returns the refreshed challenge on success', async () => {
     const store = makeStore(
       new FakeAuthRepository({
-        resendRegistrationCodeResult: ok({ email: 'u@example.com', expiresInSeconds: 600 }),
+        resendRegistrationCodeResult: ok({
+          email: 'u@example.com',
+          expiresInSeconds: 180,
+          expiresAt: '2026-01-01T00:03:00.000Z',
+        }),
       }),
     );
 
     const challenge = await store.getState().resendRegistrationCode('u@example.com');
 
-    expect(challenge).toEqual({ email: 'u@example.com', expiresInSeconds: 600 });
+    expect(challenge).toEqual({
+      email: 'u@example.com',
+      expiresInSeconds: 180,
+      expiresAt: '2026-01-01T00:03:00.000Z',
+    });
   });
 
   it('signOut transitions to unauthenticated on success', async () => {

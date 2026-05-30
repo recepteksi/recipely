@@ -119,7 +119,7 @@ export const RegisterScreen = (): React.JSX.Element => {
         pathname: '/verify-code',
         params: {
           email: challenge.email,
-          expiresInSeconds: String(challenge.expiresInSeconds),
+          expiresAt: challenge.expiresAt,
         },
       });
     }
