@@ -21,7 +21,14 @@ export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 
 export const AUTH_LOGIN_PATH = "/auth/login";
 export const AUTH_REGISTER_PATH = "/auth/register";
+export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
+export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
+
+// Fallback verification-code lifetime (seconds) used to seed the resend
+// countdown when the backend response omits expiresInSeconds. Mirrors the
+// backend CODE_TTL_MS (10 minutes).
+export const DEFAULT_CODE_TTL_SECONDS = 600;
 
 export const RECIPES_PAGE_SIZE = 30;
 

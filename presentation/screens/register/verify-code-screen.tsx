@@ -1,0 +1,397 @@
+import { useCallback, useEffect, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useStores } from '@presentation/bootstrap/stores-context';
+import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { useLayout } from '@presentation/base/responsive/layout-context';
+import { useTheme } from '@presentation/base/theme/theme-context';
+import { shadows } from '@presentation/base/theme/shadows';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
+
+const AUTH_CARD_MAX_WIDTH = 460;
+const CODE_LENGTH = 6;
+const RESEND_COOLDOWN_SECONDS = 30;
+const SECOND_MS = 1000;
+
+export const VerifyCodeScreen = (): React.JSX.Element => {
+  const router = useRouter();
+  const colors = useTheme().colors;
+  const { isWebShell, orientation } = useLayout();
+  const isLandscapeShell = isWebShell && orientation === 'landscape';
+
+  const params = useLocalSearchParams<{ email?: string }>();
+  const email = typeof params.email === 'string' ? params.email : '';
+
+  const { authStore } = useStores();
+  const state = authStore((s) => s.state);
+  const verifyRegistration = authStore((s) => s.verifyRegistration);
+  const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
+
+  const [code, setCode] = useState('');
+  const [focused, setFocused] = useState(false);
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+
+  useEffect(() => {
+    if (state.status === 'authenticated') {
+      router.replace('/recipes');
+    }
+  }, [state.status, router]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(
+      () => setCooldown((c) => (c <= 1 ? 0 : c - 1)),
+      SECOND_MS,
+    );
+    return () => clearInterval(id);
+  }, [cooldown]);
+
+  const codeValid = code.length === CODE_LENGTH && /^\d+$/.test(code);
+  const isLoading = state.status === 'loading';
+  const remoteError = state.status === 'error' ? state.failure.message : undefined;
+  const errorMessage = localError ?? remoteError;
+
+  const handleVerify = useCallback(async () => {
+    if (!codeValid) {
+      setLocalError(t().verify.errorCode);
+      return;
+    }
+    setLocalError(undefined);
+    await verifyRegistration(email, code);
+  }, [codeValid, verifyRegistration, email, code]);
+
+  const handleResend = useCallback(async () => {
+    if (cooldown > 0 || resending) return;
+    setResending(true);
+    setResent(false);
+    const challenge = await resendRegistrationCode(email);
+    setResending(false);
+    if (challenge) {
+      setResent(true);
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+    }
+  }, [cooldown, resending, resendRegistrationCode, email]);
+
+  const hero = (
+    <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
+      <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
+        <Ionicons name="mail-unread-outline" size={26} color={colors.onOverlay} />
+      </View>
+      <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
+        {t().verify.title}
+      </ThemedText>
+      <View style={styles.heroSubtitleWrap}>
+        <ThemedText variant="body" style={[styles.heroSubtitle, { color: colors.onOverlay }]}>
+          {t().verify.subtitle}
+        </ThemedText>
+        {email.length > 0 ? (
+          <ThemedText variant="body" style={[styles.heroEmail, { color: colors.onOverlay }]}>
+            {email}
+          </ThemedText>
+        ) : null}
+      </View>
+    </View>
+  );
+
+  const cardBody = (
+    <>
+      <TextInput
+        style={[
+          styles.codeInput,
+          {
+            backgroundColor: colors.inputBackground,
+            color: colors.text,
+            borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
+          },
+        ]}
+        placeholder={t().verify.codePlaceholder}
+        placeholderTextColor={colors.textMuted}
+        value={code}
+        onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, CODE_LENGTH))}
+        keyboardType="number-pad"
+        textContentType="oneTimeCode"
+        autoComplete="sms-otp"
+        maxLength={CODE_LENGTH}
+        returnKeyType="done"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onSubmitEditing={() => { void handleVerify(); }}
+        accessibilityLabel={t().verify.codePlaceholder}
+      />
+
+      {errorMessage !== undefined ? (
+        <ThemedText variant="caption" style={[styles.error, { color: colors.danger }]}>
+          {errorMessage}
+        </ThemedText>
+      ) : null}
+
+      {resent ? (
+        <ThemedText variant="caption" style={[styles.notice, { color: colors.success }]}>
+          {t().verify.resent}
+        </ThemedText>
+      ) : null}
+
+      <View style={styles.buttonRow}>
+        <PrimaryButton
+          label={isLoading ? t().verify.verifying : t().verify.verify}
+          onPress={() => { void handleVerify(); }}
+          loading={isLoading}
+          disabled={!codeValid || isLoading}
+        />
+      </View>
+
+      <View style={styles.resendRow}>
+        <ThemedText variant="caption" muted>
+          {t().verify.noCode}
+        </ThemedText>
+        <Pressable
+          onPress={() => { void handleResend(); }}
+          disabled={cooldown > 0 || resending}
+          accessibilityRole="button"
+          accessibilityLabel={t().verify.resend}
+        >
+          <ThemedText
+            variant="caption"
+            style={{
+              color: cooldown > 0 ? colors.textMuted : colors.primary,
+              fontWeight: '600',
+            }}
+          >
+            {cooldown > 0
+              ? `${t().verify.resendIn} ${cooldown}${t().verify.seconds}`
+              : t().verify.resend}
+          </ThemedText>
+        </Pressable>
+      </View>
+
+      <Pressable
+        onPress={() => router.back()}
+        style={styles.textLink}
+        accessibilityRole="button"
+        accessibilityLabel={t().verify.changeEmail}
+      >
+        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+          {t().verify.changeEmail}
+        </ThemedText>
+      </Pressable>
+    </>
+  );
+
+  if (isLandscapeShell) {
+    return (
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
+          <LinearGradient
+            colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.splitHero}
+          >
+            {hero}
+          </LinearGradient>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.splitFormContent}
+            style={styles.splitFormPane}
+          >
+            <View
+              style={[
+                styles.card,
+                styles.cardSplit,
+                { backgroundColor: colors.cardBackground },
+                shadows.lg,
+              ]}
+            >
+              {cardBody}
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
+        style={{ backgroundColor: colors.background }}
+      >
+        <LinearGradient
+          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        />
+
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
+          accessibilityRole="button"
+          accessibilityLabel={t().verify.changeEmail}
+        >
+          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+        </Pressable>
+
+        {hero}
+
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: colors.cardBackground },
+            shadows.lg,
+          ]}
+        >
+          {cardBody}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
+  gradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: sizes.heroImageHeight,
+    borderBottomLeftRadius: radii.xxxl,
+    borderBottomRightRadius: radii.xxxl,
+  },
+  backBtn: {
+    position: 'absolute',
+    top: spacing.xxxl,
+    left: spacing.lg,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  gradientCenter: {
+    height: sizes.heroImageHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+  },
+  iconBadge: {
+    width: sizes.avatarMd,
+    height: sizes.avatarMd,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  heroTitle: {
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  heroSubtitleWrap: {
+    opacity: 0.82,
+    alignItems: 'center',
+  },
+  heroSubtitle: {
+    textAlign: 'center',
+  },
+  heroEmail: {
+    textAlign: 'center',
+    fontWeight: '700',
+    marginTop: spacing.xxs,
+  },
+  card: {
+    borderRadius: radii.xxl,
+    padding: spacing.xl,
+    marginHorizontal: spacing.lg,
+    marginTop: -sizes.cardOverlap,
+    marginBottom: spacing.xxl,
+  },
+  codeInput: {
+    height: sizes.inputHeight,
+    borderWidth: 1.5,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    fontSize: fontSizes.subtitle,
+    textAlign: 'center',
+    letterSpacing: spacing.sm,
+  },
+  error: {
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  notice: {
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  buttonRow: {
+    marginTop: spacing.lg,
+  },
+  resendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.lg,
+  },
+  textLink: {
+    alignSelf: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  splitRoot: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  splitHero: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxl,
+  },
+  heroLandscape: {
+    height: 'auto',
+    maxWidth: 420,
+  },
+  splitFormPane: {
+    flex: 1,
+  },
+  splitFormContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xxl,
+  },
+  cardSplit: {
+    width: '100%',
+    maxWidth: AUTH_CARD_MAX_WIDTH,
+    marginHorizontal: 0,
+    marginTop: 0,
+    marginBottom: 0,
+  },
+});

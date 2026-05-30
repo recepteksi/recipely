@@ -1,33 +1,26 @@
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { UnknownFailure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
+import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import {
   AUTH_LOGIN_PATH,
   AUTH_REGISTER_PATH,
+  AUTH_REGISTER_RESEND_PATH,
+  AUTH_REGISTER_VERIFY_PATH,
   AUTH_SOCIAL_PATH,
-  GOOGLE_WEB_CLIENT_ID,
+  DEFAULT_CODE_TTL_SECONDS,
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { decodeJwtPayload } from '@infrastructure/network/decode-jwt';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/user-info-dto';
+import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
-import { generateNonce, hashNonce } from '@infrastructure/auth/nonce-generator';
-import * as AppleAuthentication from 'expo-apple-authentication';
-
-// WHY: static imports of @react-native-google-signin and @react-native-firebase/auth
-// trigger TurboModule / RNFBAppModule initialisation at module-load time, crashing
-// Expo Go before any try/catch can intervene. The IIFE catches that throw once;
-// social sign-in methods return a graceful Failure when the module is unavailable.
-type GoogleSigninMod = typeof import('@react-native-google-signin/google-signin');
-type FirebaseAuthMod = typeof import('@react-native-firebase/auth');
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const googleSigninMod: GoogleSigninMod | null = (() => { try { return require('@react-native-google-signin/google-signin') as GoogleSigninMod; } catch { return null; } })();
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const firebaseAuthMod: FirebaseAuthMod | null = (() => { try { return require('@react-native-firebase/auth') as FirebaseAuthMod; } catch { return null; } })();
+import {
+  acquireAppleFirebaseToken,
+  acquireGoogleFirebaseToken,
+} from '@infrastructure/auth/social-auth-provider';
 
 const FALLBACK_EXPIRES_MS = 3_600_000;
 
@@ -41,9 +34,7 @@ export class AuthRepository implements IAuthRepository {
   constructor(
     private readonly http: HttpClient,
     private readonly storage: SecureTokenStorage,
-  ) {
-    googleSigninMod?.GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
-  }
+  ) {}
 
   async signIn(email: string, password: string): Promise<Result<AuthSession, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
@@ -54,38 +45,15 @@ export class AuthRepository implements IAuthRepository {
     if (!result.ok) {
       return result;
     }
-
-    const dto = result.value;
-    const userResult = toUser(dto.user);
-    if (!userResult.ok) {
-      return userResult;
-    }
-
-    const expiresAt = expiresAtFromToken(dto.token);
-
-    const sessionResult = AuthSession.create({
-      id: dto.user.id,
-      accessToken: dto.token,
-      expiresAt,
-      user: userResult.value,
-    });
-    if (!sessionResult.ok) {
-      return sessionResult;
-    }
-
-    const saveResult = await this.storage.saveSession(sessionResult.value);
-    if (!saveResult.ok) {
-      return fail(saveResult.failure);
-    }
-    return ok(sessionResult.value);
+    return this.persistSession(result.value);
   }
 
-  async signUp(
+  async requestRegistration(
     email: string,
     password: string,
     displayName: string,
-  ): Promise<Result<AuthSession, Failure>> {
-    const result = await this.http.request<RecipelyAuthSessionDto>({
+  ): Promise<Result<RegistrationChallenge, Failure>> {
+    const result = await this.http.request<RegistrationChallengeDto>({
       method: 'POST',
       url: AUTH_REGISTER_PATH,
       data: { email: email.trim(), password, displayName },
@@ -93,89 +61,48 @@ export class AuthRepository implements IAuthRepository {
     if (!result.ok) {
       return result;
     }
+    return ok(toChallenge(email.trim(), result.value));
+  }
 
-    const dto = result.value;
-    const userResult = toUser(dto.user);
-    if (!userResult.ok) {
-      return userResult;
-    }
-
-    const expiresAt = expiresAtFromToken(dto.token);
-
-    const sessionResult = AuthSession.create({
-      id: dto.user.id,
-      accessToken: dto.token,
-      expiresAt,
-      user: userResult.value,
+  async verifyRegistration(
+    email: string,
+    code: string,
+  ): Promise<Result<AuthSession, Failure>> {
+    const result = await this.http.request<RecipelyAuthSessionDto>({
+      method: 'POST',
+      url: AUTH_REGISTER_VERIFY_PATH,
+      data: { email: email.trim(), code: code.trim() },
     });
-    if (!sessionResult.ok) {
-      return sessionResult;
+    if (!result.ok) {
+      return result;
     }
+    return this.persistSession(result.value);
+  }
 
-    const saveResult = await this.storage.saveSession(sessionResult.value);
-    if (!saveResult.ok) {
-      return fail(saveResult.failure);
+  async resendRegistrationCode(
+    email: string,
+  ): Promise<Result<RegistrationChallenge, Failure>> {
+    const result = await this.http.request<RegistrationChallengeDto>({
+      method: 'POST',
+      url: AUTH_REGISTER_RESEND_PATH,
+      data: { email: email.trim() },
+    });
+    if (!result.ok) {
+      return result;
     }
-    return ok(sessionResult.value);
+    return ok(toChallenge(email.trim(), result.value));
   }
 
   async signInWithGoogle(): Promise<Result<AuthSession, Failure>> {
-    if (googleSigninMod === null || firebaseAuthMod === null) {
-      return fail(new UnknownFailure('Google Sign-In is not available in this build'));
-    }
-    const { GoogleSignin, isSuccessResponse } = googleSigninMod;
-    const auth = firebaseAuthMod.default;
-    try {
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const response = await GoogleSignin.signIn();
-      if (!isSuccessResponse(response)) {
-        return fail(new UnknownFailure('Google sign-in was cancelled'));
-      }
-      const { idToken } = response.data;
-      if (!idToken) {
-        return fail(new UnknownFailure('Google did not return an ID token'));
-      }
-      const credential = auth.GoogleAuthProvider.credential(idToken);
-      const { user } = await auth().signInWithCredential(credential);
-      const firebaseIdToken = await user.getIdToken();
-      return this.exchangeFirebaseToken(firebaseIdToken);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Google sign-in failed';
-      return fail(new UnknownFailure(msg));
-    }
+    const tokenResult = await acquireGoogleFirebaseToken();
+    if (!tokenResult.ok) return tokenResult;
+    return this.exchangeFirebaseToken(tokenResult.value);
   }
 
   async signInWithApple(): Promise<Result<AuthSession, Failure>> {
-    if (firebaseAuthMod === null) {
-      return fail(new UnknownFailure('Apple Sign-In is not available in this build'));
-    }
-    const auth = firebaseAuthMod.default;
-    try {
-      const available = await AppleAuthentication.isAvailableAsync();
-      if (!available) {
-        return fail(new UnknownFailure('Apple Sign-In is not available on this device'));
-      }
-      const rawNonce = generateNonce();
-      const hashedNonce = await hashNonce(rawNonce);
-      const appleCredential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-        nonce: hashedNonce,
-      });
-      const { identityToken } = appleCredential;
-      if (!identityToken) {
-        return fail(new UnknownFailure('Apple did not return an identity token'));
-      }
-      const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
-      const { user } = await auth().signInWithCredential(credential);
-      const firebaseIdToken = await user.getIdToken();
-      return this.exchangeFirebaseToken(firebaseIdToken);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Apple sign-in failed';
-      return fail(new UnknownFailure(msg));
-    }
+    const tokenResult = await acquireAppleFirebaseToken();
+    if (!tokenResult.ok) return tokenResult;
+    return this.exchangeFirebaseToken(tokenResult.value);
   }
 
   async signOut(): Promise<Result<void, Failure>> {
@@ -198,16 +125,20 @@ export class AuthRepository implements IAuthRepository {
       data: { idToken },
     });
     if (!result.ok) return result;
+    return this.persistSession(result.value);
+  }
 
-    const dto = result.value;
+  /** Maps a backend session DTO to an `AuthSession` and persists it to storage. */
+  private async persistSession(
+    dto: RecipelyAuthSessionDto,
+  ): Promise<Result<AuthSession, Failure>> {
     const userResult = toUser(dto.user);
     if (!userResult.ok) return userResult;
 
-    const expiresAt = expiresAtFromToken(dto.token);
     const sessionResult = AuthSession.create({
       id: dto.user.id,
       accessToken: dto.token,
-      expiresAt,
+      expiresAt: expiresAtFromToken(dto.token),
       user: userResult.value,
     });
     if (!sessionResult.ok) return sessionResult;
@@ -217,6 +148,14 @@ export class AuthRepository implements IAuthRepository {
     return ok(sessionResult.value);
   }
 }
+
+const toChallenge = (
+  email: string,
+  dto: RegistrationChallengeDto,
+): RegistrationChallenge => ({
+  email: dto.email ?? email,
+  expiresInSeconds: dto.expiresInSeconds ?? DEFAULT_CODE_TTL_SECONDS,
+});
 
 const expiresAtFromToken = (token: string): Date => {
   const claims = decodeJwtPayload(token);

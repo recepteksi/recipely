@@ -1,8 +1,11 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import type { AuthSession } from '@domain/auth/auth-session';
+import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { SignInUseCase } from '@application/auth/sign-in-use-case';
-import type { SignUpUseCase } from '@application/auth/sign-up-use-case';
+import type { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
+import type { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
+import type { ResendRegistrationCodeUseCase } from '@application/auth/resend-registration-code-use-case';
 import type { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import type { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
@@ -20,7 +23,20 @@ export type AuthStatus =
 export interface AuthStoreState {
   state: AuthStatus;
   signIn: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, displayName: string) => Promise<void>;
+  /**
+   * Requests a verification code email. Returns the challenge (email +
+   * code TTL) on success so the caller can open the verify-code step, or
+   * `null` on failure (the error lands in `state`).
+   */
+  register: (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<RegistrationChallenge | null>;
+  /** Confirms the emailed code and, on success, authenticates the session. */
+  verifyRegistration: (email: string, code: string) => Promise<void>;
+  /** Re-sends the registration code; returns the refreshed challenge or `null`. */
+  resendRegistrationCode: (email: string) => Promise<RegistrationChallenge | null>;
   signOut: () => Promise<void>;
   hydrate: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -29,7 +45,9 @@ export interface AuthStoreState {
 
 export interface AuthStoreDeps {
   signIn: SignInUseCase;
-  signUp: SignUpUseCase;
+  requestRegistration: RequestRegistrationUseCase;
+  verifyRegistration: VerifyRegistrationUseCase;
+  resendRegistrationCode: ResendRegistrationCodeUseCase;
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
@@ -88,12 +106,33 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
 
     register: async (email: string, password: string, displayName: string) => {
       set({ state: { status: 'loading' } });
-      const result = await deps.signUp.execute(email, password, displayName);
+      const result = await deps.requestRegistration.execute(email, password, displayName);
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return null;
+      }
+      // Account is not created yet — the user must confirm the emailed code.
+      set({ state: { status: 'unauthenticated' } });
+      return result.value;
+    },
+
+    verifyRegistration: async (email: string, code: string) => {
+      set({ state: { status: 'loading' } });
+      const result = await deps.verifyRegistration.execute(email, code);
       if (!result.ok) {
         set({ state: { status: 'error', failure: result.failure } });
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+    },
+
+    resendRegistrationCode: async (email: string) => {
+      const result = await deps.resendRegistrationCode.execute(email);
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return null;
+      }
+      return result.value;
     },
 
     signOut: async () => {
