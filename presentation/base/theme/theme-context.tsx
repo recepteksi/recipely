@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { getThemeColors, type ThemeId, type ThemeColors } from './themes';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
@@ -33,6 +34,7 @@ const isThemePreference = (v: string): v is ThemePreference =>
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
+  const hydrated = useIsHydrated();
   const [themeId, setThemeIdState] = useState<ThemeId>('pearl-white');
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
@@ -60,10 +62,16 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     void kvStore.setItem('theme_preference', pref);
   }, []);
 
+  // On web the static export prerenders without `prefers-color-scheme`, so the
+  // server HTML is always light. Ignore the live system scheme until after
+  // hydration so the first client render matches and React can hydrate cleanly
+  // (React error #418). `preference` itself loads from storage in an effect, so
+  // it is already at its SSR default ('system') on the first render.
+  const effectiveSystemScheme =
+    Platform.OS === 'web' && !hydrated ? 'light' : (systemScheme ?? 'light');
+
   const scheme: EffectiveScheme =
-    preference === 'system'
-      ? (systemScheme ?? 'light')
-      : preference;
+    preference === 'system' ? effectiveSystemScheme : preference;
 
   // Memoize to ensure stable reference when themeId/scheme unchanged
   const colors = useMemo(() => getThemeColors(themeId, scheme), [themeId, scheme]);

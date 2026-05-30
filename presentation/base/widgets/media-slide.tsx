@@ -1,6 +1,7 @@
-import { Image, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { VideoSlide } from '@presentation/base/widgets/video-slide';
-import { recipeImageSource } from '@presentation/base/widgets/recipe-image-source';
+import { RecipeImage } from '@presentation/base/widgets/recipe-image';
+import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 interface MediaSlideProps {
@@ -15,15 +16,20 @@ export const MediaSlide = ({ item, width, height }: MediaSlideProps): React.JSX.
     return <VideoSlide item={item} width={width} height={height} />;
   }
   return (
-    <Image
-      source={recipeImageSource(item.url)}
-      style={[styles.coverImage, { width, height }]}
-    />
+    <View style={{ width, height }}>
+      <RecipeImage
+        uri={item.url}
+        style={styles.coverImage}
+        placeholderLabel={t().recipes.noPhoto}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   coverImage: {
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
 });
