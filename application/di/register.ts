@@ -3,7 +3,9 @@ import { TOKENS } from '@core/di/tokens';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
-import { SignUpUseCase } from '@application/auth/sign-up-use-case';
+import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
+import { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
+import { ResendRegistrationCodeUseCase } from '@application/auth/resend-registration-code-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
@@ -83,7 +85,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const authRepo = container.resolve<IAuthRepository>(TOKENS.AuthRepository);
   const recipeRepo = container.resolve<IRecipeRepository>(TOKENS.RecipeRepository);
   const signIn = new SignInUseCase(authRepo);
-  const signUp = new SignUpUseCase(authRepo);
+  const requestRegistration = new RequestRegistrationUseCase(authRepo);
+  const verifyRegistration = new VerifyRegistrationUseCase(authRepo);
+  const resendRegistrationCode = new ResendRegistrationCodeUseCase(authRepo);
   const signOut = new SignOutUseCase(authRepo);
   const getSession = new GetSessionUseCase(authRepo);
   const signInWithGoogle = new SignInWithGoogleUseCase(authRepo);
@@ -107,7 +111,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, signUp, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const favoritesStore = configureFavoritesStore({

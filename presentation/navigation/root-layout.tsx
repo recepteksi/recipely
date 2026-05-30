@@ -30,6 +30,7 @@ const AlarmOverlay = (): React.JSX.Element | null => {
 const AUTH_PATHS = new Set<string>([
   '/login',
   '/register',
+  '/verify-code',
   '/forgot-password',
   '/',
 ]);
@@ -72,6 +73,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="verify-code" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
         <Stack.Screen name="my-recipes" options={{ headerShown: false }} />

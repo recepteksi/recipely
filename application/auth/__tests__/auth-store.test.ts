@@ -2,7 +2,9 @@ import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-reposito
 import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
-import { SignUpUseCase } from '@application/auth/sign-up-use-case';
+import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
+import { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
+import { ResendRegistrationCodeUseCase } from '@application/auth/resend-registration-code-use-case';
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
 import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
@@ -38,7 +40,9 @@ const makeStore = (repo: FakeAuthRepository) => {
   const savedRecipesStore = configureSavedRecipesStore();
   return configureAuthStore({
     signIn: new SignInUseCase(repo),
-    signUp: new SignUpUseCase(repo),
+    requestRegistration: new RequestRegistrationUseCase(repo),
+    verifyRegistration: new VerifyRegistrationUseCase(repo),
+    resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
     signOut: new SignOutUseCase(repo),
     getSession: new GetSessionUseCase(repo),
     loadFavorites: fakeLoadFavorites,
@@ -75,6 +79,71 @@ describe('auth-store', () => {
     const s = store.getState().state;
     expect(s.status).toBe('error');
     if (s.status === 'error') expect(s.failure).toBe(failure);
+  });
+
+  it('register returns the challenge and stays unauthenticated on success', async () => {
+    const store = makeStore(
+      new FakeAuthRepository({
+        requestRegistrationResult: ok({ email: 'u@example.com', expiresInSeconds: 600 }),
+      }),
+    );
+
+    const challenge = await store.getState().register('u@example.com', 'password1', 'U');
+
+    expect(challenge).toEqual({ email: 'u@example.com', expiresInSeconds: 600 });
+    expect(store.getState().state.status).toBe('unauthenticated');
+  });
+
+  it('register returns null and sets error on failure', async () => {
+    const failure = new UnauthorizedFailure('exists');
+    const store = makeStore(
+      new FakeAuthRepository({ requestRegistrationResult: fail(failure) }),
+    );
+
+    const challenge = await store.getState().register('u@example.com', 'password1', 'U');
+
+    expect(challenge).toBeNull();
+    const s = store.getState().state;
+    expect(s.status).toBe('error');
+    if (s.status === 'error') expect(s.failure).toBe(failure);
+  });
+
+  it('verifyRegistration transitions to authenticated on success', async () => {
+    const session = buildSession();
+    const store = makeStore(
+      new FakeAuthRepository({ verifyRegistrationResult: ok(session) }),
+    );
+
+    await store.getState().verifyRegistration('u@example.com', '123456');
+
+    const s = store.getState().state;
+    expect(s.status).toBe('authenticated');
+    if (s.status === 'authenticated') expect(s.session).toBe(session);
+  });
+
+  it('verifyRegistration transitions to error on failure', async () => {
+    const failure = new UnauthorizedFailure('bad code');
+    const store = makeStore(
+      new FakeAuthRepository({ verifyRegistrationResult: fail(failure) }),
+    );
+
+    await store.getState().verifyRegistration('u@example.com', '000000');
+
+    const s = store.getState().state;
+    expect(s.status).toBe('error');
+    if (s.status === 'error') expect(s.failure).toBe(failure);
+  });
+
+  it('resendRegistrationCode returns the refreshed challenge on success', async () => {
+    const store = makeStore(
+      new FakeAuthRepository({
+        resendRegistrationCodeResult: ok({ email: 'u@example.com', expiresInSeconds: 600 }),
+      }),
+    );
+
+    const challenge = await store.getState().resendRegistrationCode('u@example.com');
+
+    expect(challenge).toEqual({ email: 'u@example.com', expiresInSeconds: 600 });
   });
 
   it('signOut transitions to unauthenticated on success', async () => {
