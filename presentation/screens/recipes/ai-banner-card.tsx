@@ -10,6 +10,11 @@ export interface AiBannerCardProps {
   onPress: () => void;
 }
 
+/**
+ * Compact single-line promo for the AI recipe generator. Slimmed from the
+ * earlier two-line card so the home recipe list keeps more vertical room
+ * (mobile and web).
+ */
 export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
@@ -23,22 +28,25 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.card}
+        style={[styles.card, { borderColor: colors.primary }]}
       >
-        <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-          <Ionicons name="sparkles" size={sizes.iconMd} color={colors.onOverlay} />
+        <View pointerEvents="none" style={styles.decor}>
+          <Ionicons name="sparkles" size={sizes.avatarLg} color={colors.onOverlay} />
         </View>
-        <View style={styles.textBlock}>
-          <ThemedText variant="body" style={[styles.title, { color: colors.onOverlay }]}>
-            {t().recipes.aiPromo}
-          </ThemedText>
-          <ThemedText variant="caption" style={[styles.subtitle, { color: colors.onOverlay }]}>
-            {t().recipes.aiPromoSub}
-          </ThemedText>
+
+        <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
+          <Ionicons name="sparkles" size={sizes.iconSm} color={colors.onOverlay} />
         </View>
-        <View style={[styles.arrowBtn, { backgroundColor: colors.gradientSurface }]}>
-          <Ionicons name="arrow-forward" size={sizes.iconSm} color={colors.onOverlay} />
-        </View>
+
+        <ThemedText
+          variant="body"
+          numberOfLines={1}
+          style={[styles.title, { color: colors.onOverlay }]}
+        >
+          {t().recipes.aiPromo}
+        </ThemedText>
+
+        <Ionicons name="arrow-forward" size={sizes.iconSm} color={colors.onOverlay} />
       </LinearGradient>
     </Pressable>
   );
@@ -47,39 +55,35 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
 const styles = StyleSheet.create({
   wrapper: {
     marginHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.xl,
-    padding: spacing.lg,
-    gap: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+    overflow: 'hidden',
+  },
+  decor: {
+    position: 'absolute',
+    right: -spacing.lg,
+    top: -spacing.lg,
+    opacity: 0.16,
   },
   iconBadge: {
-    width: sizes.badgeSm + spacing.sm,
-    height: sizes.badgeSm + spacing.sm,
-    borderRadius: radii.lg,
+    width: sizes.chipHeight,
+    height: sizes.chipHeight,
+    borderRadius: radii.md,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  textBlock: {
-    flex: 1,
-    gap: spacing.xxs,
   },
   title: {
+    flex: 1,
     fontWeight: '700',
-    fontSize: fontSizes.body,
-  },
-  subtitle: {
-    opacity: 0.82,
-    fontSize: fontSizes.small,
-  },
-  arrowBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: fontSizes.medium,
   },
 });
