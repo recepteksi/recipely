@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -16,6 +16,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/responsive-conta
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, getLocale, setLocale } from '@presentation/i18n';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -122,6 +123,16 @@ export const SettingsScreen = (): React.JSX.Element => {
               </ThemedText>
             }
             showChevron={false}
+          />
+          <SettingsRow
+            icon="shield-checkmark-outline"
+            label={t().settings.privacyPolicy}
+            onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+          />
+          <SettingsRow
+            icon="document-text-outline"
+            label={t().settings.termsOfUse}
+            onPress={() => void Linking.openURL(TERMS_OF_USE_URL)}
           />
         </View>
 

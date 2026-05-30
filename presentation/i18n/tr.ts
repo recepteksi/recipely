@@ -89,6 +89,8 @@ export const tr: Translations = {
     signOutConfirm: 'Çıkış yapmak istediğinize emin misiniz?',
     about: 'Hakkında',
     version: 'Sürüm',
+    privacyPolicy: 'Gizlilik Politikası',
+    termsOfUse: 'Kullanım Koşulları',
   },
   navigation: {
     recipes: 'Tarifler',
