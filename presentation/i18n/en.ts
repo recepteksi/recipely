@@ -32,6 +32,7 @@ export const en = {
   recipes: {
     title: 'Recipes',
     empty: 'No recipes found.',
+    noPhoto: 'No photo yet',
     cuisine: 'Cuisine',
     category: 'Category',
     difficulty: 'Difficulty',

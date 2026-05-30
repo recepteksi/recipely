@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
@@ -21,6 +20,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { RecipeImage } from '@presentation/base/widgets/recipe-image';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -374,11 +374,14 @@ const ResultView = ({ recipe, refining, onRefine, onRegenerate, onSave }: Result
           shadows.sm,
         ]}
       >
-        <Image
-          source={{ uri: recipe.image }}
-          style={styles.recipeImage}
-          contentFit="cover"
-        />
+        <View style={styles.recipeImage}>
+          <RecipeImage
+            uri={recipe.image}
+            style={styles.recipeImageInner}
+            accessibilityLabel={recipe.name}
+            placeholderLabel={t().recipes.noPhoto}
+          />
+        </View>
         <View style={styles.recipeInfo}>
           <ThemedText variant="subtitle" style={styles.recipeName} numberOfLines={2}>
             {recipe.name}
@@ -590,6 +593,12 @@ const styles = StyleSheet.create({
   recipeImage: {
     width: '100%',
     height: 160,
+    overflow: 'hidden',
+  },
+  recipeImageInner: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   recipeInfo: { padding: spacing.md, gap: spacing.sm },
   recipeName: { fontWeight: '700' },

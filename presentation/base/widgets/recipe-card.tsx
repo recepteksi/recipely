@@ -75,7 +75,12 @@ export const RecipeCard = ({
       ]}
     >
       <View style={styles.imageContainer}>
-        <RecipeImage uri={image} style={styles.image} accessibilityLabel={name} />
+        <RecipeImage
+          uri={image}
+          style={styles.image}
+          accessibilityLabel={name}
+          placeholderLabel={t().recipes.noPhoto}
+        />
         <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
           <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: '600' }}>
             {cuisine}
