@@ -154,7 +154,7 @@ export const en = {
     aiUpdated: 'Updated!',
     aiThinking: 'Thinking…',
     aiFirstReply: "Here's your recipe! Ask me to tweak anything.",
-    aiSavedDraft: 'Draft saved to My Recipes.',
+    aiSavedDraft: 'This is an AI draft. It will be saved to My Recipes when you publish.',
     manualMode: 'Filling in manually — you can ask me for help anytime.',
     manualButton: 'Or fill in manually',
     chatTitle: 'AI Assistant',

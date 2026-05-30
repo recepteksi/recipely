@@ -117,14 +117,16 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         return;
       }
       const recipe = result.value;
-      // WHY: backend already persisted the generated recipe as a draft, so
-      // prepend it to `recipes` for an instant "My Recipes" reflection in
-      // addition to surfacing it as `aiDraft` for the wizard to pre-fill.
-      set((s) => ({
+      // WHY: the backend does NOT persist generated recipes — `/recipes/generate`
+      // returns a preview with a throwaway id (see backend GenerateRecipeUseCase:
+      // "the recipe is NOT persisted; that's the client's choice via POST /recipes").
+      // So we surface it only as `aiDraft` to pre-fill the wizard. It must NOT be
+      // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
+      // that does not exist on the server until the user publishes it.
+      set({
         generateState: { status: 'success', recipe },
         aiDraft: recipe,
-        recipes: [recipe, ...s.recipes],
-      }));
+      });
     },
     updateRecipe: async (id, input, onProgress) => {
       set({ updateState: { status: 'updating' } });

@@ -156,7 +156,7 @@ export const tr: Translations = {
     aiUpdated: 'Güncellendi!',
     aiThinking: 'Düşünüyor…',
     aiFirstReply: 'Tarifin hazır! İstediğin değişikliği söyle.',
-    aiSavedDraft: 'Taslak Tariflerim’e kaydedildi.',
+    aiSavedDraft: 'Bu bir AI taslağı. Yayınlayınca Tariflerim’e kaydedilecek.',
     manualMode: 'Elle dolduruyorsun — istediğin zaman benden yardım isteyebilirsin.',
     manualButton: 'Ya da elle doldur',
     chatTitle: 'AI Asistan',
