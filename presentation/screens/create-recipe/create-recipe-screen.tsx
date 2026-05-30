@@ -118,7 +118,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const createState = createdRecipesStore((s) => s.createState);
   const generateState = createdRecipesStore((s) => s.generateState);
   const updateState = createdRecipesStore((s) => s.updateState);
-  const aiDraft = createdRecipesStore((s) => s.aiDraft);
 
   const { recipeId } = useLocalSearchParams<{ recipeId?: string }>();
   const isEditMode = typeof recipeId === 'string' && recipeId.length > 0;
@@ -301,6 +300,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const state = createdRecipesStore.getState().createState;
     if (state.status === 'success') {
       createdRecipesStore.getState().resetCreateState();
+      // The AI draft (if any) is now a real, persisted recipe — drop the preview.
+      createdRecipesStore.getState().clearAiDraft();
       router.replace('/my-recipes');
     }
   };
@@ -359,41 +360,16 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     }
   };
 
-  const handlePublishAi = async (): Promise<void> => {
-    if (hasNewImage && aiDraft !== null) {
-      const coverImage = form.media.find((m) => m.type === 'image');
-      if (coverImage !== undefined) {
-        const uri = coverImage.url;
-        const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-        const mimeMap: Record<string, string> = {
-          jpg: 'image/jpeg',
-          jpeg: 'image/jpeg',
-          png: 'image/png',
-          webp: 'image/webp',
-          heic: 'image/heic',
-        };
-        await createdRecipesStore.getState().updateRecipe(aiDraft.id, {
-          imageUri: uri,
-          imageFileName: `recipe-${Date.now()}.${ext}`,
-          imageMimeType: mimeMap[ext] ?? 'image/jpeg',
-        });
-        // If the image update failed, stay on review so the error is visible.
-        if (createdRecipesStore.getState().updateState.status === 'error') return;
-      }
-    }
-    createdRecipesStore.getState().clearAiDraft();
-    router.replace('/my-recipes');
-  };
-
   const handleSave = (): void => {
     if (isEditMode) {
       void handleUpdate();
       return;
     }
-    if (wasAiUsed) {
-      handlePublishAi();
-      return;
-    }
+    // WHY: AI-generated recipes are NOT persisted by `/recipes/generate` — it
+    // returns a preview with a throwaway id. Publishing therefore goes through
+    // the same create path as a manual recipe (`POST /recipes`), using the form
+    // the user reviewed/edited plus their cover photo. The previous PATCH-the-
+    // draft approach 404'd because that draft never existed on the server.
     void handlePublishManual();
   };
 
@@ -418,7 +394,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const isPublishing = createState.status === 'creating';
   const isSaving = isEditMode
     ? updateState.status === 'updating'
-    : isPublishing || (wasAiUsed && updateState.status === 'updating');
+    : isPublishing;
   const continueDisabled = !canNext();
 
   return (
@@ -509,8 +485,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
                     colors,
                     missing,
                     wasAiUsed,
-                    createError: !isEditMode && !wasAiUsed && createState.status === 'error',
-                    updateError: (isEditMode || wasAiUsed) && updateState.status === 'error',
+                    createError: !isEditMode && createState.status === 'error',
+                    updateError: isEditMode && updateState.status === 'error',
                     failureMessage:
                       createState.status === 'error'
                         ? createState.failure.message

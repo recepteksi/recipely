@@ -146,7 +146,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     await pending;
   });
 
-  it('on success, sets generateState.success, aiDraft, and prepends to recipes', async () => {
+  it('on success, sets generateState.success and aiDraft, but does NOT touch recipes', async () => {
     const recipe = makeRecipe({ id: 'r-new', name: 'New AI Dish' });
     const store = makeStoreWithGenerateResult(ok(recipe));
 
@@ -158,10 +158,13 @@ describe('createdRecipesStore.generateRecipe', () => {
       expect(s.generateState.recipe).toBe(recipe);
     }
     expect(s.aiDraft).toBe(recipe);
-    expect(s.recipes).toEqual([recipe]);
+    // WHY: `/recipes/generate` does not persist the recipe — it returns a
+    // preview with a throwaway id. Prepending it to `recipes` would show a
+    // phantom entry in "My Recipes" that does not exist on the server.
+    expect(s.recipes).toEqual([]);
   });
 
-  it('prepends the new recipe ahead of any existing recipes', async () => {
+  it('leaves existing recipes untouched when a recipe is generated', async () => {
     const existing = makeRecipe({ id: 'existing' });
     const generated = makeRecipe({ id: 'generated' });
     const store = makeStoreWithGenerateResult(ok(generated));
@@ -170,7 +173,8 @@ describe('createdRecipesStore.generateRecipe', () => {
     await store.getState().generateRecipe('pasta', 'en');
 
     const s = store.getState();
-    expect(s.recipes.map((r) => r.id)).toEqual(['generated', 'existing']);
+    expect(s.recipes.map((r) => r.id)).toEqual(['existing']);
+    expect(s.aiDraft).toBe(generated);
   });
 
   it('on failure, sets generateState.error and leaves aiDraft + recipes untouched', async () => {
