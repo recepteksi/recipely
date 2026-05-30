@@ -9,7 +9,7 @@ import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';
 import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
 import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
-import { getLocale } from '@presentation/i18n/i18n';
+import { getLocale, hydrateLocale } from '@presentation/i18n/i18n';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -27,6 +27,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
   useTimerNotificationSync();
 
   useEffect(() => {
+    void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] hydrate failed:', err);

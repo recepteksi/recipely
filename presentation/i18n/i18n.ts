@@ -1,25 +1,64 @@
 import { en, type Translations } from './en';
 import { tr } from './tr';
 import { getLocales } from 'expo-localization';
+import { kvStore } from '@infrastructure/storage/kv-store';
+import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 const translations: Record<string, Translations> = { en, tr };
 
 let currentLang: string = 'en';
 
+const listeners = new Set<() => void>();
+
+const notify = (): void => {
+  for (const listener of listeners) listener();
+};
+
+/** Applies a locale to the in-memory state and (optionally) persists it. */
+const applyLocale = (lang: string, persist: boolean): void => {
+  if (!(lang in translations) || lang === currentLang) return;
+  currentLang = lang;
+  if (persist) {
+    void kvStore.setItem(LANGUAGE_STORAGE_KEY, lang);
+  }
+  notify();
+};
+
+/** Seeds the locale from the device language for the first synchronous render. */
 export const initLocale = (): void => {
   const locales = getLocales();
   const deviceLang = locales[0]?.languageCode ?? 'en';
   currentLang = deviceLang in translations ? deviceLang : 'en';
 };
 
+/**
+ * Restores the persisted locale (if any). Async so it can read storage; call
+ * once during bootstrap after {@link initLocale}. Falls back to the device
+ * default already seeded by {@link initLocale} when nothing is stored.
+ */
+export const hydrateLocale = async (): Promise<void> => {
+  const stored = await kvStore.getItem(LANGUAGE_STORAGE_KEY);
+  if (stored && stored in translations) {
+    applyLocale(stored, false);
+  }
+};
+
 export const t = (): Translations => {
   return translations[currentLang] ?? en;
 };
 
+/** Switches the active locale and persists the choice across app restarts. */
 export const setLocale = (lang: string): void => {
-  if (lang in translations) {
-    currentLang = lang;
-  }
+  applyLocale(lang, true);
 };
 
 export const getLocale = (): string => currentLang;
+
+/** Subscribes to locale changes (for `useSyncExternalStore`). */
+export const subscribeLocale = (listener: () => void): (() => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+
+/** Current locale snapshot (for `useSyncExternalStore`). */
+export const getLocaleSnapshot = (): string => currentLang;

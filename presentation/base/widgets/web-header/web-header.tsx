@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { WebHeaderLogo } from './web-header-logo';
 import { WebHeaderTabs, type WebHeaderTabKey } from './web-header-tabs';
 import { WebHeaderSearch } from './web-header-search';
@@ -34,6 +34,7 @@ const isProfileRoute = (pathname: string): boolean =>
  * by the root layout so screens stay platform-agnostic.
  */
 export const WebHeader = (): React.JSX.Element => {
+  useLocale(); // re-render the persistent header when the language changes
   const router = useRouter();
   const pathname = usePathname();
   const colors = useTheme().colors;

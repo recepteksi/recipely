@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -25,7 +25,7 @@ import { SelectChip } from '@presentation/base/widgets/select-chip';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import type { Failure } from '@presentation/base/types';
@@ -81,6 +81,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const load = recipeListStore((s) => s.load);
   const { isWebShell, width } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
+  // Subscribe to locale so the screen re-renders (and reloads, below) on a
+  // language switch even while it sits back-stacked under Settings.
+  const language = useLocale();
 
   const [search, setSearch] = useState('');
 
@@ -116,6 +119,23 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const onRefresh = useCallback(() => {
     void load(buildApiFilters(filters, sortBy));
   }, [load, filters, sortBy, buildApiFilters]);
+
+  // Recipe content is localized server-side via the `Accept-Language` header,
+  // so a language switch must re-fetch the list (UI strings refresh via the
+  // `language` subscription above). Refs keep the latest filters/sort without
+  // re-running this effect when they change — only the locale should trigger it.
+  const filtersRef = useRef(filters);
+  const sortByRef = useRef(sortBy);
+  filtersRef.current = filters;
+  sortByRef.current = sortBy;
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    void load(buildApiFilters(filtersRef.current, sortByRef.current));
+  }, [language, load, buildApiFilters]);
 
   const openRecipe = useCallback(
     (id: string) => {
