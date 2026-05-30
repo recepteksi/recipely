@@ -91,7 +91,7 @@ export const RegisterScreen = (): React.JSX.Element => {
     password === confirm &&
     agree;
 
-  const handleRegister = useCallback(() => {
+  const handleRegister = useCallback(async () => {
     if (name.trim().length === 0) {
       setLocalError(t().register.errorName);
       return;
@@ -113,8 +113,17 @@ export const RegisterScreen = (): React.JSX.Element => {
       return;
     }
     setLocalError(undefined);
-    void register(email, password, name);
-  }, [name, email, emailValid, password, confirm, agree, register]);
+    const challenge = await register(email, password, name);
+    if (challenge) {
+      router.push({
+        pathname: '/verify-code',
+        params: {
+          email: challenge.email,
+          expiresInSeconds: String(challenge.expiresInSeconds),
+        },
+      });
+    }
+  }, [name, email, emailValid, password, confirm, agree, register, router]);
 
   const isLoading = state.status === 'loading';
   const remoteError =
@@ -323,7 +332,7 @@ export const RegisterScreen = (): React.JSX.Element => {
               returnKeyType="done"
               onFocus={() => setFocusField('confirm')}
               onBlur={() => setFocusField(null)}
-              onSubmitEditing={handleRegister}
+              onSubmitEditing={() => { void handleRegister(); }}
             />
             {confirm.length > 0 ? (
               <Ionicons
@@ -377,7 +386,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           ) : null}
 
           <Pressable
-            onPress={handleRegister}
+            onPress={() => { void handleRegister(); }}
             disabled={!canSubmit || isLoading}
             style={[
               styles.submitButton,

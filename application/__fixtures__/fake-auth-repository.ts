@@ -1,11 +1,14 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import type { AuthSession } from '@domain/auth/auth-session';
+import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 
 export interface FakeAuthRepositoryConfig {
   signInResult?: Result<AuthSession, Failure>;
-  signUpResult?: Result<AuthSession, Failure>;
+  requestRegistrationResult?: Result<RegistrationChallenge, Failure>;
+  verifyRegistrationResult?: Result<AuthSession, Failure>;
+  resendRegistrationCodeResult?: Result<RegistrationChallenge, Failure>;
   signOutResult?: Result<void, Failure>;
   currentSessionResult?: Result<AuthSession | null, Failure>;
   signInWithGoogleResult?: Result<AuthSession, Failure>;
@@ -26,13 +29,25 @@ export class FakeAuthRepository implements IAuthRepository {
     );
   }
 
-  signUp(
+  requestRegistration(
     _email: string,
     _password: string,
     _displayName: string,
-  ): Promise<Result<AuthSession, Failure>> {
+  ): Promise<Result<RegistrationChallenge, Failure>> {
     return Promise.resolve(
-      this.config.signUpResult ?? fail(new UnknownFailure('not configured')),
+      this.config.requestRegistrationResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
+  verifyRegistration(_email: string, _code: string): Promise<Result<AuthSession, Failure>> {
+    return Promise.resolve(
+      this.config.verifyRegistrationResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
+  resendRegistrationCode(_email: string): Promise<Result<RegistrationChallenge, Failure>> {
+    return Promise.resolve(
+      this.config.resendRegistrationCodeResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 

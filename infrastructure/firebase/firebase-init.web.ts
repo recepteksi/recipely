@@ -19,7 +19,12 @@ const firebaseConfig = {
 
 let appInstance: FirebaseApp | null = null;
 
-const getOrInitApp = (): FirebaseApp | null => {
+/**
+ * Returns the lazily-initialized Firebase JS SDK app for web, or `null` when
+ * the `EXPO_PUBLIC_FIREBASE_*` config env vars aren't injected at build time.
+ * Shared by `initFirebase` (analytics) and the web social-auth provider.
+ */
+export const getFirebaseApp = (): FirebaseApp | null => {
   if (appInstance !== null) return appInstance;
   if (
     firebaseConfig.apiKey === undefined ||
@@ -46,7 +51,7 @@ const getOrInitApp = (): FirebaseApp | null => {
  * vars aren't injected at build time.
  */
 export const initFirebase = async (): Promise<void> => {
-  const app = getOrInitApp();
+  const app = getFirebaseApp();
   if (app === null) return;
   try {
     const supported = await isAnalyticsSupported();
