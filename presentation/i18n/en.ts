@@ -87,6 +87,8 @@ export const en = {
     signOutConfirm: 'Are you sure you want to sign out?',
     about: 'About',
     version: 'Version',
+    privacyPolicy: 'Privacy Policy',
+    termsOfUse: 'Terms of Use',
   },
   navigation: {
     recipes: 'Recipes',

@@ -19,6 +19,12 @@ export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 // needs an absolute URL that bypasses HttpClient's baseURL.
 export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 
+// Public legal pages served as static HTML at the server root (outside
+// /api/v1). Opened in the device browser via Linking; also the Privacy
+// Policy URL submitted to Google Play.
+export const PRIVACY_POLICY_URL: string = `${SERVER_URL}/privacy`;
+export const TERMS_OF_USE_URL: string = `${SERVER_URL}/terms`;
+
 export const AUTH_LOGIN_PATH = "/auth/login";
 export const AUTH_REGISTER_PATH = "/auth/register";
 export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";

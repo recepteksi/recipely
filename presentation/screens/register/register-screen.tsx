@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -20,6 +21,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD = 8;
@@ -365,12 +367,24 @@ export const RegisterScreen = (): React.JSX.Element => {
             </View>
             <ThemedText variant="caption" muted style={styles.termsText}>
               {t().register.agreeText}{' '}
-              <ThemedText variant="caption" style={[styles.linkWeight, { color: colors.primary }]}>
+              <ThemedText
+                variant="caption"
+                style={[styles.linkWeight, { color: colors.primary }]}
+                accessibilityRole="link"
+                accessibilityLabel={t().register.terms}
+                onPress={() => Linking.openURL(TERMS_OF_USE_URL)}
+              >
                 {t().register.terms}
               </ThemedText>
               {' '}
               {t().register.and}{' '}
-              <ThemedText variant="caption" style={[styles.linkWeight, { color: colors.primary }]}>
+              <ThemedText
+                variant="caption"
+                style={[styles.linkWeight, { color: colors.primary }]}
+                accessibilityRole="link"
+                accessibilityLabel={t().register.privacy}
+                onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+              >
                 {t().register.privacy}
               </ThemedText>
             </ThemedText>
