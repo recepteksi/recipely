@@ -1,4 +1,4 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,7 +11,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from './themed-text';
-import { recipeImageSource } from './recipe-image-source';
+import { RecipeImage } from './recipe-image';
 
 export interface RecipeCardProps {
   name: string;
@@ -75,7 +75,12 @@ export const RecipeCard = ({
       ]}
     >
       <View style={styles.imageContainer}>
-        <Image source={recipeImageSource(image)} style={styles.image} />
+        <RecipeImage
+          uri={image}
+          style={styles.image}
+          accessibilityLabel={name}
+          placeholderLabel={t().recipes.noPhoto}
+        />
         <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
           <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: '600' }}>
             {cuisine}
