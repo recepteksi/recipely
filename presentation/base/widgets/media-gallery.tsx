@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -22,10 +23,16 @@ export interface MediaGalleryProps {
   height?: number;
 }
 
+/** Height-to-width ratio for the web hero so wide columns get a balanced photo. */
+const WEB_HERO_ASPECT = 0.62;
+
 /**
  * Horizontally paginated photo gallery with dot indicators and a centered counter.
- * On web, where the FlatList cannot be swiped with a mouse, exposes prev/next arrows
- * that scroll to the adjacent slide.
+ *
+ * The slide width is measured from the gallery's own container (via onLayout) rather
+ * than the window, so on web the photo fills the responsive column exactly instead of
+ * being cropped by a window-wide slide. On web, where the FlatList cannot be swiped
+ * with a mouse, prev/next arrows scroll to the adjacent slide.
  */
 export const MediaGallery = ({
   media,
@@ -33,8 +40,18 @@ export const MediaGallery = ({
 }: MediaGalleryProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [active, setActive] = useState(0);
-  const width = Dimensions.get('window').width;
+  const [width, setWidth] = useState(() => Dimensions.get('window').width);
   const listRef = useRef<FlatList<MediaItem>>(null);
+
+  const resolvedHeight =
+    Platform.OS === 'web'
+      ? Math.min(Math.round(width * WEB_HERO_ASPECT), sizes.heroImageHeightWeb)
+      : height;
+
+  const onLayout = (e: LayoutChangeEvent): void => {
+    const next = Math.round(e.nativeEvent.layout.width);
+    if (next > 0 && next !== width) setWidth(next);
+  };
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
     const x = e.nativeEvent.contentOffset.x;
@@ -50,16 +67,23 @@ export const MediaGallery = ({
     setActive(idx);
   };
 
+  // Keep the active slide pinned when the measured width changes (e.g. web resize),
+  // otherwise the FlatList would drift to a fractional offset between two photos.
+  useEffect(() => {
+    listRef.current?.scrollToIndex({ index: active, animated: false });
+  }, [width, active]);
+
   const showArrows = Platform.OS === 'web' && media.length > 1;
 
   return (
-    <View style={{ height }}>
+    <View style={{ height: resolvedHeight }} onLayout={onLayout}>
       <FlatList
         ref={listRef}
         data={media as MediaItem[]}
+        extraData={width}
         keyExtractor={(item) => item.url}
         renderItem={({ item }) => (
-          <MediaSlide item={item} width={width} height={height} />
+          <MediaSlide item={item} width={width} height={resolvedHeight} />
         )}
         getItemLayout={(_, index) => ({
           length: width,
