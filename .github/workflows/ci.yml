@@ -157,7 +157,7 @@ jobs:
           channelId: live
 
   distribute:
-    name: Distribute Android APK
+    name: Distribute Android (Firebase APK + Play AAB)
     runs-on: ubuntu-latest
     needs: [lint-and-typecheck, test, tag-release]
     # Only ship a build when quality gates pass on a push to main.
@@ -214,11 +214,43 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build release APK
+      - name: Restore upload keystore
+        env:
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          # The release signingConfig injected by ./plugins/withAndroidReleaseSigning
+          # resolves storeFile relative to android/app, so decode there. Without
+          # this keystore the build would fall back to debug signing, which the
+          # Play Store rejects — so fail loudly if the secret is missing.
+          if [ -z "$ANDROID_UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 secret is empty"
+            exit 1
+          fi
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | tr -d ' \t\r\n' \
+            | base64 -d > android/app/upload.keystore
+          keytool -list -keystore android/app/upload.keystore \
+            -storepass "${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}" >/dev/null \
+            || { echo "::error::upload.keystore invalid or wrong store password"; exit 1; }
+
+      - name: Write signing properties
+        run: |
+          # Gradle project properties consumed by the injected release
+          # signingConfig. Appended after prebuild because android/ is
+          # regenerated every run.
+          {
+            echo "RECIPELY_UPLOAD_STORE_FILE=upload.keystore"
+            echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}"
+            echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
+            echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
+          } >> android/gradle.properties
+
+      - name: Build release APK + AAB
         working-directory: android
         run: |
+          # APK feeds Firebase App Distribution; AAB is the Play Store artifact.
+          # One Gradle invocation builds both, release-signed via upload.keystore.
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
@@ -231,3 +263,12 @@ jobs:
             ${{ needs.tag-release.outputs.tag }} (build ${{ github.run_number }})
 
             ${{ github.event.head_commit.message }}
+
+      - name: Upload AAB to Google Play (internal)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.recipely.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
