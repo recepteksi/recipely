@@ -7,7 +7,6 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { MediaGallery } from '@presentation/base/widgets/media-gallery';
-import { VideoSection } from '@presentation/base/widgets/video-section';
 import { TimeCard } from '@presentation/base/widgets/time-card';
 import { IngredientCard } from '@presentation/base/widgets/ingredient-card';
 import { InstructionCard } from '@presentation/base/widgets/instruction-card';
@@ -243,11 +242,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           {current.status === 'loaded' ? (
             (() => {
               const recipe = current.recipe;
+              // Photos only — videos are no longer shown in recipes.
+              const images = recipe.media.filter((m) => m.type === 'image');
               const media: readonly MediaItem[] =
-                recipe.media.length > 0
-                  ? recipe.media
+                images.length > 0
+                  ? images
                   : [{ type: 'image', url: recipe.image }];
-              const videos = media.filter((m) => m.type === 'video');
 
               return (
                 <View>
@@ -336,13 +336,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           </View>
                         ))}
                       </View>
-                    ) : null}
-
-                    {videos.length > 0 ? (
-                      <>
-                        <SectionHeader title={t().recipes.videos} />
-                        <VideoSection videos={videos} />
-                      </>
                     ) : null}
 
                     <SectionHeader title={t().recipes.ingredients} />

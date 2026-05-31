@@ -31,7 +31,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { UpdateRecipeInput } from '@domain/recipes/i-recipe-repository';
+import type { RecipeMediaUpload, UpdateRecipeInput } from '@domain/recipes/i-recipe-repository';
 import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
 import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
 import { type Difficulty } from '@domain/recipes/difficulty';
@@ -52,6 +52,31 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 /** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
 const formatLabel = (key: string): string =>
   key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+const MIME_BY_EXT: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  heic: 'image/heic',
+};
+
+/**
+ * Converts a gallery `MediaItem` into a `RecipeMediaUpload`. The filename is
+ * unique per call so multiple photos never collide in the multipart payload.
+ * Remote `https://` items keep their URL on update; the derived name/mime are
+ * only used when the repository uploads a local file.
+ */
+const toMediaUpload = (item: MediaItem): RecipeMediaUpload => {
+  const ext = item.url.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const safeExt = ext.length > 0 && ext.length <= 4 ? ext : 'jpg';
+  return {
+    uri: item.url,
+    fileName: `recipe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`,
+    mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
+    type: item.type,
+  };
+};
 
 interface RecipeFormState {
   name: string;
@@ -136,7 +161,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       : emptyForm,
   );
   const [missing, setMissing] = useState(false);
-  const [hasNewImage, setHasNewImage] = useState(false);
 
   const aiLoading = generateState.status === 'generating';
 
@@ -213,7 +237,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       // In edit mode put new items first so they auto-become the cover image.
       media: isEditMode ? [...items, ...f.media] : [...f.media, ...items],
     }));
-    setHasNewImage(true);
   };
   const onMediaRemove = (i: number): void =>
     setForm((f) => ({ ...f, media: f.media.filter((_, idx) => idx !== i) }));
@@ -253,8 +276,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   };
 
   const handlePublishManual = async (): Promise<void> => {
-    const coverImage = form.media.find((m) => m.type === 'image');
-    if (coverImage === undefined) {
+    // Only photos are supported; the first one is the cover.
+    const images = form.media.filter((m) => m.type === 'image');
+    if (images.length === 0) {
       setMissing(true);
       return;
     }
@@ -262,16 +286,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const locale = getLocale();
     const cuisine = form.cuisine || 'OTHER';
     const category = form.category || 'DINNER';
-    const uri = coverImage.url;
-    const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-    const mimeMap: Record<string, string> = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-      heic: 'image/heic',
-    };
-    const mime = mimeMap[ext] ?? 'image/jpeg';
     const cleanIngredients = form.ingredients
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
@@ -288,9 +302,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: form.prepTimeMinutes,
       cookTimeMinutes: form.cookTimeMinutes,
-      imageUri: uri,
-      imageFileName: `recipe-${Date.now()}.${ext}`,
-      imageMimeType: mime,
+      media: images.map(toMediaUpload),
       tags: { [locale]: [DIFFICULTY_LABELS[form.difficulty]] },
       mealType: { [locale]: [] },
       isPublished: true,
@@ -310,6 +322,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const locale = getLocale();
     const cleanIngredients = form.ingredients.map((s) => s.trim()).filter((s) => s.length > 0);
     const cleanInstructions = form.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
+    // Photos only; the full ordered list is sent so reorders/removals persist.
+    // The repository uploads local files and keeps already-hosted URLs as-is.
+    const images = form.media.filter((m) => m.type === 'image');
 
     const input: UpdateRecipeInput = {
       name: { [locale]: form.name.trim() },
@@ -321,34 +336,12 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       prepTimeMinutes: form.prepTimeMinutes,
       cookTimeMinutes: form.cookTimeMinutes,
       servings: form.servings,
+      ...(images.length > 0 ? { media: images.map(toMediaUpload) } : {}),
       tags: { [locale]: [DIFFICULTY_LABELS[form.difficulty]] },
       mealType: { [locale]: [] },
       isPublished: true,
       locale,
     };
-
-    if (hasNewImage) {
-      // WHY: only upload a LOCAL file — remote https:// URLs are already on the
-      // server and re-uploading them via RN FormData { uri } fails on iOS/Android
-      // because native XHR does not reliably stream remote URIs as multipart.
-      const localImage = form.media.find(
-        (m) => m.type === 'image' && !m.url.startsWith('http'),
-      );
-      if (localImage !== undefined) {
-        const uri = localImage.url;
-        const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-        const mimeMap: Record<string, string> = {
-          jpg: 'image/jpeg',
-          jpeg: 'image/jpeg',
-          png: 'image/png',
-          webp: 'image/webp',
-          heic: 'image/heic',
-        };
-        input.imageUri = uri;
-        input.imageFileName = `recipe-${Date.now()}.${ext}`;
-        input.imageMimeType = mimeMap[ext] ?? 'image/jpeg';
-      }
-    }
 
     if (recipeId === undefined || recipeId.length === 0) return;
     await createdRecipesStore.getState().updateRecipe(recipeId, input);

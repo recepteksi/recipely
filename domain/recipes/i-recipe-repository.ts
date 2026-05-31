@@ -1,9 +1,23 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { MediaType } from '@domain/recipes/media-item';
 import type { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
+
+/**
+ * A single media file attached to a recipe on create/update. `uri` is either a
+ * local file URI (uploaded as multipart) or an already-hosted `https://` URL
+ * (kept verbatim on update). The list order is the gallery order; index 0 is
+ * the cover.
+ */
+export interface RecipeMediaUpload {
+  uri: string;
+  fileName: string;
+  mimeType: string;
+  type: MediaType;
+}
 
 export type RecipeSort =
   | 'popular'
@@ -33,9 +47,8 @@ export interface CreateRecipeInput {
   instructions: Record<string, string[]>;
   prepTimeMinutes: number;
   cookTimeMinutes: number;
-  imageUri: string;
-  imageFileName: string;
-  imageMimeType: string;
+  // Ordered gallery (cover first). At least one image is required.
+  media: RecipeMediaUpload[];
   rating?: number;
   tags?: Record<string, string[]>;
   mealType?: Record<string, string[]>;
@@ -53,9 +66,10 @@ export interface UpdateRecipeInput {
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
   servings?: number;
-  imageUri?: string;
-  imageFileName?: string;
-  imageMimeType?: string;
+  // Full ordered gallery (cover first). Omit to leave media unchanged; when
+  // provided it replaces the recipe's media. Local URIs are uploaded first,
+  // remote `https://` URLs are kept as-is.
+  media?: RecipeMediaUpload[];
   rating?: number;
   tags?: Record<string, string[]>;
   mealType?: Record<string, string[]>;
