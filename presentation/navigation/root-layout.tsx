@@ -10,6 +10,7 @@ import { ActiveTimersBar } from '@presentation/base/widgets/active-timers-bar';
 import { SplashOverlay } from '@presentation/base/widgets/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { AlarmScreen } from '@presentation/screens/alarm/alarm-screen';
+import { useAuthGuard, PUBLIC_PATHS } from '@presentation/navigation/use-auth-guard';
 import { alarmStore } from '@application/timers/alarm-store';
 import { initLocale } from '@presentation/i18n';
 
@@ -27,14 +28,6 @@ const AlarmOverlay = (): React.JSX.Element | null => {
   );
 };
 
-const AUTH_PATHS = new Set<string>([
-  '/login',
-  '/register',
-  '/verify-code',
-  '/forgot-password',
-  '/',
-]);
-
 /**
  * Decides whether the sticky WebHeader should render. Auth screens own their
  * own split-pane chrome and skip the header. Everything else uses it as soon
@@ -44,7 +37,7 @@ const useShouldRenderWebHeader = (): boolean => {
   const { isWebShell } = useLayout();
   const pathname = usePathname();
   if (!isWebShell) return false;
-  return !AUTH_PATHS.has(pathname);
+  return !PUBLIC_PATHS.has(pathname);
 };
 
 const WebShellChrome = (): React.JSX.Element | null => {
@@ -55,6 +48,7 @@ const WebShellChrome = (): React.JSX.Element | null => {
 
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
+  useAuthGuard();
 
   const reactNavTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
   const headerBg = colors.background;
