@@ -1,5 +1,15 @@
 # Development Workflow
 
+> **Use the agent team by default, without being asked.** For any non-trivial task, delegate
+> to the subagents in `.claude/agents/` (`ts-developer`, `rn-developer`, `test-developer`,
+> `ui-designer`, `code-reviewer`) — the user should never have to say "use the agents."
+> The user has authorized this whole flow **in these files**: branch → implement via agents →
+> gate → `code-reviewer` approval → push → PR to `dev` → merge to `dev`, all **without asking**.
+> Stop only on failures (lint/tsc/jest red, review requests changes, unresolvable conflict) or
+> the release-only steps (promoting `dev → main`, production Firebase Hosting deploy), which are
+> **stop-and-ask**. The authoritative summary lives in root `CLAUDE.md` → "Agent workflow (use
+> by default)"; this file is the step-by-step.
+
 Apply this workflow sequentially for every task.
 
 ## 1. Branch Creation
@@ -57,32 +67,31 @@ Code-reviewer will check:
 - If agent finds issues → write to relevant task → have agent fix → send for review again
 - If no issues → proceed
 
-## 5. Push to Dev
+## 5. Push & Open PR (target `dev`)
 
 ```bash
-# After review passes, push to dev
-git push origin <branch-name>
+# After code-reviewer approves and the gate is green, push and open a PR to dev
+git push -u origin <branch-name>
+gh pr create --base dev --title "<conventional title>" --body "<summary>"
 ```
 
-## 6. Merge
+`main` is release-only — never target it from a PR here.
 
-Open a PR and verify, then:
+## 6. Merge to `dev`
 
 ```bash
-# Sync with dev (resolve conflicts if needed)
-git checkout dev
-git pull origin dev
-git merge <branch-name>
-
-# If conflicts exist, resolve them, then commit
-git push origin dev
+# Squash-merge once CI/checks are green, then sync local dev
+gh pr merge <pr-number> --squash --delete-branch
+git checkout dev && git pull
 ```
+
+The remote branch is deleted by `--delete-branch`; report the PR # and merged commit.
 
 ## 7. Branch Cleanup
 
 ```bash
-# After merge is complete, delete local branch
-git branch -d <branch-name>
+# If a stale local branch remains after the squash merge
+git branch -D <branch-name>
 ```
 
 ---
