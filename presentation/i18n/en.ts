@@ -33,6 +33,8 @@ export const en = {
     title: 'Recipes',
     empty: 'No recipes found.',
     noPhoto: 'No photo yet',
+    previousPhoto: 'Previous photo',
+    nextPhoto: 'Next photo',
     cuisine: 'Cuisine',
     category: 'Category',
     difficulty: 'Difficulty',

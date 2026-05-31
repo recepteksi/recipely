@@ -66,6 +66,7 @@ export const sizes = {
   settingsRowHeight: 52,
   searchBarHeight: 44,
   progressBarHeight: 6,
+  dotActiveWidth: 18,
   checkboxSize: 24,
   reviewImageHeight: 160,
   textAreaMin: 60,

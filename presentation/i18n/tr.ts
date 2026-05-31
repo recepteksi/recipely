@@ -35,6 +35,8 @@ export const tr: Translations = {
     title: 'Tarifler',
     empty: 'Tarif bulunamadı.',
     noPhoto: 'Henüz fotoğraf yok',
+    previousPhoto: 'Önceki fotoğraf',
+    nextPhoto: 'Sonraki fotoğraf',
     cuisine: 'Mutfak',
     category: 'Kategori',
     difficulty: 'Zorluk',
