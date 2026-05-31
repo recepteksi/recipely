@@ -2,6 +2,56 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Agent workflow (use by default)
+
+For any non-trivial task in this repo, use the subagent team in `.claude/agents/`
+**without being asked** — the user should never have to say "use the agents." Each
+`*.md` file there is a Claude Code subagent (YAML frontmatter, auto-discovered); delegate
+with the matching `subagent_type` via the Agent tool. These agents also belong to the
+persistent team `recipely-team` (`~/.claude/teams/recipely-team/config.json`) — pass
+`team_name: "recipely-team"` when spawning or messaging so context persists across calls.
+Skip the team only for genuinely trivial one-liners (a typo, a version bump, a single-line
+config edit, a copy tweak). When in doubt, delegate.
+
+### Roster
+
+| Agent | Owns |
+|-------|------|
+| **ts-developer** | `domain` / `application` / `infrastructure` / `core` — entities, value objects, use cases, repositories, DTOs, mappers, DI, types. |
+| **rn-developer** | `presentation/` UI — screens, widgets, expo-router routes, themed components, hooks. |
+| **test-developer** | Jest + jest-expo tests for every new use case, repository, mapper, store, value object. |
+| **ui-designer** | Research + `presentation/design-spec.md` (no production code). |
+| **code-reviewer** | Read-only DDD / Clean Architecture / TS-strictness audit before merge. Blocks on any violation. |
+
+### Pipelines
+
+- **Feature** → (`ui-designer` first if it has a visual surface) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer`
+- **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test) → `code-reviewer`
+
+Match each agent's tool capabilities to the work: read-only agents for research/review,
+full-capability agents for implementation. Run agents in parallel when their files don't overlap.
+
+### End-to-end git flow (run the whole thing without asking)
+
+The user has authorized the full flow below **in this file**. Do not ask before branching,
+committing, pushing, opening a PR, or merging **to `dev`** — just execute and report. The
+only stops are explicit failures (lint / tsc / jest red, `code-reviewer` requests changes,
+a merge conflict you can't safely resolve) and the Exceptions below.
+
+1. **Branch from `dev`**: `git checkout dev && git pull && git checkout -b <feat|fix|refactor|chore>/<name>`. Never edit `dev` or `main` directly.
+2. **Implement** via the agent pipeline above. Clear, atomic, conventional-commit messages (`feat(scope):`, `fix(scope):`, …).
+3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest` (at minimum the touched layer).
+4. **`code-reviewer` must approve** before merge. If it requests changes, loop back to the developer agent; never merge over a blocked review.
+5. **Push and open a PR → `dev`**: `git push -u origin <branch>` then `gh pr create --base dev …`.
+6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull`.
+7. **Report** the PR # and the merged commit. Stop.
+
+### Exceptions (stop and ask)
+
+- Promoting `dev → main` or any production web deploy (Firebase Hosting) — `main` is release-only.
+- Dependency major-version bumps, Expo SDK upgrades, or native (`ios/`, `android/`) changes.
+- Force-push, `git reset --hard` on shared branches, history rewrites, deleting work you didn't author.
+
 ## Commands
 
 - `npm start` / `npx expo start` — start the Expo dev server (Metro).
@@ -85,23 +135,9 @@ Entry point is `expo-router/entry` (set in `package.json` `main`). App config li
 
 ## Team & Workflow
 
-This project has a persistent agent team configured at `~/.claude/teams/recipely-team/config.json`.
-
-**Default workflow for every non-trivial task:**
-
-1. Start from `dev` and pull latest: `git checkout dev && git pull`.
-2. Create a feature branch off `dev`: `git checkout -b feat/<short-name>` (or `fix/`, `refactor/`, `chore/`).
-3. Do all work on the feature branch.
-4. When done, run `npm run lint` and `npx tsc --noEmit` and `npx jest` for the touched layer.
-5. Merge back to `dev` (or open a PR targeting `dev`, never `main`).
-6. Never commit directly to `dev` or `main`.
-
-**Preferred agents for the team `recipely-team`:**
-
-- `ts-developer` — domain / application / infrastructure / core (entities, use cases, repositories, DTOs, mappers, DI, types).
-- `rn-developer` — `presentation/` UI (screens, widgets, expo-router, themed components).
-- `test-developer` — Jest + jest-expo tests for every new use case, repository, mapper, store, value object.
-- `ui-designer` — research + `presentation/design-spec.md` updates (no production code).
-- `code-reviewer` — independent DDD / Clean Architecture / TypeScript-strictness review after a batch of changes.
-
-When a task starts, spawn (or message) the relevant team members via the Agent / SendMessage tool with `team_name: "recipely-team"`. Match the agent's tool capabilities to the work: read-only agents for research, full-capability agents for implementation.
+The agent team and the end-to-end git flow are defined once, at the top of this file —
+see **[Agent workflow (use by default)](#agent-workflow-use-by-default)**. That section is
+authoritative: use the agents by default without being asked, run the branch → implement →
+gate → review → PR-to-`dev` → merge flow without asking, and stop only on the listed
+Exceptions. The agent roster and per-agent rules also live in `.claude/agents/` (see
+`.claude/agents/INDEX.md`) and `WORKFLOW.md` elaborates the step-by-step.
