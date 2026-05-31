@@ -228,9 +228,13 @@ jobs:
           fi
           printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | tr -d ' \t\r\n' \
             | base64 -d > android/app/upload.keystore
+          # Validate the store password AND that the configured alias exists,
+          # so a wrong secret fails here with a clear message instead of deep
+          # inside the Gradle signing task.
           keytool -list -keystore android/app/upload.keystore \
+            -alias "${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}" \
             -storepass "${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}" >/dev/null \
-            || { echo "::error::upload.keystore invalid or wrong store password"; exit 1; }
+            || { echo "::error::upload.keystore invalid, wrong store password, or missing key alias"; exit 1; }
 
       - name: Write signing properties
         run: |
@@ -272,3 +276,9 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
+
+      - name: Clean up signing material
+        if: always()
+        # Self-hosted runners may not wipe the workspace between jobs, so the
+        # keystore and the appended signing passwords must not linger on disk.
+        run: rm -f android/app/upload.keystore android/gradle.properties

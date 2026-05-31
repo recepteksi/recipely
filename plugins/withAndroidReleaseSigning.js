@@ -33,24 +33,42 @@ const CONDITIONAL_RELEASE_SIGNING =
   `signingConfig project.hasProperty('${STORE_FILE_PROP}') ` +
   '? signingConfigs.release : signingConfigs.debug';
 
-/** Add a `release {}` entry to the `signingConfigs {}` block (once). */
+/** Add a `release {}` entry to the `signingConfigs {}` block (once).
+ *
+ * Idempotent on the exact injected string, so it survives a prebuild that
+ * reuses an already-patched `android/`. Throws if the `signingConfigs.debug`
+ * anchor is gone (Expo template drift) rather than silently leaving the build
+ * debug-signed — Play would reject that only after a full build + upload. */
 function addReleaseSigningConfig(contents) {
-  if (contents.includes('release {\n            if (project.hasProperty')) {
+  if (contents.includes(RELEASE_SIGNING_CONFIG)) {
     return contents;
   }
   const debugBlock = /(signingConfigs \{\n\s*debug \{[\s\S]*?\n\s*\})/;
+  if (!debugBlock.test(contents)) {
+    throw new Error(
+      'withAndroidReleaseSigning: signingConfigs.debug anchor not found — ' +
+        'the Expo Android template may have changed.',
+    );
+  }
   return contents.replace(debugBlock, `$1${RELEASE_SIGNING_CONFIG}`);
 }
 
-/** Point the `release` build type at the keystore when one is provided. */
+/** Point the `release` build type at the keystore when one is provided.
+ *
+ * Throws if the expected `signingConfig signingConfigs.debug` anchor is
+ * missing, for the same fail-fast reason as above. */
 function useReleaseSigning(contents) {
   if (contents.includes(CONDITIONAL_RELEASE_SIGNING)) {
     return contents;
   }
-  return contents.replace(
-    /signingConfig signingConfigs\.debug\n(\s*def enableShrinkResources)/,
-    `${CONDITIONAL_RELEASE_SIGNING}\n$1`,
-  );
+  const anchor = /signingConfig signingConfigs\.debug\n(\s*def enableShrinkResources)/;
+  if (!anchor.test(contents)) {
+    throw new Error(
+      'withAndroidReleaseSigning: release buildType signingConfig anchor ' +
+        'not found — the Expo Android template may have changed.',
+    );
+  }
+  return contents.replace(anchor, `${CONDITIONAL_RELEASE_SIGNING}\n$1`);
 }
 
 module.exports = function withAndroidReleaseSigning(config) {
