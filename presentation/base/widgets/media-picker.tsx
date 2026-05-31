@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -16,38 +15,16 @@ export interface MediaPickerProps {
   onSetCover: (index: number) => void;
 }
 
-interface VideoTileProps {
-  url: string;
-}
-
-const VideoTile = ({ url }: VideoTileProps): React.JSX.Element => {
-  const player = useVideoPlayer(url, (p) => {
-    p.muted = true;
-    p.loop = false;
-  });
-  return <VideoView style={styles.tileMedia} player={player} contentFit="cover" />;
-};
-
-const pickAssets = async (
-  mediaTypes: 'images' | 'videos' | 'all',
-): Promise<MediaItem[]> => {
+const pickImages = async (): Promise<MediaItem[]> => {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return [];
   const result = await ImagePicker.launchImageLibraryAsync({
-    allowsMultipleSelection: mediaTypes !== 'videos',
-    mediaTypes:
-      mediaTypes === 'images'
-        ? 'images'
-        : mediaTypes === 'videos'
-          ? 'videos'
-          : ['images', 'videos'],
+    allowsMultipleSelection: true,
+    mediaTypes: 'images',
     quality: 0.85,
   });
   if (result.canceled) return [];
-  return result.assets.map((a) => ({
-    type: (a.type === 'video' ? 'video' : 'image') as MediaItem['type'],
-    url: a.uri,
-  }));
+  return result.assets.map((a) => ({ type: 'image', url: a.uri }));
 };
 
 export const MediaPicker = ({
@@ -59,12 +36,7 @@ export const MediaPicker = ({
   const colors = useTheme().colors;
 
   const addPhotos = useCallback(async () => {
-    const items = await pickAssets('images');
-    if (items.length > 0) onAdd(items);
-  }, [onAdd]);
-
-  const addVideo = useCallback(async () => {
-    const items = await pickAssets('videos');
+    const items = await pickImages();
     if (items.length > 0) onAdd(items);
   }, [onAdd]);
 
@@ -72,6 +44,8 @@ export const MediaPicker = ({
     return (
       <Pressable
         onPress={addPhotos}
+        accessibilityRole="button"
+        accessibilityLabel={t().mediaPicker.add}
         style={[
           styles.dropZone,
           { backgroundColor: colors.surface, borderColor: colors.inputBorder },
@@ -86,32 +60,6 @@ export const MediaPicker = ({
         <ThemedText variant="caption" muted style={styles.dropHint}>
           {t().mediaPicker.hint}
         </ThemedText>
-        <View style={styles.dropActions}>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              void addPhotos();
-            }}
-            style={[styles.miniBtn, { borderColor: colors.primary }]}
-          >
-            <Ionicons name="image-outline" size={14} color={colors.primary} />
-            <ThemedText variant="caption" style={[styles.miniBtnLabel, { color: colors.primary }]}>
-              {t().mediaPicker.photos}
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              void addVideo();
-            }}
-            style={[styles.miniBtn, { borderColor: colors.primary }]}
-          >
-            <Ionicons name="videocam-outline" size={14} color={colors.primary} />
-            <ThemedText variant="caption" style={[styles.miniBtnLabel, { color: colors.primary }]}>
-              {t().mediaPicker.video}
-            </ThemedText>
-          </Pressable>
-        </View>
       </Pressable>
     );
   }
@@ -130,19 +78,7 @@ export const MediaPicker = ({
             },
           ]}
         >
-          {m.type === 'image' ? (
-            <Image source={{ uri: m.url }} style={styles.tileMedia} resizeMode="cover" />
-          ) : (
-            <VideoTile url={m.url} />
-          )}
-
-          {m.type === 'video' ? (
-            <View style={[styles.videoOverlay, { backgroundColor: colors.overlayLight }]} pointerEvents="none">
-              <View style={[styles.playPill, { backgroundColor: colors.overlay }]}>
-                <Ionicons name="play" size={12} color={colors.onOverlay} />
-              </View>
-            </View>
-          ) : null}
+          <Image source={{ uri: m.url }} style={styles.tileMedia} resizeMode="cover" />
 
           {i === 0 ? (
             <View style={[styles.coverBadge, { backgroundColor: colors.primary }]}>
@@ -155,12 +91,22 @@ export const MediaPicker = ({
             </View>
           ) : null}
 
-          <Pressable onPress={() => onRemove(i)} style={[styles.removeBtn, { backgroundColor: colors.overlay }]}>
+          <Pressable
+            onPress={() => onRemove(i)}
+            accessibilityRole="button"
+            accessibilityLabel={t().mediaPicker.remove}
+            style={[styles.removeBtn, { backgroundColor: colors.overlay }]}
+          >
             <Ionicons name="close" size={14} color={colors.onOverlay} />
           </Pressable>
 
           {i !== 0 ? (
-            <Pressable onPress={() => onSetCover(i)} style={[styles.setCoverBtn, { backgroundColor: colors.overlay }]}>
+            <Pressable
+              onPress={() => onSetCover(i)}
+              accessibilityRole="button"
+              accessibilityLabel={t().mediaPicker.setCover}
+              style={[styles.setCoverBtn, { backgroundColor: colors.overlay }]}
+            >
               <ThemedText variant="caption" style={[styles.setCoverText, { color: colors.onOverlay }]}>
                 {t().mediaPicker.setCover}
               </ThemedText>
@@ -170,6 +116,8 @@ export const MediaPicker = ({
       ))}
       <Pressable
         onPress={addPhotos}
+        accessibilityRole="button"
+        accessibilityLabel={t().mediaPicker.more}
         style={[
           styles.tile,
           styles.addTile,
@@ -208,24 +156,6 @@ const styles = StyleSheet.create({
   dropHint: {
     textAlign: 'center',
   },
-  dropActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  miniBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs2,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs2,
-    borderRadius: radii.round,
-    borderWidth: 1,
-  },
-  miniBtnLabel: {
-    fontWeight: '600',
-    fontSize: fontSizes.small,
-  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -241,18 +171,6 @@ const styles = StyleSheet.create({
   tileMedia: {
     width: '100%',
     height: '100%',
-  },
-  videoOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playPill: {
-    width: sizes.chipHeight,
-    height: sizes.chipHeight,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   coverBadge: {
     position: 'absolute',

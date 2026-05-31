@@ -7,6 +7,7 @@ import type {
   CreateRecipeProgressCallback,
   IRecipeRepository,
   RecipeFilters,
+  RecipeMediaUpload,
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import type { HttpClient } from '@infrastructure/network/http-client';
@@ -93,20 +94,11 @@ export class RecipeRepository implements IRecipeRepository {
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
     const formData = new FormData();
-    // WHY: RN native FormData recognises { uri, name, type } as a file upload;
-    // browser FormData does not — it serialises the object to "[object Object]"
-    // and multer never sees a file part. On web, fetch the blob URI first.
-    if (Platform.OS === 'web') {
-      const resp = await fetch(input.imageUri);
-      const blob = await resp.blob();
-      const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
-      formData.append('image', blob, `recipe-${Date.now()}.${ext}`);
-    } else {
-      formData.append('image', {
-        uri: input.imageUri,
-        name: input.imageFileName,
-        type: input.imageMimeType,
-      } as unknown as Blob);
+    // The backend /recipes/with-media route reads every file under the `media`
+    // field (Multer .array('media', 10)) in order, promotes the first image to
+    // the cover `image`, and persists the rest as the gallery.
+    for (const item of input.media) {
+      await appendFile(formData, 'media', item);
     }
 
     formData.append('name', JSON.stringify(input.name));
@@ -133,12 +125,9 @@ export class RecipeRepository implements IRecipeRepository {
     if (input.isPublished !== undefined) {
       formData.append('isPublished', String(input.isPublished));
     }
-    if (input.locale) {
-      formData.append('locale', input.locale);
-    }
 
     const result = await this.http.uploadMultipart<RecipeDto>(
-      '/recipes/with-image',
+      '/recipes/with-media',
       formData,
       onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
     );
@@ -157,37 +146,6 @@ export class RecipeRepository implements IRecipeRepository {
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
-    // WHY: the backend exposes POST /with-image only for creation. For updates
-    // we upload the file to POST /upload (server root, outside /api/v1, plain
-    // multipart) to obtain a hosted URL, then PATCH /:id with that URL in the
-    // encrypted JSON body. Two requests but reuses the existing endpoints.
-    let uploadedImageUrl: string | undefined;
-    if (input.imageUri !== undefined) {
-      const formData = new FormData();
-      if (Platform.OS === 'web') {
-        const resp = await fetch(input.imageUri);
-        const blob = await resp.blob();
-        const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
-        formData.append('image', blob, `recipe-${Date.now()}.${ext}`);
-      } else {
-        formData.append('image', {
-          uri: input.imageUri,
-          name: input.imageFileName,
-          type: input.imageMimeType,
-        } as unknown as Blob);
-      }
-
-      // WHY: uploadMultipart accepts absolute URLs verbatim and uses raw XHR
-      // (not axios), which is the only reliable multipart transport on RN.
-      const uploadResult = await this.http.uploadMultipart<{ url: string; filename: string }>(
-        UPLOAD_URL,
-        formData,
-        onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
-      );
-      if (!uploadResult.ok) return uploadResult;
-      uploadedImageUrl = uploadResult.value.url;
-    }
-
     const body: Record<string, unknown> = {};
     if (input.name !== undefined) body['name'] = input.name;
     if (input.cuisine !== undefined) body['cuisine'] = input.cuisine;
@@ -208,7 +166,33 @@ export class RecipeRepository implements IRecipeRepository {
     }
     if (input.isPublished !== undefined) body['isPublished'] = input.isPublished;
     if (input.locale !== undefined) body['locale'] = input.locale;
-    if (uploadedImageUrl !== undefined) body['image'] = uploadedImageUrl;
+
+    // WHY: the backend PATCH /:id accepts a full `media[]` of { type, url } and
+    // replaces the gallery. Local URIs must first be turned into hosted URLs via
+    // POST /upload (server root, outside /api/v1); already-hosted https URLs are
+    // sent verbatim so unchanged photos are never re-uploaded. The first image
+    // is also mirrored to `image` to keep the cover in sync.
+    if (input.media !== undefined) {
+      const gallery: { type: string; url: string }[] = [];
+      for (const item of input.media) {
+        let url = item.uri;
+        if (!item.uri.startsWith('http')) {
+          const formData = new FormData();
+          await appendFile(formData, 'image', item);
+          const uploadResult = await this.http.uploadMultipart<{ url: string; filename: string }>(
+            UPLOAD_URL,
+            formData,
+            onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
+          );
+          if (!uploadResult.ok) return uploadResult;
+          url = uploadResult.value.url;
+        }
+        gallery.push({ type: item.type, url });
+      }
+      body['media'] = gallery;
+      const cover = gallery.find((m) => m.type === 'image');
+      if (cover !== undefined) body['image'] = cover.url;
+    }
 
     const result = await this.http.request<RecipeDto>({
       method: 'PATCH',
@@ -257,5 +241,31 @@ export class RecipeRepository implements IRecipeRepository {
       return fail(mapped.failure);
     }
     return ok(mapped.value);
+  }
+}
+
+/**
+ * Appends one media file to a `FormData` under `field`.
+ *
+ * WHY: RN native FormData recognises `{ uri, name, type }` as a file part;
+ * browser FormData does not — it serialises the object to "[object Object]"
+ * and Multer never sees a file. On web we therefore fetch the local blob URI
+ * first and append the real Blob.
+ */
+async function appendFile(
+  formData: FormData,
+  field: string,
+  item: RecipeMediaUpload,
+): Promise<void> {
+  if (Platform.OS === 'web') {
+    const resp = await fetch(item.uri);
+    const blob = await resp.blob();
+    formData.append(field, blob, item.fileName);
+  } else {
+    formData.append(field, {
+      uri: item.uri,
+      name: item.fileName,
+      type: item.mimeType,
+    } as unknown as Blob);
   }
 }
