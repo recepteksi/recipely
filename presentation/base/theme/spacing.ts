@@ -60,6 +60,7 @@ export const sizes = {
   inputHeight: 52,
   cardImageHeight: 180,
   heroImageHeight: 280,
+  heroImageHeightWeb: 440,
   heroSquare: 96,
   selectorHeight: 34,
   tabBarHeight: 56,
