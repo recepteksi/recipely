@@ -245,12 +245,17 @@ jobs:
           # RECIPELY_UPLOAD_STORE_FILE concatenates onto the last line, Gradle
           # never sees the property, and the release build silently falls back
           # to the debug key — which Play rejects as the wrong upload key.
+          # The last org.gradle.jvmargs in the file wins, so this overrides the
+          # template's -Xmx2048m. R8 + bundletool (packageReleaseBundle) OOMs at
+          # 2 GB on a fresh CI build; the hosted runner has 16 GB, so give it
+          # room. Local builds didn't hit this because the bundle task was cached.
           {
             echo ""
             echo "RECIPELY_UPLOAD_STORE_FILE=upload.keystore"
             echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}"
             echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
             echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
+            echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
           } >> android/gradle.properties
 
       - name: Build release APK + AAB
