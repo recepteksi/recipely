@@ -304,6 +304,10 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: internal
           status: completed
+          # Per-locale "What's new" notes (whatsnew-en-US, whatsnew-tr-TR).
+          # Store listing copy (title/short/full) lives in fastlane/metadata
+          # and is uploaded separately — r0adkll only pushes release notes.
+          whatsNewDirectory: distribution/whatsnew
 
       - name: Clean up signing material
         if: always()
