@@ -37,7 +37,9 @@
             "useFrameworks": "static"
           },
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ],
@@ -87,7 +89,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.421167568469-fg6bdiun08t9iebtnhg1ulnvu9f4bnne"
         }
-      ]
+      ],
+      "./plugins/withAndroidReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true
