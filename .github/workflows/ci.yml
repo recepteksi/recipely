@@ -240,8 +240,13 @@ jobs:
         run: |
           # Gradle project properties consumed by the injected release
           # signingConfig. Appended after prebuild because android/ is
-          # regenerated every run.
+          # regenerated every run. The leading newline is REQUIRED: expo's
+          # generated gradle.properties has no trailing newline, so without it
+          # RECIPELY_UPLOAD_STORE_FILE concatenates onto the last line, Gradle
+          # never sees the property, and the release build silently falls back
+          # to the debug key — which Play rejects as the wrong upload key.
           {
+            echo ""
             echo "RECIPELY_UPLOAD_STORE_FILE=upload.keystore"
             echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}"
             echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
@@ -255,6 +260,24 @@ jobs:
           # One Gradle invocation builds both, release-signed via upload.keystore.
           chmod +x gradlew
           ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Verify AAB is signed with the upload key
+        run: |
+          # Guard against silent debug-signing (e.g. a missing/mangled signing
+          # property): the AAB's signer cert must match the upload keystore, or
+          # Play would reject it after a full upload attempt.
+          aab_sha=$(keytool -printcert -jarfile android/app/build/outputs/bundle/release/app-release.aab 2>/dev/null \
+            | awk -F'SHA256: ' '/SHA256:/{print $2; exit}')
+          key_sha=$(keytool -list -v -keystore android/app/upload.keystore \
+            -alias "${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}" \
+            -storepass "${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}" 2>/dev/null \
+            | awk -F'SHA256: ' '/SHA256:/{print $2; exit}')
+          echo "AAB signer:  $aab_sha"
+          echo "Upload key:  $key_sha"
+          if [ -z "$aab_sha" ] || [ "$aab_sha" != "$key_sha" ]; then
+            echo "::error::AAB is not signed with the upload key (likely debug fallback) — aborting before Play upload"
+            exit 1
+          fi
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
