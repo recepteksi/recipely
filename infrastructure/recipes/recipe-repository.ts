@@ -10,6 +10,7 @@ import type {
   RecipeMediaUpload,
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { RECIPES_PAGE_SIZE, UPLOAD_URL } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
@@ -232,6 +233,28 @@ export class RecipeRepository implements IRecipeRepository {
       method: 'POST',
       url: '/recipes/generate',
       data: { prompt },
+    });
+    if (!result.ok) {
+      return result;
+    }
+    const mapped = toRecipe(result.value);
+    if (!mapped.ok) {
+      return fail(mapped.failure);
+    }
+    return ok(mapped.value);
+  }
+
+  // WHY: like generateRecipe, refine returns a NOT-persisted preview Recipe and
+  // the locale rides Accept-Language (kept off the body to avoid two sources of
+  // truth). The current in-progress recipe is sent as a DraftRecipeSnapshot.
+  async refineRecipe(
+    currentRecipe: DraftRecipeSnapshot,
+    instruction: string,
+  ): Promise<Result<Recipe, Failure>> {
+    const result = await this.http.request<RecipeDto>({
+      method: 'POST',
+      url: '/recipes/refine',
+      data: { currentRecipe, instruction },
     });
     if (!result.ok) {
       return result;

@@ -5,6 +5,7 @@ import type { MediaType } from '@domain/recipes/media-item';
 import type { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
 /**
  * A single media file attached to a recipe on create/update. `uri` is either a
@@ -88,6 +89,15 @@ export interface IRecipeRepository {
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>>;
   generateRecipe(prompt: string, locale: string): Promise<Result<Recipe, Failure>>;
+  /**
+   * Refines an in-progress recipe against a free-text instruction and returns a
+   * full preview `Recipe`. The result is NOT persisted (same contract as
+   * `generateRecipe`); the locale rides the `Accept-Language` header.
+   */
+  refineRecipe(
+    currentRecipe: DraftRecipeSnapshot,
+    instruction: string,
+  ): Promise<Result<Recipe, Failure>>;
   updateRecipe(
     id: string,
     input: UpdateRecipeInput,
