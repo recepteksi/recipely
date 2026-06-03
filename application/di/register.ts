@@ -2,6 +2,7 @@ import type { Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
 import { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
@@ -15,6 +16,16 @@ import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
+import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
+import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
+import { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
+import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
+import { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import {
+  configureDraftsStore,
+  type DraftsStore,
+} from '@application/drafts/drafts-store';
 import { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
@@ -73,6 +84,7 @@ export interface ApplicationStores {
   recipeDetailStore: RecipeDetailStore;
   savedRecipesStore: SavedRecipesStore;
   createdRecipesStore: CreatedRecipesStore;
+  draftsStore: DraftsStore;
   favoritesStore: FavoritesStore;
   commentsStore: CommentsStore;
   likesStore: LikesStore;
@@ -84,6 +96,7 @@ export interface ApplicationStores {
 export const registerApplication = (container: Container): ApplicationStores => {
   const authRepo = container.resolve<IAuthRepository>(TOKENS.AuthRepository);
   const recipeRepo = container.resolve<IRecipeRepository>(TOKENS.RecipeRepository);
+  const draftRepo = container.resolve<IRecipeDraftRepository>(TOKENS.RecipeDraftRepository);
   const signIn = new SignInUseCase(authRepo);
   const requestRegistration = new RequestRegistrationUseCase(authRepo);
   const verifyRegistration = new VerifyRegistrationUseCase(authRepo);
@@ -97,8 +110,14 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
   const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
+  const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
   const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
+  const listDraftsUseCase = new ListDraftsUseCase(draftRepo);
+  const getLatestDraftUseCase = new GetLatestDraftUseCase(draftRepo);
+  const getDraftUseCase = new GetDraftUseCase(draftRepo);
+  const upsertDraftUseCase = new UpsertDraftUseCase(draftRepo);
+  const deleteDraftUseCase = new DeleteDraftUseCase(draftRepo);
   const commentRepo = container.resolve<ICommentRepository>(TOKENS.CommentRepository);
   const listCommentsUseCase = new ListCommentsUseCase(commentRepo);
   const addCommentUseCase = new AddCommentUseCase(commentRepo);
@@ -123,10 +142,18 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createRecipeUseCase,
     listMyRecipesUseCase,
     generateRecipeUseCase,
+    refineRecipeUseCase,
     updateRecipeUseCase,
     deleteRecipeUseCase,
     recipeListStore,
     recipeDetailStore,
+  });
+  const draftsStore = configureDraftsStore({
+    listDraftsUseCase,
+    getLatestDraftUseCase,
+    getDraftUseCase,
+    upsertDraftUseCase,
+    deleteDraftUseCase,
   });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,
@@ -159,6 +186,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     recipeDetailStore,
     savedRecipesStore,
     createdRecipesStore,
+    draftsStore,
     favoritesStore,
     commentsStore,
     likesStore,

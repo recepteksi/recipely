@@ -462,7 +462,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       {stickyHeader}
 
       {/* Always-visible header: stays stable while recipe list reloads */}
-      <AiBannerCard onPress={() => router.push('/ai-generate')} />
+      <AiBannerCard onPress={() => router.push('/create-recipe')} />
       <CuisineStrip
         selectedCuisines={filters.cuisines}
         onToggle={toggleCuisineQuick}

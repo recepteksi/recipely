@@ -38,6 +38,8 @@ export const DEFAULT_CODE_TTL_SECONDS = 180;
 
 export const RECIPES_PAGE_SIZE = 30;
 
+export const DRAFTS_PAGE_SIZE = 20;
+
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
 // WHY: image uploads regularly exceed 10s on cellular (a 3 MB JPEG at 1 Mbps

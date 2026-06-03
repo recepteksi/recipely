@@ -9,6 +9,7 @@ import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { DraftCard } from '@presentation/screens/my-recipes/draft-card';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -19,25 +20,23 @@ import type { Recipe } from '@domain/recipes/recipe';
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
 
-type Tab = 'saved' | 'created';
+type Tab = 'saved' | 'created' | 'drafts';
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, width } = useLayout();
-  const { recipeListStore, savedRecipesStore, createdRecipesStore, loadFavoritesUseCase } = useStores();
+  const { recipeListStore, savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
 
   const recipeListState = recipeListStore((s) => s.state);
   const loadRecipes = recipeListStore((s) => s.load);
   const savedIds = savedRecipesStore((s) => s.savedIds);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
+  const drafts = draftsStore((s) => s.drafts);
 
   const [tab, setTab] = useState<Tab>('saved');
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
-  // We cap available width to the responsive container's max (1200) when
-  // computing the column count, so cards never become wider than 1 column on
-  // edge cases below the breakpoint.
   const gridColumns = useMemo<number>(() => {
     if (!isWebShell) return 1;
     const available = Math.min(width, 1200) - spacing.xl * 2;
@@ -60,6 +59,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     };
     void loadSavedRecipes();
     void createdRecipesStore.getState().loadMyRecipes();
+    void draftsStore.getState().loadDrafts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -84,6 +84,14 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     router.push('/create-recipe');
   };
 
+  const openDraft = (id: string): void => {
+    router.push({ pathname: '/create-recipe', params: { draftId: id } });
+  };
+
+  const deleteDraft = (id: string): void => {
+    void draftsStore.getState().deleteDraft(id);
+  };
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScreenContainer scrollable={false} padded={false}>
@@ -93,7 +101,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
             <View style={styles.headerActions}>
               <Pressable
-                onPress={() => router.push('/ai-generate')}
+                onPress={() => router.push('/create-recipe')}
                 accessibilityRole="button"
                 accessibilityLabel={t().ai.title}
                 style={({ pressed }) => [
@@ -141,6 +149,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             [
               ['saved', t().myRecipes.saved, savedRecipes.length],
               ['created', t().myRecipes.created, createdRecipes.length],
+              ['drafts', t().myRecipes.drafts, drafts.length],
             ] as const
           ).map(([key, label, count]) => {
             const isActive = tab === key;
@@ -148,6 +157,8 @@ export const MyRecipesScreen = (): React.JSX.Element => {
               <Pressable
                 key={key}
                 onPress={() => setTab(key as Tab)}
+                accessibilityRole="button"
+                accessibilityLabel={label}
                 style={[
                   styles.segment,
                   { backgroundColor: isActive ? colors.primary : 'transparent' },
@@ -187,7 +198,31 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           })}
         </View>
 
-        {items.length === 0 ? (
+        {tab === 'drafts' ? (
+          drafts.length === 0 ? (
+            <View style={styles.empty}>
+              <MaterialCommunityIcons name="file-document-edit-outline" size={56} color={colors.textMuted} />
+              <ThemedText variant="body" muted style={styles.emptyText}>
+                {t().drafts.empty}
+              </ThemedText>
+            </View>
+          ) : (
+            <FlatList
+              data={drafts}
+              keyExtractor={(d) => d.id}
+              renderItem={({ item }) => (
+                <DraftCard
+                  draft={item}
+                  onOpen={() => openDraft(item.id)}
+                  onDelete={() => deleteDraft(item.id)}
+                />
+              )}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              contentContainerStyle={styles.listContent}
+              style={styles.list}
+            />
+          )
+        ) : items.length === 0 ? (
           <View style={styles.empty}>
             <MaterialCommunityIcons
               name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
