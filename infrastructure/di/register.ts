@@ -4,6 +4,7 @@ import { HttpClient, type HttpClientOptions } from '@infrastructure/network/http
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
+import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
@@ -56,6 +57,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.RecipeRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new RecipeRepository(http);
+  });
+
+  container.register(TOKENS.RecipeDraftRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new RecipeDraftRepository(http);
   });
 
   container.register(TOKENS.FavoritesRepository, () => {

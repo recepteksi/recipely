@@ -5,6 +5,7 @@ export const TOKENS = {
   SecureStorage: Symbol.for('SecureStorage'),
   AuthRepository: Symbol.for('AuthRepository'),
   RecipeRepository: Symbol.for('RecipeRepository'),
+  RecipeDraftRepository: Symbol.for('RecipeDraftRepository'),
   FavoritesRepository: Symbol.for('FavoritesRepository'),
   AddFavoriteUseCase: Symbol.for('AddFavoriteUseCase'),
   RemoveFavoriteUseCase: Symbol.for('RemoveFavoriteUseCase'),

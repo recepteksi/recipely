@@ -8,6 +8,7 @@ import type {
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
 export interface FakeRecipeRepositoryConfig {
   listActiveRecipesResult?: Result<Recipe[], Failure>;
@@ -15,6 +16,7 @@ export interface FakeRecipeRepositoryConfig {
   getRecipeResult?: Result<Recipe, Failure>;
   createRecipeResult?: Result<Recipe, Failure>;
   generateRecipeResult?: Result<Recipe, Failure>;
+  refineRecipeResult?: Result<Recipe, Failure>;
   updateRecipeResult?: Result<Recipe, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
 }
@@ -22,6 +24,11 @@ export interface FakeRecipeRepositoryConfig {
 export interface GenerateRecipeCall {
   prompt: string;
   locale: string;
+}
+
+export interface RefineRecipeCall {
+  currentRecipe: DraftRecipeSnapshot;
+  instruction: string;
 }
 
 /**
@@ -34,6 +41,8 @@ export class FakeRecipeRepository implements IRecipeRepository {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
   generateCallCount = 0;
+  lastRefineCall: RefineRecipeCall | null = null;
+  refineCallCount = 0;
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
@@ -69,6 +78,17 @@ export class FakeRecipeRepository implements IRecipeRepository {
     this.generateCallCount += 1;
     return Promise.resolve(
       this.config.generateRecipeResult ?? ok(undefined as unknown as Recipe),
+    );
+  }
+
+  refineRecipe(
+    currentRecipe: DraftRecipeSnapshot,
+    instruction: string,
+  ): Promise<Result<Recipe, Failure>> {
+    this.lastRefineCall = { currentRecipe, instruction };
+    this.refineCallCount += 1;
+    return Promise.resolve(
+      this.config.refineRecipeResult ?? ok(undefined as unknown as Recipe),
     );
   }
 
