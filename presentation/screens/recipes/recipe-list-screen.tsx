@@ -37,6 +37,10 @@ import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
+/** Skeleton cards shown on mobile / single-column while the list loads. */
+const SKELETON_CARD_COUNT = 4;
+/** Rows of skeleton cards to fill the web grid while the list loads. */
+const SKELETON_GRID_ROWS = 2;
 
 type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
 
@@ -65,13 +69,69 @@ const formatLabel = (key: string): string =>
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
-const LoadingSkeleton = (): React.JSX.Element => (
-  <ScrollView contentContainerStyle={styles.skeletonContainer}>
-    {Array.from({ length: 4 }, (_, i) => (
-      <SkeletonCard key={i} />
-    ))}
-  </ScrollView>
-);
+interface LoadingSkeletonProps {
+  /** Column count of the loaded list, so the skeleton matches its layout. */
+  gridColumns: number;
+  /** Whether the web shell is active (centers the grid to the content max). */
+  isWebShell: boolean;
+}
+
+/**
+ * Placeholder shown while the recipe list loads. Mirrors the loaded list's
+ * layout exactly: a left-aligned stacked column on mobile, and on the web shell
+ * the same centered (maxWidth 1200) container — a multi-column grid when
+ * `gridColumns > 1`, or a centered stacked column on a narrow window.
+ */
+const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): React.JSX.Element => {
+  // Mobile: simple stacked single column, matching the non-web list look.
+  if (!isWebShell) {
+    return (
+      <ScrollView contentContainerStyle={styles.skeletonContainer}>
+        {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </ScrollView>
+    );
+  }
+
+  // Web shell: always centered to the content max, mirroring the loaded list.
+  // Multi-column renders the grid; a narrow window (gridColumns === 1) renders
+  // a stacked column with the same centering and separator spacing.
+  if (gridColumns > 1) {
+    const count = Math.max(SKELETON_CARD_COUNT, gridColumns * SKELETON_GRID_ROWS);
+    const rows = Math.ceil(count / gridColumns);
+    return (
+      <ScrollView
+        style={[styles.list, styles.listCenter]}
+        contentContainerStyle={[styles.listContent, styles.gridListContent]}
+      >
+        {Array.from({ length: rows }, (_, rowIndex) => (
+          <View key={rowIndex} style={styles.gridRow}>
+            {Array.from({ length: gridColumns }, (_, colIndex) => (
+              <View key={colIndex} style={styles.gridCell}>
+                <SkeletonCard />
+              </View>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={[styles.list, styles.listCenter]}
+      contentContainerStyle={styles.listContent}
+    >
+      {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
+        <View key={i}>
+          {i > 0 ? <ItemSeparator /> : null}
+          <SkeletonCard />
+        </View>
+      ))}
+    </ScrollView>
+  );
+};
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -398,7 +458,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   // ─── Body (varies by state) ─────────────────────────────────────────────────
   let body: React.JSX.Element;
   if (state.status === 'idle' || state.status === 'loading') {
-    body = <LoadingSkeleton />;
+    body = <LoadingSkeleton gridColumns={gridColumns} isWebShell={isWebShell} />;
   } else if (state.status === 'error') {
     const failure: Failure = state.failure;
     body = (
