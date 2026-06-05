@@ -90,7 +90,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(() => router.back(), 300);
     } else if (s.status === 'error') {
-      showErrorToast(s.failure);
+      // WHY: the failure is shown inline inside the (still-open) confirm sheet
+      // rather than as a toast — a global toast would be occluded by the modal
+      // sheet. Other flows on the full screen below use toasts.
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }

@@ -1,4 +1,4 @@
-import type { Failure } from '@core/failure';
+import type { Failure } from '@presentation/base/types';
 import {
   failureSeverity,
   failureToastMessage,

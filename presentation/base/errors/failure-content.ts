@@ -1,5 +1,5 @@
 import type { Ionicons } from '@expo/vector-icons';
-import type { Failure } from '@core/failure';
+import type { Failure } from '@presentation/base/types';
 import { t } from '@presentation/i18n';
 import type { Severity } from '@presentation/base/theme/error-surfaces';
 
@@ -80,6 +80,8 @@ export const failureContent = (failure: Failure): FailureContent => {
 export const failureToastMessage = (failure: Failure): string =>
   t().errors[keyFor(failure)].short;
 
+const FALLBACK_ICON: IoniconName = 'sad-outline';
+
 /** The illustration icon for a failure's full-screen / section state. */
 export const failureIcon = (failure: Failure): IoniconName =>
-  CODE_TO_ICON[failure.code] ?? CODE_TO_ICON['unknown']!;
+  CODE_TO_ICON[failure.code] ?? FALLBACK_ICON;
