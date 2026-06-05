@@ -22,6 +22,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
+import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 interface InfoChipProps {
@@ -89,10 +90,24 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(() => router.back(), 300);
     } else if (s.status === 'error') {
+      // WHY: the failure is shown inline inside the (still-open) confirm sheet
+      // rather than as a toast — a global toast would be occluded by the modal
+      // sheet. Other flows on the full screen below use toasts.
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
   }, [recipeId, router, createdRecipesStore]);
+
+  const handleDeleteComment = useCallback(
+    async (commentId: string): Promise<void> => {
+      const removed = await commentsStore.getState().deleteComment(recipeId, commentId);
+      if (!removed) {
+        const failure = commentsStore.getState().byRecipe[recipeId]?.error;
+        if (failure != null) showErrorToast(failure);
+      }
+    },
+    [commentsStore, recipeId],
+  );
 
   const handleAddComment = useCallback(async () => {
     const trimmed = commentInput.trim();
@@ -122,16 +137,23 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         console.log('[SaveButton] Adding favorite...');
         await favoritesStore.getState().addFavorite(userId, recipeId);
       }
-      console.log('[SaveButton] Success!');
+      // WHY: the store records the failure on its `error` field rather than
+      // throwing — surface it as a toast so a rejected save never passes silently.
+      const failure = favoritesStore.getState().error;
+      if (failure !== null) {
+        showErrorToast(failure);
+        favoritesStore.getState().clearError();
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[SaveButton] Error:', errorMsg);
     }
   }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
 
-  const handleToggleLike = useCallback(() => {
+  const handleToggleLike = useCallback(async (): Promise<void> => {
     if (!userId) return;
-    void likesStore.getState().toggle(recipeId);
+    const result = await likesStore.getState().toggle(recipeId);
+    if (!result.ok) showErrorToast(result.failure);
   }, [userId, recipeId, likesStore]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
@@ -425,7 +447,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                             body={comment.body}
                             createdAt={comment.createdAt}
                             isOwn={comment.authorId === userId}
-                            onDelete={() => void commentsStore.getState().deleteComment(recipeId, comment.id)}
+                            onDelete={() => void handleDeleteComment(comment.id)}
                           />
                         ))}
                       </View>

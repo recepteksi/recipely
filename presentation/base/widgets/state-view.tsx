@@ -1,8 +1,14 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
-import { spacing } from '@presentation/base/theme';
+import type { Ionicons } from '@expo/vector-icons';
+import { UnknownFailure } from '@core/failure';
+import { ErrorState } from '@presentation/base/widgets/error-state';
+import {
+  failureContent,
+  failureIcon,
+  failureSeverity,
+} from '@presentation/base/errors/failure-content';
+import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 
 export type StateViewStatus = 'loading' | 'error' | 'empty' | 'content';
@@ -11,16 +17,38 @@ export interface StateViewProps {
   status: StateViewStatus;
   failure?: Failure;
   onRetry?: () => void;
+  retryLabel?: string;
+  /** Optional secondary action on the error state (e.g. "Get help"). */
+  onSecondary?: () => void;
+  secondaryLabel?: string;
+  /** Small optional diagnostic code shown under the error actions. */
+  code?: string;
+  /** Empty-state copy + icon (the empty branch is always `neutral` severity). */
+  emptyTitle?: string;
   emptyMessage?: string;
+  emptyIcon?: keyof typeof Ionicons.glyphMap;
   children?: ReactNode;
 }
 
-/** Renders loading, error, empty, or content branches based on the discriminated `status` prop. */
+const FALLBACK_EMPTY_ICON: keyof typeof Ionicons.glyphMap = 'file-tray-outline';
+
+/**
+ * Renders loading / error / empty / content branches from a discriminated
+ * `status`. Error and empty states use the shared `ErrorState` design — fully
+ * localized, severity-aware, and always offering a way out. The user-facing
+ * copy is derived from the failure's class, never its raw message.
+ */
 export const StateView = ({
   status,
   failure,
   onRetry,
-  emptyMessage = 'Nothing to show.',
+  retryLabel,
+  onSecondary,
+  secondaryLabel,
+  code,
+  emptyTitle,
+  emptyMessage,
+  emptyIcon,
   children,
 }: StateViewProps): React.JSX.Element => {
   switch (status) {
@@ -30,32 +58,33 @@ export const StateView = ({
           <ActivityIndicator />
         </View>
       );
-    case 'error':
+    case 'error': {
+      const f = failure ?? new UnknownFailure();
+      const content = failureContent(f);
       return (
-        <View style={styles.center}>
-          <ThemedText variant="subtitle">Something went wrong</ThemedText>
-          <ThemedText variant="body" muted style={styles.message}>
-            {failure?.message ?? 'Unknown error'}
-          </ThemedText>
-          {onRetry !== undefined ? (
-            <View style={styles.retry}>
-              <PrimaryButton label="Retry" onPress={onRetry} />
-            </View>
-          ) : null}
-        </View>
+        <ErrorState
+          severity={failureSeverity(f)}
+          icon={failureIcon(f)}
+          title={content.title}
+          body={content.body}
+          primaryLabel={onRetry !== undefined ? (retryLabel ?? t().errors.retry) : undefined}
+          onPrimary={onRetry}
+          secondaryLabel={secondaryLabel}
+          onSecondary={onSecondary}
+          code={code}
+        />
       );
+    }
     case 'empty':
       return (
-        <View style={styles.center}>
-          <ThemedText variant="body" muted>
-            {emptyMessage}
-          </ThemedText>
-          {onRetry !== undefined ? (
-            <View style={styles.retry}>
-              <PrimaryButton label="Refresh" onPress={onRetry} />
-            </View>
-          ) : null}
-        </View>
+        <ErrorState
+          severity="neutral"
+          icon={emptyIcon ?? FALLBACK_EMPTY_ICON}
+          title={emptyTitle ?? t().common.empty}
+          body={emptyMessage}
+          primaryLabel={onRetry !== undefined ? (retryLabel ?? t().common.retry) : undefined}
+          onPrimary={onRetry}
+        />
       );
     case 'content':
       return <>{children}</>;
@@ -67,13 +96,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.xl,
-  },
-  message: {
-    marginTop: spacing.sm,
-    textAlign: 'center',
-  },
-  retry: {
-    marginTop: spacing.lg,
   },
 });

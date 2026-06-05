@@ -29,6 +29,7 @@ import {
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/recipe-mapping';
+import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
 import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
@@ -320,6 +321,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       createdRecipesStore.getState().clearAiDraft();
       await draftsStore.getState().deleteDraft(activeDraftId);
       router.replace('/my-recipes');
+      return;
+    }
+    // WHY: publish previously failed silently — the spinner stopped and the only
+    // trace was a console 4xx. Surface it as a toast so the user always gets a
+    // reaction, then reset so the button is tappable again.
+    if (state.status === 'error') {
+      showErrorToast(state.failure);
+      createdRecipesStore.getState().resetCreateState();
     }
   }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router]);
 
@@ -355,6 +364,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     if (state.status === 'success') {
       createdRecipesStore.getState().resetUpdateState();
       router.back();
+      return;
+    }
+    if (state.status === 'error') {
+      showErrorToast(state.failure);
+      createdRecipesStore.getState().resetUpdateState();
     }
   }, [recipe, recipeId, createdRecipesStore, router]);
 

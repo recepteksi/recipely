@@ -1,4 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
+import { ok, type Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 
@@ -24,8 +26,12 @@ export interface LikesStoreState {
    * reflects the server-confirmed like state.
    */
   syncFromApi: (recipeId: string, likeCount: number, likedByMe: boolean) => void;
-  /** Toggle like with optimistic update; rolls back on failure. */
-  toggle: (recipeId: string) => Promise<void>;
+  /**
+   * Toggle like with optimistic update; rolls back on failure. Returns the
+   * `Result` so the caller can surface a toast when the toggle is rejected —
+   * the optimistic rollback alone is easy to miss.
+   */
+  toggle: (recipeId: string) => Promise<Result<void, Failure>>;
 }
 
 export type LikesStore = UseBoundStore<StoreApi<LikesStoreState>>;
@@ -73,7 +79,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
 
     toggle: async (recipeId) => {
       const current = get().byRecipe[recipeId];
-      if (!current || current.isLoading) return;
+      if (!current || current.isLoading) return ok(undefined);
 
       const wasLiked = current.likedByMe;
       const optimistic: RecipeLikeState = {
@@ -96,5 +102,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
             : { ...current, isLoading: false }, // rollback
         },
       }));
+
+      return result;
     },
   }));
