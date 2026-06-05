@@ -3,11 +3,11 @@ import { fail, ok, type Result } from '@core/result/result';
 import {
   type Failure,
   NetworkFailure,
-  NotFoundFailure,
-  UnauthorizedFailure,
+  TimeoutFailure,
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
+import { failureFromResponse } from '@infrastructure/network/failure-from-response';
 import {
   API_AES_KEY_HEX,
   DEFAULT_REQUEST_TIMEOUT_MS,
@@ -28,14 +28,6 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   // WHY: keeps logging opt-in — production builds flip this off to drop PII out of logcat/xcode.
   enableLogging?: boolean;
-}
-
-interface RecipelyErrorBody {
-  error?: {
-    code?: string;
-    message?: string;
-    field?: string;
-  };
 }
 
 interface RecipelyDataBody<T> {
@@ -284,7 +276,7 @@ export class HttpClient {
 
           console.log(`[HTTP ← multipart] timeout ${fullUrl}`);
         }
-        resolve(fail(new NetworkFailure('Request timed out')));
+        resolve(fail(new TimeoutFailure('Request timed out')));
       };
 
       xhr.send(formData);
@@ -296,13 +288,10 @@ const isRecipelyDataBody = <T>(body: unknown): body is RecipelyDataBody<T> => {
   return typeof body === 'object' && body !== null && 'data' in body;
 };
 
-const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody => {
-  return typeof body === 'object' && body !== null && 'error' in body;
-};
-
 // WHY: Recipely backend wraps errors as { error: { code, message, field? } }
 // inside the AES envelope. We decrypt in the response interceptor, then map
-// `code` → domain Failure class so controller/store code never sees HTTP quirks.
+// `code` → domain Failure class (see `failureFromResponse`) so controller/store
+// code never sees HTTP quirks.
 const mapAxiosError = (error: unknown): Failure => {
   if (error instanceof EnvelopeDecryptError) {
     return new ValidationFailure(`Bad envelope: ${error.message}`);
@@ -312,7 +301,7 @@ const mapAxiosError = (error: unknown): Failure => {
   }
 
   if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return new NetworkFailure('Request timed out');
+    return new TimeoutFailure('Request timed out');
   }
 
   if (error.response) {
@@ -322,35 +311,4 @@ const mapAxiosError = (error: unknown): Failure => {
     return new NetworkFailure(error.message || 'Network unreachable');
   }
   return new UnknownFailure(error.message, error);
-};
-
-const failureFromResponse = (status: number, body: unknown): Failure => {
-  const envelope = isRecipelyErrorBody(body) ? body.error : undefined;
-  const message = envelope?.message ?? `HTTP ${status}`;
-
-  if (envelope?.code) {
-    switch (envelope.code) {
-      case 'validation':
-        return new ValidationFailure(message, envelope.field);
-      case 'unprocessable':
-        // 422: request was received but a required piece (e.g. missing image or
-        // field) was absent. Surface as ValidationFailure so the UI treats it as
-        // "fix your input"; field tells the UI which input was missing.
-        return new ValidationFailure(message, envelope.field);
-      case 'unauthorized':
-        return new UnauthorizedFailure(message);
-      case 'not_found':
-        return new NotFoundFailure(message);
-      case 'conflict':
-        // WHY: no ConflictFailure on mobile yet — surface as Validation so UX reads it
-        // as "fix your input" (email already taken, etc.). Promote to its own class when
-        // the UI needs to distinguish 409 from 400.
-        return new ValidationFailure(message, envelope.field);
-    }
-  }
-
-  if (status === 401 || status === 403) return new UnauthorizedFailure(message);
-  if (status === 404) return new NotFoundFailure(message);
-  if (status >= 400 && status < 500) return new ValidationFailure(message);
-  return new UnknownFailure(message);
 };

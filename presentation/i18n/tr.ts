@@ -11,6 +11,64 @@ export const tr: Translations = {
     of: '/',
     clear: 'Temizle',
   },
+  errors: {
+    retry: 'Tekrar dene',
+    back: 'Geri dön',
+    dismiss: 'Kapat',
+    genericTitle: 'Bir şeyler ters gitti',
+    sectionTitle: 'Bu bölüm yüklenemedi',
+    sectionBody: 'Bu kısım gelmedi.',
+    network: {
+      title: 'Mutfakla bağ koptu',
+      body: 'İnternete ulaşamıyoruz. Bağlantını kontrol edip tekrar dene.',
+      short: 'Çevrimdışısın',
+    },
+    timeout: {
+      title: 'Bu biraz uzadı',
+      body: 'Mutfak yanıt vermekte gecikti. Bir kez daha dene.',
+      short: 'İstek zaman aşımına uğradı',
+    },
+    server: {
+      title: 'Tarif tutmadı',
+      body: 'Bir şeyler bizim tarafta ters gitti. Birkaç saniye sonra tekrar dene.',
+      short: 'Sunucu hatası — tekrar dene',
+    },
+    notFound: {
+      title: 'Bu tarif menüde yok',
+      body: 'Aradığın tarif kaldırılmış ya da hiç var olmamış olabilir.',
+      short: 'Bulunamadı',
+    },
+    unauthorized: {
+      title: 'Lütfen tekrar giriş yap',
+      body: 'Oturumun sona erdi. Kaldığın yerden devam etmek için giriş yap.',
+      short: 'Oturum doldu — tekrar giriş yap',
+    },
+    forbidden: {
+      title: 'Buna erişemezsin',
+      body: 'Bu içeriğe erişim iznin yok.',
+      short: 'Erişim iznin yok',
+    },
+    conflict: {
+      title: 'Bu olmadı',
+      body: 'Bu, zaten var olan bir şeyle çakışıyor. Gözden geçirip tekrar dene.',
+      short: 'Bu zaten mevcut',
+    },
+    rateLimit: {
+      title: 'Biraz yavaşla',
+      body: 'Kısa sürede çok fazla denedin. Bir an bekleyip tekrar dene.',
+      short: 'Çok deneme — biraz bekle',
+    },
+    validation: {
+      title: 'Birkaç şeyi düzeltelim',
+      body: 'Bazı bilgileri kontrol etmek gerek. İşaretli alanlara bakıp tekrar dene.',
+      short: 'İşaretli alanları kontrol et',
+    },
+    unknown: {
+      title: 'Bir şeyler ters gitti',
+      body: 'Beklenmedik bir aksilik oldu. Lütfen tekrar dene.',
+      short: 'Bir şeyler ters gitti',
+    },
+  },
   splash: {
     tagline: 'Tariflerin senin elinde',
   },

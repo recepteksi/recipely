@@ -7,6 +7,7 @@ import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-conte
 import { LayoutProvider, useLayout } from '@presentation/base/responsive/layout-context';
 import { WebShellStateProvider } from '@presentation/base/responsive/web-shell-state';
 import { ActiveTimersBar } from '@presentation/base/widgets/active-timers-bar';
+import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { AlarmScreen } from '@presentation/screens/alarm/alarm-screen';
@@ -79,6 +80,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="profile" options={{ headerShown: false }} />
       </Stack>
       <ActiveTimersBar />
+      <ToastHost />
       <AlarmOverlay />
       <SplashOverlay />
       <StatusBar style="auto" />
