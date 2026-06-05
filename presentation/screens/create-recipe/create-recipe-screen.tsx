@@ -307,6 +307,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: recipe.prepTimeMinutes,
       cookTimeMinutes: recipe.cookTimeMinutes,
+      servings: recipe.servings,
       media: images.map(toMediaUpload),
       tags: { [locale]: [DIFFICULTY_LABELS[recipe.difficulty]] },
       mealType: { [locale]: [] },
@@ -320,6 +321,15 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       createdRecipesStore.getState().clearAiDraft();
       await draftsStore.getState().deleteDraft(activeDraftId);
       router.replace('/my-recipes');
+      return;
+    }
+    // WHY: publishing previously failed silently — the spinner just stopped and
+    // the only trace was a 400 in the console. Surface the backend reason (it
+    // names the offending field) so the user can fix their input, falling back
+    // to a generic localized message.
+    if (state.status === 'error') {
+      setMissingMessage(state.failure.message || t().createRecipe.saveError);
+      createdRecipesStore.getState().resetCreateState();
     }
   }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router]);
 
