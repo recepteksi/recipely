@@ -517,10 +517,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           </View>
         ) : null}
 
+        {missingMessage !== null ? (
+          <View style={[styles.missingBanner, { backgroundColor: colors.dangerLight }]}>
+            <Ionicons name="alert-circle" size={sizes.iconXxs} color={colors.danger} />
+            <ThemedText variant="caption" style={[styles.missingText, { color: colors.danger }]}>
+              {missingMessage}
+            </ThemedText>
+          </View>
+        ) : null}
+
         <View style={styles.content}>
           <RecipePreviewEditor
             recipe={recipe}
-            missingMessage={missingMessage}
             onChangeName={(v) => updateField('name', v)}
             onChangeCuisine={(v) => updateField('cuisine', v)}
             onChangeServings={(v) => updateField('servings', v)}
@@ -635,5 +643,19 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  missingBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.md,
+  },
+  missingText: {
+    flex: 1,
+    fontWeight: '600',
   },
 });
