@@ -319,6 +319,10 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     if (state.status === 'success') {
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
+      // WHY: best-effort cleanup of the working draft now that it's published.
+      // A failure here is intentionally swallowed (not toasted): the publish
+      // already succeeded, and a leftover draft is self-healing — it just stays
+      // re-deletable in My Recipes rather than blocking the success path.
       await draftsStore.getState().deleteDraft(activeDraftId);
       router.replace('/my-recipes');
       return;
@@ -401,6 +405,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
+    // WHY: best-effort — if the delete fails the draft simply remains in My
+    // Recipes (re-deletable there). We don't block or toast on the way out, so
+    // "discard" always lets the user leave.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     router.back();

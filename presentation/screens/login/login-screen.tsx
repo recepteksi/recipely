@@ -16,6 +16,8 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { FormBanner } from '@presentation/base/widgets/form-banner';
+import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -59,7 +61,12 @@ export const LoginScreen = (): React.JSX.Element => {
 
   const isLoading = state.status === 'loading';
   const errorMessage =
-    state.status === 'error' ? state.failure.message : undefined;
+    state.status === 'error'
+      ? authFormMessage(state.failure, {
+          unauthorized: t().login.invalidCredentials,
+          validation: t().login.invalidCredentials,
+        })
+      : undefined;
 
   const hero = (
     <View style={[styles.gradientContent, isLandscapeShell ? styles.heroLandscape : null]}>
@@ -185,12 +192,9 @@ export const LoginScreen = (): React.JSX.Element => {
         </View>
 
         {errorMessage ? (
-          <ThemedText
-            variant="caption"
-            style={[styles.error, { color: colors.danger }]}
-          >
-            {errorMessage}
-          </ThemedText>
+          <View style={styles.error}>
+            <FormBanner message={errorMessage} />
+          </View>
         ) : null}
 
         <Pressable
@@ -365,7 +369,6 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: spacing.md,
-    textAlign: 'center',
   },
   signInButton: {
     height: sizes.buttonHeight,

@@ -358,6 +358,7 @@ export const en = {
     errorPwdShort: 'Password must be at least 8 characters.',
     errorMismatch: "Passwords don't match.",
     errorAgree: 'Please accept the terms.',
+    emailTaken: 'That email is already registered. Try signing in instead.',
   },
   forgotPassword: {
     title: 'Forgot password?',
@@ -386,6 +387,7 @@ export const en = {
     resent: 'A new code is on its way.',
     changeEmail: 'Use a different email',
     errorCode: 'Enter the 6-digit code.',
+    invalidCode: 'That code is wrong or expired. Try again or resend it.',
   },
   ai: {
     title: 'AI Recipe',

@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { FormBanner } from '@presentation/base/widgets/form-banner';
+import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -80,7 +82,14 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   const codeValid = code.length === CODE_LENGTH && /^\d+$/.test(code);
   const isLoading = state.status === 'loading';
-  const remoteError = state.status === 'error' ? state.failure.message : undefined;
+  const remoteError =
+    state.status === 'error'
+      ? authFormMessage(state.failure, {
+          unauthorized: t().verify.invalidCode,
+          validation: t().verify.invalidCode,
+          not_found: t().verify.invalidCode,
+        })
+      : undefined;
   const errorMessage = localError ?? remoteError;
 
   const handleVerify = useCallback(async () => {
@@ -155,9 +164,9 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
       />
 
       {errorMessage !== undefined ? (
-        <ThemedText variant="caption" style={[styles.error, { color: colors.danger }]}>
-          {errorMessage}
-        </ThemedText>
+        <View style={styles.error}>
+          <FormBanner message={errorMessage} />
+        </View>
       ) : null}
 
       {resent ? (
@@ -372,7 +381,6 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: spacing.md,
-    textAlign: 'center',
   },
   notice: {
     marginTop: spacing.md,

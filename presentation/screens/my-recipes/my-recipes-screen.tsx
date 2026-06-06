@@ -9,6 +9,7 @@ import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { DraftCard } from '@presentation/screens/my-recipes/draft-card';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -88,8 +89,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     router.push({ pathname: '/create-recipe', params: { draftId: id } });
   };
 
-  const deleteDraft = (id: string): void => {
-    void draftsStore.getState().deleteDraft(id);
+  const deleteDraft = async (id: string): Promise<void> => {
+    const result = await draftsStore.getState().deleteDraft(id);
+    if (!result.ok) showErrorToast(result.failure);
   };
 
   return (
@@ -214,7 +216,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
                 <DraftCard
                   draft={item}
                   onOpen={() => openDraft(item.id)}
-                  onDelete={() => deleteDraft(item.id)}
+                  onDelete={() => void deleteDraft(item.id)}
                 />
               )}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
