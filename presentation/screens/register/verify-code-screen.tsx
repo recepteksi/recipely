@@ -381,7 +381,6 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: spacing.md,
-    textAlign: 'center',
   },
   notice: {
     marginTop: spacing.md,

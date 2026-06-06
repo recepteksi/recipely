@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, SectionList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -260,7 +260,11 @@ export const NotificationsScreen = (): React.JSX.Element => {
         })}
       </View>
 
-      {state.status === 'error' ? (
+      {state.status === 'loading' || state.status === 'idle' ? (
+        <View style={styles.empty}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      ) : state.status === 'error' ? (
         <ErrorState
           severity={failureSeverity(state.failure)}
           icon={failureIcon(state.failure)}

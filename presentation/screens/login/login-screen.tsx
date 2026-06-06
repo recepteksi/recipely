@@ -369,7 +369,6 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: spacing.md,
-    textAlign: 'center',
   },
   signInButton: {
     height: sizes.buttonHeight,

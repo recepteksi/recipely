@@ -580,7 +580,6 @@ const styles = StyleSheet.create({
   },
   error: {
     marginTop: spacing.md,
-    textAlign: 'center',
   },
   submitButton: {
     height: sizes.buttonHeight,
