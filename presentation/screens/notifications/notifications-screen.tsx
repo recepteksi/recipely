@@ -6,6 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { ErrorState } from '@presentation/base/widgets/error-state';
+import {
+  failureContent,
+  failureIcon,
+  failureSeverity,
+} from '@presentation/base/errors/failure-content';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -254,6 +260,16 @@ export const NotificationsScreen = (): React.JSX.Element => {
         })}
       </View>
 
+      {state.status === 'error' ? (
+        <ErrorState
+          severity={failureSeverity(state.failure)}
+          icon={failureIcon(state.failure)}
+          title={failureContent(state.failure).title}
+          body={failureContent(state.failure).body}
+          primaryLabel={t().errors.retry}
+          onPrimary={() => void load()}
+        />
+      ) : (
       <SectionList
         sections={sections}
         keyExtractor={(item) => String(item.id)}
@@ -275,6 +291,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
         ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />}
       />
+      )}
       </ResponsiveContainer>
     </View>
   );

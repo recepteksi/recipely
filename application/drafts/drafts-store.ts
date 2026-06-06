@@ -1,4 +1,5 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
+import { type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
@@ -30,7 +31,7 @@ export interface DraftsStoreState {
   loadDrafts: () => Promise<void>;
   loadLatestDraft: () => Promise<void>;
   upsertDraft: (input: UpsertDraftStoreInput) => Promise<RecipeDraft | null>;
-  deleteDraft: (id: string) => Promise<void>;
+  deleteDraft: (id: string) => Promise<Result<void, Failure>>;
   getDraft: (id: string) => Promise<RecipeDraft | null>;
 }
 
@@ -88,12 +89,13 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): DraftsStore => {
     deleteDraft: async (id) => {
       const result = await deps.deleteDraftUseCase.execute(id);
       if (!result.ok) {
-        return;
+        return result;
       }
       set((s) => ({
         drafts: s.drafts.filter((d) => d.id !== id),
         latestDraft: s.latestDraft?.id === id ? null : s.latestDraft,
       }));
+      return result;
     },
     getDraft: async (id) => {
       const result = await deps.getDraftUseCase.execute(id);

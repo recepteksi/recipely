@@ -18,6 +18,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { t } from '@presentation/i18n';
 
 const formatStat = (n: number): string => {
@@ -54,7 +55,7 @@ export const ProfileScreen = (): React.JSX.Element => {
     profileState.status === 'loaded' ? profileState.profile : null;
   const isLoadingProfile = profileState.status === 'loading';
   const profileError =
-    profileState.status === 'error' ? profileState.failure.message : null;
+    profileState.status === 'error' ? failureToastMessage(profileState.failure) : null;
 
   const onTabChange = (key: TabBarKey): void => {
     if (key === 'recipes') router.replace('/recipes');

@@ -360,6 +360,7 @@ export const tr: Translations = {
     errorPwdShort: 'Şifre en az 8 karakter olmalı.',
     errorMismatch: 'Şifreler eşleşmiyor.',
     errorAgree: 'Lütfen şartları kabul edin.',
+    emailTaken: 'Bu e-posta zaten kayıtlı. Bunun yerine giriş yapmayı dene.',
   },
   forgotPassword: {
     title: 'Şifrenizi mi unuttunuz?',
@@ -388,6 +389,7 @@ export const tr: Translations = {
     resent: 'Yeni kod gönderildi.',
     changeEmail: 'Farklı e-posta kullan',
     errorCode: '6 haneli kodu gir.',
+    invalidCode: 'Bu kod yanlış ya da süresi dolmuş. Tekrar dene veya yeniden gönder.',
   },
   ai: {
     title: 'AI Tarif',
