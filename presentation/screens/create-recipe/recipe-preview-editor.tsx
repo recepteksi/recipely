@@ -15,6 +15,7 @@ import { StepRow } from '@presentation/screens/create-recipe/step-row';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
+  missingMessage: string | null;
   onChangeName: (value: string) => void;
   onChangeCuisine: (value: string) => void;
   onChangeServings: (value: number) => void;
@@ -45,6 +46,7 @@ const clamp = (value: number, min: number, max: number): number =>
 /** Inline live editor of every recipe field shown in the preview phase. */
 export const RecipePreviewEditor = ({
   recipe,
+  missingMessage,
   onChangeName,
   onChangeCuisine,
   onChangeServings,
@@ -202,6 +204,12 @@ export const RecipePreviewEditor = ({
             </ThemedText>
           </Pressable>
         </View>
+
+        {missingMessage !== null ? (
+          <ThemedText variant="caption" style={[styles.missing, { color: colors.danger }]}>
+            {missingMessage}
+          </ThemedText>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -288,5 +296,8 @@ const styles = StyleSheet.create({
   addLabel: {
     fontWeight: '600',
     fontSize: fontSizes.medium,
+  },
+  missing: {
+    textAlign: 'center',
   },
 });
