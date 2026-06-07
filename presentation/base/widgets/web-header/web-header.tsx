@@ -38,8 +38,9 @@ export const WebHeader = (): React.JSX.Element => {
   const router = useRouter();
   const pathname = usePathname();
   const colors = useTheme().colors;
-  const { authStore } = useStores();
+  const { authStore, notificationsStore } = useStores();
   const authState = authStore((s) => s.state);
+  const unreadCount = notificationsStore((s) => s.unreadCount);
   const { searchQuery, setSearchQuery } = useWebShellState();
 
   const activeTab = resolveActiveTab(pathname);
@@ -108,7 +109,7 @@ export const WebHeader = (): React.JSX.Element => {
           createLabel={t().myRecipes.createNew}
           notificationsLabel={t().notifications.title}
           profileLabel={t().navigation.profile}
-          unreadCount={0}
+          unreadCount={unreadCount}
           isProfileActive={isProfileActive}
           avatarName={displayName}
           avatarUri={avatarUri}

@@ -10,6 +10,8 @@ export interface CommentProps {
   createdAt: Date;
   authorDisplayName: string;
   authorPhotoUrl: string | null;
+  likeCount: number;
+  likedByMe: boolean;
 }
 
 /**
@@ -59,5 +61,30 @@ export class Comment extends Entity<CommentProps> {
 
   get authorPhotoUrl(): string | null {
     return this.props.authorPhotoUrl;
+  }
+
+  get likeCount(): number {
+    return this.props.likeCount;
+  }
+
+  get likedByMe(): boolean {
+    return this.props.likedByMe;
+  }
+
+  /**
+   * Returns a new `Comment` with `likedByMe` flipped and `likeCount` adjusted
+   * (+1 when becoming liked, -1 when becoming unliked, clamped at 0). The
+   * receiver is left unchanged so callers can keep the original for rollback.
+   */
+  withLikeToggled(): Comment {
+    const nextLiked = !this.props.likedByMe;
+    const nextCount = nextLiked
+      ? this.props.likeCount + 1
+      : Math.max(0, this.props.likeCount - 1);
+    return new Comment({
+      ...this.props,
+      likedByMe: nextLiked,
+      likeCount: nextCount,
+    });
   }
 }

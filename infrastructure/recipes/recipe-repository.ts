@@ -110,6 +110,7 @@ export class RecipeRepository implements IRecipeRepository {
     formData.append('instructions', JSON.stringify(input.instructions));
     formData.append('prepTimeMinutes', String(input.prepTimeMinutes));
     formData.append('cookTimeMinutes', String(input.cookTimeMinutes));
+    formData.append('servings', String(input.servings));
 
     if (input.rating !== undefined) {
       formData.append('rating', String(input.rating));

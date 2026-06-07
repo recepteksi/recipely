@@ -1,6 +1,11 @@
 export { Failure } from './failure';
 export { NetworkFailure } from './network-failure';
+export { TimeoutFailure } from './timeout-failure';
 export { UnauthorizedFailure } from './unauthorized-failure';
+export { ForbiddenFailure } from './forbidden-failure';
 export { NotFoundFailure } from './not-found-failure';
 export { ValidationFailure } from './validation-failure';
+export { ConflictFailure } from './conflict-failure';
+export { RateLimitFailure } from './rate-limit-failure';
+export { ServerFailure } from './server-failure';
 export { UnknownFailure } from './unknown-failure';

@@ -29,6 +29,7 @@ import {
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/recipe-mapping';
+import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
 import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
@@ -307,6 +308,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       instructions: { [locale]: cleanInstructions },
       prepTimeMinutes: recipe.prepTimeMinutes,
       cookTimeMinutes: recipe.cookTimeMinutes,
+      servings: recipe.servings,
       media: images.map(toMediaUpload),
       tags: { [locale]: [DIFFICULTY_LABELS[recipe.difficulty]] },
       mealType: { [locale]: [] },
@@ -318,8 +320,20 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     if (state.status === 'success') {
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
+      // WHY: best-effort cleanup of the working draft now that it's published.
+      // A failure here is intentionally swallowed (not toasted): the publish
+      // already succeeded, and a leftover draft is self-healing — it just stays
+      // re-deletable in My Recipes rather than blocking the success path.
       await draftsStore.getState().deleteDraft(activeDraftId);
       router.replace('/my-recipes');
+      return;
+    }
+    // WHY: publish previously failed silently — the spinner stopped and the only
+    // trace was a console 4xx. Surface it as a toast so the user always gets a
+    // reaction, then reset so the button is tappable again.
+    if (state.status === 'error') {
+      showErrorToast(state.failure);
+      createdRecipesStore.getState().resetCreateState();
     }
   }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router]);
 
@@ -355,6 +369,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     if (state.status === 'success') {
       createdRecipesStore.getState().resetUpdateState();
       router.back();
+      return;
+    }
+    if (state.status === 'error') {
+      showErrorToast(state.failure);
+      createdRecipesStore.getState().resetUpdateState();
     }
   }, [recipe, recipeId, createdRecipesStore, router]);
 
@@ -387,6 +406,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
+    // WHY: best-effort — if the delete fails the draft simply remains in My
+    // Recipes (re-deletable there). We don't block or toast on the way out, so
+    // "discard" always lets the user leave.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     router.back();

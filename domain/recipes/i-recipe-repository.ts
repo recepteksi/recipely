@@ -48,6 +48,7 @@ export interface CreateRecipeInput {
   instructions: Record<string, string[]>;
   prepTimeMinutes: number;
   cookTimeMinutes: number;
+  servings: number;
   // Ordered gallery (cover first). At least one image is required.
   media: RecipeMediaUpload[];
   rating?: number;

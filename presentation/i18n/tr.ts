@@ -11,6 +11,64 @@ export const tr: Translations = {
     of: '/',
     clear: 'Temizle',
   },
+  errors: {
+    retry: 'Tekrar dene',
+    back: 'Geri dön',
+    dismiss: 'Kapat',
+    genericTitle: 'Bir şeyler ters gitti',
+    sectionTitle: 'Bu bölüm yüklenemedi',
+    sectionBody: 'Bu kısım gelmedi.',
+    network: {
+      title: 'Mutfakla bağ koptu',
+      body: 'İnternete ulaşamıyoruz. Bağlantını kontrol edip tekrar dene.',
+      short: 'Çevrimdışısın',
+    },
+    timeout: {
+      title: 'Bu biraz uzadı',
+      body: 'Mutfak yanıt vermekte gecikti. Bir kez daha dene.',
+      short: 'İstek zaman aşımına uğradı',
+    },
+    server: {
+      title: 'Tarif tutmadı',
+      body: 'Bir şeyler bizim tarafta ters gitti. Birkaç saniye sonra tekrar dene.',
+      short: 'Sunucu hatası — tekrar dene',
+    },
+    notFound: {
+      title: 'Bu tarif menüde yok',
+      body: 'Aradığın tarif kaldırılmış ya da hiç var olmamış olabilir.',
+      short: 'Bulunamadı',
+    },
+    unauthorized: {
+      title: 'Lütfen tekrar giriş yap',
+      body: 'Oturumun sona erdi. Kaldığın yerden devam etmek için giriş yap.',
+      short: 'Oturum doldu — tekrar giriş yap',
+    },
+    forbidden: {
+      title: 'Buna erişemezsin',
+      body: 'Bu içeriğe erişim iznin yok.',
+      short: 'Erişim iznin yok',
+    },
+    conflict: {
+      title: 'Bu olmadı',
+      body: 'Bu, zaten var olan bir şeyle çakışıyor. Gözden geçirip tekrar dene.',
+      short: 'Bu zaten mevcut',
+    },
+    rateLimit: {
+      title: 'Biraz yavaşla',
+      body: 'Kısa sürede çok fazla denedin. Bir an bekleyip tekrar dene.',
+      short: 'Çok deneme — biraz bekle',
+    },
+    validation: {
+      title: 'Birkaç şeyi düzeltelim',
+      body: 'Bazı bilgileri kontrol etmek gerek. İşaretli alanlara bakıp tekrar dene.',
+      short: 'İşaretli alanları kontrol et',
+    },
+    unknown: {
+      title: 'Bir şeyler ters gitti',
+      body: 'Beklenmedik bir aksilik oldu. Lütfen tekrar dene.',
+      short: 'Bir şeyler ters gitti',
+    },
+  },
   splash: {
     tagline: 'Tariflerin senin elinde',
   },
@@ -231,6 +289,8 @@ export const tr: Translations = {
     continue: 'Devam et',
     resume: 'Kaldığın yerden devam et',
     delete: 'Taslağı sil',
+  },
+  relativeTime: {
     justNow: 'az önce',
     minutesAgo: '{n} dk önce',
     hoursAgo: '{n} sa önce',
@@ -274,9 +334,12 @@ export const tr: Translations = {
     send: 'Gönder',
     signInToComment: 'Yorum yapmak için giriş yapın.',
     loadMore: 'Daha fazla',
+    delete: 'Yorumu sil',
     deleteConfirm: 'Bu yorum silinsin mi?',
     error: 'Gönderilemedi. Tekrar deneyin.',
     total: 'yorum',
+    like: 'Yorumu beğen',
+    unlike: 'Beğeniyi geri al',
   },
   register: {
     title: 'Hesap oluştur',
@@ -302,6 +365,7 @@ export const tr: Translations = {
     errorPwdShort: 'Şifre en az 8 karakter olmalı.',
     errorMismatch: 'Şifreler eşleşmiyor.',
     errorAgree: 'Lütfen şartları kabul edin.',
+    emailTaken: 'Bu e-posta zaten kayıtlı. Bunun yerine giriş yapmayı dene.',
   },
   forgotPassword: {
     title: 'Şifrenizi mi unuttunuz?',
@@ -330,6 +394,7 @@ export const tr: Translations = {
     resent: 'Yeni kod gönderildi.',
     changeEmail: 'Farklı e-posta kullan',
     errorCode: '6 haneli kodu gir.',
+    invalidCode: 'Bu kod yanlış ya da süresi dolmuş. Tekrar dene veya yeniden gönder.',
   },
   ai: {
     title: 'AI Tarif',

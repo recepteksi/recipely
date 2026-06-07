@@ -9,6 +9,64 @@ export const en = {
     of: 'of',
     clear: 'Clear',
   },
+  errors: {
+    retry: 'Try again',
+    back: 'Go back',
+    dismiss: 'Dismiss',
+    genericTitle: 'Something went wrong',
+    sectionTitle: "Couldn't load this",
+    sectionBody: "This part didn't load.",
+    network: {
+      title: 'Lost the connection',
+      body: "We can't reach the kitchen right now. Check your connection and try again.",
+      short: "You're offline",
+    },
+    timeout: {
+      title: 'This is taking a while',
+      body: 'The kitchen took too long to respond. Give it another go.',
+      short: 'Request timed out',
+    },
+    server: {
+      title: "Something didn't simmer right",
+      body: 'Something went wrong on our end. Give it a moment and try again.',
+      short: 'Server hiccup — try again',
+    },
+    notFound: {
+      title: "This recipe's off the menu",
+      body: 'It may have been removed, or it never existed.',
+      short: "Couldn't find that",
+    },
+    unauthorized: {
+      title: 'Please sign in again',
+      body: 'Your session ended. Sign in to pick up where you left off.',
+      short: 'Session expired — sign in again',
+    },
+    forbidden: {
+      title: "You can't open this",
+      body: "You don't have access to this content.",
+      short: "You don't have access",
+    },
+    conflict: {
+      title: "That didn't fit",
+      body: 'This clashes with something that already exists. Review and try again.',
+      short: 'That already exists',
+    },
+    rateLimit: {
+      title: 'Slow down a sec',
+      body: "You've done that a lot in a short time. Wait a moment and try again.",
+      short: 'Too many tries — wait a sec',
+    },
+    validation: {
+      title: "Let's fix a couple things",
+      body: 'Some details need another look. Check the highlighted fields and try again.',
+      short: 'Check the highlighted fields',
+    },
+    unknown: {
+      title: 'Something went wrong',
+      body: 'We hit an unexpected snag. Please try again.',
+      short: 'Something went wrong',
+    },
+  },
   splash: {
     tagline: 'Recipes, simply yours',
   },
@@ -229,6 +287,8 @@ export const en = {
     continue: 'Continue',
     resume: 'Pick up where you left off',
     delete: 'Delete draft',
+  },
+  relativeTime: {
     justNow: 'just now',
     minutesAgo: '{n}m ago',
     hoursAgo: '{n}h ago',
@@ -272,9 +332,12 @@ export const en = {
     send: 'Send',
     signInToComment: 'Sign in to leave a comment.',
     loadMore: 'Load more',
+    delete: 'Delete comment',
     deleteConfirm: 'Delete this comment?',
     error: 'Failed to post. Please try again.',
     total: 'comments',
+    like: 'Like comment',
+    unlike: 'Unlike comment',
   },
   register: {
     title: 'Create account',
@@ -300,6 +363,7 @@ export const en = {
     errorPwdShort: 'Password must be at least 8 characters.',
     errorMismatch: "Passwords don't match.",
     errorAgree: 'Please accept the terms.',
+    emailTaken: 'That email is already registered. Try signing in instead.',
   },
   forgotPassword: {
     title: 'Forgot password?',
@@ -328,6 +392,7 @@ export const en = {
     resent: 'A new code is on its way.',
     changeEmail: 'Use a different email',
     errorCode: 'Enter the 6-digit code.',
+    invalidCode: 'That code is wrong or expired. Try again or resend it.',
   },
   ai: {
     title: 'AI Recipe',

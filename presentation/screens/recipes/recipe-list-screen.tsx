@@ -19,6 +19,12 @@ import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { ErrorState } from '@presentation/base/widgets/error-state';
+import {
+  failureContent,
+  failureIcon,
+  failureSeverity,
+} from '@presentation/base/errors/failure-content';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
@@ -136,7 +142,8 @@ const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): Rea
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore } = useStores();
+  const { recipeListStore, notificationsStore } = useStores();
+  const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
   const { isWebShell, width } = useLayout();
@@ -461,19 +468,16 @@ export const RecipeListScreen = (): React.JSX.Element => {
     body = <LoadingSkeleton gridColumns={gridColumns} isWebShell={isWebShell} />;
   } else if (state.status === 'error') {
     const failure: Failure = state.failure;
+    const content = failureContent(failure);
     body = (
-      <View style={styles.center}>
-        <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
-        <ThemedText variant="subtitle" style={styles.feedbackTitle}>
-          {t().common.error}
-        </ThemedText>
-        <ThemedText variant="body" muted style={styles.feedbackSub}>
-          {failure.message}
-        </ThemedText>
-        <View style={styles.retryButton}>
-          <PrimaryButton label={t().common.retry} onPress={onRefresh} />
-        </View>
-      </View>
+      <ErrorState
+        severity={failureSeverity(failure)}
+        icon={failureIcon(failure)}
+        title={content.title}
+        body={content.body}
+        primaryLabel={t().errors.retry}
+        onPrimary={onRefresh}
+      />
     );
   } else if (filteredRecipes.length === 0) {
     body = (
@@ -518,7 +522,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} />
+      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} unreadCount={unreadCount} />
       {stickyHeader}
 
       {/* Always-visible header: stays stable while recipe list reloads */}
