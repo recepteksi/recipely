@@ -289,6 +289,8 @@ export const tr: Translations = {
     continue: 'Devam et',
     resume: 'Kaldığın yerden devam et',
     delete: 'Taslağı sil',
+  },
+  relativeTime: {
     justNow: 'az önce',
     minutesAgo: '{n} dk önce',
     hoursAgo: '{n} sa önce',
@@ -332,6 +334,7 @@ export const tr: Translations = {
     send: 'Gönder',
     signInToComment: 'Yorum yapmak için giriş yapın.',
     loadMore: 'Daha fazla',
+    delete: 'Yorumu sil',
     deleteConfirm: 'Bu yorum silinsin mi?',
     error: 'Gönderilemedi. Tekrar deneyin.',
     total: 'yorum',

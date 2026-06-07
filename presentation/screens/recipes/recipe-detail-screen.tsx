@@ -445,6 +445,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                           <CommentCard
                             key={comment.id}
                             body={comment.body}
+                            authorDisplayName={comment.authorDisplayName}
+                            authorPhotoUrl={comment.authorPhotoUrl}
                             createdAt={comment.createdAt}
                             isOwn={comment.authorId === userId}
                             onDelete={() => void handleDeleteComment(comment.id)}
