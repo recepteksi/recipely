@@ -5,6 +5,7 @@ import { RecipeImage } from '@presentation/base/widgets/recipe-image';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
@@ -15,19 +16,6 @@ export interface DraftCardProps {
 }
 
 const THUMB = 72;
-
-/** Relative "time ago" for a draft's last update, via the active locale's strings. */
-const timeAgo = (date: Date): string => {
-  const d = t().drafts;
-  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (seconds < 60) return d.justNow;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return d.minutesAgo.replace('{n}', String(minutes));
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return d.hoursAgo.replace('{n}', String(hours));
-  const days = Math.floor(hours / 24);
-  return d.daysAgo.replace('{n}', String(days));
-};
 
 /** Row in the Drafts tab: cover thumb, title, item count + relative time, delete. */
 export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
@@ -57,7 +45,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
           {name !== undefined && name.length > 0 ? name : t().drafts.untitled}
         </ThemedText>
         <ThemedText variant="caption" muted>
-          {ingredientCount} {t().drafts.items} · {timeAgo(draft.updatedAt)}
+          {ingredientCount} {t().drafts.items} · {formatTimeAgo(draft.updatedAt)}
         </ThemedText>
       </View>
       <Pressable

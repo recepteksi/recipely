@@ -287,6 +287,8 @@ export const en = {
     continue: 'Continue',
     resume: 'Pick up where you left off',
     delete: 'Delete draft',
+  },
+  relativeTime: {
     justNow: 'just now',
     minutesAgo: '{n}m ago',
     hoursAgo: '{n}h ago',
@@ -330,6 +332,7 @@ export const en = {
     send: 'Send',
     signInToComment: 'Sign in to leave a comment.',
     loadMore: 'Load more',
+    delete: 'Delete comment',
     deleteConfirm: 'Delete this comment?',
     error: 'Failed to post. Please try again.',
     total: 'comments',
