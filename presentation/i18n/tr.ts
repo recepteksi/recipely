@@ -338,6 +338,8 @@ export const tr: Translations = {
     deleteConfirm: 'Bu yorum silinsin mi?',
     error: 'Gönderilemedi. Tekrar deneyin.',
     total: 'yorum',
+    like: 'Yorumu beğen',
+    unlike: 'Beğeniyi geri al',
   },
   register: {
     title: 'Hesap oluştur',

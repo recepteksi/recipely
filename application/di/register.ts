@@ -55,6 +55,8 @@ import {
 import { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
 import { AddCommentUseCase } from '@application/comments/add-comment-use-case';
 import { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
+import { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
+import { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
 import {
   configureCommentsStore,
   type CommentsStore,
@@ -122,6 +124,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const listCommentsUseCase = new ListCommentsUseCase(commentRepo);
   const addCommentUseCase = new AddCommentUseCase(commentRepo);
   const deleteCommentUseCase = new DeleteCommentUseCase(commentRepo);
+  const likeCommentUseCase = new LikeCommentUseCase(commentRepo);
+  const unlikeCommentUseCase = new UnlikeCommentUseCase(commentRepo);
 
   const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
   const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
@@ -159,6 +163,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     listComments: listCommentsUseCase,
     addComment: addCommentUseCase,
     deleteComment: deleteCommentUseCase,
+    likeComment: likeCommentUseCase,
+    unlikeComment: unlikeCommentUseCase,
   });
   const likesStore = configureLikesStore({
     likeRecipe: likeRecipeUseCase,

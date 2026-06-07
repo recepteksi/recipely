@@ -336,6 +336,8 @@ export const en = {
     deleteConfirm: 'Delete this comment?',
     error: 'Failed to post. Please try again.',
     total: 'comments',
+    like: 'Like comment',
+    unlike: 'Unlike comment',
   },
   register: {
     title: 'Create account',

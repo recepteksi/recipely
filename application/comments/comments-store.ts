@@ -1,9 +1,12 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
+import { ok, type Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import type { Comment } from '@domain/comments/comment';
 import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
 import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
+import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
+import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -33,6 +36,12 @@ export interface CommentsStoreState {
   loadMore(recipeId: string): Promise<void>;
   addComment(recipeId: string, body: string): Promise<boolean>;
   deleteComment(recipeId: string, commentId: string): Promise<boolean>;
+  /**
+   * Toggle a comment's like with an optimistic in-place update; rolls back on
+   * failure. Returns the `Result` so the caller can surface a toast when the
+   * toggle is rejected — the optimistic rollback alone is easy to miss.
+   */
+  toggleLike(recipeId: string, commentId: string): Promise<Result<void, Failure>>;
 }
 
 export type CommentsStore = UseBoundStore<StoreApi<CommentsStoreState>>;
@@ -41,10 +50,12 @@ export interface ConfigureCommentsStoreOptions {
   listComments: ListCommentsUseCase;
   addComment: AddCommentUseCase;
   deleteComment: DeleteCommentUseCase;
+  likeComment: LikeCommentUseCase;
+  unlikeComment: UnlikeCommentUseCase;
 }
 
 export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): CommentsStore => {
-  const { listComments, addComment, deleteComment } = deps;
+  const { listComments, addComment, deleteComment, likeComment, unlikeComment } = deps;
 
   return create<CommentsStoreState>((set, get) => ({
     byRecipe: {},
@@ -274,6 +285,46 @@ export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): Com
         }));
         return false;
       }
+    },
+
+    toggleLike: async (recipeId: string, commentId: string): Promise<Result<void, Failure>> => {
+      const existing = get().byRecipe[recipeId];
+      const original = existing?.items.find((c) => c.id === commentId);
+      if (!existing || !original) {
+        return ok(undefined);
+      }
+
+      const wasLiked = original.likedByMe;
+      const optimistic = original.withLikeToggled();
+
+      const replace = (target: Comment) =>
+        set((state) => {
+          const current = state.byRecipe[recipeId];
+          if (!current) {
+            return {};
+          }
+          return {
+            byRecipe: {
+              ...state.byRecipe,
+              [recipeId]: {
+                ...current,
+                items: current.items.map((c) => (c.id === commentId ? target : c)),
+              },
+            },
+          };
+        });
+
+      replace(optimistic);
+
+      const result = wasLiked
+        ? await unlikeComment.execute(recipeId, commentId)
+        : await likeComment.execute(recipeId, commentId);
+
+      if (!result.ok) {
+        replace(original); // rollback
+      }
+
+      return result;
     },
   }));
 };
