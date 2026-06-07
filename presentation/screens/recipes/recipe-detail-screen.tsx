@@ -156,6 +156,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     if (!result.ok) showErrorToast(result.failure);
   }, [userId, recipeId, likesStore]);
 
+  const handleToggleCommentLike = useCallback(async (commentId: string): Promise<void> => {
+    if (userId === null) return;
+    const result = await commentsStore.getState().toggleLike(recipeId, commentId);
+    if (!result.ok) showErrorToast(result.failure);
+  }, [userId, recipeId, commentsStore]);
+
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
 
@@ -449,6 +455,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                             authorPhotoUrl={comment.authorPhotoUrl}
                             createdAt={comment.createdAt}
                             isOwn={comment.authorId === userId}
+                            likeCount={comment.likeCount}
+                            likedByMe={comment.likedByMe}
+                            canLike={userId !== null}
+                            onToggleLike={() => void handleToggleCommentLike(comment.id)}
                             onDelete={() => void handleDeleteComment(comment.id)}
                           />
                         ))}

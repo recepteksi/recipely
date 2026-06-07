@@ -13,8 +13,14 @@ export interface CommentCardProps {
   authorPhotoUrl: string | null;
   createdAt: Date;
   isOwn: boolean;
+  likeCount: number;
+  likedByMe: boolean;
+  canLike: boolean;
+  onToggleLike: () => void;
   onDelete?: () => void;
 }
+
+const DISABLED_OPACITY = 0.5;
 
 const AVATAR_SIZE = 36;
 
@@ -25,6 +31,10 @@ export const CommentCard = ({
   authorPhotoUrl,
   createdAt,
   isOwn,
+  likeCount,
+  likedByMe,
+  canLike,
+  onToggleLike,
   onDelete,
 }: CommentCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -65,6 +75,25 @@ export const CommentCard = ({
       <ThemedText variant="body" style={styles.bodyText}>
         {body}
       </ThemedText>
+      <View style={styles.footerRow}>
+        <Pressable
+          onPress={onToggleLike}
+          disabled={!canLike}
+          accessibilityRole="button"
+          accessibilityLabel={likedByMe ? t().comments.unlike : t().comments.like}
+          hitSlop={8}
+          style={[styles.likeBtn, { opacity: canLike ? 1 : DISABLED_OPACITY }]}
+        >
+          <Ionicons
+            name={likedByMe ? 'heart' : 'heart-outline'}
+            size={sizes.iconSm}
+            color={likedByMe ? colors.likeActive : colors.textMuted}
+          />
+          <ThemedText variant="caption" muted>
+            {likeCount}
+          </ThemedText>
+        </Pressable>
+      </View>
     </View>
   );
 };
@@ -90,6 +119,17 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     marginLeft: AVATAR_SIZE + spacing.sm,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: AVATAR_SIZE + spacing.sm,
+  },
+  likeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xxs,
   },
   deleteBtn: {
     padding: spacing.xxs,

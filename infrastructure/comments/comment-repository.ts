@@ -63,6 +63,24 @@ export class CommentRepository implements ICommentRepository {
     }
     return ok(undefined);
   }
+
+  async like(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
+    const result = await this.http.request({
+      method: 'POST',
+      url: `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
+    });
+    if (!result.ok) return fail(result.failure);
+    return ok(undefined);
+  }
+
+  async unlike(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
+    const result = await this.http.request({
+      method: 'DELETE',
+      url: `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
+    });
+    if (!result.ok) return fail(result.failure);
+    return ok(undefined);
+  }
 }
 
 function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
@@ -74,5 +92,7 @@ function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
     createdAt: new Date(dto.createdAt),
     authorDisplayName: dto.authorDisplayName,
     authorPhotoUrl: dto.authorPhotoUrl,
+    likeCount: dto.likeCount ?? 0,
+    likedByMe: dto.likedByMe ?? false,
   });
 }
