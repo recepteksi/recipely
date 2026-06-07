@@ -142,7 +142,8 @@ const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): Rea
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore } = useStores();
+  const { recipeListStore, notificationsStore } = useStores();
+  const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
   const { isWebShell, width } = useLayout();
@@ -521,7 +522,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} />
+      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} unreadCount={unreadCount} />
       {stickyHeader}
 
       {/* Always-visible header: stays stable while recipe list reloads */}
