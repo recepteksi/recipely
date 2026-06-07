@@ -18,6 +18,7 @@ import { NotificationRepository } from '@infrastructure/notifications/notificati
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
 import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
@@ -124,6 +125,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.MarkAllReadUseCase, () => {
     const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
     return new MarkAllReadUseCase(repo);
+  });
+
+  container.register(TOKENS.RegisterDeviceTokenUseCase, () => {
+    const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
+    return new RegisterDeviceTokenUseCase(repo);
   });
 
   container.register(TOKENS.GetUserProfileUseCase, () => {

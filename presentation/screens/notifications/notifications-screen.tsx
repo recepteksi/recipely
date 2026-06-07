@@ -179,9 +179,17 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
+  // Opening the screen is itself an acknowledgement: load the latest feed, then
+  // mark everything read so the bell badge clears. Runs once per mount.
   useEffect(() => {
-    if (state.status === 'idle') void load();
-  }, [state.status, load]);
+    void (async () => {
+      await load();
+      if (notificationsStore.getState().unreadCount > 0) {
+        await markAllRead();
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const items: NotifItem[] = useMemo(() => {
     if (state.status !== 'loaded') return [];

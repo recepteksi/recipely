@@ -54,6 +54,7 @@ export const sizes = {
   avatarMd: 56,
   avatarLg: 80,
   badgeSm: 28,
+  notifBadge: 18,
   chipHeight: 30,
   buttonHeight: 52,
   buttonSmHeight: 48,

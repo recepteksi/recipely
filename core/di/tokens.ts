@@ -19,5 +19,6 @@ export const TOKENS = {
   UserProfileRepository: Symbol.for('UserProfileRepository'),
   ListNotificationsUseCase: Symbol.for('ListNotificationsUseCase'),
   MarkAllReadUseCase: Symbol.for('MarkAllReadUseCase'),
+  RegisterDeviceTokenUseCase: Symbol.for('RegisterDeviceTokenUseCase'),
   GetUserProfileUseCase: Symbol.for('GetUserProfileUseCase'),
 } as const;
