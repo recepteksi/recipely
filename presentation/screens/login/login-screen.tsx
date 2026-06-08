@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
@@ -23,11 +23,13 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { resolveRedirect } from '@presentation/screens/login/resolve-redirect';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 
 export const LoginScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
   const isLandscapeShell = isWebShell && orientation === 'landscape';
@@ -48,9 +50,9 @@ export const LoginScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === 'authenticated') {
-      router.replace('/recipes');
+      router.replace(resolveRedirect(redirect) as Href);
     }
-  }, [state.status, router]);
+  }, [state.status, router, redirect]);
 
   const handleSignIn = useCallback(() => {
     if (email.trim().length === 0 || password.trim().length === 0) {
