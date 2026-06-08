@@ -4,15 +4,9 @@
     "target": {
       "namespace": "android_app",
       "package_name": "com.recipely.app",
-      "sha256_cert_fingerprints": ["REPLACE_WITH_PLAY_APP_SIGNING_SHA256"]
-    }
-  },
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "com.recipely.app.dev",
-      "sha256_cert_fingerprints": ["REPLACE_WITH_DEV_SHA256_OPTIONAL"]
+      "sha256_cert_fingerprints": [
+        "57:7E:C8:B2:A2:DF:56:A5:00:F3:7D:4C:AC:A1:DF:17:62:BD:87:9F:7D:FD:BB:CA:18:82:4F:53:75:42:97:A7"
+      ]
     }
   }
 ]
