@@ -25,11 +25,26 @@ export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 export const PRIVACY_POLICY_URL: string = `${SERVER_URL}/privacy`;
 export const TERMS_OF_USE_URL: string = `${SERVER_URL}/terms`;
 
+// Canonical public web origin (universal-link domain in app.json). Distinct
+// from the API server (api.recipely.net). Used to build shareable deep links
+// that round-trip back into the app via expo-router path matching.
+const DEFAULT_WEB_APP_BASE_URL = "https://recipely.net";
+
+export const WEB_APP_BASE_URL: string =
+  process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
+  DEFAULT_WEB_APP_BASE_URL;
+
+/** Shareable canonical URL for a recipe — opens the app's recipes/[recipeId] route. */
+export const recipeWebUrl = (recipeId: string): string =>
+  `${WEB_APP_BASE_URL}/recipes/${recipeId}`;
+
 export const AUTH_LOGIN_PATH = "/auth/login";
 export const AUTH_REGISTER_PATH = "/auth/register";
 export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
 export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
+export const AUTH_FORGOT_PASSWORD_PATH = "/auth/forgot-password";
+export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
 
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend

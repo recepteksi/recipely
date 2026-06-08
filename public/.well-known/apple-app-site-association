@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app",
+        "paths": ["*"]
+      },
+      {
+        "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app.dev",
+        "paths": ["*"]
+      }
+    ]
+  }
+}

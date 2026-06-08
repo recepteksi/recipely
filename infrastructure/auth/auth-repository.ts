@@ -4,10 +4,12 @@ import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import {
+  AUTH_FORGOT_PASSWORD_PATH,
   AUTH_LOGIN_PATH,
   AUTH_REGISTER_PATH,
   AUTH_REGISTER_RESEND_PATH,
   AUTH_REGISTER_VERIFY_PATH,
+  AUTH_RESET_PASSWORD_PATH,
   AUTH_SOCIAL_PATH,
   DEFAULT_CODE_TTL_SECONDS,
 } from '@infrastructure/constants/api';
@@ -115,6 +117,30 @@ export class AuthRepository implements IAuthRepository {
 
   async getCurrentSession(): Promise<Result<AuthSession | null, Failure>> {
     return this.storage.loadSession();
+  }
+
+  async requestPasswordReset(email: string): Promise<Result<void, Failure>> {
+    const result = await this.http.request<void>({
+      method: 'POST',
+      url: AUTH_FORGOT_PASSWORD_PATH,
+      data: { email: email.trim() },
+    });
+    if (!result.ok) {
+      return result;
+    }
+    return ok(undefined);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>> {
+    const result = await this.http.request<void>({
+      method: 'POST',
+      url: AUTH_RESET_PASSWORD_PATH,
+      data: { token, newPassword },
+    });
+    if (!result.ok) {
+      return result;
+    }
+    return ok(undefined);
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

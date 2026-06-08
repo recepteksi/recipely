@@ -8,9 +8,11 @@ import { ResendRegistrationCodeUseCase } from '@application/auth/resend-registra
 import { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
 import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
+import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
+import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
-import { UnauthorizedFailure } from '@core/failure';
+import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
@@ -49,6 +51,8 @@ const makeStore = (repo: FakeAuthRepository) => {
     savedRecipesStore,
     signInWithGoogle: new SignInWithGoogleUseCase(repo),
     signInWithApple: new SignInWithAppleUseCase(repo),
+    requestPasswordReset: new RequestPasswordResetUseCase(repo),
+    resetPassword: new ResetPasswordUseCase(repo),
   });
 };
 
@@ -194,5 +198,56 @@ describe('auth-store', () => {
     await store.getState().hydrate();
 
     expect(store.getState().state.status).toBe('unauthenticated');
+  });
+
+  it('requestPasswordReset returns true when the use case succeeds', async () => {
+    const store = makeStore(new FakeAuthRepository());
+
+    const result = await store.getState().requestPasswordReset('user@example.com');
+
+    expect(result).toBe(true);
+  });
+
+  it('requestPasswordReset returns false and sets state to error when the use case fails', async () => {
+    const failure = new NetworkFailure('no connection');
+    const repo = new (class extends FakeAuthRepository {
+      override requestPasswordReset(_email: string) {
+        return Promise.resolve(fail(failure));
+      }
+    })();
+    const store = makeStore(repo);
+
+    const result = await store.getState().requestPasswordReset('user@example.com');
+
+    expect(result).toBe(false);
+    const s = store.getState().state;
+    expect(s.status).toBe('error');
+    if (s.status === 'error') expect(s.failure).toBe(failure);
+  });
+
+  it('resetPassword returns null on success and does not transition to authenticated', async () => {
+    const store = makeStore(new FakeAuthRepository());
+
+    const result = await store.getState().resetPassword('valid-token', 'newP@ssw0rd');
+
+    expect(result).toBeNull();
+    expect(store.getState().state.status).not.toBe('authenticated');
+  });
+
+  it('resetPassword returns the Failure and sets state to error when the use case fails', async () => {
+    const failure = new NotFoundFailure('reset token not found');
+    const repo = new (class extends FakeAuthRepository {
+      override resetPassword(_token: string, _newPassword: string) {
+        return Promise.resolve(fail(failure));
+      }
+    })();
+    const store = makeStore(repo);
+
+    const result = await store.getState().resetPassword('expired-token', 'newP@ssw0rd');
+
+    expect(result).toBe(failure);
+    const s = store.getState().state;
+    expect(s.status).toBe('error');
+    if (s.status === 'error') expect(s.failure).toBe(failure);
   });
 });

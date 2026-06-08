@@ -17,6 +17,8 @@ import {
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
+import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet';
+import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
@@ -74,6 +76,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
   const isDeleting = deleteState.status === 'deleting';
+  const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
@@ -603,34 +606,59 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       </BottomSheet>
 
       {current.status === 'loaded' ? (
-        <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
-          <Pressable
-            onPress={handleToggleLike}
-            accessibilityRole="button"
-            accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
-            disabled={!userId}
-            style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
-          >
-            <MaterialCommunityIcons
-              name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
-              size={20}
-              color={likeState?.likedByMe ? colors.likeActive : colors.onOverlay}
-            />
-          </Pressable>
-          <Pressable
-            onPress={handleToggleSave}
-            accessibilityRole="button"
-            accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-            disabled={isLoading || !userId}
-            style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
-          >
-            <Ionicons
-              name={isSaved ? 'bookmark' : 'bookmark-outline'}
-              size={20}
-              color={isLoading || !userId ? colors.textMuted : colors.onOverlay}
-            />
-          </Pressable>
-        </View>
+        (() => {
+          const recipe = current.recipe;
+          const images = recipe.media.filter((m) => m.type === 'image');
+          const firstImageUrl = images.length > 0 ? images[0].url : recipe.image;
+          return (
+            <>
+              <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t().recipes.share}
+                  onPress={() => setShareOpen(true)}
+                  style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
+                >
+                  <Ionicons name="share-social-outline" size={sizes.iconMd} color={colors.onOverlay} />
+                </Pressable>
+                <Pressable
+                  onPress={handleToggleLike}
+                  accessibilityRole="button"
+                  accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
+                  disabled={!userId}
+                  style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+                >
+                  <MaterialCommunityIcons
+                    name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
+                    size={20}
+                    color={likeState?.likedByMe ? colors.likeActive : colors.onOverlay}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={handleToggleSave}
+                  accessibilityRole="button"
+                  accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
+                  disabled={isLoading || !userId}
+                  style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+                >
+                  <Ionicons
+                    name={isSaved ? 'bookmark' : 'bookmark-outline'}
+                    size={20}
+                    color={isLoading || !userId ? colors.textMuted : colors.onOverlay}
+                  />
+                </Pressable>
+              </View>
+              <RecipeShareSheet
+                visible={shareOpen}
+                onClose={() => setShareOpen(false)}
+                recipeName={recipe.name}
+                cuisine={recipe.cuisine}
+                imageUrl={firstImageUrl}
+                url={recipeWebUrl(recipeId)}
+              />
+            </>
+          );
+        })()
       ) : null}
     </KeyboardAvoidingView>
   );
