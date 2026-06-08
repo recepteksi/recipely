@@ -4,11 +4,11 @@
     "details": [
       {
         "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app",
-        "paths": ["/reset-password", "/reset-password*"]
+        "paths": ["*"]
       },
       {
         "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app.dev",
-        "paths": ["/reset-password", "/reset-password*"]
+        "paths": ["*"]
       }
     ]
   }
