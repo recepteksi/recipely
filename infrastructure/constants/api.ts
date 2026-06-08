@@ -30,6 +30,8 @@ export const AUTH_REGISTER_PATH = "/auth/register";
 export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
 export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
+export const AUTH_FORGOT_PASSWORD_PATH = "/auth/forgot-password";
+export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
 
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend

@@ -12,6 +12,7 @@ export const PUBLIC_PATHS = new Set<string>([
   '/register',
   '/verify-code',
   '/forgot-password',
+  '/reset-password',
 ]);
 
 const isPublicPath = (pathname: string): boolean => PUBLIC_PATHS.has(pathname);
