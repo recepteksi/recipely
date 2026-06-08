@@ -29,8 +29,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "recipely.net",
-              "pathPrefix": "/reset-password"
+              "host": "recipely.net"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
