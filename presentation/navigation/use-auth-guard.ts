@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { usePathname, useRouter } from 'expo-router';
+import { type Href, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 
 /**
@@ -22,6 +22,11 @@ const isPublicPath = (pathname: string): boolean => PUBLIC_PATHS.has(pathname);
  * errored) on a route that requires auth — covers both "never logged in" and
  * "signed out". No-ops while the session is still hydrating (`idle`/`loading`)
  * so a valid session is never bounced on a hard reload / deep link.
+ *
+ * When bouncing from a gated path worth returning to (i.e. not `/` and not
+ * `/login`), a `redirect` query param is appended so that the login screen
+ * can send the user straight back after a successful sign-in, e.g.
+ * `/login?redirect=%2Frecipes%2F123`.
  */
 export const useAuthGuard = (): void => {
   const { authStore } = useStores();
@@ -32,6 +37,11 @@ export const useAuthGuard = (): void => {
   useEffect(() => {
     if (status !== 'unauthenticated' && status !== 'error') return;
     if (isPublicPath(pathname)) return;
-    router.replace('/login');
+    // `pathname` is guaranteed non-public here — the isPublicPath early return
+    // above already handled `/`, `/login`, and the other public routes — so it
+    // is always worth preserving as a post-login redirect target. Cast: the
+    // dynamic redirect param can't be statically verified against expo-router's
+    // typed-routes union.
+    router.replace(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
   }, [status, pathname, router]);
 };
