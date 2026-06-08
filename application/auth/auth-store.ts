@@ -10,6 +10,8 @@ import type { SignOutUseCase } from '@application/auth/sign-out-use-case';
 import type { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import type { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
 import type { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
+import type { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
+import type { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
@@ -41,6 +43,10 @@ export interface AuthStoreState {
   hydrate: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
+  /** Sends a reset-link email; returns true on success so the screen can show the "check your inbox" view. */
+  requestPasswordReset: (email: string) => Promise<boolean>;
+  /** Completes a password reset; returns null on success or the Failure so the screen can show a specific message. */
+  resetPassword: (token: string, newPassword: string) => Promise<Failure | null>;
 }
 
 export interface AuthStoreDeps {
@@ -54,6 +60,8 @@ export interface AuthStoreDeps {
   savedRecipesStore: SavedRecipesStore;
   signInWithGoogle: SignInWithGoogleUseCase;
   signInWithApple: SignInWithAppleUseCase;
+  requestPasswordReset: RequestPasswordResetUseCase;
+  resetPassword: ResetPasswordUseCase;
 }
 
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
@@ -163,6 +171,24 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+    },
+
+    requestPasswordReset: async (email: string) => {
+      const result = await deps.requestPasswordReset.execute(email);
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return false;
+      }
+      return true;
+    },
+
+    resetPassword: async (token: string, newPassword: string) => {
+      const result = await deps.resetPassword.execute(token, newPassword);
+      if (!result.ok) {
+        set({ state: { status: 'error', failure: result.failure } });
+        return result.failure;
+      }
+      return null;
     },
   }));
 };

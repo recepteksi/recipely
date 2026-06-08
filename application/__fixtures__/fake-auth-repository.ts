@@ -70,4 +70,12 @@ export class FakeAuthRepository implements IAuthRepository {
       this.config.signInWithAppleResult ?? fail(new UnknownFailure('not configured')),
     );
   }
+
+  requestPasswordReset(_email: string): Promise<Result<void, Failure>> {
+    return Promise.resolve(ok(undefined));
+  }
+
+  resetPassword(_token: string, _newPassword: string): Promise<Result<void, Failure>> {
+    return Promise.resolve(ok(undefined));
+  }
 }

@@ -23,4 +23,14 @@ export interface IAuthRepository {
   getCurrentSession(): Promise<Result<AuthSession | null, Failure>>;
   signInWithGoogle(): Promise<Result<AuthSession, Failure>>;
   signInWithApple(): Promise<Result<AuthSession, Failure>>;
+  /**
+   * Sends a password-reset link to `email`. Resolves ok even when the email
+   * is not registered — enumeration-safe by design.
+   */
+  requestPasswordReset(email: string): Promise<Result<void, Failure>>;
+  /**
+   * Completes a password reset using the token from the emailed link. Does
+   * NOT create a new session — the user must sign in after resetting.
+   */
+  resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>>;
 }
