@@ -51,3 +51,7 @@ app-example
 
 # Local Claude Code agent memory (per-user, not project state).
 memory/
+
+# Local, machine-specific release/push helper scripts (per-user, not project state).
+git_push.applescript
+recipely_push.command
