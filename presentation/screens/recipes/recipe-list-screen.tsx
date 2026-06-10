@@ -752,6 +752,7 @@ const styles = StyleSheet.create({
     gap: GRID_GAP,
   },
   gridRow: {
+    flexDirection: 'row',
     gap: GRID_GAP,
   },
   gridCell: {

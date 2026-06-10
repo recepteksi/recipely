@@ -19,6 +19,10 @@ export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 // needs an absolute URL that bypasses HttpClient's baseURL.
 export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 
+// Avatar upload endpoint is mounted at the server root (outside /api/v1), so
+// it needs an absolute URL that bypasses HttpClient's baseURL.
+export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
+
 // Public legal pages served as static HTML at the server root (outside
 // /api/v1). Opened in the device browser via Linking; also the Privacy
 // Policy URL submitted to Google Play.
@@ -45,6 +49,9 @@ export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
 export const AUTH_FORGOT_PASSWORD_PATH = "/auth/forgot-password";
 export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
+// Signed-in user's editable profile (display name, bio). Inside /api/v1, so
+// the path is relative — the HTTP client prepends API_BASE_URL.
+export const ME_PROFILE_PATH = "/me/profile";
 
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend

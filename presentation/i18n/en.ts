@@ -478,6 +478,11 @@ export const en = {
     nothingYet: 'Nothing here yet.',
     shareProfile: 'Share profile',
     changePhoto: 'Change photo',
+    takePhoto: 'Take photo',
+    chooseFromLibrary: 'Choose from library',
+    photoPermissionDenied: 'Photo access is needed to change your picture. Enable it in Settings.',
+    photoUploadFailed: 'Could not update your photo. Please try again.',
+    photoUploadSuccess: 'Profile photo updated.',
     badgeEarlyAdopter: 'Early adopter',
     badgeVerified: 'Verified',
     badgeStreak: '12-day streak',
@@ -485,6 +490,16 @@ export const en = {
     activityComments: 'Got 7 new comments this week',
     activityLikes: 'Reached 1,000 total likes',
     activityBadge: 'Earned "Top Mediterranean" badge',
+  },
+  editProfile: {
+    title: 'Edit profile',
+    save: 'Save',
+    displayName: 'Display name',
+    displayNamePlaceholder: 'Your name',
+    bio: 'Bio',
+    bioPlaceholder: 'Tell people a little about your cooking…',
+    displayNameRequired: 'Display name is required.',
+    saved: 'Profile updated.',
   },
 };
 

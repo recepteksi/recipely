@@ -79,6 +79,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="ai-generate" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
       </Stack>
       <ActiveTimersBar />
       <ToastHost />

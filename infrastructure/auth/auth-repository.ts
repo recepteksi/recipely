@@ -1,5 +1,5 @@
 import { fail, ok, type Result } from '@core/result/result';
-import type { Failure } from '@core/failure';
+import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
@@ -11,11 +11,17 @@ import {
   AUTH_REGISTER_VERIFY_PATH,
   AUTH_RESET_PASSWORD_PATH,
   AUTH_SOCIAL_PATH,
+  AVATAR_UPLOAD_URL,
   DEFAULT_CODE_TTL_SECONDS,
+  ME_PROFILE_PATH,
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
+import { appendFilePart } from '@infrastructure/network/append-file-part';
 import { decodeJwtPayload } from '@infrastructure/network/decode-jwt';
-import type { RecipelyAuthSessionDto } from '@infrastructure/auth/user-info-dto';
+import type {
+  RecipelyAuthSessionDto,
+  RecipelyUserDto,
+} from '@infrastructure/auth/user-info-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
@@ -141,6 +147,89 @@ export class AuthRepository implements IAuthRepository {
       return result;
     }
     return ok(undefined);
+  }
+
+  async uploadAvatar(
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<Result<AuthSession, Failure>> {
+    const formData = new FormData();
+    await appendFilePart(formData, 'avatar', { uri: fileUri, fileName, mimeType });
+
+    const result = await this.http.uploadMultipart<{ user: RecipelyUserDto }>(
+      AVATAR_UPLOAD_URL,
+      formData,
+    );
+    if (!result.ok) {
+      return result;
+    }
+
+    // The avatar endpoint returns only the updated user — no token. Reuse the
+    // current session's token/expiry/id so the user stays signed in.
+    const sessionResult = await this.storage.loadSession();
+    if (!sessionResult.ok) {
+      return fail(sessionResult.failure);
+    }
+    const current = sessionResult.value;
+    if (current === null) {
+      return fail(new UnauthorizedFailure('No active session to update'));
+    }
+
+    const userResult = toUser(result.value.user);
+    if (!userResult.ok) return userResult;
+
+    const updatedResult = AuthSession.create({
+      id: current.id,
+      accessToken: current.accessToken,
+      expiresAt: current.expiresAt,
+      user: userResult.value,
+    });
+    if (!updatedResult.ok) return updatedResult;
+
+    const saveResult = await this.storage.saveSession(updatedResult.value);
+    if (!saveResult.ok) return fail(saveResult.failure);
+    return ok(updatedResult.value);
+  }
+
+  async updateProfile(input: {
+    displayName?: string;
+    bio?: string;
+  }): Promise<Result<AuthSession, Failure>> {
+    const result = await this.http.request<{ user: RecipelyUserDto }>({
+      method: 'PATCH',
+      url: ME_PROFILE_PATH,
+      data: input,
+    });
+    if (!result.ok) {
+      return result;
+    }
+
+    // The profile endpoint returns only the updated user — no token. Reuse the
+    // current session's token/expiry/id so the user stays signed in.
+    const sessionResult = await this.storage.loadSession();
+    if (!sessionResult.ok) {
+      return fail(sessionResult.failure);
+    }
+    const current = sessionResult.value;
+    if (current === null) {
+      return fail(new UnauthorizedFailure('No active session to update'));
+    }
+
+    const userResult = toUser(result.value.user);
+    if (!userResult.ok) return userResult;
+
+    const updatedResult = AuthSession.create({
+      id: current.id,
+      accessToken: current.accessToken,
+      expiresAt: current.expiresAt,
+      user: userResult.value,
+    });
+    if (!updatedResult.ok) return updatedResult;
+
+    const saveResult = await this.storage.saveSession(updatedResult.value);
+    if (!saveResult.ok) return fail(saveResult.failure);
+    return ok(updatedResult.value);
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

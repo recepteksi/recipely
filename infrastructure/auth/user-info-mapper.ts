@@ -19,5 +19,6 @@ export const toUser = (dto: RecipelyUserDto): Result<User, ValidationFailure> =>
     email: emailResult.value,
     displayName: dto.displayName,
     ...(dto.photoUrl ? { photoUrl: dto.photoUrl } : {}),
+    ...(dto.bio ? { bio: dto.bio } : {}),
   });
 };

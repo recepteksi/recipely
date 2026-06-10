@@ -19,6 +19,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
 import { t } from '@presentation/i18n';
 
 const formatStat = (n: number): string => {
@@ -32,6 +33,7 @@ export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
+  const { pickAndUpload, isUploading } = useAvatarUpload();
 
   const { authStore, userProfileStore } = useStores();
   const authState = authStore((s) => s.state);
@@ -103,13 +105,20 @@ export const ProfileScreen = (): React.JSX.Element => {
                 ]}
               >
                 <AvatarImage uri={photoUri} name={displayName} size={106} />
+                {isUploading ? (
+                  <View style={[styles.avatarOverlay, { backgroundColor: colors.overlay }]}>
+                    <ActivityIndicator color={colors.onOverlay} />
+                  </View>
+                ) : null}
               </View>
               <Pressable
-                onPress={() => router.push('/settings')}
+                onPress={() => void pickAndUpload()}
+                disabled={isUploading}
                 style={[
                   styles.cameraBtn,
                   { backgroundColor: colors.primary, borderColor: colors.background },
                   shadows.sm,
+                  isUploading ? styles.cameraBtnDisabled : null,
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={t().profile.changePhoto}
@@ -181,7 +190,7 @@ export const ProfileScreen = (): React.JSX.Element => {
 
           <View style={styles.actionRow}>
             <Pressable
-              onPress={() => router.push('/settings')}
+              onPress={() => router.push('/edit-profile')}
               style={[styles.editBtn, { backgroundColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={t().profile.editProfile}
@@ -257,6 +266,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  avatarOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: AVATAR_FRAME / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cameraBtn: {
     position: 'absolute',
     bottom: -2,
@@ -267,6 +282,9 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cameraBtnDisabled: {
+    opacity: 0.6,
   },
   displayName: {
     fontWeight: '700',

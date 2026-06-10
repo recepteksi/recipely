@@ -6,6 +6,7 @@ export interface RecipelyUserDto {
   email: string;
   displayName: string;
   photoUrl: string | null;
+  bio?: string | null;
   createdAt: string;
   role?: string;
 }

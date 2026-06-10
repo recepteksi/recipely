@@ -12,6 +12,8 @@ import type { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-goo
 import type { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import type { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
 import type { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
+import type { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
+import type { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
@@ -47,6 +49,10 @@ export interface AuthStoreState {
   requestPasswordReset: (email: string) => Promise<boolean>;
   /** Completes a password reset; returns null on success or the Failure so the screen can show a specific message. */
   resetPassword: (token: string, newPassword: string) => Promise<Failure | null>;
+  /** Uploads a new profile photo; on success updates the session. Returns null on success or the Failure for the screen to toast. */
+  uploadAvatar: (fileUri: string, fileName: string, mimeType: string) => Promise<Failure | null>;
+  /** Updates the display name / bio; on success updates the session. Returns null on success or the Failure for the screen to toast. */
+  updateProfile: (input: { displayName?: string; bio?: string }) => Promise<Failure | null>;
 }
 
 export interface AuthStoreDeps {
@@ -62,6 +68,8 @@ export interface AuthStoreDeps {
   signInWithApple: SignInWithAppleUseCase;
   requestPasswordReset: RequestPasswordResetUseCase;
   resetPassword: ResetPasswordUseCase;
+  uploadAvatar: UploadAvatarUseCase;
+  updateProfile: UpdateProfileUseCase;
 }
 
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
@@ -188,6 +196,28 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         set({ state: { status: 'error', failure: result.failure } });
         return result.failure;
       }
+      return null;
+    },
+
+    uploadAvatar: async (fileUri: string, fileName: string, mimeType: string) => {
+      const result = await deps.uploadAvatar.execute(fileUri, fileName, mimeType);
+      if (!result.ok) {
+        // The user is still authenticated — surface the failure to the screen
+        // without clobbering the session state.
+        return result.failure;
+      }
+      set({ state: { status: 'authenticated', session: result.value } });
+      return null;
+    },
+
+    updateProfile: async (input: { displayName?: string; bio?: string }) => {
+      const result = await deps.updateProfile.execute(input);
+      if (!result.ok) {
+        // The user is still authenticated — surface the failure to the screen
+        // without clobbering the session state.
+        return result.failure;
+      }
+      set({ state: { status: 'authenticated', session: result.value } });
       return null;
     },
   }));
