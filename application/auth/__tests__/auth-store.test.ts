@@ -11,6 +11,7 @@ import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use
 import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
 import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
+import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
@@ -55,6 +56,7 @@ const makeStore = (repo: FakeAuthRepository) => {
     requestPasswordReset: new RequestPasswordResetUseCase(repo),
     resetPassword: new ResetPasswordUseCase(repo),
     uploadAvatar: new UploadAvatarUseCase(repo),
+    updateProfile: new UpdateProfileUseCase(repo),
   });
 };
 
@@ -286,5 +288,68 @@ describe('auth-store', () => {
     const s = store.getState().state;
     expect(s.status).toBe('authenticated');
     if (s.status === 'authenticated') expect(s.session).toBe(session);
+  });
+
+  describe('updateProfile', () => {
+    const buildUpdatedSession = (): AuthSession => {
+      const email = Email.create('u@example.com');
+      if (!email.ok) throw new Error();
+      const user = User.create({
+        id: 'u1',
+        email: email.value,
+        displayName: 'Updated Name',
+        bio: 'Updated bio',
+      });
+      if (!user.ok) throw new Error();
+      const session = AuthSession.create({
+        id: 's1',
+        accessToken: 'tok',
+        expiresAt: new Date(Date.now() + 60_000),
+        user: user.value,
+      });
+      if (!session.ok) throw new Error();
+      return session.value;
+    };
+
+    it('returns null and sets the new authenticated session on success', async () => {
+      const updated = buildUpdatedSession();
+      const store = makeStore(new FakeAuthRepository({ updateProfileResult: ok(updated) }));
+      await store.getState().signIn('emilys', 'emilyspass');
+
+      const result = await store
+        .getState()
+        .updateProfile({ displayName: 'Updated Name', bio: 'Updated bio' });
+
+      expect(result).toBeNull();
+      const s = store.getState().state;
+      expect(s.status).toBe('authenticated');
+      if (s.status === 'authenticated') {
+        expect(s.session).toBe(updated);
+        expect(s.session.user.displayName).toBe('Updated Name');
+        expect(s.session.user.bio).toBe('Updated bio');
+      }
+    });
+
+    it('returns the Failure and keeps the prior authenticated session on failure', async () => {
+      const session = buildSession();
+      const failure = new NetworkFailure('update failed');
+      const repo = new (class extends FakeAuthRepository {
+        override signIn() {
+          return Promise.resolve(ok(session));
+        }
+        override updateProfile() {
+          return Promise.resolve(fail(failure));
+        }
+      })();
+      const store = makeStore(repo);
+      await store.getState().signIn('emilys', 'emilyspass');
+
+      const result = await store.getState().updateProfile({ displayName: 'Updated Name' });
+
+      expect(result).toBe(failure);
+      const s = store.getState().state;
+      expect(s.status).toBe('authenticated');
+      if (s.status === 'authenticated') expect(s.session).toBe(session);
+    });
   });
 });

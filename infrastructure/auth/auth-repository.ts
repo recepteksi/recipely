@@ -13,6 +13,7 @@ import {
   AUTH_SOCIAL_PATH,
   AVATAR_UPLOAD_URL,
   DEFAULT_CODE_TTL_SECONDS,
+  ME_PROFILE_PATH,
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
@@ -165,6 +166,46 @@ export class AuthRepository implements IAuthRepository {
     }
 
     // The avatar endpoint returns only the updated user — no token. Reuse the
+    // current session's token/expiry/id so the user stays signed in.
+    const sessionResult = await this.storage.loadSession();
+    if (!sessionResult.ok) {
+      return fail(sessionResult.failure);
+    }
+    const current = sessionResult.value;
+    if (current === null) {
+      return fail(new UnauthorizedFailure('No active session to update'));
+    }
+
+    const userResult = toUser(result.value.user);
+    if (!userResult.ok) return userResult;
+
+    const updatedResult = AuthSession.create({
+      id: current.id,
+      accessToken: current.accessToken,
+      expiresAt: current.expiresAt,
+      user: userResult.value,
+    });
+    if (!updatedResult.ok) return updatedResult;
+
+    const saveResult = await this.storage.saveSession(updatedResult.value);
+    if (!saveResult.ok) return fail(saveResult.failure);
+    return ok(updatedResult.value);
+  }
+
+  async updateProfile(input: {
+    displayName?: string;
+    bio?: string;
+  }): Promise<Result<AuthSession, Failure>> {
+    const result = await this.http.request<{ user: RecipelyUserDto }>({
+      method: 'PATCH',
+      url: ME_PROFILE_PATH,
+      data: input,
+    });
+    if (!result.ok) {
+      return result;
+    }
+
+    // The profile endpoint returns only the updated user — no token. Reuse the
     // current session's token/expiry/id so the user stays signed in.
     const sessionResult = await this.storage.loadSession();
     if (!sessionResult.ok) {

@@ -190,7 +190,7 @@ export const ProfileScreen = (): React.JSX.Element => {
 
           <View style={styles.actionRow}>
             <Pressable
-              onPress={() => router.push('/settings')}
+              onPress={() => router.push('/edit-profile')}
               style={[styles.editBtn, { backgroundColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={t().profile.editProfile}

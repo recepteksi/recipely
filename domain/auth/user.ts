@@ -8,6 +8,7 @@ export interface UserProps {
   email: Email;
   displayName: string;
   photoUrl?: string;
+  bio?: string;
 }
 
 /**
@@ -39,5 +40,9 @@ export class User extends Entity<UserProps> {
 
   get photoUrl(): string | undefined {
     return this.props.photoUrl;
+  }
+
+  get bio(): string | undefined {
+    return this.props.bio;
   }
 }

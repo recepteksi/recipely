@@ -43,4 +43,9 @@ export interface IAuthRepository {
     fileName: string,
     mimeType: string,
   ): Promise<Result<AuthSession, Failure>>;
+  /**
+   * Updates the signed-in user's editable profile fields (display name, bio)
+   * and returns the refreshed, persisted session.
+   */
+  updateProfile(input: { displayName?: string; bio?: string }): Promise<Result<AuthSession, Failure>>;
 }

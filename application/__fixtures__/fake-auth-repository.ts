@@ -14,6 +14,7 @@ export interface FakeAuthRepositoryConfig {
   signInWithGoogleResult?: Result<AuthSession, Failure>;
   signInWithAppleResult?: Result<AuthSession, Failure>;
   uploadAvatarResult?: Result<AuthSession, Failure>;
+  updateProfileResult?: Result<AuthSession, Failure>;
 }
 
 /**
@@ -87,6 +88,15 @@ export class FakeAuthRepository implements IAuthRepository {
   ): Promise<Result<AuthSession, Failure>> {
     return Promise.resolve(
       this.config.uploadAvatarResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
+  updateProfile(_input: {
+    displayName?: string;
+    bio?: string;
+  }): Promise<Result<AuthSession, Failure>> {
+    return Promise.resolve(
+      this.config.updateProfileResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 }
