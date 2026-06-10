@@ -12,10 +12,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
-import * as AppleAuthentication from 'expo-apple-authentication';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { SocialSignInButton } from '@presentation/base/widgets/social-sign-in-button';
 import { FormBanner } from '@presentation/base/widgets/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { useLayout } from '@presentation/base/responsive/layout-context';
@@ -231,17 +231,6 @@ export const LoginScreen = (): React.JSX.Element => {
           )}
         </Pressable>
 
-        <View style={styles.signUpRow}>
-          <ThemedText variant="body" style={{ color: colors.textMuted }}>
-            {t().login.noAccount}
-          </ThemedText>
-          <Pressable onPress={() => router.push('/register')}>
-            <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
-              {t().login.signUp}
-            </ThemedText>
-          </Pressable>
-        </View>
-
         <View style={styles.dividerRow}>
           <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
           <ThemedText variant="caption" muted style={styles.dividerLabel}>
@@ -250,28 +239,38 @@ export const LoginScreen = (): React.JSX.Element => {
           <View style={[styles.dividerLine, { backgroundColor: colors.inputBorder }]} />
         </View>
 
-        <Pressable
+        <SocialSignInButton
+          provider="google"
+          label={t().login.signInWithGoogle}
           onPress={() => { void signInWithGoogle(); }}
           disabled={isLoading}
-          style={[styles.socialButton, { borderColor: colors.inputBorder, backgroundColor: colors.cardBackground }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().login.signInWithGoogle}
-        >
-          <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
-          <ThemedText variant="body" style={[styles.socialLabel, { color: colors.text }]}>
-            {t().login.signInWithGoogle}
-          </ThemedText>
-        </Pressable>
+          borderColor={colors.inputBorder}
+        />
 
-        {Platform.OS === 'ios' && (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={radii.lg}
-            style={styles.appleButton}
+        {Platform.OS !== 'android' && (
+          <SocialSignInButton
+            provider="apple"
+            label={t().login.signInWithApple}
             onPress={() => { void signInWithApple(); }}
+            disabled={isLoading}
+            borderColor={colors.inputBorder}
           />
         )}
+
+        <View style={styles.signUpRow}>
+          <ThemedText variant="body" style={{ color: colors.textMuted }}>
+            {t().login.noAccount}
+          </ThemedText>
+          <Pressable
+            onPress={() => router.push('/register')}
+            accessibilityRole="button"
+            accessibilityLabel={t().login.signUp}
+          >
+            <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
+              {t().login.signUp}
+            </ThemedText>
+          </Pressable>
+        </View>
       </>
     );
   }
@@ -411,23 +410,6 @@ const styles = StyleSheet.create({
   },
   dividerLabel: {
     flexShrink: 0,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: sizes.buttonHeight,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    marginTop: spacing.md,
-    gap: spacing.sm,
-  },
-  socialLabel: {
-    fontWeight: '500',
-  },
-  appleButton: {
-    height: sizes.buttonHeight,
-    marginTop: spacing.md,
   },
   forgotRow: {
     alignSelf: 'flex-end',
