@@ -13,6 +13,7 @@ import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-u
 import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
 import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
+import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
@@ -111,6 +112,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const signInWithApple = new SignInWithAppleUseCase(authRepo);
   const requestPasswordReset = new RequestPasswordResetUseCase(authRepo);
   const resetPassword = new ResetPasswordUseCase(authRepo);
+  const uploadAvatar = new UploadAvatarUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
   const getRecipe = new GetRecipeUseCase(recipeRepo);
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
@@ -138,7 +140,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const favoritesStore = configureFavoritesStore({

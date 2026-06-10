@@ -10,6 +10,7 @@ import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-u
 import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
 import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
 import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
+import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
@@ -53,6 +54,7 @@ const makeStore = (repo: FakeAuthRepository) => {
     signInWithApple: new SignInWithAppleUseCase(repo),
     requestPasswordReset: new RequestPasswordResetUseCase(repo),
     resetPassword: new ResetPasswordUseCase(repo),
+    uploadAvatar: new UploadAvatarUseCase(repo),
   });
 };
 
@@ -249,5 +251,40 @@ describe('auth-store', () => {
     const s = store.getState().state;
     expect(s.status).toBe('error');
     if (s.status === 'error') expect(s.failure).toBe(failure);
+  });
+
+  it('uploadAvatar returns null and sets the new authenticated session on success', async () => {
+    const updated = buildSession();
+    const store = makeStore(new FakeAuthRepository({ uploadAvatarResult: ok(updated) }));
+    await store.getState().signIn('emilys', 'emilyspass');
+
+    const result = await store.getState().uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
+
+    expect(result).toBeNull();
+    const s = store.getState().state;
+    expect(s.status).toBe('authenticated');
+    if (s.status === 'authenticated') expect(s.session).toBe(updated);
+  });
+
+  it('uploadAvatar returns the Failure and keeps the authenticated state on failure', async () => {
+    const session = buildSession();
+    const failure = new NetworkFailure('upload failed');
+    const repo = new (class extends FakeAuthRepository {
+      override signIn() {
+        return Promise.resolve(ok(session));
+      }
+      override uploadAvatar() {
+        return Promise.resolve(fail(failure));
+      }
+    })();
+    const store = makeStore(repo);
+    await store.getState().signIn('emilys', 'emilyspass');
+
+    const result = await store.getState().uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
+
+    expect(result).toBe(failure);
+    const s = store.getState().state;
+    expect(s.status).toBe('authenticated');
+    if (s.status === 'authenticated') expect(s.session).toBe(session);
   });
 });

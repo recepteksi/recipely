@@ -33,4 +33,14 @@ export interface IAuthRepository {
    * NOT create a new session — the user must sign in after resetting.
    */
   resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>>;
+  /**
+   * Uploads a new avatar image for the signed-in user and returns the updated,
+   * persisted session (its `user.photoUrl` reflects the new image). The image is
+   * a local file URI from the device gallery/camera.
+   */
+  uploadAvatar(
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<Result<AuthSession, Failure>>;
 }

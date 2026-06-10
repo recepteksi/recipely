@@ -19,6 +19,10 @@ export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 // needs an absolute URL that bypasses HttpClient's baseURL.
 export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 
+// Avatar upload endpoint is mounted at the server root (outside /api/v1), so
+// it needs an absolute URL that bypasses HttpClient's baseURL.
+export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
+
 // Public legal pages served as static HTML at the server root (outside
 // /api/v1). Opened in the device browser via Linking; also the Privacy
 // Policy URL submitted to Google Play.
