@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
@@ -12,6 +11,7 @@ import type {
 } from '@domain/recipes/i-recipe-repository';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
+import { appendFilePart } from '@infrastructure/network/append-file-part';
 import { RECIPES_PAGE_SIZE, UPLOAD_URL } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
@@ -268,28 +268,15 @@ export class RecipeRepository implements IRecipeRepository {
   }
 }
 
-/**
- * Appends one media file to a `FormData` under `field`.
- *
- * WHY: RN native FormData recognises `{ uri, name, type }` as a file part;
- * browser FormData does not — it serialises the object to "[object Object]"
- * and Multer never sees a file. On web we therefore fetch the local blob URI
- * first and append the real Blob.
- */
+/** Appends one recipe media file to a `FormData` via the shared multipart helper. */
 async function appendFile(
   formData: FormData,
   field: string,
   item: RecipeMediaUpload,
 ): Promise<void> {
-  if (Platform.OS === 'web') {
-    const resp = await fetch(item.uri);
-    const blob = await resp.blob();
-    formData.append(field, blob, item.fileName);
-  } else {
-    formData.append(field, {
-      uri: item.uri,
-      name: item.fileName,
-      type: item.mimeType,
-    } as unknown as Blob);
-  }
+  await appendFilePart(formData, field, {
+    uri: item.uri,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+  });
 }
