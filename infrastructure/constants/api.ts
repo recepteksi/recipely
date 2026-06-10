@@ -49,6 +49,9 @@ export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
 export const AUTH_SOCIAL_PATH = "/auth/social";
 export const AUTH_FORGOT_PASSWORD_PATH = "/auth/forgot-password";
 export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
+// Signed-in user's editable profile (display name, bio). Inside /api/v1, so
+// the path is relative — the HTTP client prepends API_BASE_URL.
+export const ME_PROFILE_PATH = "/me/profile";
 
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend

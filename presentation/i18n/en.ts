@@ -491,6 +491,16 @@ export const en = {
     activityLikes: 'Reached 1,000 total likes',
     activityBadge: 'Earned "Top Mediterranean" badge',
   },
+  editProfile: {
+    title: 'Edit profile',
+    save: 'Save',
+    displayName: 'Display name',
+    displayNamePlaceholder: 'Your name',
+    bio: 'Bio',
+    bioPlaceholder: 'Tell people a little about your cooking…',
+    displayNameRequired: 'Display name is required.',
+    saved: 'Profile updated.',
+  },
 };
 
 type DeepStringify<T> = {

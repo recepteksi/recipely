@@ -493,4 +493,14 @@ export const tr: Translations = {
     activityLikes: '1.000 toplam beğeniye ulaşıldı',
     activityBadge: '"En İyi Akdeniz" rozeti kazanıldı',
   },
+  editProfile: {
+    title: 'Profili düzenle',
+    save: 'Kaydet',
+    displayName: 'Görünen ad',
+    displayNamePlaceholder: 'Adın',
+    bio: 'Hakkında',
+    bioPlaceholder: 'Mutfağından biraz bahset…',
+    displayNameRequired: 'Görünen ad zorunludur.',
+    saved: 'Profil güncellendi.',
+  },
 };
