@@ -11,7 +11,7 @@ import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-h
 import { t } from '@presentation/i18n';
 
 jest.mock('@expo/vector-icons', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
