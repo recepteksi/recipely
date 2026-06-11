@@ -110,6 +110,7 @@ export const tr: Translations = {
     saved: 'Kaydedildi',
     save: 'Kaydet',
     filter: 'Filtrele',
+    filtersAndSort: 'Filtrele ve Sırala',
     sortBy: 'Sırala',
     sortPopular: 'Popüler',
     sortRating: 'En yüksek puan',

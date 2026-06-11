@@ -108,6 +108,7 @@ export const en = {
     saved: 'Saved',
     save: 'Save',
     filter: 'Filter',
+    filtersAndSort: 'Filter & Sort',
     sortBy: 'Sort by',
     sortPopular: 'Popular',
     sortRating: 'Top rated',
