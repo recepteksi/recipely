@@ -1485,3 +1485,298 @@ All other needed libraries (`react-native-reanimated`, `expo-image`, `@expo/vect
 - `presentation/base/widgets/language-selector.tsx`
 - `presentation/screens/settings/settings-screen.tsx`
 - `presentation/app/settings.tsx`
+
+---
+
+## Mobile Home — Collapsing Header & Filter FAB (June 2026)
+
+A mobile-only, scroll-driven redesign of `RecipeListScreen` that reclaims the recipe list's
+vertical space. Today the list gets ~40% of the viewport because six bands of chrome are
+permanently fixed above it. This redesign demotes most of that chrome into the scroll content
+(so it scrolls away) and collapses the rest, while moving filter + sort into a single morphing
+FAB. **Web shell is explicitly out of scope — see "Web shell" below.**
+
+### Problem (current state)
+
+On mobile, above the `FlatList`, this is all permanently fixed (never scrolls):
+
+1. `RecipesAppHeader` — "Recipely" eyebrow + large screen title + notifications bell.
+2. `SearchBar`.
+3. Pill row — Filter pill, Sort pill, inline result count.
+4. Active-filter chips row (only when filters applied).
+5. `AiBannerCard` — gradient AI promo.
+6. `CuisineStrip` — title + horizontal cuisine circles.
+
+Plus the bottom `TabBar`. The list is squeezed into what's left.
+
+### Design goals
+
+- The list owns the screen. At rest, only a slim header band + search sit above it; everything
+  else lives inside the scroll content and moves away as the user reads.
+- One persistent, reachable control for filter/sort — a FAB — instead of a fixed pill row.
+- Direction-aware header: hide on scroll-down (reading), reveal on scroll-up (seeking controls).
+- Every animation runs on the UI thread (Reanimated worklets driven by a shared scroll offset).
+
+### References
+
+- **[Material 3 — Top app bar scroll behavior](https://m3.material.io/components/top-app-bar/guidelines)** —
+  "small top app bar" `enterAlways`/`exitUntilCollapsed` behavior: the bar translates fully
+  off-screen on downward scroll and snaps back on any upward scroll. We adopt the direction-aware
+  hide/reveal and the "snap to fully shown / fully hidden" resolution.
+- **[Material 3 — FAB & Extended FAB](https://m3.material.io/components/floating-action-button/guidelines)** —
+  the extended-FAB → FAB shrink-on-scroll pattern (label collapses to icon while scrolling, the
+  badge persists). We adopt the morph and the bottom-end placement above the nav bar.
+- **[Apple HIG — Large titles / iOS Search](https://developer.apple.com/design/human-interface-guidelines/searching)** —
+  the large-title-collapses-to-inline pattern and search bar that recedes under the title on scroll.
+  We borrow the title shrink + fade, not a navigation-controller large title.
+- **Mobbin — Yummly / Tasty home feeds** — cuisine strip and promo banner are part of the *feed*,
+  not fixed chrome; they scroll away and the grid takes over. We move `AiBannerCard` + `CuisineStrip`
+  into `ListHeaderComponent`.
+
+### Layout — what scrolls, what collapses, what becomes a FAB
+
+| Element (current) | New behavior | Where it lives |
+|---|---|---|
+| `RecipesAppHeader` (eyebrow + title + bell) | **Collapses** — title shrinks `title`→`subtitle` and the eyebrow fades out as it shrinks; the whole band **hides on scroll-down / reveals on scroll-up**. Bell stays tappable whenever the band is shown. | Fixed (animated `Animated.View`), above the list |
+| `SearchBar` | **Collapses with the header band** (translates up with it, fades its last ~30%). Part of the same hide/reveal group. | Fixed (same animated band) |
+| Filter pill + Sort pill + result count | **Removed from fixed chrome.** Filter+Sort become the **FAB**. Result count moves into the scrolling `ListHeaderComponent` (small muted caption row). | FAB (fixed) + scroll content |
+| Active-filter chips row | **Moves into `ListHeaderComponent`** so it scrolls away; still removable; "Clear all" stays at the row end. | Scroll content |
+| `AiBannerCard` | **Moves into `ListHeaderComponent`** — scrolls away with the feed. | Scroll content |
+| `CuisineStrip` | **Moves into `ListHeaderComponent`** — scrolls away with the feed. | Scroll content |
+| Recipe `FlatList` | Becomes the single scroll surface; gains top padding equal to the resting header height so row 1 isn't hidden under the band. | The scroll view |
+| `TabBar` | Unchanged, fixed at bottom. | Fixed |
+
+Net effect at rest: only the collapsing header band (≈ `sizes.homeHeaderMax`) sits above a
+full-height list. After a short scroll the band is gone entirely and the list is full-bleed.
+
+### Collapsing header band — geometry & animation
+
+The band is one fixed `Animated.View` containing the title row (eyebrow + title + bell) and the
+`SearchBar`. It is driven by a single `scrollY` shared value from the list's
+`onScroll` (`useAnimatedScrollHandler`, `scrollEventThrottle={16}`).
+
+**New tokens required** (add to `spacing.ts` `sizes`; values chosen so the band matches the
+current resting layout):
+
+| Token | Value | Meaning |
+|---|---|---|
+| `sizes.homeHeaderMax` | `132` | Resting band height (title row ≈ 56 + search 44 + vertical padding ≈ 32). |
+| `sizes.homeHeaderMin` | `0` | Fully collapsed height — band translates entirely off-screen. |
+| `sizes.homeTitleShrink` | `96` | Scroll distance (px) over which the title shrinks + eyebrow fades, before hide/reveal takes over. |
+| `sizes.fab` | `56` | FAB diameter (Material standard 56). |
+| `sizes.fabExtendedHeight` | `48` | Height of the extended (label-visible) FAB pill. |
+
+Two independent behaviors compose on the band:
+
+**1. Title collapse (absolute, tied to scrollY position):**
+
+- `titleScale = interpolate(scrollY, [0, homeTitleShrink], [1, 0.82], CLAMP)` applied to the
+  title text (visually morphs `title` 24pt → ~`subtitle` 20pt).
+- `eyebrowOpacity = interpolate(scrollY, [0, homeTitleShrink * 0.5], [1, 0], CLAMP)` — the
+  "Recipely" eyebrow fades out first.
+- `searchOpacity = interpolate(scrollY, [homeTitleShrink * 0.5, homeTitleShrink], [1, 0.55], CLAMP)`
+  — search dims slightly as the band tightens (stays visible until the band hides).
+
+**2. Direction-aware hide/reveal (relative, tied to scroll direction):**
+
+Track `lastScrollY` and `headerTranslateY` (a shared value, range `[-homeHeaderMax, 0]`).
+
+- On scroll **down** past `sizes.homeHeaderMax` of total offset: drive `headerTranslateY` toward
+  `-homeHeaderMax` (band slides up out of view).
+- On scroll **up** by more than `spacing.sm` (8px) cumulative: drive `headerTranslateY` toward `0`.
+- At `scrollY <= sizes.homeHeaderMax`: force `headerTranslateY = 0` (always show the band near the top).
+- Apply with `withTiming(target, { duration: 220, easing: Easing.out(Easing.cubic) })`. The band's
+  `Animated.View` style is `{ transform: [{ translateY: headerTranslateY }] }`.
+- The list's `contentContainerStyle.paddingTop = sizes.homeHeaderMax` so content starts below the
+  resting band; the band overlaps via absolute positioning (`position:'absolute', top:0, zIndex:20`).
+
+**Snap resolution** (Material small-top-app-bar feel): on scroll-end (`onMomentumScrollEnd` /
+`onScrollEndDrag`), if `headerTranslateY` is between 0 and `-homeHeaderMax`, snap to whichever edge
+is nearer with the same 220ms timing. Never leave the band half-shown.
+
+### Filter / Sort FAB — placement, morph, badge
+
+A single FAB replaces the fixed Filter + Sort pills. Tapping it opens the existing filter
+`BottomSheet`. Sort is reachable from the same sheet via a segmented "Sort" control at the top of
+the filter sheet (so one FAB covers both) — see "Sort inside the filter sheet" below.
+
+**Placement:**
+
+- `position: 'absolute'`, bottom-end. `right: spacing.lg`.
+- `bottom = sizes.tabBarHeight + insets.bottom + spacing.lg` (floats clear above the `TabBar`).
+- `zIndex: 30` (above list, below `BottomSheet` modal).
+
+**Resting (extended) vs scrolled (compact) morph:**
+
+- At rest and within the first screenful (`scrollY <= sizes.homeHeaderMax`), the FAB is an
+  **extended FAB**: height `sizes.fabExtendedHeight`, rounded `radii.round`, shows a funnel icon
+  + label (`t().recipes.filtersAndSort`, new key) + the active-count badge.
+- On scroll-down the FAB **shrinks to a circular icon FAB** (`sizes.fab` diameter): the label
+  width animates to 0 and fades (`labelOpacity = interpolate(scrollY, [homeHeaderMax, homeHeaderMax + 64], [1, 0], CLAMP)`),
+  the container width animates from extended → `sizes.fab` with `withTiming(220)`. The funnel icon
+  and badge persist. On scroll-up back near the top it re-extends.
+- The FAB itself never hides — only morphs — so filter access is always one tap away.
+
+**FAB visual tokens:**
+
+| Element | Token | Notes |
+|---|---|---|
+| FAB fill | `colors.primary` | |
+| FAB icon (`funnel-outline`) + label | `colors.primaryText` | Contracted text-on-primary; verified ≥7.0:1 in all 20 themes (existing audit, section D). |
+| FAB elevation | `shadows.lg` (iOS) / `elevation` (Android) | On very dark themes the shadow is weak, so also draw a 1px `colors.gradientBorder` hairline ring so the FAB reads against `colors.background`. |
+| Active-count badge bg | `colors.gradientBorder` | Mirrors the existing in-app filter `pillBadge` (the pill row's count badge today). Reads as a light chip on the `colors.primary` FAB fill in every theme. |
+| Active-count badge text | `colors.primaryText` | Contracted text-on-primary; same pair the existing `pillBadge` uses for its count, so it carries the app-wide ≥AA guarantee for the numeric label. |
+| Badge border | `colors.background` | 2px ring so the badge separates from the FAB fill, mirroring `RecipesAppHeader`'s bell badge. |
+
+> **Badge contrast note:** do **not** use `colors.danger` + white here (as the bell badge does). `danger`/white is only ~2.4:1 on the dark-variant `danger` (`#F28B82`) and fails AA for the small numeric text. Reusing the `pillBadge` pair (`gradientBorder` fill / `primaryText` text) keeps the count legible on the FAB across all 20 themes without introducing a new token. The badge is a count, not a status, so the red affordance isn't needed.
+
+**Badge:** show only when `activeFilterCount > 0`; text is the count (`9+` if `>9`), positioned
+top-end of the FAB like the bell badge in `RecipesAppHeader` but using the `pillBadge` colors above.
+
+### Sort inside the filter sheet
+
+Because the FAB now owns both filter and sort, add a compact **Sort** selector as the first
+section of the filter `BottomSheet` (above Cuisine), reusing the existing sort options. This keeps
+one entry point. The standalone sort `BottomSheet` (`sheetOpen === 'sort'`) is removed from the
+mobile flow. Implementation: render the sort options as a horizontal `SelectChip` row at the top of
+the filter sheet; selecting one updates `sortBy` and is applied together with "Show results".
+
+### Scroll content order (FlatList `ListHeaderComponent`)
+
+Top → down, all inside the scrolling list header (so all of it scrolls away):
+
+1. `AiBannerCard` (`marginBottom: spacing.md`).
+2. `CuisineStrip`.
+3. Result-count + Clear-all row (`spacing.lg` horizontal, `spacing.sm` vertical) — the muted
+   "{count} {results}" caption left, "Clear all" link right when `activeFilterCount > 0`.
+4. Active-filter chips row (only when `nonCuisineFilterCount > 0`) — the existing horizontal chip
+   scroller, unchanged styling.
+
+Then the recipe rows follow. `ItemSeparatorComponent` and row styling are unchanged.
+
+### ASCII wireframe
+
+```
+RESTING (scrollY = 0)                  SCROLLED DOWN (reading)
+┌──────────────────────────┐           ┌──────────────────────────┐
+│ Recipely            (🔔) │ ← band    │  (band slid up, gone)    │
+│ Recipes                  │  collapses │                          │
+│ ┌──────────────────────┐ │  + hides   │  ████ recipe card        │
+│ │ 🔍  Search recipes   │ │            │  ████ recipe card        │
+│ └──────────────────────┘ │            │  ████ recipe card        │
+├──────────────────────────┤ ← list top │  ████ recipe card        │
+│ ✨ Generate with AI    › │  (scrolls) │  ████ recipe card        │
+│ Browse cuisines          │            │  ████ recipe card        │
+│ 🥙 🍕 🌮 🍣 🍛 …          │            │              ┌─────┐     │
+│ 24 recipes               │            │              │  ▽  │ ←FAB│
+│ ████ recipe card         │            │              └─────┘ (3) │
+│ ████ recipe card    ┌───────────┐     │                          │
+│ ████ recipe card    │ ▽ Filter&│ ←FAB │                          │
+│ ████ recipe card    │   Sort (3)│     │                          │
+│                     └───────────┘     │                          │
+├──────────────────────────┤           ├──────────────────────────┤
+│  🍴      🔖      👤      │ TabBar    │  🍴      🔖      👤      │
+└──────────────────────────┘           └──────────────────────────┘
+   extended FAB                            compact FAB (label gone)
+```
+
+### States
+
+- **Loading / error / empty:** unchanged from current screen, but the loading skeleton and
+  empty/error views render *below* the collapsing band (same `paddingTop: sizes.homeHeaderMax`).
+  The FAB is hidden while `state.status !== 'loaded'` (nothing to filter yet); it fades in
+  (`withTiming(150)`) when results arrive.
+- **Pressed (FAB):** `Pressable` `pressed` → opacity 0.85 (no custom scale needed).
+- **No active filters:** FAB shows no badge; label reads `t().recipes.filtersAndSort`.
+- **Reduced motion:** if `AccessibilityInfo.isReduceMotionEnabled()` is true, skip the translate
+  animations — keep the band always shown and the FAB always extended (no morph). Document this
+  branch; implement with the existing reduce-motion check pattern if present, else a `useState`
+  populated from `AccessibilityInfo`.
+
+### Accessibility
+
+- FAB: `accessibilityRole="button"`, `accessibilityLabel={t().recipes.filtersAndSort}`. When a
+  count is active, append it: `` `${t().recipes.filtersAndSort}, ${activeFilterCount}` `` (mirrors
+  the bell's labeling). Tap target is `sizes.fab` (56) — exceeds the 44pt minimum even when compact.
+- Bell stays `accessibilityRole="button"` with its existing label; it remains reachable whenever the
+  band is shown. When the band is hidden by scroll, scrolling up reveals it — acceptable since the
+  band auto-shows near the top and on any upward scroll.
+- The collapsing band must not trap focus; the title shrink is decorative (no role change).
+- Contrast pairs verified: FAB `primary`/`primaryText` (contracted text-on-primary, app-wide
+  guarantee — see section D); badge reuses the existing `pillBadge` pair (`gradientBorder` /
+  `primaryText`), so no new pairing is introduced; band text on `background` unchanged from today.
+  Note: `danger`/white is deliberately **avoided** for the badge — it measures ~2.4:1 on the
+  dark-variant `danger` and would fail AA for the numeric text.
+
+### i18n
+
+One new user-visible string. Add to **both** `en.ts` and `tr.ts` under `recipes`:
+
+| Key | en | tr |
+|---|---|---|
+| `recipes.filtersAndSort` | `Filter & Sort` | `Filtrele ve Sırala` |
+
+All other strings reuse existing keys (`recipes.filter`, `recipes.sortBy`, `recipes.results`,
+`recipes.clearFilters`, `recipes.browseCuisines`, sort labels). The standalone `recipes.filter`
+key is still used as the bottom-sheet title.
+
+### Web shell — explicitly untouched
+
+This entire section applies **only** when `isWebShell === false`. The web shell keeps its current
+layout verbatim: no collapsing band, no FAB, no header morph. In code, the new `Animated` band, the
+FAB, and the scroll handler must be gated behind `!isWebShell` (the web path continues to render the
+existing sticky header + `WebShellState` search and the standard `FlatList`/grid). Do not move
+`AiBannerCard`/`CuisineStrip` into the list header on web — the web shell already positions them and
+the grid differently. `gridColumns > 1` (web grid) is unaffected.
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Band bg | `colors.background` | |
+| Band bottom hairline | `colors.border` | `StyleSheet.hairlineWidth`, only when band shown |
+| Title / eyebrow | `colors.text` / `colors.textMuted` | unchanged from `RecipesAppHeader` |
+| Search field | `colors.inputBackground`, `colors.text` | unchanged `SearchBar` |
+| FAB fill | `colors.primary` | |
+| FAB icon + label | `colors.primaryText` | |
+| FAB ring (dark-safe) | `colors.gradientBorder` | 1px, replaces invisible shadow on dark themes |
+| FAB badge bg / text | `colors.gradientBorder` / `colors.primaryText` | reuses existing `pillBadge` pair; `danger`/white avoided (fails AA, ~2.4:1 dark) |
+| FAB badge ring | `colors.background` | 2px |
+| Result count caption | `colors.textMuted` | |
+
+No new color tokens are required — all FAB/badge/band colors are existing theme tokens. Only the
+five `sizes.*` layout tokens above are new.
+
+### Implementation checklist for rn-developer
+
+File: `presentation/screens/recipes/recipe-list-screen.tsx` (mobile branch only; `!isWebShell`).
+
+1. **Add layout tokens** to `presentation/base/theme/spacing.ts` `sizes`: `homeHeaderMax: 132`,
+   `homeHeaderMin: 0`, `homeTitleShrink: 96`, `fab: 56`, `fabExtendedHeight: 48`. (ts-developer or
+   rn-developer — it's a token file edit; coordinate so it lands before the screen change.)
+2. **Add i18n key** `recipes.filtersAndSort` to `en.ts` and `tr.ts` (values in the i18n table).
+3. **Convert the mobile list to a Reanimated scroll surface:** replace the mobile `FlatList` with
+   `Animated.FlatList`, add `onScroll={useAnimatedScrollHandler(...)}` writing `scrollY` and
+   tracking direction; `scrollEventThrottle={16}`. Keep the web `FlatList` path as-is.
+4. **Build the collapsing band** as an absolutely-positioned `Animated.View` (`zIndex:20`) holding
+   the title row (eyebrow + title + bell, from `RecipesAppHeader` content) and `SearchBar`. Apply
+   `titleScale`, `eyebrowOpacity`, `searchOpacity`, and `headerTranslateY` per "Collapsing header
+   band". Add `contentContainerStyle.paddingTop = sizes.homeHeaderMax`.
+5. **Implement direction-aware hide/reveal + snap** (220ms `Easing.out(Easing.cubic)`), forcing
+   shown when `scrollY <= sizes.homeHeaderMax`.
+6. **Move `AiBannerCard`, `CuisineStrip`, the result-count/Clear-all row, and the active-filter
+   chips row into `ListHeaderComponent`** (mobile only). Remove them from the fixed area.
+7. **Build the FAB** (extended ↔ compact morph, badge, dark-safe ring) per "Filter / Sort FAB".
+   Tapping opens the filter `BottomSheet`. Hide it until `state.status === 'loaded'`.
+8. **Fold Sort into the filter sheet** as a `SelectChip` row at the top; remove the standalone sort
+   `BottomSheet` from the mobile flow (keep it for web if web still uses it — verify; web uses the
+   same sheet today, so guard removal behind `!isWebShell` or keep sort sheet for web only).
+9. **Reduced-motion branch:** when reduce-motion is on, render the band statically shown and the FAB
+   permanently extended; skip translate/scale animations.
+10. **Accessibility:** FAB label per the Accessibility section; ensure 44pt+ targets; keep bell label.
+11. **Leave `RecipesAppHeader`, `AiBannerCard`, `CuisineStrip` component files unchanged** unless a
+    prop is needed — prefer composing them in the screen. If the title row must be extracted for the
+    band, do it inside the screen folder, don't alter the shared header's web usage.
+
+After implementation: `npm run lint`, `npx tsc --noEmit`, run the touched-layer tests. No theme
+color values changed, so **contrast tests do not need re-running** for this section.
