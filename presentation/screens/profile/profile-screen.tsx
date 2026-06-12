@@ -20,6 +20,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
+import { ProfileSettingsSections } from '@presentation/screens/profile/profile-settings-sections';
 import { t } from '@presentation/i18n';
 
 const formatStat = (n: number): string => {
@@ -35,10 +36,11 @@ export const ProfileScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const { pickAndUpload, isUploading } = useAvatarUpload();
 
-  const { authStore, userProfileStore } = useStores();
+  const { authStore, userProfileStore, savedRecipesStore } = useStores();
   const authState = authStore((s) => s.state);
   const profileState = userProfileStore((s) => s.state);
   const loadProfile = userProfileStore((s) => s.load);
+  const savedCount = savedRecipesStore((s) => s.savedIds.size);
 
   const user = authState.status === 'authenticated' ? authState.session.user : null;
   const userId = user?.id;
@@ -73,27 +75,6 @@ export const ProfileScreen = (): React.JSX.Element => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {isWebShell ? null : (
-          <View style={styles.floatingActions}>
-            <Pressable
-              onPress={() => router.push('/notifications')}
-              style={[styles.floatingBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-              accessibilityRole="button"
-              accessibilityLabel={t().notifications.title}
-            >
-              <Ionicons name="notifications-outline" size={18} color={colors.text} />
-            </Pressable>
-            <Pressable
-              onPress={() => router.push('/settings')}
-              style={[styles.floatingBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-              accessibilityRole="button"
-              accessibilityLabel={t().settings.title}
-            >
-              <Ionicons name="settings-outline" size={18} color={colors.text} />
-            </Pressable>
-          </View>
-        )}
-
         <ResponsiveContainer route="profile" gutter={false}>
           <View style={styles.identityBlock}>
             <View style={styles.avatarWrap}>
@@ -169,6 +150,7 @@ export const ProfileScreen = (): React.JSX.Element => {
                 { value: String(profile.recipeCount), label: t().profile.recipes },
                 { value: formatStat(profile.totalLikes), label: t().profile.likes },
                 { value: formatStat(profile.totalViews), label: t().profile.views },
+                { value: String(savedCount), label: t().profile.saved },
               ].map((stat, idx, arr) => (
                 <View
                   key={stat.label}
@@ -191,32 +173,24 @@ export const ProfileScreen = (): React.JSX.Element => {
           <View style={styles.actionRow}>
             <Pressable
               onPress={() => router.push('/edit-profile')}
-              style={[styles.editBtn, { backgroundColor: colors.primary }]}
+              style={({ pressed }) => [
+                styles.editBtn,
+                { backgroundColor: colors.primary },
+                pressed ? styles.pressed : null,
+              ]}
               accessibilityRole="button"
               accessibilityLabel={t().profile.editProfile}
+              hitSlop={spacing.xs}
             >
-              <Ionicons name="create-outline" size={16} color={colors.primaryText} />
+              <Ionicons name="create-outline" size={sizes.iconSm} color={colors.primaryText} />
               <ThemedText style={[styles.editBtnLabel, { color: colors.primaryText }]}>
                 {t().profile.editProfile}
               </ThemedText>
             </Pressable>
-            {isWebShell ? (
-              <Pressable
-                onPress={() => router.push('/settings')}
-                style={[styles.iconAction, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-                accessibilityRole="button"
-                accessibilityLabel={t().settings.title}
-              >
-                <Ionicons name="settings-outline" size={18} color={colors.text} />
-              </Pressable>
-            ) : null}
-            <Pressable
-              style={[styles.iconAction, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-              accessibilityRole="button"
-              accessibilityLabel={t().profile.shareProfile}
-            >
-              <Ionicons name="share-outline" size={18} color={colors.text} />
-            </Pressable>
+          </View>
+
+          <View style={styles.settingsSections}>
+            <ProfileSettingsSections />
           </View>
         </ResponsiveContainer>
       </ScrollView>
@@ -231,22 +205,6 @@ const CAMERA_BTN = 32;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  floatingActions: {
-    position: 'absolute',
-    top: spacing.md,
-    right: spacing.md,
-    flexDirection: 'row',
-    gap: spacing.xs,
-    zIndex: 2,
-  },
-  floatingBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   identityBlock: {
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
@@ -358,12 +316,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: fontSizes.body,
   },
-  iconAction: {
-    width: 42,
-    height: 42,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
+  pressed: {
+    opacity: 0.85,
+  },
+  settingsSections: {
+    marginTop: spacing.lg,
   },
 });

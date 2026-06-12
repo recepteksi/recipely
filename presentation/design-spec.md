@@ -1780,3 +1780,264 @@ File: `presentation/screens/recipes/recipe-list-screen.tsx` (mobile branch only;
 
 After implementation: `npm run lint`, `npx tsc --noEmit`, run the touched-layer tests. No theme
 color values changed, so **contrast tests do not need re-running** for this section.
+
+---
+
+## Recipe detail — Author card (Jun 2026)
+
+An info-only "who created this recipe" block on the recipe detail screen. **No follow button, no
+follower count, no navigation on tap** — it identifies the author and nothing more. For a recipe the
+signed-in user owns, it self-identifies them with a "You" pill instead of any action.
+
+> Final design intent confirmed in the Claude Design handoff (chat19). The prototype's follow button,
+> follower count, and verified shield badge are all **dropped** — the backend has no follow graph and no
+> verified field. Real data exposes `displayName`, `photoUrl`, and `recipeCount` only; there is **no
+> `@username`**, so the caption drops the handle and keeps only the recipe count.
+
+### Source
+
+- Prototype: `project/src/social.jsx` `RecipeAuthorCard` (lines ~34–82); placed in
+  `project/src/screens.jsx` line ~2056, directly below the stats strip and above `RecipeMetaCard`.
+
+### Placement in the live screen
+
+`presentation/screens/recipes/recipe-detail-screen.tsx`. The card renders inside the loaded body, in
+the content column **after the chips/time/nutrition meta and before the `Ingredients` SectionHeader**
+(`recipe-detail-screen.tsx` ~line 372, where `SectionHeader title={t().recipes.ingredients}` begins).
+The prototype puts it under a likes/views "stats strip"; our detail screen has no standalone stats
+strip, so anchor it after the nutrition row and before ingredients. One card, full content width,
+`spacing.lg` of top margin to separate it from the meta above.
+
+### Data source
+
+The `Recipe` entity carries only `ownerId` (`domain/recipes/recipe.ts:34`) — no embedded author
+display fields. The author's `displayName` / `photoUrl` / `recipeCount` must be resolved from a
+profile lookup keyed by `ownerId`. The `UserProfile` entity already exposes exactly these three
+(`domain/user-profile/user-profile.ts`). **Ownership check:** `recipe.ownerId === authState.session.user.id`.
+
+- **Owner case** (`isOwner === true`): title "Your recipe" / "Senin tarifin", name = signed-in user's
+  `displayName`, avatar = user `photoUrl`, caption = own `recipeCount`, plus the "You" / "Sen" pill.
+- **Other-author case**: title "Recipe by" / "Tarifin sahibi", name/avatar/caption from the resolved
+  author profile, no pill.
+- **Loading**: while the author profile resolves, render a `SkeletonLoader` block matching the card's
+  height (avatar circle + two text lines). Do not flash an empty card.
+- **Unavailable**: if the author profile can't be resolved (lookup fails / 404), **omit the card
+  entirely** — it is non-essential and must never show a broken/empty author. No error state, no retry.
+
+### Layout
+
+- Single row, `flexDirection: row`, `alignItems: center`, `gap: spacing.md`.
+- `padding: spacing.md`, `borderRadius: radii.xl`, 1px `cardBorder` hairline on `surface`.
+- Avatar: `AvatarImage` at `sizes.avatarSm` (40) — prototype used 44; round down to the existing token
+  (44 is not a token and 40 is the established small-avatar size). `flexShrink: 0`.
+- Text column: `flex: 1`, `minWidth: 0`, three stacked lines:
+  1. **Eyebrow** ("Recipe by" / "Your recipe"): `fontSizes.micro` (11), weight 700, `textMuted`,
+     uppercase, `letterSpacing: 0.5`.
+  2. **Name**: `fontSizes.body` (15), weight 700, `text`, single line, `numberOfLines={1}` ellipsis.
+  3. **Caption** ("N recipes" / "N tarif"): `fontSizes.caption` (13), `textMuted`, `numberOfLines={1}`.
+- "You" / "Sen" pill (owner only): `flexShrink: 0`, `borderRadius: radii.round`, vertical
+  `spacing.xs2` (6) / horizontal `spacing.md` (12) padding, `chipBackground` fill, `chipText` label at
+  `fontSizes.caption` weight 700.
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Card bg | `colors.surface` | |
+| Card border | `colors.cardBorder` | 1px hairline |
+| Avatar | `AvatarImage` `size={sizes.avatarSm}` | reuse existing widget |
+| Eyebrow label | `colors.textMuted`, `fontSizes.micro`, weight 700, uppercase | |
+| Author name | `colors.text`, `fontSizes.body`, weight 700 | |
+| Caption (recipe count) | `colors.textMuted`, `fontSizes.caption` | |
+| "You" pill bg / text | `colors.chipBackground` / `colors.chipText` | proven AA pair (= `primaryLight`/`primary`, already used by all chips/badges across 20 themes) |
+
+### Interaction & state
+
+- The card is **not pressable** — render as a plain `View`, no `Pressable`, no `accessibilityRole="button"`.
+- No pressed/hover state. No navigation.
+
+### Accessibility
+
+- Card is informational; group its text so a screen reader reads "Recipe by, {name}, {N} recipes" as one
+  unit (wrap the text column with `accessible` + composed `accessibilityLabel`), or leave the three
+  `ThemedText` nodes as-is (each is already plain text and individually legible).
+- Contrast (all verified against existing token contracts, no new pairings introduced):
+  `text` on `surface` ≥ 10.9:1 dark / passes light (the app's core body pair);
+  `textMuted` on `surface` ≥ 4.5:1 (large-text eyebrow also passes the 3:1 floor);
+  `chipText` on `chipBackground` is the app-wide chip pair, already AA-validated in all 20 themes.
+- Avatar is decorative beside the name; no separate label needed.
+
+### i18n keys
+
+Reuse where present, add the two card titles. All four needed:
+
+| Key | en | tr |
+|---|---|---|
+| `recipes.recipeBy` | `Recipe by` | `Tarifin sahibi` |
+| `recipes.yourRecipe` | `Your recipe` | `Senin tarifin` |
+| `recipes.youPill` | `You` | `Sen` |
+| `recipes.recipeCount` | `{{count}} recipes` | `{{count}} tarif` |
+
+`recipes.recipeCount` is a count caption — implement with an ICU/interpolated value (the app's `t()`
+supports interpolation elsewhere; if not, format as `` `${count} ${t().recipes.recipesWord}` `` using a
+bare noun key). Confirm with ts-developer which interpolation style the i18n layer uses before adding.
+
+### Implementation notes for rn-developer
+
+- New widget file: `presentation/screens/recipes/recipe-author-card.tsx` (one component +
+  `RecipeAuthorCardProps`). Keep it in the `recipes` feature folder, not `base/widgets` (it is
+  detail-screen-specific). Compose it into `recipe-detail-screen.tsx` after the nutrition row.
+- Props: `{ authorName: string; authorPhotoUrl?: string; recipeCount: number; isOwner: boolean }`.
+  The screen resolves owner-vs-author and passes resolved values down; the card stays presentational.
+- Reuse: `AvatarImage`, `ThemedText`, `SkeletonLoader`, `spacing`/`radii`/`fontSizes`/`sizes` tokens.
+- **No new theme tokens.** No `themes.ts` change, so **contrast tests do not need re-running** for this
+  section.
+- ts-developer / data: provide a way to resolve a `UserProfile` by `ownerId` (a use case + store
+  selector, or extend the existing `userProfileStore` to cache-by-id) so the card can show the other
+  author's name/photo/count. If that lookup does not exist yet, that is the gating prerequisite — flag it.
+
+---
+
+## Profile screen with embedded settings (Jun 2026)
+
+Merge Settings into the Profile tab so appearance, account, and about live in one scroll, and strip the
+profile down to identity + stats + a single "Edit profile" action. This **replaces the separate Settings
+screen** as the primary path; the standalone `/settings` route's content moves up into the profile.
+
+> Final design intent (chat19): **share button REMOVED** (action row is "Edit profile" only); **Activity
+> section REMOVED**; **floating gear/settings + bell buttons REMOVED**; embedded sections appended below
+> the profile content — Appearance (theme gallery + System/Light/Dark scheme selector + language),
+> Account (sign out), About (app version). The stats row's 4th cell shows **saved-recipes count labeled
+> "Saved" / "Kayıtlı"** instead of followers.
+
+### Source
+
+- Prototype: `project/src/new-screens.jsx` `ProfileScreen` (lines ~647–888) — especially the stats grid
+  (~790), action row (~814), and the embedded Appearance / scheme selector / theme gallery / Account /
+  About sections (~827–885). Tokens from `project/src/theme.js`.
+
+### What moves / merges / is removed vs today
+
+Compared with the current `presentation/screens/profile/profile-screen.tsx` and
+`presentation/screens/settings/settings-screen.tsx`:
+
+| Element | Today | After |
+|---|---|---|
+| Floating bell + gear (top-right, mobile) | present (`profile-screen.tsx:76–95`) | **removed** — notifications stay reachable from the web header / elsewhere; no settings entry needed (it's inline now) |
+| Share button in action row | present (`profile-screen.tsx:213–219`) | **removed** |
+| Web-only settings icon in action row | present (`profile-screen.tsx:203–212`) | **removed** (settings now inline) |
+| Stats row | 3 cells: Recipes / Likes / Views | **4 cells**: Recipes / Likes / Views / **Saved** |
+| Appearance group (mode toggle + language) | in `settings-screen.tsx:75–94` | **moves into profile**, below the action row |
+| Theme palette grid | `settings-screen.tsx:96–97` (`ThemeGrid`) | **moves into profile** |
+| Scheme System/Light/Dark control | `settings-screen.tsx` `ThemeToggle` (mode) | **moves into profile** as the appearance mode control |
+| Account (sign out) | `settings-screen.tsx:99–107` | **moves into profile** |
+| About (version + privacy + terms) | `settings-screen.tsx:109–131` | **moves into profile** (keep version; keep privacy/terms rows — they exist today and have no reason to drop) |
+| Settings header back-button + title | `settings-screen.tsx:50–63` | **removed** — no separate screen chrome; it's one scroll |
+| `/settings` route | standalone screen | keep the route as a thin redirect/alias to `/profile` **or** delete it; coordinate with rn-developer. Anything still pushing `/settings` (e.g. deep links) should land on the profile. |
+
+### Layout (top → bottom, single `ScrollView`)
+
+1. **Safe-area top** padding (mobile: `insets.top + spacing.sm`; web shell: 0) — same as today.
+2. **Identity block** (unchanged from today): 112px avatar frame on `surface` with `cardBorder` + camera
+   pill (`primary` fill, `background` ring, `primaryText` icon), then `displayName` (`title`, weight
+   700), then `@handle` (`caption`, muted). Centered. `paddingTop: spacing.xxl`.
+3. **Stats row** — `surface` card, `cardBorder`, `radii.xl`, `paddingVertical: spacing.md`, 4 equal
+   cells split by `border` hairlines. Cells: Recipes / Likes / Views / **Saved**. Keep the existing
+   loading (`ActivityIndicator`) and error/retry states for the first three (profile-derived); the
+   Saved count comes from `savedRecipesStore` (always available locally — see Data).
+4. **Action row** — single full-width "Edit profile" button: `flex: 1`, `height: 42`, `radii.lg`,
+   `primary` fill, `primaryText` label + `create-outline` icon. **No share, no settings icon.**
+   `marginTop: spacing.md`.
+5. **Appearance section** — `SectionHeader` "Appearance", then:
+   - Grouped card (`cardBackground`, `cardBorder`, `radii.lg`) holding the **mode control** row
+     (System / Light / Dark) and a **Language** row. Reuse the existing `ThemeToggle` (or the prototype's
+     3-up segmented `System/Light/Dark` — match whichever the app's `preference` model already supports;
+     today's `ThemeToggle` already drives `preference`, so reuse it) and `LanguageSelector`.
+   - **Theme gallery**: `SectionHeader` "Theme palette" then the existing `ThemeGrid`
+     (`selectedThemeId` / `onSelect`). The prototype renders a horizontal swatch strip; our `ThemeGrid`
+     is the established equivalent — reuse it, do not rebuild.
+6. **Account section** — `SectionHeader` "Account", grouped card with a single destructive
+   `SettingsRow` "Sign out" (`log-out-outline`, `destructive`, `onPress` → sign out → `replace('/login')`).
+7. **About section** — `SectionHeader` "About", grouped card: Version row (`information-circle-outline`,
+   right element `1.0.0`, no chevron) + Privacy policy row + Terms of use row (both `Linking.openURL`,
+   keep from today's settings screen).
+8. **Bottom spacer** — `insets.bottom + sizes.tabBarHeight + spacing.xxl` so content clears the tab bar.
+
+Section spacing: `SectionHeader` provides its own vertical rhythm; groups sit at `marginHorizontal:
+spacing.lg`. Use `spacing.lg` between major sections, `spacing.md` between a section header's siblings —
+**all via tokens, never numeric literals** (the prototype's raw `spacing.lg`/`radii.lg`/`shadowCSS.sm`
+map 1:1 to our `spacing`, `radii`, `shadows`).
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Container bg | `colors.background` | |
+| Avatar frame bg / border | `colors.surface` / `colors.cardBorder` | + `shadows.sm` |
+| Camera pill bg / icon / ring | `colors.primary` / `colors.primaryText` / `colors.background` | |
+| Display name | `colors.text`, `fontSizes.title`, weight 700 | via `ThemedText variant="title"` |
+| Handle | `colors.textMuted`, `fontSizes.caption` | |
+| Stats card bg / border | `colors.surface` / `colors.cardBorder` | `radii.xl` |
+| Stat cell divider | `colors.border` | 1px, between cells only |
+| Stat value | `colors.text`, `fontSizes.subtitle` (18), weight 800 | |
+| Stat label | `colors.textMuted`, `fontSizes.nano` (10) eqv → use `fontSizes` token, weight 600, uppercase, `letterSpacing: 0.5` | prototype used 10; nearest token is `nano` (9) — use `nano` or keep current screen's 10 if it's already a literal exception; prefer `fontSizes.nano` |
+| Edit button bg / label | `colors.primary` / `colors.primaryText` | |
+| Group card bg / border | `colors.cardBackground` / `colors.cardBorder` | `radii.lg` |
+| Settings row icon (accent) | `colors.primary` | |
+| Sign out row | `destructive` (→ `colors.danger`) | |
+| Section header | existing `SectionHeader` widget | |
+
+### Interaction & state
+
+- Edit profile → `router.push('/edit-profile')` (existing route).
+- Mode control → drives `preference` via `setPreference` (existing). Language → `setLocale` (existing).
+- Theme swatch tap → `setThemeId` (existing). Sign out → `signOut()` then `router.replace('/login')`.
+- Pressed states on buttons: use `Pressable`'s `pressed` arg for `opacity: 0.85`; do not add custom.
+- Stats loading: keep the current `ActivityIndicator`; error: keep the current inline retry
+  (`Pressable` → `loadProfile(userId)`). Saved cell renders immediately from local store (no async).
+
+### Accessibility
+
+- Every `Pressable` keeps `accessibilityRole="button"` + `accessibilityLabel` (edit profile, camera,
+  sign out, theme swatches, mode/language controls — all already labeled in the current screens; carry
+  the labels over).
+- Min tap target 44×44 on the camera pill, edit button (height 42 → add hit slop or bump to 44), and
+  settings rows (`sizes.settingsRowHeight` 52 is fine).
+- Contrast: **no new pairings** — every token combo above is already used and AA-validated in the
+  current profile/settings screens. The new 4th stat cell reuses the exact `text`/`textMuted`-on-`surface`
+  pairs of the other three cells, so it inherits their validation.
+
+### i18n keys
+
+All already exist except confirm the saved label. Reuse:
+
+| Key | en | tr | Status |
+|---|---|---|---|
+| `profile.editProfile` | `Edit profile` | (existing tr) | exists |
+| `profile.recipes` / `.likes` / `.views` | `Recipes` / `Likes` / `Views` | (existing) | exist |
+| `profile.saved` | `Saved` | `Kayıtlı` | **add** (`tr.ts` must mirror; en likely `Saved`) — verify `profile.saved` not already taken; if the existing `profile`-adjacent `saved` is a different sense, add `profile.savedStat` |
+| `settings.appearance` / `.themePalette` / `.account` / `.about` / `.version` / `.signOut` / `.language` / `.mode` | (existing) | (existing) | exist — reused in-place |
+| `settings.privacyPolicy` / `.termsOfUse` | (existing) | (existing) | exist |
+
+**Remove from use** (no longer rendered, but leave the keys for now unless ts-developer prunes): the
+`profile.activity*`, `profile.followers`, and `profile.shareProfile` keys. Flag `profile.shareProfile`,
+`profile.followers`, and the `profile.activity*` set as now-unused for a later cleanup pass.
+
+### Implementation notes for rn-developer
+
+- Edit `presentation/screens/profile/profile-screen.tsx`: remove the floating actions block
+  (lines ~76–95), remove the share + web-settings buttons from the action row (lines ~203–219), add the
+  4th "Saved" stat cell, and append the Appearance / Account / About sections (lift the JSX from
+  `settings-screen.tsx:75–131`, swapping the standalone-screen chrome for inline section headers).
+- Saved count source: `savedRecipesStore` exposes `savedIds: ReadonlySet<string>`
+  (`application/recipes/saved-recipes-store.ts`). Render `String(savedIds.size)`. It is local and
+  synchronous — no loading state needed for that cell.
+- Reuse widgets: `SectionHeader`, `SettingsRow`, `ThemeToggle`, `ThemeGrid`, `LanguageSelector`,
+  `AvatarImage`, `ThemedText`, `TabBar`. Do **not** duplicate them.
+- The screen will get long — if it exceeds the ~120-line focus budget, split the embedded settings into a
+  `profile-settings-sections.tsx` sub-component in the same feature folder (one component per file rule).
+- `/settings` route: decide with the team whether to (a) redirect it to `/profile`, or (b) delete the
+  route + screen. Either way, remove the now-dead gear/settings navigation. If deleting
+  `settings-screen.tsx`, that is the only file removed; the merged content lives in the profile.
+- **No theme token changes** — so **contrast tests do not need re-running** for this section. test-developer
+  only needs new/updated tests for the screen behavior (saved-count cell, removed share button), not contrast.
