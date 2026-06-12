@@ -5,6 +5,7 @@ import { ValidationFailure } from '@core/failure';
 export interface UserProfileProps {
   id: string;
   displayName: string;
+  bio: string | null;
   photoUrl: string | null;
   recipeCount: number;
   totalLikes: number;
@@ -33,6 +34,10 @@ export class UserProfile extends Entity<UserProfileProps> {
 
   get displayName(): string {
     return this.props.displayName;
+  }
+
+  get bio(): string | null {
+    return this.props.bio;
   }
 
   get photoUrl(): string | null {

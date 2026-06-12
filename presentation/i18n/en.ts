@@ -140,6 +140,10 @@ export const en = {
     shareCopy: 'Copy',
     shareCopied: 'Copied',
     shareText: 'Check out {name} on Recipely:',
+    recipeBy: 'Recipe by',
+    yourRecipe: 'Your recipe',
+    youPill: 'You',
+    recipeCount: '{count} recipes',
   },
   settings: {
     title: 'Settings',
@@ -470,6 +474,7 @@ export const en = {
     recipes: 'Recipes',
     likes: 'Likes',
     views: 'Views',
+    saved: 'Saved',
     followers: 'Followers',
     activity: 'Activity',
     activityRecent: 'Recent',
