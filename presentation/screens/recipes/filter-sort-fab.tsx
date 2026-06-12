@@ -45,6 +45,9 @@ export const FilterSortFab = ({
   // Natural extended width, measured once so the morph interpolates to the real
   // localized label width rather than a guessed constant.
   const [extendedWidth, setExtendedWidth] = useState(0);
+  // Natural label width, measured once so the morph can collapse the label's
+  // occupied space to 0 (not just fade it) and keep the icon centered.
+  const [labelWidth, setLabelWidth] = useState(0);
 
   const label = t().recipes.filtersAndSort;
   const accessibilityLabel = activeCount > 0 ? `${label}, ${activeCount}` : label;
@@ -55,27 +58,41 @@ export const FilterSortFab = ({
     if (w > 0 && extendedWidth === 0) setExtendedWidth(w);
   };
 
+  const onMeasureLabel = (e: LayoutChangeEvent): void => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0 && labelWidth === 0) setLabelWidth(w);
+  };
+
+  const morphRange: [number, number] = [
+    sizes.homeHeaderMax,
+    sizes.homeHeaderMax + MORPH_DISTANCE,
+  ];
+
   const containerStyle = useAnimatedStyle(() => {
     if (reduceMotion || extendedWidth === 0) return {};
     const width = interpolate(
       scrollY.value,
-      [sizes.homeHeaderMax, sizes.homeHeaderMax + MORPH_DISTANCE],
+      morphRange,
       [extendedWidth, sizes.fab],
       Extrapolation.CLAMP,
     );
     return { width };
   });
 
-  const labelStyle = useAnimatedStyle(() => ({
-    opacity: reduceMotion
-      ? 1
-      : interpolate(
-          scrollY.value,
-          [sizes.homeHeaderMax, sizes.homeHeaderMax + MORPH_DISTANCE],
-          [1, 0],
-          Extrapolation.CLAMP,
-        ),
-  }));
+  // Collapse the label's occupied width and its leading margin to 0 over the
+  // same scroll range, so the icon ends up perfectly centered in the circle
+  // instead of being pushed off-screen by the still-laid-out label.
+  const labelStyle = useAnimatedStyle(() => {
+    if (reduceMotion || labelWidth === 0) {
+      return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
+    }
+    const progress = interpolate(scrollY.value, morphRange, [1, 0], Extrapolation.CLAMP);
+    return {
+      opacity: progress,
+      width: labelWidth * progress,
+      marginLeft: spacing.xs2 * progress,
+    };
+  });
 
   return (
     <Animated.View
@@ -99,10 +116,11 @@ export const FilterSortFab = ({
         accessibilityLabel={accessibilityLabel}
       >
         <Ionicons name="funnel-outline" size={sizes.iconMd} color={colors.primaryText} />
-        <Animated.View style={labelStyle}>
+        <Animated.View style={[styles.labelWrapper, labelStyle]}>
           <ThemedText
             variant="caption"
             numberOfLines={1}
+            onLayout={onMeasureLabel}
             style={[styles.label, { color: colors.primaryText }]}
           >
             {label}
@@ -135,13 +153,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs2,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.round,
     overflow: 'hidden',
   },
   pressed: {
     opacity: 0.85,
+  },
+  labelWrapper: {
+    overflow: 'hidden',
   },
   label: {
     fontWeight: '700',
