@@ -76,4 +76,10 @@ export const sizes = {
   gradientHeight: 260,
   cardOverlap: 40,
   heroPaddingTop: 76,
+  // Mobile collapsing home header + Filter/Sort FAB (June 2026 redesign).
+  homeHeaderMax: 132,
+  homeHeaderMin: 0,
+  homeTitleShrink: 96,
+  fab: 56,
+  fabExtendedHeight: 48,
 } as const;

@@ -1485,3 +1485,559 @@ All other needed libraries (`react-native-reanimated`, `expo-image`, `@expo/vect
 - `presentation/base/widgets/language-selector.tsx`
 - `presentation/screens/settings/settings-screen.tsx`
 - `presentation/app/settings.tsx`
+
+---
+
+## Mobile Home — Collapsing Header & Filter FAB (June 2026)
+
+A mobile-only, scroll-driven redesign of `RecipeListScreen` that reclaims the recipe list's
+vertical space. Today the list gets ~40% of the viewport because six bands of chrome are
+permanently fixed above it. This redesign demotes most of that chrome into the scroll content
+(so it scrolls away) and collapses the rest, while moving filter + sort into a single morphing
+FAB. **Web shell is explicitly out of scope — see "Web shell" below.**
+
+### Problem (current state)
+
+On mobile, above the `FlatList`, this is all permanently fixed (never scrolls):
+
+1. `RecipesAppHeader` — "Recipely" eyebrow + large screen title + notifications bell.
+2. `SearchBar`.
+3. Pill row — Filter pill, Sort pill, inline result count.
+4. Active-filter chips row (only when filters applied).
+5. `AiBannerCard` — gradient AI promo.
+6. `CuisineStrip` — title + horizontal cuisine circles.
+
+Plus the bottom `TabBar`. The list is squeezed into what's left.
+
+### Design goals
+
+- The list owns the screen. At rest, only a slim header band + search sit above it; everything
+  else lives inside the scroll content and moves away as the user reads.
+- One persistent, reachable control for filter/sort — a FAB — instead of a fixed pill row.
+- Direction-aware header: hide on scroll-down (reading), reveal on scroll-up (seeking controls).
+- Every animation runs on the UI thread (Reanimated worklets driven by a shared scroll offset).
+
+### References
+
+- **[Material 3 — Top app bar scroll behavior](https://m3.material.io/components/top-app-bar/guidelines)** —
+  "small top app bar" `enterAlways`/`exitUntilCollapsed` behavior: the bar translates fully
+  off-screen on downward scroll and snaps back on any upward scroll. We adopt the direction-aware
+  hide/reveal and the "snap to fully shown / fully hidden" resolution.
+- **[Material 3 — FAB & Extended FAB](https://m3.material.io/components/floating-action-button/guidelines)** —
+  the extended-FAB → FAB shrink-on-scroll pattern (label collapses to icon while scrolling, the
+  badge persists). We adopt the morph and the bottom-end placement above the nav bar.
+- **[Apple HIG — Large titles / iOS Search](https://developer.apple.com/design/human-interface-guidelines/searching)** —
+  the large-title-collapses-to-inline pattern and search bar that recedes under the title on scroll.
+  We borrow the title shrink + fade, not a navigation-controller large title.
+- **Mobbin — Yummly / Tasty home feeds** — cuisine strip and promo banner are part of the *feed*,
+  not fixed chrome; they scroll away and the grid takes over. We move `AiBannerCard` + `CuisineStrip`
+  into `ListHeaderComponent`.
+
+### Layout — what scrolls, what collapses, what becomes a FAB
+
+| Element (current) | New behavior | Where it lives |
+|---|---|---|
+| `RecipesAppHeader` (eyebrow + title + bell) | **Collapses** — title shrinks `title`→`subtitle` and the eyebrow fades out as it shrinks; the whole band **hides on scroll-down / reveals on scroll-up**. Bell stays tappable whenever the band is shown. | Fixed (animated `Animated.View`), above the list |
+| `SearchBar` | **Collapses with the header band** (translates up with it, fades its last ~30%). Part of the same hide/reveal group. | Fixed (same animated band) |
+| Filter pill + Sort pill + result count | **Removed from fixed chrome.** Filter+Sort become the **FAB**. Result count moves into the scrolling `ListHeaderComponent` (small muted caption row). | FAB (fixed) + scroll content |
+| Active-filter chips row | **Moves into `ListHeaderComponent`** so it scrolls away; still removable; "Clear all" stays at the row end. | Scroll content |
+| `AiBannerCard` | **Moves into `ListHeaderComponent`** — scrolls away with the feed. | Scroll content |
+| `CuisineStrip` | **Moves into `ListHeaderComponent`** — scrolls away with the feed. | Scroll content |
+| Recipe `FlatList` | Becomes the single scroll surface; gains top padding equal to the resting header height so row 1 isn't hidden under the band. | The scroll view |
+| `TabBar` | Unchanged, fixed at bottom. | Fixed |
+
+Net effect at rest: only the collapsing header band (≈ `sizes.homeHeaderMax`) sits above a
+full-height list. After a short scroll the band is gone entirely and the list is full-bleed.
+
+### Collapsing header band — geometry & animation
+
+The band is one fixed `Animated.View` containing the title row (eyebrow + title + bell) and the
+`SearchBar`. It is driven by a single `scrollY` shared value from the list's
+`onScroll` (`useAnimatedScrollHandler`, `scrollEventThrottle={16}`).
+
+**New tokens required** (add to `spacing.ts` `sizes`; values chosen so the band matches the
+current resting layout):
+
+| Token | Value | Meaning |
+|---|---|---|
+| `sizes.homeHeaderMax` | `132` | Resting band height (title row ≈ 56 + search 44 + vertical padding ≈ 32). |
+| `sizes.homeHeaderMin` | `0` | Fully collapsed height — band translates entirely off-screen. |
+| `sizes.homeTitleShrink` | `96` | Scroll distance (px) over which the title shrinks + eyebrow fades, before hide/reveal takes over. |
+| `sizes.fab` | `56` | FAB diameter (Material standard 56). |
+| `sizes.fabExtendedHeight` | `48` | Height of the extended (label-visible) FAB pill. |
+
+Two independent behaviors compose on the band:
+
+**1. Title collapse (absolute, tied to scrollY position):**
+
+- `titleScale = interpolate(scrollY, [0, homeTitleShrink], [1, 0.82], CLAMP)` applied to the
+  title text (visually morphs `title` 24pt → ~`subtitle` 20pt).
+- `eyebrowOpacity = interpolate(scrollY, [0, homeTitleShrink * 0.5], [1, 0], CLAMP)` — the
+  "Recipely" eyebrow fades out first.
+- `searchOpacity = interpolate(scrollY, [homeTitleShrink * 0.5, homeTitleShrink], [1, 0.55], CLAMP)`
+  — search dims slightly as the band tightens (stays visible until the band hides).
+
+**2. Direction-aware hide/reveal (relative, tied to scroll direction):**
+
+Track `lastScrollY` and `headerTranslateY` (a shared value, range `[-homeHeaderMax, 0]`).
+
+- On scroll **down** past `sizes.homeHeaderMax` of total offset: drive `headerTranslateY` toward
+  `-homeHeaderMax` (band slides up out of view).
+- On scroll **up** by more than `spacing.sm` (8px) cumulative: drive `headerTranslateY` toward `0`.
+- At `scrollY <= sizes.homeHeaderMax`: force `headerTranslateY = 0` (always show the band near the top).
+- Apply with `withTiming(target, { duration: 220, easing: Easing.out(Easing.cubic) })`. The band's
+  `Animated.View` style is `{ transform: [{ translateY: headerTranslateY }] }`.
+- The list's `contentContainerStyle.paddingTop = sizes.homeHeaderMax` so content starts below the
+  resting band; the band overlaps via absolute positioning (`position:'absolute', top:0, zIndex:20`).
+
+**Snap resolution** (Material small-top-app-bar feel): on scroll-end (`onMomentumScrollEnd` /
+`onScrollEndDrag`), if `headerTranslateY` is between 0 and `-homeHeaderMax`, snap to whichever edge
+is nearer with the same 220ms timing. Never leave the band half-shown.
+
+### Filter / Sort FAB — placement, morph, badge
+
+A single FAB replaces the fixed Filter + Sort pills. Tapping it opens the existing filter
+`BottomSheet`. Sort is reachable from the same sheet via a segmented "Sort" control at the top of
+the filter sheet (so one FAB covers both) — see "Sort inside the filter sheet" below.
+
+**Placement:**
+
+- `position: 'absolute'`, bottom-end. `right: spacing.lg`.
+- `bottom = sizes.tabBarHeight + insets.bottom + spacing.lg` (floats clear above the `TabBar`).
+- `zIndex: 30` (above list, below `BottomSheet` modal).
+
+**Resting (extended) vs scrolled (compact) morph:**
+
+- At rest and within the first screenful (`scrollY <= sizes.homeHeaderMax`), the FAB is an
+  **extended FAB**: height `sizes.fabExtendedHeight`, rounded `radii.round`, shows a funnel icon
+  + label (`t().recipes.filtersAndSort`, new key) + the active-count badge.
+- On scroll-down the FAB **shrinks to a circular icon FAB** (`sizes.fab` diameter): the label
+  width animates to 0 and fades (`labelOpacity = interpolate(scrollY, [homeHeaderMax, homeHeaderMax + 64], [1, 0], CLAMP)`),
+  the container width animates from extended → `sizes.fab` with `withTiming(220)`. The funnel icon
+  and badge persist. On scroll-up back near the top it re-extends.
+- The FAB itself never hides — only morphs — so filter access is always one tap away.
+
+**FAB visual tokens:**
+
+| Element | Token | Notes |
+|---|---|---|
+| FAB fill | `colors.primary` | |
+| FAB icon (`funnel-outline`) + label | `colors.primaryText` | Contracted text-on-primary; verified ≥7.0:1 in all 20 themes (existing audit, section D). |
+| FAB elevation | `shadows.lg` (iOS) / `elevation` (Android) | On very dark themes the shadow is weak, so also draw a 1px `colors.gradientBorder` hairline ring so the FAB reads against `colors.background`. |
+| Active-count badge bg | `colors.gradientBorder` | Mirrors the existing in-app filter `pillBadge` (the pill row's count badge today). Reads as a light chip on the `colors.primary` FAB fill in every theme. |
+| Active-count badge text | `colors.primaryText` | Contracted text-on-primary; same pair the existing `pillBadge` uses for its count, so it carries the app-wide ≥AA guarantee for the numeric label. |
+| Badge border | `colors.background` | 2px ring so the badge separates from the FAB fill, mirroring `RecipesAppHeader`'s bell badge. |
+
+> **Badge contrast note:** do **not** use `colors.danger` + white here (as the bell badge does). `danger`/white is only ~2.4:1 on the dark-variant `danger` (`#F28B82`) and fails AA for the small numeric text. Reusing the `pillBadge` pair (`gradientBorder` fill / `primaryText` text) keeps the count legible on the FAB across all 20 themes without introducing a new token. The badge is a count, not a status, so the red affordance isn't needed.
+
+**Badge:** show only when `activeFilterCount > 0`; text is the count (`9+` if `>9`), positioned
+top-end of the FAB like the bell badge in `RecipesAppHeader` but using the `pillBadge` colors above.
+
+### Sort inside the filter sheet
+
+Because the FAB now owns both filter and sort, add a compact **Sort** selector as the first
+section of the filter `BottomSheet` (above Cuisine), reusing the existing sort options. This keeps
+one entry point. The standalone sort `BottomSheet` (`sheetOpen === 'sort'`) is removed from the
+mobile flow. Implementation: render the sort options as a horizontal `SelectChip` row at the top of
+the filter sheet; selecting one updates `sortBy` and is applied together with "Show results".
+
+### Scroll content order (FlatList `ListHeaderComponent`)
+
+Top → down, all inside the scrolling list header (so all of it scrolls away):
+
+1. `AiBannerCard` (`marginBottom: spacing.md`).
+2. `CuisineStrip`.
+3. Result-count + Clear-all row (`spacing.lg` horizontal, `spacing.sm` vertical) — the muted
+   "{count} {results}" caption left, "Clear all" link right when `activeFilterCount > 0`.
+4. Active-filter chips row (only when `nonCuisineFilterCount > 0`) — the existing horizontal chip
+   scroller, unchanged styling.
+
+Then the recipe rows follow. `ItemSeparatorComponent` and row styling are unchanged.
+
+### ASCII wireframe
+
+```
+RESTING (scrollY = 0)                  SCROLLED DOWN (reading)
+┌──────────────────────────┐           ┌──────────────────────────┐
+│ Recipely            (🔔) │ ← band    │  (band slid up, gone)    │
+│ Recipes                  │  collapses │                          │
+│ ┌──────────────────────┐ │  + hides   │  ████ recipe card        │
+│ │ 🔍  Search recipes   │ │            │  ████ recipe card        │
+│ └──────────────────────┘ │            │  ████ recipe card        │
+├──────────────────────────┤ ← list top │  ████ recipe card        │
+│ ✨ Generate with AI    › │  (scrolls) │  ████ recipe card        │
+│ Browse cuisines          │            │  ████ recipe card        │
+│ 🥙 🍕 🌮 🍣 🍛 …          │            │              ┌─────┐     │
+│ 24 recipes               │            │              │  ▽  │ ←FAB│
+│ ████ recipe card         │            │              └─────┘ (3) │
+│ ████ recipe card    ┌───────────┐     │                          │
+│ ████ recipe card    │ ▽ Filter&│ ←FAB │                          │
+│ ████ recipe card    │   Sort (3)│     │                          │
+│                     └───────────┘     │                          │
+├──────────────────────────┤           ├──────────────────────────┤
+│  🍴      🔖      👤      │ TabBar    │  🍴      🔖      👤      │
+└──────────────────────────┘           └──────────────────────────┘
+   extended FAB                            compact FAB (label gone)
+```
+
+### States
+
+- **Loading / error / empty:** unchanged from current screen, but the loading skeleton and
+  empty/error views render *below* the collapsing band (same `paddingTop: sizes.homeHeaderMax`).
+  The FAB is hidden while `state.status !== 'loaded'` (nothing to filter yet); it fades in
+  (`withTiming(150)`) when results arrive.
+- **Pressed (FAB):** `Pressable` `pressed` → opacity 0.85 (no custom scale needed).
+- **No active filters:** FAB shows no badge; label reads `t().recipes.filtersAndSort`.
+- **Reduced motion:** if `AccessibilityInfo.isReduceMotionEnabled()` is true, skip the translate
+  animations — keep the band always shown and the FAB always extended (no morph). Document this
+  branch; implement with the existing reduce-motion check pattern if present, else a `useState`
+  populated from `AccessibilityInfo`.
+
+### Accessibility
+
+- FAB: `accessibilityRole="button"`, `accessibilityLabel={t().recipes.filtersAndSort}`. When a
+  count is active, append it: `` `${t().recipes.filtersAndSort}, ${activeFilterCount}` `` (mirrors
+  the bell's labeling). Tap target is `sizes.fab` (56) — exceeds the 44pt minimum even when compact.
+- Bell stays `accessibilityRole="button"` with its existing label; it remains reachable whenever the
+  band is shown. When the band is hidden by scroll, scrolling up reveals it — acceptable since the
+  band auto-shows near the top and on any upward scroll.
+- The collapsing band must not trap focus; the title shrink is decorative (no role change).
+- Contrast pairs verified: FAB `primary`/`primaryText` (contracted text-on-primary, app-wide
+  guarantee — see section D); badge reuses the existing `pillBadge` pair (`gradientBorder` /
+  `primaryText`), so no new pairing is introduced; band text on `background` unchanged from today.
+  Note: `danger`/white is deliberately **avoided** for the badge — it measures ~2.4:1 on the
+  dark-variant `danger` and would fail AA for the numeric text.
+
+### i18n
+
+One new user-visible string. Add to **both** `en.ts` and `tr.ts` under `recipes`:
+
+| Key | en | tr |
+|---|---|---|
+| `recipes.filtersAndSort` | `Filter & Sort` | `Filtrele ve Sırala` |
+
+All other strings reuse existing keys (`recipes.filter`, `recipes.sortBy`, `recipes.results`,
+`recipes.clearFilters`, `recipes.browseCuisines`, sort labels). The standalone `recipes.filter`
+key is still used as the bottom-sheet title.
+
+### Web shell — explicitly untouched
+
+This entire section applies **only** when `isWebShell === false`. The web shell keeps its current
+layout verbatim: no collapsing band, no FAB, no header morph. In code, the new `Animated` band, the
+FAB, and the scroll handler must be gated behind `!isWebShell` (the web path continues to render the
+existing sticky header + `WebShellState` search and the standard `FlatList`/grid). Do not move
+`AiBannerCard`/`CuisineStrip` into the list header on web — the web shell already positions them and
+the grid differently. `gridColumns > 1` (web grid) is unaffected.
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Band bg | `colors.background` | |
+| Band bottom hairline | `colors.border` | `StyleSheet.hairlineWidth`, only when band shown |
+| Title / eyebrow | `colors.text` / `colors.textMuted` | unchanged from `RecipesAppHeader` |
+| Search field | `colors.inputBackground`, `colors.text` | unchanged `SearchBar` |
+| FAB fill | `colors.primary` | |
+| FAB icon + label | `colors.primaryText` | |
+| FAB ring (dark-safe) | `colors.gradientBorder` | 1px, replaces invisible shadow on dark themes |
+| FAB badge bg / text | `colors.gradientBorder` / `colors.primaryText` | reuses existing `pillBadge` pair; `danger`/white avoided (fails AA, ~2.4:1 dark) |
+| FAB badge ring | `colors.background` | 2px |
+| Result count caption | `colors.textMuted` | |
+
+No new color tokens are required — all FAB/badge/band colors are existing theme tokens. Only the
+five `sizes.*` layout tokens above are new.
+
+### Implementation checklist for rn-developer
+
+File: `presentation/screens/recipes/recipe-list-screen.tsx` (mobile branch only; `!isWebShell`).
+
+1. **Add layout tokens** to `presentation/base/theme/spacing.ts` `sizes`: `homeHeaderMax: 132`,
+   `homeHeaderMin: 0`, `homeTitleShrink: 96`, `fab: 56`, `fabExtendedHeight: 48`. (ts-developer or
+   rn-developer — it's a token file edit; coordinate so it lands before the screen change.)
+2. **Add i18n key** `recipes.filtersAndSort` to `en.ts` and `tr.ts` (values in the i18n table).
+3. **Convert the mobile list to a Reanimated scroll surface:** replace the mobile `FlatList` with
+   `Animated.FlatList`, add `onScroll={useAnimatedScrollHandler(...)}` writing `scrollY` and
+   tracking direction; `scrollEventThrottle={16}`. Keep the web `FlatList` path as-is.
+4. **Build the collapsing band** as an absolutely-positioned `Animated.View` (`zIndex:20`) holding
+   the title row (eyebrow + title + bell, from `RecipesAppHeader` content) and `SearchBar`. Apply
+   `titleScale`, `eyebrowOpacity`, `searchOpacity`, and `headerTranslateY` per "Collapsing header
+   band". Add `contentContainerStyle.paddingTop = sizes.homeHeaderMax`.
+5. **Implement direction-aware hide/reveal + snap** (220ms `Easing.out(Easing.cubic)`), forcing
+   shown when `scrollY <= sizes.homeHeaderMax`.
+6. **Move `AiBannerCard`, `CuisineStrip`, the result-count/Clear-all row, and the active-filter
+   chips row into `ListHeaderComponent`** (mobile only). Remove them from the fixed area.
+7. **Build the FAB** (extended ↔ compact morph, badge, dark-safe ring) per "Filter / Sort FAB".
+   Tapping opens the filter `BottomSheet`. Hide it until `state.status === 'loaded'`.
+8. **Fold Sort into the filter sheet** as a `SelectChip` row at the top; remove the standalone sort
+   `BottomSheet` from the mobile flow (keep it for web if web still uses it — verify; web uses the
+   same sheet today, so guard removal behind `!isWebShell` or keep sort sheet for web only).
+9. **Reduced-motion branch:** when reduce-motion is on, render the band statically shown and the FAB
+   permanently extended; skip translate/scale animations.
+10. **Accessibility:** FAB label per the Accessibility section; ensure 44pt+ targets; keep bell label.
+11. **Leave `RecipesAppHeader`, `AiBannerCard`, `CuisineStrip` component files unchanged** unless a
+    prop is needed — prefer composing them in the screen. If the title row must be extracted for the
+    band, do it inside the screen folder, don't alter the shared header's web usage.
+
+After implementation: `npm run lint`, `npx tsc --noEmit`, run the touched-layer tests. No theme
+color values changed, so **contrast tests do not need re-running** for this section.
+
+---
+
+## Recipe detail — Author card (Jun 2026)
+
+An info-only "who created this recipe" block on the recipe detail screen. **No follow button, no
+follower count, no navigation on tap** — it identifies the author and nothing more. For a recipe the
+signed-in user owns, it self-identifies them with a "You" pill instead of any action.
+
+> Final design intent confirmed in the Claude Design handoff (chat19). The prototype's follow button,
+> follower count, and verified shield badge are all **dropped** — the backend has no follow graph and no
+> verified field. Real data exposes `displayName`, `photoUrl`, and `recipeCount` only; there is **no
+> `@username`**, so the caption drops the handle and keeps only the recipe count.
+
+### Source
+
+- Prototype: `project/src/social.jsx` `RecipeAuthorCard` (lines ~34–82); placed in
+  `project/src/screens.jsx` line ~2056, directly below the stats strip and above `RecipeMetaCard`.
+
+### Placement in the live screen
+
+`presentation/screens/recipes/recipe-detail-screen.tsx`. The card renders inside the loaded body, in
+the content column **after the chips/time/nutrition meta and before the `Ingredients` SectionHeader**
+(`recipe-detail-screen.tsx` ~line 372, where `SectionHeader title={t().recipes.ingredients}` begins).
+The prototype puts it under a likes/views "stats strip"; our detail screen has no standalone stats
+strip, so anchor it after the nutrition row and before ingredients. One card, full content width,
+`spacing.lg` of top margin to separate it from the meta above.
+
+### Data source
+
+The `Recipe` entity carries only `ownerId` (`domain/recipes/recipe.ts:34`) — no embedded author
+display fields. The author's `displayName` / `photoUrl` / `recipeCount` must be resolved from a
+profile lookup keyed by `ownerId`. The `UserProfile` entity already exposes exactly these three
+(`domain/user-profile/user-profile.ts`). **Ownership check:** `recipe.ownerId === authState.session.user.id`.
+
+- **Owner case** (`isOwner === true`): title "Your recipe" / "Senin tarifin", name = signed-in user's
+  `displayName`, avatar = user `photoUrl`, caption = own `recipeCount`, plus the "You" / "Sen" pill.
+- **Other-author case**: title "Recipe by" / "Tarifin sahibi", name/avatar/caption from the resolved
+  author profile, no pill.
+- **Loading**: while the author profile resolves, render a `SkeletonLoader` block matching the card's
+  height (avatar circle + two text lines). Do not flash an empty card.
+- **Unavailable**: if the author profile can't be resolved (lookup fails / 404), **omit the card
+  entirely** — it is non-essential and must never show a broken/empty author. No error state, no retry.
+
+### Layout
+
+- Single row, `flexDirection: row`, `alignItems: center`, `gap: spacing.md`.
+- `padding: spacing.md`, `borderRadius: radii.xl`, 1px `cardBorder` hairline on `surface`.
+- Avatar: `AvatarImage` at `sizes.avatarSm` (40) — prototype used 44; round down to the existing token
+  (44 is not a token and 40 is the established small-avatar size). `flexShrink: 0`.
+- Text column: `flex: 1`, `minWidth: 0`, three stacked lines:
+  1. **Eyebrow** ("Recipe by" / "Your recipe"): `fontSizes.micro` (11), weight 700, `textMuted`,
+     uppercase, `letterSpacing: 0.5`.
+  2. **Name**: `fontSizes.body` (15), weight 700, `text`, single line, `numberOfLines={1}` ellipsis.
+  3. **Caption** ("N recipes" / "N tarif"): `fontSizes.caption` (13), `textMuted`, `numberOfLines={1}`.
+- "You" / "Sen" pill (owner only): `flexShrink: 0`, `borderRadius: radii.round`, vertical
+  `spacing.xs2` (6) / horizontal `spacing.md` (12) padding, `chipBackground` fill, `chipText` label at
+  `fontSizes.caption` weight 700.
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Card bg | `colors.surface` | |
+| Card border | `colors.cardBorder` | 1px hairline |
+| Avatar | `AvatarImage` `size={sizes.avatarSm}` | reuse existing widget |
+| Eyebrow label | `colors.textMuted`, `fontSizes.micro`, weight 700, uppercase | |
+| Author name | `colors.text`, `fontSizes.body`, weight 700 | |
+| Caption (recipe count) | `colors.textMuted`, `fontSizes.caption` | |
+| "You" pill bg / text | `colors.chipBackground` / `colors.chipText` | proven AA pair (= `primaryLight`/`primary`, already used by all chips/badges across 20 themes) |
+
+### Interaction & state
+
+- The card is **not pressable** — render as a plain `View`, no `Pressable`, no `accessibilityRole="button"`.
+- No pressed/hover state. No navigation.
+
+### Accessibility
+
+- Card is informational; group its text so a screen reader reads "Recipe by, {name}, {N} recipes" as one
+  unit (wrap the text column with `accessible` + composed `accessibilityLabel`), or leave the three
+  `ThemedText` nodes as-is (each is already plain text and individually legible).
+- Contrast (all verified against existing token contracts, no new pairings introduced):
+  `text` on `surface` ≥ 10.9:1 dark / passes light (the app's core body pair);
+  `textMuted` on `surface` ≥ 4.5:1 (large-text eyebrow also passes the 3:1 floor);
+  `chipText` on `chipBackground` is the app-wide chip pair, already AA-validated in all 20 themes.
+- Avatar is decorative beside the name; no separate label needed.
+
+### i18n keys
+
+Reuse where present, add the two card titles. All four needed:
+
+| Key | en | tr |
+|---|---|---|
+| `recipes.recipeBy` | `Recipe by` | `Tarifin sahibi` |
+| `recipes.yourRecipe` | `Your recipe` | `Senin tarifin` |
+| `recipes.youPill` | `You` | `Sen` |
+| `recipes.recipeCount` | `{{count}} recipes` | `{{count}} tarif` |
+
+`recipes.recipeCount` is a count caption — implement with an ICU/interpolated value (the app's `t()`
+supports interpolation elsewhere; if not, format as `` `${count} ${t().recipes.recipesWord}` `` using a
+bare noun key). Confirm with ts-developer which interpolation style the i18n layer uses before adding.
+
+### Implementation notes for rn-developer
+
+- New widget file: `presentation/screens/recipes/recipe-author-card.tsx` (one component +
+  `RecipeAuthorCardProps`). Keep it in the `recipes` feature folder, not `base/widgets` (it is
+  detail-screen-specific). Compose it into `recipe-detail-screen.tsx` after the nutrition row.
+- Props: `{ authorName: string; authorPhotoUrl?: string; recipeCount: number; isOwner: boolean }`.
+  The screen resolves owner-vs-author and passes resolved values down; the card stays presentational.
+- Reuse: `AvatarImage`, `ThemedText`, `SkeletonLoader`, `spacing`/`radii`/`fontSizes`/`sizes` tokens.
+- **No new theme tokens.** No `themes.ts` change, so **contrast tests do not need re-running** for this
+  section.
+- ts-developer / data: provide a way to resolve a `UserProfile` by `ownerId` (a use case + store
+  selector, or extend the existing `userProfileStore` to cache-by-id) so the card can show the other
+  author's name/photo/count. If that lookup does not exist yet, that is the gating prerequisite — flag it.
+
+---
+
+## Profile screen with embedded settings (Jun 2026)
+
+Merge Settings into the Profile tab so appearance, account, and about live in one scroll, and strip the
+profile down to identity + stats + a single "Edit profile" action. This **replaces the separate Settings
+screen** as the primary path; the standalone `/settings` route's content moves up into the profile.
+
+> Final design intent (chat19): **share button REMOVED** (action row is "Edit profile" only); **Activity
+> section REMOVED**; **floating gear/settings + bell buttons REMOVED**; embedded sections appended below
+> the profile content — Appearance (theme gallery + System/Light/Dark scheme selector + language),
+> Account (sign out), About (app version). The stats row's 4th cell shows **saved-recipes count labeled
+> "Saved" / "Kayıtlı"** instead of followers.
+
+### Source
+
+- Prototype: `project/src/new-screens.jsx` `ProfileScreen` (lines ~647–888) — especially the stats grid
+  (~790), action row (~814), and the embedded Appearance / scheme selector / theme gallery / Account /
+  About sections (~827–885). Tokens from `project/src/theme.js`.
+
+### What moves / merges / is removed vs today
+
+Compared with the current `presentation/screens/profile/profile-screen.tsx` and
+`presentation/screens/settings/settings-screen.tsx`:
+
+| Element | Today | After |
+|---|---|---|
+| Floating bell + gear (top-right, mobile) | present (`profile-screen.tsx:76–95`) | **removed** — notifications stay reachable from the web header / elsewhere; no settings entry needed (it's inline now) |
+| Share button in action row | present (`profile-screen.tsx:213–219`) | **removed** |
+| Web-only settings icon in action row | present (`profile-screen.tsx:203–212`) | **removed** (settings now inline) |
+| Stats row | 3 cells: Recipes / Likes / Views | **4 cells**: Recipes / Likes / Views / **Saved** |
+| Appearance group (mode toggle + language) | in `settings-screen.tsx:75–94` | **moves into profile**, below the action row |
+| Theme palette grid | `settings-screen.tsx:96–97` (`ThemeGrid`) | **moves into profile** |
+| Scheme System/Light/Dark control | `settings-screen.tsx` `ThemeToggle` (mode) | **moves into profile** as the appearance mode control |
+| Account (sign out) | `settings-screen.tsx:99–107` | **moves into profile** |
+| About (version + privacy + terms) | `settings-screen.tsx:109–131` | **moves into profile** (keep version; keep privacy/terms rows — they exist today and have no reason to drop) |
+| Settings header back-button + title | `settings-screen.tsx:50–63` | **removed** — no separate screen chrome; it's one scroll |
+| `/settings` route | standalone screen | keep the route as a thin redirect/alias to `/profile` **or** delete it; coordinate with rn-developer. Anything still pushing `/settings` (e.g. deep links) should land on the profile. |
+
+### Layout (top → bottom, single `ScrollView`)
+
+1. **Safe-area top** padding (mobile: `insets.top + spacing.sm`; web shell: 0) — same as today.
+2. **Identity block** (unchanged from today): 112px avatar frame on `surface` with `cardBorder` + camera
+   pill (`primary` fill, `background` ring, `primaryText` icon), then `displayName` (`title`, weight
+   700), then `@handle` (`caption`, muted). Centered. `paddingTop: spacing.xxl`.
+3. **Stats row** — `surface` card, `cardBorder`, `radii.xl`, `paddingVertical: spacing.md`, 4 equal
+   cells split by `border` hairlines. Cells: Recipes / Likes / Views / **Saved**. Keep the existing
+   loading (`ActivityIndicator`) and error/retry states for the first three (profile-derived); the
+   Saved count comes from `savedRecipesStore` (always available locally — see Data).
+4. **Action row** — single full-width "Edit profile" button: `flex: 1`, `height: 42`, `radii.lg`,
+   `primary` fill, `primaryText` label + `create-outline` icon. **No share, no settings icon.**
+   `marginTop: spacing.md`.
+5. **Appearance section** — `SectionHeader` "Appearance", then:
+   - Grouped card (`cardBackground`, `cardBorder`, `radii.lg`) holding the **mode control** row
+     (System / Light / Dark) and a **Language** row. Reuse the existing `ThemeToggle` (or the prototype's
+     3-up segmented `System/Light/Dark` — match whichever the app's `preference` model already supports;
+     today's `ThemeToggle` already drives `preference`, so reuse it) and `LanguageSelector`.
+   - **Theme gallery**: `SectionHeader` "Theme palette" then the existing `ThemeGrid`
+     (`selectedThemeId` / `onSelect`). The prototype renders a horizontal swatch strip; our `ThemeGrid`
+     is the established equivalent — reuse it, do not rebuild.
+6. **Account section** — `SectionHeader` "Account", grouped card with a single destructive
+   `SettingsRow` "Sign out" (`log-out-outline`, `destructive`, `onPress` → sign out → `replace('/login')`).
+7. **About section** — `SectionHeader` "About", grouped card: Version row (`information-circle-outline`,
+   right element `1.0.0`, no chevron) + Privacy policy row + Terms of use row (both `Linking.openURL`,
+   keep from today's settings screen).
+8. **Bottom spacer** — `insets.bottom + sizes.tabBarHeight + spacing.xxl` so content clears the tab bar.
+
+Section spacing: `SectionHeader` provides its own vertical rhythm; groups sit at `marginHorizontal:
+spacing.lg`. Use `spacing.lg` between major sections, `spacing.md` between a section header's siblings —
+**all via tokens, never numeric literals** (the prototype's raw `spacing.lg`/`radii.lg`/`shadowCSS.sm`
+map 1:1 to our `spacing`, `radii`, `shadows`).
+
+### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| Container bg | `colors.background` | |
+| Avatar frame bg / border | `colors.surface` / `colors.cardBorder` | + `shadows.sm` |
+| Camera pill bg / icon / ring | `colors.primary` / `colors.primaryText` / `colors.background` | |
+| Display name | `colors.text`, `fontSizes.title`, weight 700 | via `ThemedText variant="title"` |
+| Handle | `colors.textMuted`, `fontSizes.caption` | |
+| Stats card bg / border | `colors.surface` / `colors.cardBorder` | `radii.xl` |
+| Stat cell divider | `colors.border` | 1px, between cells only |
+| Stat value | `colors.text`, `fontSizes.subtitle` (18), weight 800 | |
+| Stat label | `colors.textMuted`, `fontSizes.nano` (10) eqv → use `fontSizes` token, weight 600, uppercase, `letterSpacing: 0.5` | prototype used 10; nearest token is `nano` (9) — use `nano` or keep current screen's 10 if it's already a literal exception; prefer `fontSizes.nano` |
+| Edit button bg / label | `colors.primary` / `colors.primaryText` | |
+| Group card bg / border | `colors.cardBackground` / `colors.cardBorder` | `radii.lg` |
+| Settings row icon (accent) | `colors.primary` | |
+| Sign out row | `destructive` (→ `colors.danger`) | |
+| Section header | existing `SectionHeader` widget | |
+
+### Interaction & state
+
+- Edit profile → `router.push('/edit-profile')` (existing route).
+- Mode control → drives `preference` via `setPreference` (existing). Language → `setLocale` (existing).
+- Theme swatch tap → `setThemeId` (existing). Sign out → `signOut()` then `router.replace('/login')`.
+- Pressed states on buttons: use `Pressable`'s `pressed` arg for `opacity: 0.85`; do not add custom.
+- Stats loading: keep the current `ActivityIndicator`; error: keep the current inline retry
+  (`Pressable` → `loadProfile(userId)`). Saved cell renders immediately from local store (no async).
+
+### Accessibility
+
+- Every `Pressable` keeps `accessibilityRole="button"` + `accessibilityLabel` (edit profile, camera,
+  sign out, theme swatches, mode/language controls — all already labeled in the current screens; carry
+  the labels over).
+- Min tap target 44×44 on the camera pill, edit button (height 42 → add hit slop or bump to 44), and
+  settings rows (`sizes.settingsRowHeight` 52 is fine).
+- Contrast: **no new pairings** — every token combo above is already used and AA-validated in the
+  current profile/settings screens. The new 4th stat cell reuses the exact `text`/`textMuted`-on-`surface`
+  pairs of the other three cells, so it inherits their validation.
+
+### i18n keys
+
+All already exist except confirm the saved label. Reuse:
+
+| Key | en | tr | Status |
+|---|---|---|---|
+| `profile.editProfile` | `Edit profile` | (existing tr) | exists |
+| `profile.recipes` / `.likes` / `.views` | `Recipes` / `Likes` / `Views` | (existing) | exist |
+| `profile.saved` | `Saved` | `Kayıtlı` | **add** (`tr.ts` must mirror; en likely `Saved`) — verify `profile.saved` not already taken; if the existing `profile`-adjacent `saved` is a different sense, add `profile.savedStat` |
+| `settings.appearance` / `.themePalette` / `.account` / `.about` / `.version` / `.signOut` / `.language` / `.mode` | (existing) | (existing) | exist — reused in-place |
+| `settings.privacyPolicy` / `.termsOfUse` | (existing) | (existing) | exist |
+
+**Remove from use** (no longer rendered, but leave the keys for now unless ts-developer prunes): the
+`profile.activity*`, `profile.followers`, and `profile.shareProfile` keys. Flag `profile.shareProfile`,
+`profile.followers`, and the `profile.activity*` set as now-unused for a later cleanup pass.
+
+### Implementation notes for rn-developer
+
+- Edit `presentation/screens/profile/profile-screen.tsx`: remove the floating actions block
+  (lines ~76–95), remove the share + web-settings buttons from the action row (lines ~203–219), add the
+  4th "Saved" stat cell, and append the Appearance / Account / About sections (lift the JSX from
+  `settings-screen.tsx:75–131`, swapping the standalone-screen chrome for inline section headers).
+- Saved count source: `savedRecipesStore` exposes `savedIds: ReadonlySet<string>`
+  (`application/recipes/saved-recipes-store.ts`). Render `String(savedIds.size)`. It is local and
+  synchronous — no loading state needed for that cell.
+- Reuse widgets: `SectionHeader`, `SettingsRow`, `ThemeToggle`, `ThemeGrid`, `LanguageSelector`,
+  `AvatarImage`, `ThemedText`, `TabBar`. Do **not** duplicate them.
+- The screen will get long — if it exceeds the ~120-line focus budget, split the embedded settings into a
+  `profile-settings-sections.tsx` sub-component in the same feature folder (one component per file rule).
+- `/settings` route: decide with the team whether to (a) redirect it to `/profile`, or (b) delete the
+  route + screen. Either way, remove the now-dead gear/settings navigation. If deleting
+  `settings-screen.tsx`, that is the only file removed; the merged content lives in the profile.
+- **No theme token changes** — so **contrast tests do not need re-running** for this section. test-developer
+  only needs new/updated tests for the screen behavior (saved-count cell, removed share button), not contrast.

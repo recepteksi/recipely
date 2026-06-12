@@ -53,6 +53,10 @@ export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
 // the path is relative — the HTTP client prepends API_BASE_URL.
 export const ME_PROFILE_PATH = "/me/profile";
 
+/** Public profile of any user by id. Inside /api/v1 — path is relative. */
+export const userProfilePath = (userId: string): string =>
+  `/users/${encodeURIComponent(userId)}`;
+
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend
 // CODE_TTL_MS (3 minutes).

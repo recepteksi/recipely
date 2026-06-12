@@ -7,6 +7,13 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedScrollHandler,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -14,9 +21,10 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
 import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
+import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
+import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
 import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
 import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
-import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { ErrorState } from '@presentation/base/widgets/error-state';
@@ -43,6 +51,10 @@ import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
+/** Snap/timing config for the mobile collapsing header band (Material small-top-app-bar feel). */
+const HEADER_TIMING = { duration: 220, easing: Easing.out(Easing.cubic) } as const;
+/** Cumulative upward scroll (px) before the band is revealed again. */
+const REVEAL_THRESHOLD = spacing.sm;
 /** Skeleton cards shown on mobile / single-column while the list loads. */
 const SKELETON_CARD_COUNT = 4;
 /** Rows of skeleton cards to fill the web grid while the list loads. */
@@ -148,11 +160,59 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const load = recipeListStore((s) => s.load);
   const { isWebShell, width } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
+  const reduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads, below) on a
   // language switch even while it sits back-stacked under Settings.
   const language = useLocale();
 
   const [search, setSearch] = useState('');
+
+  // ─── Mobile collapsing-header scroll state (UI-thread shared values) ─────────
+  // `scrollY` drives the title shrink / eyebrow fade / FAB morph; `headerTranslateY`
+  // is the direction-aware band offset. `lastScrollY` tracks the previous offset so
+  // the scroll handler can resolve direction. All ignored on the web shell.
+  const scrollY = useSharedValue(0);
+  const headerTranslateY = useSharedValue(0);
+  const lastScrollY = useSharedValue(0);
+  // 1 when the band is (heading) hidden, 0 when shown — guards against restarting
+  // the timing animation on every frame while the direction is unchanged.
+  const headerHidden = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      const y = event.contentOffset.y;
+      scrollY.value = y;
+      if (reduceMotion) return;
+      const delta = y - lastScrollY.value;
+      if (y <= sizes.homeHeaderMax) {
+        if (headerHidden.value !== 0) {
+          headerHidden.value = 0;
+          headerTranslateY.value = withTiming(0, HEADER_TIMING);
+        }
+      } else if (delta > 0 && headerHidden.value !== 1) {
+        headerHidden.value = 1;
+        headerTranslateY.value = withTiming(-sizes.homeHeaderMax, HEADER_TIMING);
+      } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== 0) {
+        headerHidden.value = 0;
+        headerTranslateY.value = withTiming(0, HEADER_TIMING);
+      }
+      lastScrollY.value = y;
+    },
+    // Snap the band to whichever edge is nearer when scrolling settles, so it is
+    // never left half-shown (Material small-top-app-bar resolution).
+    onMomentumEnd: () => {
+      if (reduceMotion) return;
+      const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
+      headerHidden.value = hide ? 1 : 0;
+      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : 0, HEADER_TIMING);
+    },
+    onEndDrag: () => {
+      if (reduceMotion) return;
+      const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
+      headerHidden.value = hide ? 1 : 0;
+      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : 0, HEADER_TIMING);
+    },
+  });
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell,
   // capped to the centered 1200px content max so cards stay readable.
@@ -164,6 +224,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const [sortBy, setSortBy] = useState<SortKey>('popular');
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
+  // On mobile, sort lives inside the filter sheet and is applied together with
+  // the filters via "Show results"; `pendingSort` holds the in-sheet selection.
+  const [pendingSort, setPendingSort] = useState<SortKey>('popular');
   const [sheetOpen, setSheetOpen] = useState<'filter' | 'sort' | null>(null);
 
   useEffect(() => {
@@ -212,13 +275,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   );
 
   const applyFilters = (): void => {
+    // On mobile the sheet also owns sort, so apply the pending sort alongside the
+    // filters. On web sort is a separate sheet, so `pendingSort` mirrors `sortBy`.
+    const nextSort = isWebShell ? sortBy : pendingSort;
     setFilters(pendingFilters);
+    setSortBy(nextSort);
     setSheetOpen(null);
-    void load(buildApiFilters(pendingFilters, sortBy));
+    void load(buildApiFilters(pendingFilters, nextSort));
   };
 
   const openFilterSheet = (): void => {
     setPendingFilters(filters);
+    setPendingSort(sortBy);
     setSheetOpen('filter');
   };
 
@@ -333,21 +401,75 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [openRecipe, gridColumns],
   );
 
-  // ─── Sticky header (always visible, never scrolls away) ────────────────────
+  // ─── Active-filter chips row ────────────────────────────────────────────────
+  // Removable chips for every applied non-cuisine filter, plus a "Clear all" link.
+  // Shared between the web sticky header and the mobile scrolling list header.
+  const activeChipsRow =
+    nonCuisineFilterCount > 0 ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.activeChipsScroll}
+      >
+        {filters.categories.map((c) => (
+          <Pressable
+            key={c}
+            onPress={() => removeCategoryFilter(c)}
+            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+            accessibilityRole="button"
+            accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
+          >
+            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+              {formatLabel(c)}
+            </ThemedText>
+            <Ionicons name="close-circle" size={14} color={colors.primary} />
+          </Pressable>
+        ))}
+        {filters.difficulties.map((d) => (
+          <Pressable
+            key={d}
+            onPress={() => removeDifficultyFilter(d)}
+            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+            accessibilityRole="button"
+            accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
+          >
+            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+              {formatLabel(d)}
+            </ThemedText>
+            <Ionicons name="close-circle" size={14} color={colors.primary} />
+          </Pressable>
+        ))}
+        {filters.maxTime > 0 ? (
+          <Pressable
+            onPress={removeMaxTimeFilter}
+            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
+            accessibilityRole="button"
+            accessibilityLabel={t().recipes.removeTimeFilter}
+          >
+            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
+              ≤ {filters.maxTime} {t().recipes.minutes}
+            </ThemedText>
+            <Ionicons name="close-circle" size={14} color={colors.primary} />
+          </Pressable>
+        ) : null}
+        <Pressable
+          onPress={resetFilters}
+          style={[styles.activeChip, styles.clearChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.clearFilters}
+        >
+          <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.textMuted }]}>
+            {t().recipes.clearFilters}
+          </ThemedText>
+        </Pressable>
+      </ScrollView>
+    ) : null;
+
+  // ─── Sticky header (web shell only — never scrolls away) ────────────────────
   // On the web shell the WebHeader already exposes a global search input, so
   // we drop the local SearchBar here and let users filter via WebShellState.
   const stickyHeader = (
     <View style={[styles.stickyHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      {isWebShell ? null : (
-        <View style={styles.searchWrapper}>
-          <SearchBar
-            value={search}
-            onChangeText={setSearch}
-            placeholder={t().recipes.searchPlaceholder}
-          />
-        </View>
-      )}
-
       <View style={styles.pillRow}>
         <Pressable
           onPress={openFilterSheet}
@@ -400,65 +522,37 @@ export const RecipeListScreen = (): React.JSX.Element => {
         ) : null}
       </View>
 
-      {nonCuisineFilterCount > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.activeChipsScroll}
-        >
-          {filters.categories.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => removeCategoryFilter(c)}
-              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
-            >
-              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-                {formatLabel(c)}
-              </ThemedText>
-              <Ionicons name="close-circle" size={14} color={colors.primary} />
-            </Pressable>
-          ))}
-          {filters.difficulties.map((d) => (
-            <Pressable
-              key={d}
-              onPress={() => removeDifficultyFilter(d)}
-              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
-            >
-              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-                {formatLabel(d)}
-              </ThemedText>
-              <Ionicons name="close-circle" size={14} color={colors.primary} />
-            </Pressable>
-          ))}
-          {filters.maxTime > 0 ? (
-            <Pressable
-              onPress={removeMaxTimeFilter}
-              style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-              accessibilityRole="button"
-              accessibilityLabel={t().recipes.removeTimeFilter}
-            >
-              <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-                ≤ {filters.maxTime} {t().recipes.minutes}
-              </ThemedText>
-              <Ionicons name="close-circle" size={14} color={colors.primary} />
-            </Pressable>
-          ) : null}
+      {activeChipsRow}
+    </View>
+  );
+
+  // ─── Mobile scrolling list header (everything that scrolls away with the feed) ─
+  // Ai promo, cuisine strip, result-count + Clear-all row, and the active-filter
+  // chips row — all inside the FlatList header so they scroll under the band.
+  // Negative horizontal margin cancels the list content's `spacing.lg` padding so
+  // the banner / cuisine strip / chips render full-bleed (as on web), while the
+  // recipe rows below keep that padding. The count row re-adds its own inset.
+  const mobileListHeader = (
+    <View style={styles.mobileHeaderBleed}>
+      <AiBannerCard onPress={() => router.push('/create-recipe')} />
+      <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
+      <View style={styles.countRow}>
+        <ThemedText variant="caption" muted>
+          {filteredRecipes.length} {t().recipes.results}
+        </ThemedText>
+        {activeFilterCount > 0 ? (
           <Pressable
             onPress={resetFilters}
-            style={[styles.activeChip, styles.clearChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel={t().recipes.clearFilters}
           >
-            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.textMuted }]}>
+            <ThemedText variant="caption" style={{ color: colors.primary }}>
               {t().recipes.clearFilters}
             </ThemedText>
           </Pressable>
-        </ScrollView>
-      ) : null}
+        ) : null}
+      </View>
+      {activeChipsRow}
     </View>
   );
 
@@ -500,7 +594,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         </View>
       </View>
     );
-  } else {
+  } else if (isWebShell) {
     body = (
       <FlatList
         key={`grid-${gridColumns}`}
@@ -514,27 +608,74 @@ export const RecipeListScreen = (): React.JSX.Element => {
           styles.listContent,
           gridColumns > 1 ? styles.gridListContent : null,
         ]}
-        style={[styles.list, isWebShell ? styles.listCenter : null]}
+        style={[styles.list, styles.listCenter]}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+      />
+    );
+  } else {
+    // Mobile: single scroll surface. The feed header (banner/cuisines/count/chips)
+    // scrolls with the rows; top padding clears the resting collapsing band.
+    body = (
+      <Animated.FlatList
+        data={filteredRecipes}
+        keyExtractor={(r) => r.id}
+        renderItem={renderItem}
+        ListHeaderComponent={mobileListHeader}
+        ItemSeparatorComponent={ItemSeparator}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        contentContainerStyle={[styles.listContent, styles.mobileListContent]}
+        style={styles.list}
         refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
       />
     );
   }
 
+  // The mobile loaded feed embeds its own header (banner/cuisines/count/chips) and
+  // sits under the collapsing band; the other states render below the band via
+  // bodyTopInset so the skeleton / error / empty view isn't hidden behind it.
+  const isMobileLoadedFeed = !isWebShell && state.status === 'loaded' && filteredRecipes.length > 0;
+
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      <RecipesAppHeader onNotificationsPress={() => router.push('/notifications')} unreadCount={unreadCount} />
-      {stickyHeader}
+      {isWebShell ? (
+        <>
+          <RecipesAppHeader
+            onNotificationsPress={() => router.push('/notifications')}
+            unreadCount={unreadCount}
+          />
+          {stickyHeader}
 
-      {/* Always-visible header: stays stable while recipe list reloads */}
-      <AiBannerCard onPress={() => router.push('/create-recipe')} />
-      <CuisineStrip
-        selectedCuisines={filters.cuisines}
-        onToggle={toggleCuisineQuick}
-      />
+          {/* Always-visible header: stays stable while recipe list reloads */}
+          <AiBannerCard onPress={() => router.push('/create-recipe')} />
+          <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
 
-      <View style={styles.bodyContainer}>
-        {body}
-      </View>
+          <View style={styles.bodyContainer}>{body}</View>
+        </>
+      ) : (
+        <>
+          <View style={[styles.bodyContainer, isMobileLoadedFeed ? null : styles.bodyTopInset]}>
+            {body}
+          </View>
+          <CollapsingHomeHeader
+            scrollY={scrollY}
+            headerTranslateY={headerTranslateY}
+            reduceMotion={reduceMotion}
+            onNotificationsPress={() => router.push('/notifications')}
+            unreadCount={unreadCount}
+            searchValue={search}
+            onSearchChange={setSearch}
+          />
+          {state.status === 'loaded' ? (
+            <FilterSortFab
+              scrollY={scrollY}
+              reduceMotion={reduceMotion}
+              activeCount={activeFilterCount}
+              onPress={openFilterSheet}
+            />
+          ) : null}
+        </>
+      )}
 
       <BottomSheet
         visible={sheetOpen === 'filter'}
@@ -546,6 +687,24 @@ export const RecipeListScreen = (): React.JSX.Element => {
             : undefined
         }
       >
+        {isWebShell ? null : (
+          <View style={styles.sheetSection}>
+            <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
+              {t().recipes.sortBy}
+            </ThemedText>
+            <View style={styles.chipsWrap}>
+              {(Object.keys(sortLabels) as SortKey[]).map((key) => (
+                <SelectChip
+                  key={key}
+                  label={sortLabels[key]}
+                  selected={pendingSort === key}
+                  onToggle={() => setPendingSort(key)}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+
         <View style={styles.sheetSection}>
           <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
             {t().recipes.cuisine}
@@ -616,8 +775,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
         </View>
       </BottomSheet>
 
+      {/* Standalone sort sheet — web shell only; mobile folds sort into the filter sheet. */}
       <BottomSheet
-        visible={sheetOpen === 'sort'}
+        visible={isWebShell && sheetOpen === 'sort'}
         title={t().recipes.sortBy}
         onClose={() => setSheetOpen(null)}
       >
@@ -664,11 +824,6 @@ const styles = StyleSheet.create({
   stickyHeader: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     ...shadows.sm,
-  },
-  searchWrapper: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
   },
   pillRow: {
     flexDirection: 'row',
@@ -733,6 +888,10 @@ const styles = StyleSheet.create({
   bodyContainer: {
     flex: 1,
   },
+  // Pushes the non-feed mobile states (skeleton / error / empty) below the band.
+  bodyTopInset: {
+    paddingTop: sizes.homeHeaderMax,
+  },
   list: {
     flex: 1,
   },
@@ -741,6 +900,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
+  },
+  // Mobile feed: clear the resting collapsing band; the FAB clears the TabBar.
+  mobileListContent: {
+    paddingTop: sizes.homeHeaderMax,
+    paddingBottom: sizes.tabBarHeight + sizes.fabExtendedHeight + spacing.xxl,
+  },
+  // Cancels the list content's horizontal padding so the feed header is full-bleed.
+  mobileHeaderBleed: {
+    marginHorizontal: -spacing.lg,
+  },
+  // Result-count + Clear-all row inside the mobile list header (re-adds the inset).
+  countRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   listCenter: {
     alignSelf: 'center',

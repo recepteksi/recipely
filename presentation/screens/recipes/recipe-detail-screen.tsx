@@ -17,7 +17,10 @@ import {
 } from '@presentation/base/widgets/state-view';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
+import { RecipeAuthorCard } from '@presentation/screens/recipes/recipe-author-card';
+import { useRecipeAuthor, type ResolvedAuthor } from '@presentation/screens/recipes/use-recipe-author';
 import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet';
+import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -62,7 +65,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
@@ -72,6 +75,30 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
+  const ownProfileState = userProfileStore((s) => s.state);
+  const loadOwnProfile = userProfileStore((s) => s.load);
+  // For an owned recipe the author is the signed-in user: take name/photo from
+  // the session and the recipe count from the shared profile store (the same
+  // source the Profile tab populates). Resolving the author through the shared
+  // store would clobber the signed-in user's cached profile, so other authors
+  // are fetched separately inside useRecipeAuthor.
+  const owner: ResolvedAuthor | null =
+    isOwner && authState.status === 'authenticated' && ownProfileState.status === 'loaded'
+      ? {
+          authorName: authState.session.user.displayName,
+          authorPhotoUrl: authState.session.user.photoUrl,
+          recipeCount: ownProfileState.profile.recipeCount,
+          isOwner: true,
+        }
+      : null;
+  const authorState = useRecipeAuthor({ ownerId: recipeOwnerId, owner, isOwner });
+
+  useEffect(() => {
+    if (isOwner && userId !== null && ownProfileState.status === 'idle') {
+      void loadOwnProfile(userId);
+    }
+  }, [isOwner, userId, ownProfileState.status, loadOwnProfile]);
+
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
@@ -347,6 +374,27 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         nutrition={recipe.nutrition}
                       />
                     </View>
+
+                    {authorState.status === 'loading' ? (
+                      <View style={styles.authorSkeleton}>
+                        <SkeletonLoader
+                          width={sizes.avatarSm}
+                          height={sizes.avatarSm}
+                          borderRadius={radii.round}
+                        />
+                        <View style={styles.authorSkeletonText}>
+                          <SkeletonLoader width="40%" height={fontSizes.micro} />
+                          <SkeletonLoader width="65%" height={fontSizes.body} />
+                        </View>
+                      </View>
+                    ) : authorState.status === 'resolved' ? (
+                      <RecipeAuthorCard
+                        authorName={authorState.author.authorName}
+                        authorPhotoUrl={authorState.author.authorPhotoUrl}
+                        recipeCount={authorState.author.recipeCount}
+                        isOwner={authorState.author.isOwner}
+                      />
+                    ) : null}
 
                     {recipe.tags.length > 0 ? (
                       <View style={styles.tagsRow}>
@@ -702,6 +750,17 @@ const styles = StyleSheet.create({
   },
   nutritionRow: {
     marginTop: spacing.md,
+  },
+  authorSkeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+  },
+  authorSkeletonText: {
+    flex: 1,
+    gap: spacing.xs2,
   },
   tagsRow: {
     flexDirection: 'row',
