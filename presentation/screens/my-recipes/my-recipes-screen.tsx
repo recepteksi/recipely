@@ -168,6 +168,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
               >
                 <ThemedText
                   variant="caption"
+                  numberOfLines={1}
                   style={[
                     styles.segmentLabel,
                     { color: isActive ? colors.primaryText : colors.text },
@@ -326,17 +327,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   segment: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 'auto',
+    minWidth: 0,
     height: sizes.iconBtn,
+    paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs2,
+    gap: spacing.xs,
   },
   segmentLabel: {
     fontWeight: '600',
-    fontSize: fontSizes.caption,
+    fontSize: fontSizes.small,
+    flexShrink: 1,
+    minWidth: 0,
   },
   countPill: {
     minWidth: sizes.iconMd,
@@ -345,6 +352,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   countText: {
     fontWeight: '700',
