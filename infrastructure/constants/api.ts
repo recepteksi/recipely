@@ -68,6 +68,13 @@ export const DRAFTS_PAGE_SIZE = 20;
 
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
+// WHY: the Instagram import endpoint runs yt-dlp + Whisper transcription +
+// vision on the backend, with a server-side budget of ~120s. The default 10s
+// JSON timeout would abort a normal import as `ECONNABORTED` → TimeoutFailure
+// long before the backend replies. Give the per-request override 10s of
+// headroom over the backend budget so only genuinely stuck requests time out.
+export const IMPORT_REQUEST_TIMEOUT_MS = 130_000;
+
 // WHY: image uploads regularly exceed 10s on cellular (a 3 MB JPEG at 1 Mbps
 // upload is ~25s). The default 10s budget surfaces as `ECONNABORTED` →
 // NetworkFailure('Request timed out'), which mobile users see as "Network

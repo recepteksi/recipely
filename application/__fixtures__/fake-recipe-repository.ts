@@ -16,6 +16,7 @@ export interface FakeRecipeRepositoryConfig {
   getRecipeResult?: Result<Recipe, Failure>;
   createRecipeResult?: Result<Recipe, Failure>;
   generateRecipeResult?: Result<Recipe, Failure>;
+  importInstagramRecipeResult?: Result<Recipe, Failure>;
   refineRecipeResult?: Result<Recipe, Failure>;
   updateRecipeResult?: Result<Recipe, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
@@ -23,6 +24,11 @@ export interface FakeRecipeRepositoryConfig {
 
 export interface GenerateRecipeCall {
   prompt: string;
+  locale: string;
+}
+
+export interface ImportInstagramRecipeCall {
+  url: string;
   locale: string;
 }
 
@@ -41,6 +47,8 @@ export class FakeRecipeRepository implements IRecipeRepository {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
   generateCallCount = 0;
+  lastImportInstagramCall: ImportInstagramRecipeCall | null = null;
+  importInstagramCallCount = 0;
   lastRefineCall: RefineRecipeCall | null = null;
   refineCallCount = 0;
 
@@ -78,6 +86,14 @@ export class FakeRecipeRepository implements IRecipeRepository {
     this.generateCallCount += 1;
     return Promise.resolve(
       this.config.generateRecipeResult ?? ok(undefined as unknown as Recipe),
+    );
+  }
+
+  importInstagramRecipe(url: string, locale: string): Promise<Result<Recipe, Failure>> {
+    this.lastImportInstagramCall = { url, locale };
+    this.importInstagramCallCount += 1;
+    return Promise.resolve(
+      this.config.importInstagramRecipeResult ?? ok(undefined as unknown as Recipe),
     );
   }
 
