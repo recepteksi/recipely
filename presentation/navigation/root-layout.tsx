@@ -2,6 +2,8 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
+import { ShareIntentProvider } from 'expo-share-intent';
+import { useInstagramShareImport } from '@presentation/navigation/use-instagram-share-import';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
 import { LayoutProvider, useLayout } from '@presentation/base/responsive/layout-context';
@@ -50,6 +52,7 @@ const WebShellChrome = (): React.JSX.Element | null => {
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
+  useInstagramShareImport();
 
   const reactNavTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
   const headerBg = colors.background;
@@ -92,14 +95,16 @@ const RootStack = (): React.JSX.Element => {
 
 export const RootLayout = (): React.JSX.Element => {
   return (
-    <AppThemeProvider>
-      <LayoutProvider>
-        <WebShellStateProvider>
-          <AppBootstrap>
-            <RootStack />
-          </AppBootstrap>
-        </WebShellStateProvider>
-      </LayoutProvider>
-    </AppThemeProvider>
+    <ShareIntentProvider>
+      <AppThemeProvider>
+        <LayoutProvider>
+          <WebShellStateProvider>
+            <AppBootstrap>
+              <RootStack />
+            </AppBootstrap>
+          </WebShellStateProvider>
+        </LayoutProvider>
+      </AppThemeProvider>
+    </ShareIntentProvider>
   );
 };

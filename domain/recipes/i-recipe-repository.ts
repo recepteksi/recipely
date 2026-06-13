@@ -91,6 +91,16 @@ export interface IRecipeRepository {
   ): Promise<Result<Recipe, Failure>>;
   generateRecipe(prompt: string, locale: string): Promise<Result<Recipe, Failure>>;
   /**
+   * Imports an Instagram reel/video into a full preview `Recipe`. The result is
+   * NOT persisted (same contract as `generateRecipe` — throwaway id,
+   * `isPublished: false`, empty image); the client decides whether to publish
+   * it via `createRecipe`. The locale rides the `Accept-Language` header.
+   *
+   * This call can be slow (the backend runs download + transcription + vision,
+   * up to ~120s), so the implementation uses an extended request timeout.
+   */
+  importInstagramRecipe(url: string, locale: string): Promise<Result<Recipe, Failure>>;
+  /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * full preview `Recipe`. The result is NOT persisted (same contract as
    * `generateRecipe`); the locale rides the `Accept-Language` header.

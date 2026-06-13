@@ -101,6 +101,13 @@
       "@react-native-firebase/auth",
       "expo-apple-authentication",
       [
+        "expo-share-intent",
+        {
+          "androidIntentFilters": ["text/*"],
+          "disableIOS": true
+        }
+      ],
+      [
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.421167568469-fg6bdiun08t9iebtnhg1ulnvu9f4bnne"

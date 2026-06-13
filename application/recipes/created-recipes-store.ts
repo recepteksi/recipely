@@ -4,6 +4,7 @@ import type { Recipe } from '@domain/recipes/recipe';
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
@@ -50,6 +51,10 @@ export interface CreatedRecipesStoreState {
   recipes: readonly Recipe[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
+  // WHY: reuses GenerateRecipeState — the import flow has the identical
+  // idle/generating/success/error shape (it produces the same preview Recipe),
+  // so a near-duplicate state union would only drift over time.
+  importState: GenerateRecipeState;
   updateState: UpdateRecipeState;
   deleteState: DeleteRecipeState;
   refineState: RefineRecipeState;
@@ -61,6 +66,7 @@ export interface CreatedRecipesStoreState {
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;
   generateRecipe: (prompt: string, locale: string) => Promise<void>;
+  importInstagram: (url: string, locale: string) => Promise<void>;
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
@@ -69,6 +75,7 @@ export interface CreatedRecipesStoreState {
   deleteRecipe: (id: string) => Promise<void>;
   resetCreateState: () => void;
   resetGenerateState: () => void;
+  resetImportState: () => void;
   resetRefineState: () => void;
   resetUpdateState: () => void;
   resetDeleteState: () => void;
@@ -79,6 +86,7 @@ export interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
   generateRecipeUseCase: GenerateRecipeUseCase;
+  importInstagramRecipeUseCase: ImportInstagramRecipeUseCase;
   refineRecipeUseCase: RefineRecipeUseCase;
   updateRecipeUseCase: UpdateRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
@@ -96,6 +104,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     recipes: [],
     createState: { status: 'idle' },
     generateState: { status: 'idle' },
+    importState: { status: 'idle' },
     updateState: { status: 'idle' },
     deleteState: { status: 'idle' },
     refineState: { status: 'idle' },
@@ -144,6 +153,24 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         aiDraft: recipe,
       });
     },
+    importInstagram: async (url, locale) => {
+      set({ importState: { status: 'generating' } });
+      const result = await deps.importInstagramRecipeUseCase.execute({ url, locale });
+      if (!result.ok) {
+        set({ importState: { status: 'error', failure: result.failure } });
+        return;
+      }
+      const recipe = result.value;
+      // WHY: the backend does NOT persist imported recipes — `/recipes/import`
+      // returns a preview with a throwaway id (same contract as generate). So we
+      // surface it only as `aiDraft` to pre-fill the wizard. It must NOT be
+      // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
+      // that does not exist on the server until the user publishes it.
+      set({
+        importState: { status: 'success', recipe },
+        aiDraft: recipe,
+      });
+    },
     refineRecipe: async (currentRecipe, instruction) => {
       set({ refineState: { status: 'refining' } });
       const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction });
@@ -186,6 +213,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     },
     resetCreateState: () => set({ createState: { status: 'idle' } }),
     resetGenerateState: () => set({ generateState: { status: 'idle' } }),
+    resetImportState: () => set({ importState: { status: 'idle' } }),
     resetRefineState: () => set({ refineState: { status: 'idle' } }),
     resetUpdateState: () => set({ updateState: { status: 'idle' } }),
     resetDeleteState: () => set({ deleteState: { status: 'idle' } }),

@@ -7,6 +7,7 @@ import type {
   GenerateRecipeUseCase,
 } from '@application/recipes/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
+import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
@@ -69,6 +70,10 @@ const fakeRefineUseCase = {
   execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
 } as unknown as RefineRecipeUseCase;
 
+const fakeImportUseCase = {
+  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+} as unknown as ImportInstagramRecipeUseCase;
+
 // Generate flow never touches these — provide no-op stubs that satisfy the
 // interface so the store constructs without exercising the sibling caches.
 const fakeRecipeListStore = {
@@ -114,6 +119,7 @@ const makeStoreWithGenerateResult = (result: Result<Recipe, Failure>) => {
     listMyRecipesUseCase: fakeListMyUseCase,
     generateRecipeUseCase: generateUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
+    importInstagramRecipeUseCase: fakeImportUseCase,
     updateRecipeUseCase: fakeUpdateUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
     recipeListStore: fakeRecipeListStore,
@@ -137,6 +143,7 @@ describe('createdRecipesStore.generateRecipe', () => {
       listMyRecipesUseCase: fakeListMyUseCase,
       generateRecipeUseCase: deferred.useCase,
       refineRecipeUseCase: fakeRefineUseCase,
+      importInstagramRecipeUseCase: fakeImportUseCase,
       updateRecipeUseCase: fakeUpdateUseCase,
       deleteRecipeUseCase: fakeDeleteUseCase,
       recipeListStore: fakeRecipeListStore,
