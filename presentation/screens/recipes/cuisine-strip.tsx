@@ -2,25 +2,26 @@ import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
-import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
 import { t } from '@presentation/i18n';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
+import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
 
 export interface CuisineStripProps {
-  selectedCuisines: CuisineKey[];
-  onToggle: (cuisine: CuisineKey) => void;
+  selectedCuisines: string[];
+  onToggle: (cuisine: string) => void;
 }
 
 /**
- * Horizontal quick-filter strip. The option set stays the curated local enum
- * (`CUISINE_KEY_VALUES`, 15 entries) so the strip stays scannable — the full
- * backend catalog (44 cuisines) is offered in the filter sheet instead. Each
- * chip's name + emoji is resolved through {@link useTaxonomyLabel}, so the
- * display comes from the backend taxonomy (localized) with a local fallback.
+ * Horizontal quick-filter strip showing the full backend cuisine catalog (with
+ * a local enum fallback before the taxonomy store is `ready`); it scrolls
+ * horizontally so a long list stays usable. Each chip's name + emoji is
+ * resolved through {@link useTaxonomyLabel}, so the display comes from the
+ * backend taxonomy (localized) with a local fallback.
  */
 export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
+  const { cuisineKeys } = useTaxonomyOptions();
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -33,7 +34,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {CUISINE_KEY_VALUES.map((cuisine) => {
+        {cuisineKeys.map((cuisine) => {
           const active = selectedCuisines.includes(cuisine);
           const { name, emoji } = cuisineLabel(cuisine);
           return (
