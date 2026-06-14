@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, Platform } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -12,19 +13,32 @@ export interface CuisineStripProps {
 }
 
 /**
- * Quick-filter strip showing the full backend cuisine catalog (with a local
- * enum fallback before the taxonomy store is `ready`). On native it scrolls
- * horizontally (touch-friendly); on web — where a horizontal `ScrollView` can't
- * be panned with a mouse wheel — the chips wrap onto multiple rows so a long
- * catalog stays fully reachable. Each chip's name + emoji is resolved through
- * {@link useTaxonomyLabel}, so the display comes from the backend taxonomy
- * (localized) with a local fallback.
+ * Single-row horizontal quick-filter strip showing the full backend cuisine
+ * catalog (with a local enum fallback before the taxonomy store is `ready`).
+ * On native it scrolls by touch; on web a horizontal `ScrollView` ignores the
+ * vertical mouse wheel, so we translate vertical wheel delta into horizontal
+ * scrolling on the underlying DOM node. Each chip's name + emoji is resolved
+ * through {@link useTaxonomyLabel}, so the display comes from the backend
+ * taxonomy (localized) with a local fallback.
  */
 export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
-  const isWeb = Platform.OS === 'web';
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const node = scrollRef.current?.getScrollableNode() as unknown as HTMLElement | undefined;
+    if (!node) return;
+    const onWheel = (event: WheelEvent): void => {
+      if (event.deltaY === 0) return;
+      event.preventDefault();
+      node.scrollLeft += event.deltaY;
+    };
+    node.addEventListener('wheel', onWheel, { passive: false });
+    return () => node.removeEventListener('wheel', onWheel);
+  }, []);
 
   const chips = cuisineKeys.map((cuisine) => {
     const active = selectedCuisines.includes(cuisine);
@@ -66,17 +80,14 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
           {t().recipes.browseCuisines}
         </ThemedText>
       </View>
-      {isWeb ? (
-        <View style={styles.wrap}>{chips}</View>
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scroll}
-        >
-          {chips}
-        </ScrollView>
-      )}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+      >
+        {chips}
+      </ScrollView>
     </View>
   );
 };
@@ -96,12 +107,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   scroll: {
-    paddingHorizontal: spacing.lg,
-    gap: spacing.lg,
-  },
-  wrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
   },
