@@ -3,25 +3,8 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
+import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
 import { t } from '@presentation/i18n';
-
-const CUISINE_EMOJI: Record<CuisineKey, string> = {
-  TURKISH: '🥙',
-  ITALIAN: '🍕',
-  MEXICAN: '🌮',
-  CHINESE: '🥟',
-  JAPANESE: '🍣',
-  INDIAN: '🍛',
-  FRENCH: '🥐',
-  GREEK: '🫒',
-  AMERICAN: '🍔',
-  MEDITERRANEAN: '🍋',
-  THAI: '🍜',
-  SPANISH: '🥘',
-  KOREAN: '🍱',
-  MIDDLE_EASTERN: '🧆',
-  OTHER: '🍽️',
-};
 
 const CUISINE_LABEL: Record<CuisineKey, string> = {
   TURKISH: 'Turkish',

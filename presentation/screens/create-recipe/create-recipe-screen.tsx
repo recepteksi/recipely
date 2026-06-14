@@ -20,9 +20,9 @@ import type {
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
 import {
-  cuisineTextToKey,
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
@@ -341,7 +341,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const cleanInstructions = recipe.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
     const input: CreateRecipeInput = {
       name: { [locale]: recipe.name.trim() },
-      cuisine: cuisineTextToKey(recipe.cuisine),
+      cuisine: recipe.cuisine ?? CuisineKey.Other,
       category: recipe.category,
       difficulty: recipe.difficulty,
       ingredients: { [locale]: cleanIngredients },
@@ -390,7 +390,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const images = recipe.media.filter((m) => m.type === 'image');
     const input: UpdateRecipeInput = {
       name: { [locale]: recipe.name.trim() },
-      cuisine: cuisineTextToKey(recipe.cuisine),
+      cuisine: recipe.cuisine ?? CuisineKey.Other,
       category: recipe.category,
       difficulty: recipe.difficulty,
       ingredients: { [locale]: cleanIngredients },
@@ -575,6 +575,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             missingMessage={missingMessage}
             onChangeName={(v) => updateField('name', v)}
             onChangeCuisine={(v) => updateField('cuisine', v)}
+            onChangeCategory={(v) => updateField('category', v)}
             onChangeServings={(v) => updateField('servings', v)}
             onChangeDifficulty={(v) => updateField('difficulty', v)}
             onChangePrep={(v) => updateField('prepTimeMinutes', v)}
