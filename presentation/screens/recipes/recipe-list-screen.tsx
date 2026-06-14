@@ -26,6 +26,7 @@ import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
 import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
 import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
+import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { ErrorState } from '@presentation/base/widgets/error-state';
@@ -45,8 +46,6 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
-import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
-import { RECIPE_CATEGORY_VALUES, type RecipeCategory } from '@domain/recipes/recipe-category';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
 
@@ -64,8 +63,8 @@ const SKELETON_GRID_ROWS = 2;
 type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
 
 interface UiFilters {
-  cuisines: CuisineKey[];
-  categories: RecipeCategory[];
+  cuisines: string[];
+  categories: string[];
   difficulties: Difficulty[];
   maxTime: number;
 }
@@ -157,6 +156,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const { recipeListStore, notificationsStore } = useStores();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
+  const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
@@ -320,13 +320,13 @@ export const RecipeListScreen = (): React.JSX.Element => {
     mostLiked: t().recipes.sortMostLiked,
   };
 
-  const togglePendingCuisine = (c: CuisineKey): void =>
+  const togglePendingCuisine = (c: string): void =>
     setPendingFilters((f) => ({
       ...f,
       cuisines: f.cuisines.includes(c) ? f.cuisines.filter((x) => x !== c) : [...f.cuisines, c],
     }));
 
-  const togglePendingCategory = (c: RecipeCategory): void =>
+  const togglePendingCategory = (c: string): void =>
     setPendingFilters((f) => ({
       ...f,
       categories: f.categories.includes(c)
@@ -358,7 +358,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     void load(buildApiFilters(next, sortBy));
   };
 
-  const removeCategoryFilter = (c: RecipeCategory): void => {
+  const removeCategoryFilter = (c: string): void => {
     const next = { ...filters, categories: filters.categories.filter((x) => x !== c) };
     setFilters(next);
     setPendingFilters(next);
@@ -377,7 +377,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     else if (key === 'profile') router.replace('/profile');
   };
 
-  const toggleCuisineQuick = (cuisine: CuisineKey): void => {
+  const toggleCuisineQuick = (cuisine: string): void => {
     const next = {
       ...filters,
       cuisines: filters.cuisines.includes(cuisine)
@@ -712,7 +712,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {t().recipes.cuisine}
           </ThemedText>
           <View style={styles.chipsWrap}>
-            {CUISINE_KEY_VALUES.map((c) => (
+            {cuisineKeys.map((c) => (
               <SelectChip
                 key={c}
                 label={cuisineLabel(c).name}
@@ -728,7 +728,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {t().recipes.category}
           </ThemedText>
           <View style={styles.chipsWrap}>
-            {RECIPE_CATEGORY_VALUES.map((c) => (
+            {categoryKeys.map((c) => (
               <SelectChip
                 key={c}
                 label={categoryLabel(c).name}

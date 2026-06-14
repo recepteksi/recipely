@@ -2,8 +2,6 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { MediaType } from '@domain/recipes/media-item';
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
@@ -31,8 +29,10 @@ export type RecipeSort =
 
 export interface RecipeFilters {
   search?: string;
-  cuisines?: CuisineKey[];
-  categories?: RecipeCategory[];
+  // Opaque taxonomy keys (backend owns the full catalog); not narrowed to the
+  // local enums so newer backend cuisines/categories can be filtered on.
+  cuisines?: string[];
+  categories?: string[];
   difficulties?: Difficulty[];
   maxTime?: number;
   sort?: RecipeSort;
