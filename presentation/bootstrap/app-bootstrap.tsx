@@ -12,6 +12,7 @@ import type { RegisterDeviceTokenUseCase } from '@application/notifications/regi
 import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
 import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
 import { useUnreadNotificationsSync } from '@presentation/base/hooks/use-unread-notifications-sync';
+import { useTaxonomySync } from '@presentation/base/hooks/use-taxonomy-sync';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
 import { getLocale, hydrateLocale } from '@presentation/i18n/i18n';
 
@@ -30,6 +31,7 @@ const stores = initializeStores();
 export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
   useTimerNotificationSync();
   useUnreadNotificationsSync(stores.notificationsStore, stores.authStore);
+  useTaxonomySync(stores.taxonomyStore, stores.authStore);
 
   useEffect(() => {
     void hydrateLocale();

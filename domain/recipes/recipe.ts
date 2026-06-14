@@ -2,8 +2,6 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media-item';
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
 export interface RecipeNutrition {
@@ -16,8 +14,11 @@ export interface RecipeNutrition {
 export interface RecipeProps {
   id: string;
   name: string;
-  cuisine: CuisineKey;
-  category: RecipeCategory;
+  // Opaque taxonomy keys; the backend owns the full catalog and validates
+  // them. Kept as `string` rather than the local enums (which mirror only a
+  // curated subset) so recipes using newer backend keys round-trip intact.
+  cuisine: string;
+  category: string;
   difficulty: Difficulty;
   ingredients: string[];
   instructions: string[];
@@ -65,10 +66,10 @@ export class Recipe extends Entity<RecipeProps> {
   get name(): string {
     return this.props.name;
   }
-  get cuisine(): CuisineKey {
+  get cuisine(): string {
     return this.props.cuisine;
   }
-  get category(): RecipeCategory {
+  get category(): string {
     return this.props.category;
   }
   get difficulty(): Difficulty {

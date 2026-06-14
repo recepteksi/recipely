@@ -53,6 +53,11 @@ import {
   configureCreatedRecipesStore,
   type CreatedRecipesStore,
 } from '@application/recipes/created-recipes-store';
+import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
+import {
+  configureTaxonomyStore,
+  type TaxonomyStore,
+} from '@application/recipes/taxonomy-store';
 import {
   configureFavoritesStore,
   type FavoritesStore,
@@ -97,6 +102,7 @@ export interface ApplicationStores {
   likesStore: LikesStore;
   notificationsStore: NotificationsStore;
   userProfileStore: UserProfileStore;
+  taxonomyStore: TaxonomyStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
@@ -197,6 +203,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const userProfileStore = configureUserProfileStore({
     getUserProfile: getUserProfileUseCase,
   });
+  const loadTaxonomyUseCase = container.resolve<LoadTaxonomyUseCase>(
+    TOKENS.LoadTaxonomyUseCase,
+  );
+  const taxonomyStore = configureTaxonomyStore({ loadTaxonomyUseCase });
   return {
     authStore,
     recipeListStore,
@@ -209,6 +219,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     likesStore,
     notificationsStore,
     userProfileStore,
+    taxonomyStore,
     loadFavoritesUseCase,
   };
 };

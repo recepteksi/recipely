@@ -3,34 +3,24 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
-import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
 import { t } from '@presentation/i18n';
-
-const CUISINE_LABEL: Record<CuisineKey, string> = {
-  TURKISH: 'Turkish',
-  ITALIAN: 'Italian',
-  MEXICAN: 'Mexican',
-  CHINESE: 'Chinese',
-  JAPANESE: 'Japanese',
-  INDIAN: 'Indian',
-  FRENCH: 'French',
-  GREEK: 'Greek',
-  AMERICAN: 'American',
-  MEDITERRANEAN: 'Mediter.',
-  THAI: 'Thai',
-  SPANISH: 'Spanish',
-  KOREAN: 'Korean',
-  MIDDLE_EASTERN: 'Mid East',
-  OTHER: 'Other',
-};
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 
 export interface CuisineStripProps {
   selectedCuisines: CuisineKey[];
   onToggle: (cuisine: CuisineKey) => void;
 }
 
+/**
+ * Horizontal quick-filter strip. The option set stays the curated local enum
+ * (`CUISINE_KEY_VALUES`, 15 entries) so the strip stays scannable — the full
+ * backend catalog (44 cuisines) is offered in the filter sheet instead. Each
+ * chip's name + emoji is resolved through {@link useTaxonomyLabel}, so the
+ * display comes from the backend taxonomy (localized) with a local fallback.
+ */
 export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const { cuisineLabel } = useTaxonomyLabel();
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -45,12 +35,13 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
       >
         {CUISINE_KEY_VALUES.map((cuisine) => {
           const active = selectedCuisines.includes(cuisine);
+          const { name, emoji } = cuisineLabel(cuisine);
           return (
             <Pressable
               key={cuisine}
               onPress={() => onToggle(cuisine)}
               accessibilityRole="button"
-              accessibilityLabel={CUISINE_LABEL[cuisine]}
+              accessibilityLabel={name}
               style={styles.item}
             >
               <View
@@ -62,14 +53,14 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
                   },
                 ]}
               >
-                <ThemedText style={styles.emoji}>{CUISINE_EMOJI[cuisine]}</ThemedText>
+                <ThemedText style={styles.emoji}>{emoji}</ThemedText>
               </View>
               <ThemedText
                 variant="caption"
                 style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
                 numberOfLines={1}
               >
-                {CUISINE_LABEL[cuisine]}
+                {name}
               </ThemedText>
             </Pressable>
           );

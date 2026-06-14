@@ -1,19 +1,17 @@
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
 
 /**
  * The live, inline-editable working model of a recipe inside the unified AI
- * create flow. Cuisine is a structured `CuisineKey` chosen from the catalog
- * (no longer free text); `null` means the user has not picked one yet.
- * `category` is always set (defaulting to the generated recipe's category) so
- * publishing preserves it.
+ * create flow. Cuisine is an opaque taxonomy key chosen from the backend
+ * catalog (no longer free text, and not narrowed to the local enum); `null`
+ * means the user has not picked one yet. `category` is always set (defaulting
+ * to the generated recipe's category) so publishing preserves it.
  */
 export interface EditableRecipe {
   name: string;
-  cuisine: CuisineKey | null;
-  category: RecipeCategory;
+  cuisine: string | null;
+  category: string;
   difficulty: Difficulty;
   prepTimeMinutes: number;
   cookTimeMinutes: number;

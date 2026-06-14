@@ -41,8 +41,11 @@ export interface RecipeFilters {
 
 export interface CreateRecipeInput {
   name: Record<string, string>;
-  cuisine: CuisineKey;
-  category: RecipeCategory;
+  // Opaque taxonomy key validated by the backend (the source of truth for the
+  // full catalog); not narrowed to the local `CuisineKey`/`RecipeCategory`
+  // enums, which only mirror a curated subset.
+  cuisine: string;
+  category: string;
   difficulty: Difficulty;
   ingredients: Record<string, string[]>;
   instructions: Record<string, string[]>;
@@ -60,8 +63,8 @@ export interface CreateRecipeInput {
 
 export interface UpdateRecipeInput {
   name?: Record<string, string>;
-  cuisine?: CuisineKey;
-  category?: RecipeCategory;
+  cuisine?: string;
+  category?: string;
   difficulty?: Difficulty;
   ingredients?: Record<string, string[]>;
   instructions?: Record<string, string[]>;
