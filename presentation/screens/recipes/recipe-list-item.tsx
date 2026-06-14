@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { useStores } from '@presentation/bootstrap/stores-context';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import type { Recipe } from '@domain/recipes/recipe';
 
 export interface RecipeListItemProps {
@@ -14,6 +15,7 @@ export interface RecipeListItemProps {
  */
 export const RecipeListItem = ({ recipe, onPress }: RecipeListItemProps): React.JSX.Element => {
   const { likesStore, authStore } = useStores();
+  const { cuisineLabel } = useTaxonomyLabel();
   const authState = authStore((s) => s.state);
   const isAuthenticated = authState.status === 'authenticated';
 
@@ -29,7 +31,7 @@ export const RecipeListItem = ({ recipe, onPress }: RecipeListItemProps): React.
     <RecipeCard
       name={recipe.name}
       image={recipe.image}
-      cuisine={recipe.cuisine}
+      cuisine={cuisineLabel(recipe.cuisine).name}
       difficulty={recipe.difficulty}
       rating={recipe.rating}
       tags={recipe.tags}

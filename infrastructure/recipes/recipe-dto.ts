@@ -1,5 +1,3 @@
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
 // Wire shape returned by the Recipely backend for a single recipe.
@@ -14,8 +12,8 @@ export interface MediaDto {
 export interface RecipeDto {
   id: string;
   name: string;
-  cuisine: CuisineKey;
-  category: RecipeCategory;
+  cuisine: string;
+  category: string;
   difficulty: Difficulty;
   ingredients: string[];
   instructions: string[];

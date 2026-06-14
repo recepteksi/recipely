@@ -19,6 +19,7 @@ import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { RecipeAuthorCard } from '@presentation/screens/recipes/recipe-author-card';
 import { useRecipeAuthor, type ResolvedAuthor } from '@presentation/screens/recipes/use-recipe-author';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet';
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { recipeWebUrl } from '@infrastructure/constants/api';
@@ -66,6 +67,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
 
   const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
+  const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
@@ -322,7 +324,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                     <View style={styles.chipsRow}>
                       <InfoChip
                         icon="earth"
-                        label={recipe.cuisine}
+                        label={cuisineLabel(recipe.cuisine).name}
                         chipBg={colors.chipBackground}
                         chipTextColor={colors.chipText}
                       />
@@ -700,7 +702,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                 visible={shareOpen}
                 onClose={() => setShareOpen(false)}
                 recipeName={recipe.name}
-                cuisine={recipe.cuisine}
+                cuisine={cuisineLabel(recipe.cuisine).name}
                 imageUrl={firstImageUrl}
                 url={recipeWebUrl(recipeId)}
               />

@@ -9,7 +9,6 @@ import {
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
-  parseCuisineKey,
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/recipe-mapping';
@@ -73,37 +72,6 @@ describe('emptyEditable', () => {
     const editable = emptyEditable();
 
     expect(editable.media).toEqual([]);
-  });
-});
-
-describe('parseCuisineKey', () => {
-  it('returns the matching CuisineKey for a valid key string', () => {
-    const parsed = parseCuisineKey('TURKISH');
-
-    expect(parsed).toBe(CuisineKey.Turkish);
-  });
-
-  it('passes through OTHER as a real key rather than treating it as unknown', () => {
-    const parsed = parseCuisineKey(CuisineKey.Other);
-
-    expect(parsed).toBe(CuisineKey.Other);
-  });
-
-  it('returns null for an unknown string instead of falling back to OTHER', () => {
-    const parsed = parseCuisineKey('klingon');
-
-    expect(parsed).toBeNull();
-  });
-
-  it('returns null for an empty string', () => {
-    const parsed = parseCuisineKey('');
-
-    expect(parsed).toBeNull();
-  });
-
-  it('does not normalize case or whitespace', () => {
-    expect(parseCuisineKey('turkish')).toBeNull();
-    expect(parseCuisineKey(' TURKISH ')).toBeNull();
   });
 });
 
@@ -173,12 +141,12 @@ describe('snapshotToEditable', () => {
     expect(editable.cuisine).toBe(CuisineKey.Turkish);
   });
 
-  it('parses an unknown cuisine string to null rather than OTHER', () => {
-    const snapshot: DraftRecipeSnapshot = { cuisine: 'atlantean' };
+  it('preserves a cuisine key the local enum does not know (backend owns the catalog)', () => {
+    const snapshot: DraftRecipeSnapshot = { cuisine: 'GEORGIAN' };
 
     const editable = snapshotToEditable(snapshot);
 
-    expect(editable.cuisine).toBeNull();
+    expect(editable.cuisine).toBe('GEORGIAN');
   });
 
   it('parses an empty cuisine string to null', () => {

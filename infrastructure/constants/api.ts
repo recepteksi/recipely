@@ -62,6 +62,11 @@ export const userProfilePath = (userId: string): string =>
 // CODE_TTL_MS (3 minutes).
 export const DEFAULT_CODE_TTL_SECONDS = 180;
 
+// Backend-driven taxonomy catalog endpoints. Inside /api/v1 — paths are
+// relative, so the HTTP client prepends API_BASE_URL.
+export const RECIPE_CUISINES_PATH = "/recipes/cuisines";
+export const RECIPE_CATEGORIES_PATH = "/recipes/categories";
+
 export const RECIPES_PAGE_SIZE = 30;
 
 export const DRAFTS_PAGE_SIZE = 20;

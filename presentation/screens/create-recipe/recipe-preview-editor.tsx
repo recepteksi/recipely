@@ -7,8 +7,6 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
 import { SpecRow } from '@presentation/screens/create-recipe/spec-row';
 import { Stepper } from '@presentation/screens/create-recipe/stepper';
@@ -17,15 +15,15 @@ import { IngredientRow } from '@presentation/screens/create-recipe/ingredient-ro
 import { StepRow } from '@presentation/screens/create-recipe/step-row';
 import { SelectTile } from '@presentation/screens/create-recipe/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/screens/create-recipe/taxonomy-picker-sheet';
-import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
-import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
   missingMessage: string | null;
   onChangeName: (value: string) => void;
-  onChangeCuisine: (value: CuisineKey) => void;
-  onChangeCategory: (value: RecipeCategory) => void;
+  onChangeCuisine: (value: string) => void;
+  onChangeCategory: (value: string) => void;
   onChangeServings: (value: number) => void;
   onChangeDifficulty: (value: Difficulty) => void;
   onChangePrep: (value: number) => void;
@@ -71,9 +69,10 @@ export const RecipePreviewEditor = ({
   onOpenPhotos,
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
-  const cuisineName = recipe.cuisine !== null ? t().cuisineNames[recipe.cuisine] : null;
-  const cuisineEmoji = recipe.cuisine !== null ? CUISINE_EMOJI[recipe.cuisine] : CUISINE_EMOJI.OTHER;
+  const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
+  const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === 'image');
   const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > 0).length;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > 0).length;
@@ -107,15 +106,15 @@ export const RecipePreviewEditor = ({
           <View style={styles.taxonomyRow}>
             <SelectTile
               label={t().createRecipe.cuisineLabel}
-              emoji={cuisineEmoji}
-              value={cuisineName}
+              emoji={cuisine?.emoji ?? TAXONOMY_PLACEHOLDER_EMOJI}
+              value={cuisine?.name ?? null}
               placeholder={t().createRecipe.selectCuisine}
               onPress={() => setPicker('cuisine')}
             />
             <SelectTile
               label={t().createRecipe.categoryLabel}
-              emoji={CATEGORY_EMOJI[recipe.category]}
-              value={t().categoryNames[recipe.category]}
+              emoji={category.emoji}
+              value={category.name}
               placeholder={t().createRecipe.selectCategory}
               onPress={() => setPicker('category')}
             />

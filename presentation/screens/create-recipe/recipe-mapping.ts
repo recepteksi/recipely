@@ -1,7 +1,6 @@
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
@@ -25,14 +24,14 @@ export const emptyEditable = (): EditableRecipe => ({
 });
 
 /**
- * Parses a persisted free-text cuisine string into a valid `CuisineKey`, or
- * `null` when it is empty/unknown. Unlike the publish path, a draft must not
- * silently fall back to `OTHER`: `null` preserves the "unselected" state so the
- * tile shows its placeholder again on resume.
+ * Normalizes a persisted draft cuisine key for the editable model: any
+ * non-empty key is preserved verbatim (the backend owns the catalog, so we
+ * must not drop keys the local enum doesn't know), while an empty string
+ * becomes `null` so the tile shows its "unselected" placeholder on resume.
  */
-export const parseCuisineKey = (text: string): CuisineKey | null => {
-  const match = CUISINE_KEY_VALUES.find((k) => k === text);
-  return match ?? null;
+const draftCuisine = (text: string): string | null => {
+  const trimmed = text.trim();
+  return trimmed.length > 0 ? trimmed : null;
 };
 
 /** Seeds the editable model from a generated/loaded `Recipe`. */
@@ -67,7 +66,7 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
     .map((m) => ({ type: 'image', url: m.url }));
   return {
     name: snapshot.name ?? base.name,
-    cuisine: snapshot.cuisine !== undefined ? parseCuisineKey(snapshot.cuisine) : base.cuisine,
+    cuisine: snapshot.cuisine !== undefined ? draftCuisine(snapshot.cuisine) : base.cuisine,
     category: base.category,
     difficulty: isDifficulty(snapshot.difficulty) ? snapshot.difficulty : base.difficulty,
     prepTimeMinutes: snapshot.prepTimeMinutes ?? base.prepTimeMinutes,

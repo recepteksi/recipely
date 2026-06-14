@@ -25,6 +25,7 @@ import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-h
 import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
 import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
 import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { ErrorState } from '@presentation/base/widgets/error-state';
@@ -155,6 +156,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { recipeListStore, notificationsStore } = useStores();
+  const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
@@ -417,10 +419,10 @@ export const RecipeListScreen = (): React.JSX.Element => {
             onPress={() => removeCategoryFilter(c)}
             style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
             accessibilityRole="button"
-            accessibilityLabel={`${formatLabel(c)} ${t().recipes.removeFilter}`}
+            accessibilityLabel={`${categoryLabel(c).name} ${t().recipes.removeFilter}`}
           >
             <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-              {formatLabel(c)}
+              {categoryLabel(c).name}
             </ThemedText>
             <Ionicons name="close-circle" size={14} color={colors.primary} />
           </Pressable>
@@ -713,7 +715,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {CUISINE_KEY_VALUES.map((c) => (
               <SelectChip
                 key={c}
-                label={formatLabel(c)}
+                label={cuisineLabel(c).name}
                 selected={pendingFilters.cuisines.includes(c)}
                 onToggle={() => togglePendingCuisine(c)}
               />
@@ -729,7 +731,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
             {RECIPE_CATEGORY_VALUES.map((c) => (
               <SelectChip
                 key={c}
-                label={formatLabel(c)}
+                label={categoryLabel(c).name}
                 selected={pendingFilters.categories.includes(c)}
                 onToggle={() => togglePendingCategory(c)}
               />
