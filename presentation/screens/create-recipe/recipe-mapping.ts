@@ -1,7 +1,7 @@
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import { CUISINE_KEY_VALUES, CuisineKey } from '@domain/recipes/cuisine-key';
+import { CUISINE_KEY_VALUES, type CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
@@ -13,7 +13,7 @@ const DEFAULT_SERVINGS = 4;
 /** A pristine, empty editable model for "start from blank". */
 export const emptyEditable = (): EditableRecipe => ({
   name: '',
-  cuisine: '',
+  cuisine: null,
   category: RecipeCategory.MainCourse,
   difficulty: Difficulty.Easy,
   prepTimeMinutes: DEFAULT_PREP,
@@ -25,20 +25,15 @@ export const emptyEditable = (): EditableRecipe => ({
 });
 
 /**
- * Best-effort free-text cuisine → `CuisineKey`. Mirrors the backend mapping:
- * uppercase, collapse spaces/hyphens to underscores, fall back to `OTHER` when
- * the result is not a known key. A localized display label (e.g. "Italian") is
- * upper-snaked to "ITALIAN" which matches the enum value.
+ * Parses a persisted free-text cuisine string into a valid `CuisineKey`, or
+ * `null` when it is empty/unknown. Unlike the publish path, a draft must not
+ * silently fall back to `OTHER`: `null` preserves the "unselected" state so the
+ * tile shows its placeholder again on resume.
  */
-export const cuisineTextToKey = (text: string): CuisineKey => {
-  const normalized = text.trim().toUpperCase().replace(/[\s-]+/g, '_');
-  const match = CUISINE_KEY_VALUES.find((k) => k === normalized);
-  return match ?? CuisineKey.Other;
+export const parseCuisineKey = (text: string): CuisineKey | null => {
+  const match = CUISINE_KEY_VALUES.find((k) => k === text);
+  return match ?? null;
 };
-
-/** Title-cases an enum-style value (e.g. `ITALIAN` → `Italian`) for display. */
-const formatLabel = (key: string): string =>
-  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 /** Seeds the editable model from a generated/loaded `Recipe`. */
 export const recipeToEditable = (
@@ -46,7 +41,7 @@ export const recipeToEditable = (
   prevMedia: readonly MediaItem[],
 ): EditableRecipe => ({
   name: recipe.name,
-  cuisine: recipe.cuisine === CuisineKey.Other ? '' : formatLabel(recipe.cuisine),
+  cuisine: recipe.cuisine,
   category: recipe.category,
   difficulty: recipe.difficulty,
   prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : DEFAULT_PREP,
@@ -72,7 +67,7 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
     .map((m) => ({ type: 'image', url: m.url }));
   return {
     name: snapshot.name ?? base.name,
-    cuisine: snapshot.cuisine ?? base.cuisine,
+    cuisine: snapshot.cuisine !== undefined ? parseCuisineKey(snapshot.cuisine) : base.cuisine,
     category: base.category,
     difficulty: isDifficulty(snapshot.difficulty) ? snapshot.difficulty : base.difficulty,
     prepTimeMinutes: snapshot.prepTimeMinutes ?? base.prepTimeMinutes,
@@ -93,7 +88,7 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
 /** Projects the editable model to the wire `DraftRecipeSnapshot`. */
 export const editableToSnapshot = (recipe: EditableRecipe): DraftRecipeSnapshot => ({
   name: recipe.name,
-  cuisine: recipe.cuisine,
+  cuisine: recipe.cuisine ?? '',
   difficulty: recipe.difficulty,
   prepTimeMinutes: recipe.prepTimeMinutes,
   cookTimeMinutes: recipe.cookTimeMinutes,
