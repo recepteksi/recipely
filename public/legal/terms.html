@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://recipely.net/terms" />
+  <title>Kullanım Koşulları · Recipely</title>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #1a1a1a; --muted: #5c5c5c; --accent: #e8552b;
+      --border: #ececec; --card: #fafafa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #121212; --fg: #ededed; --muted: #a0a0a0; --accent: #ff7a52; --border: #2a2a2a; --card: #1c1c1c; }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65; font-size: 16px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .brand { font-weight: 700; font-size: 20px; color: var(--accent); letter-spacing: -0.02em; }
+    h1 { font-size: 28px; margin: 18px 0 4px; letter-spacing: -0.02em; }
+    h2 { font-size: 19px; margin: 32px 0 8px; }
+    p, li { color: var(--fg); }
+    .muted { color: var(--muted); font-size: 14px; }
+    a { color: var(--accent); }
+    ul { padding-left: 20px; }
+    li { margin: 4px 0; }
+    .toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .toggle button {
+      border: 0; background: transparent; color: var(--muted); padding: 7px 16px; font-size: 14px;
+      cursor: pointer; font-weight: 600;
+    }
+    .toggle button.active { background: var(--accent); color: #fff; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-top: 12px; }
+    section[hidden] { display: none; }
+    footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="brand">Recipely</span>
+      <div class="toggle" role="group" aria-label="Language / Dil">
+        <button id="btn-tr" class="active" onclick="setLang('tr')">Türkçe</button>
+        <button id="btn-en" onclick="setLang('en')">English</button>
+      </div>
+    </header>
+
+    <!-- ============================ TÜRKÇE ============================ -->
+    <section id="tr">
+      <h1>Kullanım Koşulları</h1>
+      <p class="muted">Son güncelleme: 30 Mayıs 2026 · Yürürlük tarihi: 30 Mayıs 2026</p>
+
+      <p>Bu Kullanım Koşulları (“Koşullar”), Recipely uygulamasını (“Uygulama”, “Hizmet”) kullanımınızı düzenler. Uygulamayı kullanarak bu Koşulları kabul etmiş sayılırsınız. Kabul etmiyorsanız lütfen Uygulamayı kullanmayın.</p>
+
+      <div class="card">
+        <strong>Hizmet sağlayıcı:</strong> Recipely<br />
+        <strong>İletişim:</strong> <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a>
+      </div>
+
+      <h2>1. Hesap ve Sorumluluk</h2>
+      <ul>
+        <li>Doğru ve güncel bilgilerle bir hesap oluşturmaktan ve hesap güvenliğinizi (parola dâhil) korumaktan siz sorumlusunuz.</li>
+        <li>Hesabınız altında gerçekleşen tüm etkinliklerden sorumlusunuz.</li>
+        <li>Hizmeti kullanmak için geçerli yasalar uyarınca yeterli yaşta olmalısınız.</li>
+      </ul>
+
+      <h2>2. Kullanıcı İçeriği</h2>
+      <ul>
+        <li>Eklediğiniz tarifler, fotoğraflar ve yorumlar (“İçerik”) size aittir. İçeriğinizin mülkiyeti sizde kalır.</li>
+        <li>İçeriğinizi Uygulama içinde barındırmamız, görüntülememiz ve dağıtmamız için bize dünya çapında, telifsiz, devredilebilir bir lisans vermiş olursunuz. Bu lisans, içeriğinizi sildiğinizde sona erer.</li>
+        <li>Paylaştığınız İçerik için gerekli haklara sahip olduğunuzu ve İçeriğin üçüncü kişilerin haklarını ihlal etmediğini taahhüt edersiniz.</li>
+      </ul>
+
+      <h2>3. Kabul Edilebilir Kullanım</h2>
+      <p>Aşağıdakileri yapmamayı kabul edersiniz:</p>
+      <ul>
+        <li>Yasa dışı, hakaret içeren, nefret söylemi barındıran, müstehcen veya başkalarının haklarını ihlal eden İçerik paylaşmak.</li>
+        <li>Spam göndermek, kötü amaçlı yazılım yaymak veya Hizmete yetkisiz erişim sağlamaya çalışmak.</li>
+        <li>Başka bir kullanıcıyı taklit etmek veya yanıltıcı bilgi vermek.</li>
+        <li>Uygulamanın altyapısına aşırı yük bindiren otomatik araçlar kullanmak.</li>
+      </ul>
+
+      <h2>4. Yapay Zekâ ile Üretilen Tarifler</h2>
+      <p>Uygulama, yapay zekâ destekli tarif önerileri sunabilir. Bu öneriler yalnızca bilgilendirme amaçlıdır; doğruluk, uygunluk veya gıda güvenliği açısından garanti vermez. Pişirme öncesinde malzemeleri, alerjenleri ve hazırlık adımlarını kendiniz değerlendirmeniz gerekir.</p>
+
+      <h2>5. İçerik Denetimi</h2>
+      <p>Bu Koşulları ihlal eden İçeriği önceden bildirimde bulunmaksızın kaldırma ve gerekirse hesapları askıya alma veya sonlandırma hakkını saklı tutarız.</p>
+
+      <h2>6. Fikrî Mülkiyet</h2>
+      <p>Uygulamanın kendisi, markası, tasarımı ve yazılımı Recipely’ye aittir ve ilgili yasalarla korunur. Kullanıcı İçeriği hariç olmak üzere, açık izin olmadan kopyalanamaz veya çoğaltılamaz.</p>
+
+      <h2>7. Sorumluluğun Sınırlandırılması</h2>
+      <p>Hizmet “olduğu gibi” sunulur. Yürürlükteki yasaların izin verdiği azami ölçüde, Uygulamanın kullanımından doğan dolaylı veya arızi zararlardan sorumlu değiliz.</p>
+
+      <h2>8. Hesabın Sonlandırılması</h2>
+      <p>Hesabınızı dilediğiniz zaman silebilirsiniz. Bu Koşulları ihlal etmeniz hâlinde erişiminizi sonlandırabiliriz.</p>
+
+      <h2>9. Değişiklikler</h2>
+      <p>Bu Koşulları zaman zaman güncelleyebiliriz. Önemli değişikliklerde bu sayfadaki tarihi güncelleriz. Değişikliklerden sonra Uygulamayı kullanmaya devam etmeniz, güncel Koşulları kabul ettiğiniz anlamına gelir.</p>
+
+      <h2>10. Uygulanacak Hukuk</h2>
+      <p>Bu Koşullar Türkiye Cumhuriyeti hukukuna tabidir.</p>
+
+      <h2>11. İletişim</h2>
+      <p>Sorularınız için: <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a></p>
+    </section>
+
+    <!-- ============================ ENGLISH ============================ -->
+    <section id="en" hidden>
+      <h1>Terms of Use</h1>
+      <p class="muted">Last updated: 30 May 2026 · Effective date: 30 May 2026</p>
+
+      <p>These Terms of Use (the “Terms”) govern your use of the Recipely application (the “App”, the “Service”). By using the App, you agree to these Terms. If you do not agree, please do not use the App.</p>
+
+      <div class="card">
+        <strong>Service provider:</strong> Recipely<br />
+        <strong>Contact:</strong> <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a>
+      </div>
+
+      <h2>1. Account and Responsibility</h2>
+      <ul>
+        <li>You are responsible for creating an account with accurate, current information and for keeping your account secure (including your password).</li>
+        <li>You are responsible for all activity that occurs under your account.</li>
+        <li>You must be of sufficient age under applicable law to use the Service.</li>
+      </ul>
+
+      <h2>2. User Content</h2>
+      <ul>
+        <li>The recipes, photos, and comments you add (“Content”) are yours. You retain ownership of your Content.</li>
+        <li>You grant us a worldwide, royalty-free, transferable license to host, display, and distribute your Content within the App. This license ends when you delete your Content.</li>
+        <li>You represent that you have the necessary rights to the Content you share and that it does not infringe the rights of any third party.</li>
+      </ul>
+
+      <h2>3. Acceptable Use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Post Content that is illegal, defamatory, hateful, obscene, or that infringes the rights of others.</li>
+        <li>Send spam, distribute malware, or attempt to gain unauthorized access to the Service.</li>
+        <li>Impersonate another user or provide misleading information.</li>
+        <li>Use automated tools that place an excessive load on the App’s infrastructure.</li>
+      </ul>
+
+      <h2>4. AI-Generated Recipes</h2>
+      <p>The App may provide AI-assisted recipe suggestions. These suggestions are for informational purposes only and come with no guarantee of accuracy, suitability, or food safety. You must evaluate ingredients, allergens, and preparation steps yourself before cooking.</p>
+
+      <h2>5. Content Moderation</h2>
+      <p>We reserve the right to remove Content that violates these Terms without prior notice, and to suspend or terminate accounts where necessary.</p>
+
+      <h2>6. Intellectual Property</h2>
+      <p>The App itself, its brand, design, and software belong to Recipely and are protected by applicable laws. Except for User Content, it may not be copied or reproduced without express permission.</p>
+
+      <h2>7. Limitation of Liability</h2>
+      <p>The Service is provided “as is”. To the maximum extent permitted by applicable law, we are not liable for any indirect or incidental damages arising from your use of the App.</p>
+
+      <h2>8. Termination</h2>
+      <p>You may delete your account at any time. We may terminate your access if you violate these Terms.</p>
+
+      <h2>9. Changes</h2>
+      <p>We may update these Terms from time to time. For material changes, we will update the date on this page. Continued use of the App after changes means you accept the updated Terms.</p>
+
+      <h2>10. Governing Law</h2>
+      <p>These Terms are governed by the laws of the Republic of Türkiye.</p>
+
+      <h2>11. Contact</h2>
+      <p>For any questions: <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a></p>
+    </section>
+
+    <footer class="muted">© 2026 Recipely</footer>
+  </div>
+
+  <script>
+    function setLang(lang) {
+      var tr = document.getElementById('tr');
+      var en = document.getElementById('en');
+      var isTr = lang === 'tr';
+      tr.hidden = !isTr; en.hidden = isTr;
+      document.getElementById('btn-tr').classList.toggle('active', isTr);
+      document.getElementById('btn-en').classList.toggle('active', !isTr);
+      document.documentElement.lang = lang;
+      try { localStorage.setItem('recipely-legal-lang', lang); } catch (e) {}
+    }
+    (function () {
+      var saved;
+      try { saved = localStorage.getItem('recipely-legal-lang'); } catch (e) {}
+      var nav = (navigator.language || 'tr').toLowerCase();
+      setLang(saved || (nav.indexOf('tr') === 0 ? 'tr' : 'en'));
+    })();
+  </script>
+</body>
+</html>
