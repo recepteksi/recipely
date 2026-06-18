@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://recipely.net/privacy" />
+  <title>Gizlilik Politikası · Recipely</title>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #1a1a1a; --muted: #5c5c5c; --accent: #e8552b;
+      --border: #ececec; --card: #fafafa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #121212; --fg: #ededed; --muted: #a0a0a0; --accent: #ff7a52; --border: #2a2a2a; --card: #1c1c1c; }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65; font-size: 16px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .brand { font-weight: 700; font-size: 20px; color: var(--accent); letter-spacing: -0.02em; }
+    h1 { font-size: 28px; margin: 18px 0 4px; letter-spacing: -0.02em; }
+    h2 { font-size: 19px; margin: 32px 0 8px; }
+    p, li { color: var(--fg); }
+    .muted { color: var(--muted); font-size: 14px; }
+    a { color: var(--accent); }
+    ul { padding-left: 20px; }
+    li { margin: 4px 0; }
+    .toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .toggle button {
+      border: 0; background: transparent; color: var(--muted); padding: 7px 16px; font-size: 14px;
+      cursor: pointer; font-weight: 600;
+    }
+    .toggle button.active { background: var(--accent); color: #fff; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-top: 12px; }
+    section[hidden] { display: none; }
+    footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); }
+    code { background: var(--card); padding: 1px 6px; border-radius: 6px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="brand">Recipely</span>
+      <div class="toggle" role="group" aria-label="Language / Dil">
+        <button id="btn-tr" class="active" onclick="setLang('tr')">Türkçe</button>
+        <button id="btn-en" onclick="setLang('en')">English</button>
+      </div>
+    </header>
+
+    <!-- ============================ TÜRKÇE ============================ -->
+    <section id="tr">
+      <h1>Gizlilik Politikası</h1>
+      <p class="muted">Son güncelleme: 30 Mayıs 2026 · Yürürlük tarihi: 30 Mayıs 2026</p>
+
+      <p>Bu Gizlilik Politikası, Recipely mobil ve web uygulamasını (“Uygulama”, “Hizmet”) kullandığınızda kişisel verilerinizi nasıl topladığımızı, kullandığımızı, sakladığımızı ve koruduğumuzu açıklar. Uygulamayı kullanarak bu politikayı kabul etmiş olursunuz.</p>
+
+      <div class="card">
+        <strong>Veri sorumlusu:</strong> Recipely<br />
+        <strong>İletişim:</strong> <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a>
+      </div>
+
+      <h2>1. Topladığımız Veriler</h2>
+      <ul>
+        <li><strong>Hesap bilgileri:</strong> e-posta adresi, görünen ad, parola (yalnızca şifrelenmiş/hash’lenmiş olarak saklanır), isteğe bağlı biyografi ve profil fotoğrafı.</li>
+        <li><strong>Kimlik doğrulama:</strong> E-posta/parola ile veya Google ya da Apple hesabınızla giriş yaptığınızda, ilgili sağlayıcıdan temel hesap tanımlayıcılarınızı (e-posta, ad) alırız. Bu işlem Firebase Authentication üzerinden yürütülür.</li>
+        <li><strong>Oluşturduğunuz içerik:</strong> Eklediğiniz tarifler (başlık, malzemeler, adımlar, fotoğraflar), yorumlar, beğeniler, favoriler ve takip ilişkileri.</li>
+        <li><strong>Fotoğraf ve kamera:</strong> Tariflere görsel eklemek için izninizle galerinize/kameranıza erişiriz. Yalnızca sizin seçtiğiniz görseller sunucularımıza yüklenir.</li>
+        <li><strong>Kullanım ve cihaz verileri:</strong> Uygulama etkileşimleri, yaklaşık bölge/dil, cihaz ve işletim sistemi bilgileri Firebase Analytics aracılığıyla; çökme kayıtları ve cihaz durumu Firebase Crashlytics aracılığıyla toplanır.</li>
+        <li><strong>Bildirim verileri:</strong> Anlık bildirim gönderebilmek için cihazınıza ait push bildirim jetonları (FCM).</li>
+        <li><strong>Dil tercihi:</strong> Uygulamayı tercih ettiğiniz dilde sunmak için locale bilgisi.</li>
+      </ul>
+
+      <h2>2. Verileri Nasıl Kullanıyoruz</h2>
+      <ul>
+        <li>Hizmeti sunmak, hesabınızı oluşturmak ve kimliğinizi doğrulamak.</li>
+        <li>Tariflerinizi ve görsellerinizi barındırmak ve görüntülemek.</li>
+        <li>İlgili anlık bildirimleri göndermek.</li>
+        <li>Uygulamayı iyileştirmek için kullanım analizleri yapmak ve hataları teşhis etmek.</li>
+        <li>Güvenliği sağlamak, kötüye kullanımı ve dolandırıcılığı önlemek; yasal yükümlülüklere uymak.</li>
+      </ul>
+
+      <h2>3. Veri Paylaşımı ve Üçüncü Taraf Hizmetler</h2>
+      <p>Verilerinizi <strong>satmıyoruz</strong>. Hizmeti çalıştırabilmek için aşağıdaki güvenilir hizmet sağlayıcılarla sınırlı ölçüde paylaşımda bulunuruz:</p>
+      <ul>
+        <li><strong>Google / Firebase</strong> — Kimlik doğrulama, Analytics, Crashlytics ve bildirimler (FCM). <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Gizlilik politikası</a></li>
+        <li><strong>Apple</strong> — “Apple ile Giriş” kullanıldığında. <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Gizlilik politikası</a></li>
+        <li><strong>Barındırma altyapısı</strong> — Sunucularımız ve veritabanımız bulut altyapısında (Oracle Cloud) barındırılır.</li>
+      </ul>
+
+      <h2>4. Veri Güvenliği</h2>
+      <p>Uygulama ile sunucularımız arasındaki API trafiği aktarım sırasında şifrelenir (TLS ve ek bir AES-256-GCM zarfı ile). Parolalar yalnızca tek yönlü hash olarak saklanır. Buna rağmen internet üzerinden hiçbir aktarım veya saklama yönteminin %100 güvenli olmadığını belirtmek isteriz.</p>
+
+      <h2>5. Veri Saklama</h2>
+      <p>Hesabınız aktif olduğu sürece verilerinizi saklarız. Hesabınızı sildiğinizde, yasal saklama yükümlülükleri saklı kalmak üzere kişisel verileriniz ve oluşturduğunuz içerik makul bir süre içinde silinir veya anonimleştirilir.</p>
+
+      <h2>6. Haklarınız (KVKK & GDPR)</h2>
+      <p>6698 sayılı KVKK ve uygulanabildiği ölçüde GDPR kapsamında; verilerinize erişme, düzeltme, silme, işlemeye itiraz etme ve veri taşınabilirliği haklarına sahipsiniz. Hesabınızı ve verilerinizi silmek için uygulama içindeki hesap silme seçeneğini kullanabilir veya <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a> adresine yazabilirsiniz.</p>
+
+      <h2>7. Çocukların Gizliliği</h2>
+      <p>Uygulama 13 yaşın altındaki çocuklara yönelik değildir ve bilerek bu yaş grubundan veri toplamayız.</p>
+
+      <h2>8. Politikadaki Değişiklikler</h2>
+      <p>Bu politikayı zaman zaman güncelleyebiliriz. Önemli değişikliklerde bu sayfadaki “Son güncelleme” tarihini değiştirir ve uygun olduğunda uygulama içinde bilgilendiririz.</p>
+
+      <h2>9. İletişim</h2>
+      <p>Sorularınız için: <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a></p>
+    </section>
+
+    <!-- ============================ ENGLISH ============================ -->
+    <section id="en" hidden>
+      <h1>Privacy Policy</h1>
+      <p class="muted">Last updated: 30 May 2026 · Effective date: 30 May 2026</p>
+
+      <p>This Privacy Policy explains how we collect, use, store, and protect your personal data when you use the Recipely mobile and web application (the “App”, the “Service”). By using the App, you agree to this policy.</p>
+
+      <div class="card">
+        <strong>Data controller:</strong> Recipely<br />
+        <strong>Contact:</strong> <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a>
+      </div>
+
+      <h2>1. Data We Collect</h2>
+      <ul>
+        <li><strong>Account information:</strong> email address, display name, password (stored only in encrypted/hashed form), optional bio and profile photo.</li>
+        <li><strong>Authentication:</strong> when you sign in with email/password or with your Google or Apple account, we receive basic account identifiers (email, name) from that provider. This is handled via Firebase Authentication.</li>
+        <li><strong>Content you create:</strong> recipes you add (title, ingredients, steps, photos), comments, likes, favorites, and follow relationships.</li>
+        <li><strong>Photos and camera:</strong> with your permission, we access your gallery/camera to add images to recipes. Only the images you select are uploaded to our servers.</li>
+        <li><strong>Usage and device data:</strong> app interactions, approximate region/language, device and OS information via Firebase Analytics; crash logs and device state via Firebase Crashlytics.</li>
+        <li><strong>Notification data:</strong> push notification tokens (FCM) for your device, to deliver notifications.</li>
+        <li><strong>Language preference:</strong> locale, to present the App in your preferred language.</li>
+      </ul>
+
+      <h2>2. How We Use Data</h2>
+      <ul>
+        <li>To provide the Service, create your account, and authenticate you.</li>
+        <li>To host and display your recipes and images.</li>
+        <li>To send relevant push notifications.</li>
+        <li>To analyze usage and diagnose errors so we can improve the App.</li>
+        <li>To maintain security, prevent abuse and fraud, and comply with legal obligations.</li>
+      </ul>
+
+      <h2>3. Data Sharing and Third-Party Services</h2>
+      <p>We do <strong>not</strong> sell your data. We share data on a limited basis with the trusted providers required to run the Service:</p>
+      <ul>
+        <li><strong>Google / Firebase</strong> — Authentication, Analytics, Crashlytics, and notifications (FCM). <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy policy</a></li>
+        <li><strong>Apple</strong> — when “Sign in with Apple” is used. <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Privacy policy</a></li>
+        <li><strong>Hosting infrastructure</strong> — our servers and database are hosted on cloud infrastructure (Oracle Cloud).</li>
+      </ul>
+
+      <h2>4. Data Security</h2>
+      <p>API traffic between the App and our servers is encrypted in transit (TLS plus an additional AES-256-GCM envelope). Passwords are stored only as one-way hashes. Nevertheless, no method of transmission or storage over the internet is 100% secure.</p>
+
+      <h2>5. Data Retention</h2>
+      <p>We retain your data for as long as your account is active. When you delete your account, your personal data and content are deleted or anonymized within a reasonable period, subject to any legal retention obligations.</p>
+
+      <h2>6. Your Rights (KVKK &amp; GDPR)</h2>
+      <p>Under Turkey’s KVKK (Law No. 6698) and, where applicable, the GDPR, you have the right to access, correct, delete, object to the processing of, and port your data. To delete your account and data, use the in-app account deletion option or write to <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a>.</p>
+
+      <h2>7. Children’s Privacy</h2>
+      <p>The App is not directed to children under 13, and we do not knowingly collect data from this age group.</p>
+
+      <h2>8. Changes to This Policy</h2>
+      <p>We may update this policy from time to time. For material changes, we will update the “Last updated” date on this page and notify you in-app where appropriate.</p>
+
+      <h2>9. Contact</h2>
+      <p>For any questions: <a href="mailto:recept2534@gmail.com">recept2534@gmail.com</a></p>
+    </section>
+
+    <footer class="muted">© 2026 Recipely</footer>
+  </div>
+
+  <script>
+    function setLang(lang) {
+      var tr = document.getElementById('tr');
+      var en = document.getElementById('en');
+      var isTr = lang === 'tr';
+      tr.hidden = !isTr; en.hidden = isTr;
+      document.getElementById('btn-tr').classList.toggle('active', isTr);
+      document.getElementById('btn-en').classList.toggle('active', !isTr);
+      document.documentElement.lang = lang;
+      try { localStorage.setItem('recipely-legal-lang', lang); } catch (e) {}
+    }
+    (function () {
+      var saved;
+      try { saved = localStorage.getItem('recipely-legal-lang'); } catch (e) {}
+      var nav = (navigator.language || 'tr').toLowerCase();
+      setLang(saved || (nav.indexOf('tr') === 0 ? 'tr' : 'en'));
+    })();
+  </script>
+</body>
+</html>
