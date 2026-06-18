@@ -20,6 +20,24 @@ interface FabCase {
   reduceMotion?: boolean;
 }
 
+/** Recursively flattens a possibly-nested RN style prop into one object. */
+const flattenStyle = (style: unknown): Record<string, unknown> => {
+  if (typeof style === 'function') {
+    return flattenStyle((style as (s: { pressed: boolean }) => unknown)({ pressed: false }));
+  }
+  return Array.isArray(style)
+    ? Object.assign({}, ...style.map(flattenStyle))
+    : ((style as Record<string, unknown> | undefined) ?? {});
+};
+
+/** The animated wrapper host node around the label text (the overflow-hidden box). */
+const labelWrapper = (root: RenderResult['root']): Record<string, unknown> => {
+  const node = root.findAll(
+    (n) => flattenStyle(n.props.style).overflow === 'hidden' && 'marginLeft' in flattenStyle(n.props.style),
+  )[0];
+  return flattenStyle(node?.props.style);
+};
+
 const renderFab = (props: FabCase): { onPress: jest.Mock; root: RenderResult['root'] } => {
   const onPress = jest.fn();
 
@@ -95,5 +113,30 @@ describe('FilterSortFab', () => {
     const { root } = renderFab({ activeCount: 12 });
 
     expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().recipes.filtersAndSort}, 12`);
+  });
+
+  it('always renders the funnel icon so the collapsed circle is never blank', () => {
+    const { root } = renderFab({ activeCount: 0, reduceMotion: false });
+
+    expect(textContent(root)).toContain('icon:funnel-outline');
+  });
+
+  it('wraps the label in an overflow-hidden box so its width can collapse to 0', () => {
+    const { root } = renderFab({ activeCount: 0, reduceMotion: false });
+
+    expect(labelWrapper(root).overflow).toBe('hidden');
+  });
+
+  it('centers the row and drives icon/label spacing via the collapsible margin, not a flex gap', () => {
+    const { root } = renderFab({ activeCount: 0, reduceMotion: false });
+
+    const rowStyle = flattenStyle(byRole(root, 'button').props.style);
+
+    // justifyContent: center keeps the lone icon centered once the label width
+    // collapses; the gap must be gone or it would offset the icon by gap/2.
+    expect(rowStyle.justifyContent).toBe('center');
+    expect(rowStyle.gap).toBeUndefined();
+    // Spacing now lives on the label wrapper's animatable marginLeft instead.
+    expect(labelWrapper(root).marginLeft).toBeGreaterThan(0);
   });
 });

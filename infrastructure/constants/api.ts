@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 // Server root — the bare host:port. Override with EXPO_PUBLIC_API_BASE_URL
 // (kept under the existing env var name for backward compat with any device
 // already shipping with that override).
@@ -23,12 +25,6 @@ export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 // it needs an absolute URL that bypasses HttpClient's baseURL.
 export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
 
-// Public legal pages served as static HTML at the server root (outside
-// /api/v1). Opened in the device browser via Linking; also the Privacy
-// Policy URL submitted to Google Play.
-export const PRIVACY_POLICY_URL: string = `${SERVER_URL}/privacy`;
-export const TERMS_OF_USE_URL: string = `${SERVER_URL}/terms`;
-
 // Canonical public web origin (universal-link domain in app.json). Distinct
 // from the API server (api.recipely.net). Used to build shareable deep links
 // that round-trip back into the app via expo-router path matching.
@@ -37,6 +33,17 @@ const DEFAULT_WEB_APP_BASE_URL = "https://recipely.net";
 export const WEB_APP_BASE_URL: string =
   process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
   DEFAULT_WEB_APP_BASE_URL;
+
+// Public legal pages served as static HTML. On web they ship with the web app
+// itself (recipely.net/privacy, Firebase-rewritten to /legal/*.html) so users
+// stay on the app's own origin. On native we open the backend-hosted copy
+// (api.recipely.net/privacy), which is also the Privacy Policy URL submitted
+// to Google Play. Both copies render identical content.
+const LEGAL_ORIGIN: string =
+  Platform.OS === "web" ? WEB_APP_BASE_URL : SERVER_URL;
+
+export const PRIVACY_POLICY_URL: string = `${LEGAL_ORIGIN}/privacy`;
+export const TERMS_OF_USE_URL: string = `${LEGAL_ORIGIN}/terms`;
 
 /** Shareable canonical URL for a recipe — opens the app's recipes/[recipeId] route. */
 export const recipeWebUrl = (recipeId: string): string =>
@@ -62,11 +69,23 @@ export const userProfilePath = (userId: string): string =>
 // CODE_TTL_MS (3 minutes).
 export const DEFAULT_CODE_TTL_SECONDS = 180;
 
+// Backend-driven taxonomy catalog endpoints. Inside /api/v1 — paths are
+// relative, so the HTTP client prepends API_BASE_URL.
+export const RECIPE_CUISINES_PATH = "/recipes/cuisines";
+export const RECIPE_CATEGORIES_PATH = "/recipes/categories";
+
 export const RECIPES_PAGE_SIZE = 30;
 
 export const DRAFTS_PAGE_SIZE = 20;
 
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
+
+// WHY: the Instagram import endpoint runs yt-dlp + Whisper transcription +
+// vision on the backend, with a server-side budget of ~120s. The default 10s
+// JSON timeout would abort a normal import as `ECONNABORTED` → TimeoutFailure
+// long before the backend replies. Give the per-request override 10s of
+// headroom over the backend budget so only genuinely stuck requests time out.
+export const IMPORT_REQUEST_TIMEOUT_MS = 130_000;
 
 // WHY: image uploads regularly exceed 10s on cellular (a 3 MB JPEG at 1 Mbps
 // upload is ~25s). The default 10s budget surfaces as `ECONNABORTED` →

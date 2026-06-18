@@ -20,9 +20,9 @@ import type {
   UpdateRecipeInput,
 } from '@domain/recipes/i-recipe-repository';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
 import {
-  cuisineTextToKey,
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
@@ -87,9 +87,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const params = useLocalSearchParams<{ recipeId?: string; draftId?: string }>();
+  const params = useLocalSearchParams<{
+    recipeId?: string;
+    draftId?: string;
+    importUrl?: string;
+  }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : undefined;
   const draftId = typeof params.draftId === 'string' ? params.draftId : undefined;
+  const importUrl = typeof params.importUrl === 'string' ? params.importUrl : undefined;
   const isEditMode = recipeId !== undefined && recipeId.length > 0;
 
   const existingRecipe = isEditMode
@@ -102,6 +107,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const activeDraftId = draftId ?? newDraftId;
 
   const [phase, setPhase] = useState<Phase>(isEditMode ? 'preview' : 'prompt');
+  const [importing, setImporting] = useState(false);
   const [recipe, setRecipe] = useState<EditableRecipe>(() =>
     isEditMode && existingRecipe !== undefined
       ? recipeToEditable(existingRecipe, [...existingRecipe.media])
@@ -190,6 +196,40 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     },
     [createdRecipesStore],
   );
+
+  const runImport = useCallback(
+    async (url: string): Promise<void> => {
+      const trimmed = url.trim();
+      if (trimmed.length === 0) return;
+      setImporting(true);
+      setPhase('generating');
+      await createdRecipesStore.getState().importInstagram(trimmed, getLocale());
+      const state = createdRecipesStore.getState().importState;
+      if (state.status === 'success') {
+        setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
+        setChatHistory([{ role: 'assistant', content: t().createRecipe.importFirstReply }]);
+        createdRecipesStore.getState().resetImportState();
+        setImporting(false);
+        setPhase('preview');
+        return;
+      }
+      // Error: drop back to prompt and surface the failure, with an assistant note.
+      if (state.status === 'error') showErrorToast(state.failure);
+      setChatHistory([{ role: 'assistant', content: t().createRecipe.aiError, error: true }]);
+      createdRecipesStore.getState().resetImportState();
+      setImporting(false);
+      setPhase('prompt');
+    },
+    [createdRecipesStore],
+  );
+
+  // Kick off an Instagram import once when arriving via a share intent.
+  const importHandledRef = useRef(false);
+  useEffect(() => {
+    if (isEditMode || importUrl === undefined || importHandledRef.current) return;
+    importHandledRef.current = true;
+    void runImport(importUrl);
+  }, [isEditMode, importUrl, runImport]);
 
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
@@ -301,7 +341,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const cleanInstructions = recipe.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
     const input: CreateRecipeInput = {
       name: { [locale]: recipe.name.trim() },
-      cuisine: cuisineTextToKey(recipe.cuisine),
+      cuisine: recipe.cuisine ?? CuisineKey.Other,
       category: recipe.category,
       difficulty: recipe.difficulty,
       ingredients: { [locale]: cleanIngredients },
@@ -350,7 +390,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     const images = recipe.media.filter((m) => m.type === 'image');
     const input: UpdateRecipeInput = {
       name: { [locale]: recipe.name.trim() },
-      cuisine: cuisineTextToKey(recipe.cuisine),
+      cuisine: recipe.cuisine ?? CuisineKey.Other,
       category: recipe.category,
       difficulty: recipe.difficulty,
       ingredients: { [locale]: cleanIngredients },
@@ -448,7 +488,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
-          <GeneratingView activeStep={genStep} />
+          <GeneratingView activeStep={genStep} variant={importing ? 'import' : 'generate'} />
         </ResponsiveContainer>
       </View>
     );
@@ -535,6 +575,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             missingMessage={missingMessage}
             onChangeName={(v) => updateField('name', v)}
             onChangeCuisine={(v) => updateField('cuisine', v)}
+            onChangeCategory={(v) => updateField('category', v)}
             onChangeServings={(v) => updateField('servings', v)}
             onChangeDifficulty={(v) => updateField('difficulty', v)}
             onChangePrep={(v) => updateField('prepTimeMinutes', v)}

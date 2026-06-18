@@ -2,8 +2,6 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { MediaType } from '@domain/recipes/media-item';
-import type { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { RecipeCategory } from '@domain/recipes/recipe-category';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
@@ -31,8 +29,10 @@ export type RecipeSort =
 
 export interface RecipeFilters {
   search?: string;
-  cuisines?: CuisineKey[];
-  categories?: RecipeCategory[];
+  // Opaque taxonomy keys (backend owns the full catalog); not narrowed to the
+  // local enums so newer backend cuisines/categories can be filtered on.
+  cuisines?: string[];
+  categories?: string[];
   difficulties?: Difficulty[];
   maxTime?: number;
   sort?: RecipeSort;
@@ -41,8 +41,11 @@ export interface RecipeFilters {
 
 export interface CreateRecipeInput {
   name: Record<string, string>;
-  cuisine: CuisineKey;
-  category: RecipeCategory;
+  // Opaque taxonomy key validated by the backend (the source of truth for the
+  // full catalog); not narrowed to the local `CuisineKey`/`RecipeCategory`
+  // enums, which only mirror a curated subset.
+  cuisine: string;
+  category: string;
   difficulty: Difficulty;
   ingredients: Record<string, string[]>;
   instructions: Record<string, string[]>;
@@ -60,8 +63,8 @@ export interface CreateRecipeInput {
 
 export interface UpdateRecipeInput {
   name?: Record<string, string>;
-  cuisine?: CuisineKey;
-  category?: RecipeCategory;
+  cuisine?: string;
+  category?: string;
   difficulty?: Difficulty;
   ingredients?: Record<string, string[]>;
   instructions?: Record<string, string[]>;
@@ -90,6 +93,16 @@ export interface IRecipeRepository {
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>>;
   generateRecipe(prompt: string, locale: string): Promise<Result<Recipe, Failure>>;
+  /**
+   * Imports an Instagram reel/video into a full preview `Recipe`. The result is
+   * NOT persisted (same contract as `generateRecipe` — throwaway id,
+   * `isPublished: false`, empty image); the client decides whether to publish
+   * it via `createRecipe`. The locale rides the `Accept-Language` header.
+   *
+   * This call can be slow (the backend runs download + transcription + vision,
+   * up to ~120s), so the implementation uses an extended request timeout.
+   */
+  importInstagramRecipe(url: string, locale: string): Promise<Result<Recipe, Failure>>;
   /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * full preview `Recipe`. The result is NOT persisted (same contract as

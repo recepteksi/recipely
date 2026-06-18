@@ -12,7 +12,11 @@ import type {
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
-import { RECIPES_PAGE_SIZE, UPLOAD_URL } from '@infrastructure/constants/api';
+import {
+  IMPORT_REQUEST_TIMEOUT_MS,
+  RECIPES_PAGE_SIZE,
+  UPLOAD_URL,
+} from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
@@ -234,6 +238,33 @@ export class RecipeRepository implements IRecipeRepository {
       method: 'POST',
       url: '/recipes/generate',
       data: { prompt },
+    });
+    if (!result.ok) {
+      return result;
+    }
+    const mapped = toRecipe(result.value);
+    if (!mapped.ok) {
+      return fail(mapped.failure);
+    }
+    return ok(mapped.value);
+  }
+
+  // WHY: like generateRecipe, the import returns a NOT-persisted preview Recipe
+  // and the locale rides Accept-Language (kept off the body to avoid two sources
+  // of truth). The per-request `timeout` override is required because the
+  // backend can take up to ~120s (download + transcription + vision) — the
+  // client's default 10s JSON timeout would abort the request first. The request
+  // interceptor only overrides config.timeout for FormData payloads, so this
+  // JSON override is honoured untouched.
+  async importInstagramRecipe(
+    url: string,
+    _locale: string,
+  ): Promise<Result<Recipe, Failure>> {
+    const result = await this.http.request<RecipeDto>({
+      method: 'POST',
+      url: '/recipes/import',
+      data: { url },
+      timeout: IMPORT_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {
       return result;

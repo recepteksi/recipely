@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
@@ -12,12 +13,17 @@ import { Stepper } from '@presentation/screens/create-recipe/stepper';
 import { DifficultyToggle } from '@presentation/screens/create-recipe/difficulty-toggle';
 import { IngredientRow } from '@presentation/screens/create-recipe/ingredient-row';
 import { StepRow } from '@presentation/screens/create-recipe/step-row';
+import { SelectTile } from '@presentation/screens/create-recipe/select-tile';
+import { TaxonomyPickerSheet } from '@presentation/screens/create-recipe/taxonomy-picker-sheet';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
   missingMessage: string | null;
   onChangeName: (value: string) => void;
   onChangeCuisine: (value: string) => void;
+  onChangeCategory: (value: string) => void;
   onChangeServings: (value: number) => void;
   onChangeDifficulty: (value: Difficulty) => void;
   onChangePrep: (value: number) => void;
@@ -49,6 +55,7 @@ export const RecipePreviewEditor = ({
   missingMessage,
   onChangeName,
   onChangeCuisine,
+  onChangeCategory,
   onChangeServings,
   onChangeDifficulty,
   onChangePrep,
@@ -62,6 +69,10 @@ export const RecipePreviewEditor = ({
   onOpenPhotos,
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
+  const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
+  const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
+  const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === 'image');
   const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > 0).length;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > 0).length;
@@ -92,13 +103,22 @@ export const RecipePreviewEditor = ({
             placeholderTextColor={colors.textMuted}
             style={[styles.nameInput, { color: colors.text }]}
           />
-          <TextInput
-            value={recipe.cuisine}
-            onChangeText={onChangeCuisine}
-            placeholder={t().createRecipe.cuisinePlaceholder}
-            placeholderTextColor={colors.textMuted}
-            style={[styles.cuisineInput, { color: colors.primary }]}
-          />
+          <View style={styles.taxonomyRow}>
+            <SelectTile
+              label={t().createRecipe.cuisineLabel}
+              emoji={cuisine?.emoji ?? TAXONOMY_PLACEHOLDER_EMOJI}
+              value={cuisine?.name ?? null}
+              placeholder={t().createRecipe.selectCuisine}
+              onPress={() => setPicker('cuisine')}
+            />
+            <SelectTile
+              label={t().createRecipe.categoryLabel}
+              emoji={category.emoji}
+              value={category.name}
+              placeholder={t().createRecipe.selectCategory}
+              onPress={() => setPicker('category')}
+            />
+          </View>
         </View>
 
         <View style={[styles.specCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
@@ -211,6 +231,21 @@ export const RecipePreviewEditor = ({
           </ThemedText>
         ) : null}
       </View>
+
+      <TaxonomyPickerSheet
+        visible={picker === 'cuisine'}
+        kind="cuisine"
+        selected={recipe.cuisine}
+        onSelect={onChangeCuisine}
+        onClose={() => setPicker(null)}
+      />
+      <TaxonomyPickerSheet
+        visible={picker === 'category'}
+        kind="category"
+        selected={recipe.category}
+        onSelect={onChangeCategory}
+        onClose={() => setPicker(null)}
+      />
     </ScrollView>
   );
 };
@@ -253,12 +288,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
     padding: 0,
   },
-  cuisineInput: {
-    fontSize: fontSizes.medium,
-    fontWeight: '600',
-    paddingTop: spacing.xs,
-    paddingBottom: 0,
-    paddingHorizontal: 0,
+  taxonomyRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
   specCard: {
     borderRadius: radii.lg,

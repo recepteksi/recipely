@@ -17,20 +17,33 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
+/**
+ * `generate` drives a text prompt → recipe; `import` drives an Instagram reel →
+ * recipe (different copy and step labels, and a longer-running last step that
+ * keeps pulsing rather than completing).
+ */
+export type GeneratingVariant = 'generate' | 'import';
+
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
   activeStep: number;
+  /** Which flow's copy + step labels to show. Defaults to `generate`. */
+  variant?: GeneratingVariant;
 }
 
 const STAGE = 188;
 const CORE = 104;
 const ORBIT_RADIUS = 90;
 const ORBIT_COUNT = 6;
-const STEP_KEYS = ['gen0', 'gen1', 'gen2', 'gen3', 'gen4'] as const;
+const GENERATE_STEP_KEYS = ['gen0', 'gen1', 'gen2', 'gen3', 'gen4'] as const;
+const IMPORT_STEP_KEYS = ['import0', 'import1', 'import2', 'import3'] as const;
 const LOGO_SIZE = 60;
 
 /** The eye-catching "AI is cooking" showpiece shown while a recipe generates. */
-export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.Element => {
+export const GeneratingView = ({
+  activeStep,
+  variant = 'generate',
+}: GeneratingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const spin = useSharedValue(0);
   const breathe = useSharedValue(0);
@@ -56,8 +69,20 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
     transform: [{ scale: 1 + breathe.value * 0.06 }],
   }));
 
-  const steps = STEP_KEYS.map((key) => t().createRecipe[key]);
-  const progress = Math.min(1, (activeStep + 1) / steps.length);
+  const copy = t().createRecipe;
+  const isImport = variant === 'import';
+  const steps = isImport
+    ? IMPORT_STEP_KEYS.map((key) => copy[key])
+    : GENERATE_STEP_KEYS.map((key) => copy[key]);
+  const title = isImport ? copy.importTitle : copy.genTitle;
+  const sub = isImport ? copy.importSub : copy.genSub;
+  // Import runs long; clamp the spotlight to the final step so it keeps pulsing
+  // instead of "completing" and sitting idle while the backend finishes.
+  const lastStep = steps.length - 1;
+  const spotlight = isImport ? Math.min(activeStep, lastStep) : activeStep;
+  const progress = isImport
+    ? Math.min(0.92, (spotlight + 1) / steps.length)
+    : Math.min(1, (activeStep + 1) / steps.length);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -101,17 +126,17 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
 
       <View style={styles.heading}>
         <ThemedText variant="title" style={styles.title}>
-          {t().createRecipe.genTitle}
+          {title}
         </ThemedText>
         <ThemedText variant="body" style={[styles.sub, { color: colors.textMuted }]}>
-          {t().createRecipe.genSub}
+          {sub}
         </ThemedText>
       </View>
 
       <View style={styles.checklist}>
         {steps.map((label, i) => {
-          const done = i < activeStep;
-          const active = i === activeStep;
+          const done = i < spotlight;
+          const active = i === spotlight;
           return (
             <View key={label} style={[styles.checkRow, { opacity: done || active ? 1 : 0.4 }]}>
               <View

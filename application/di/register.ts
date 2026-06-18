@@ -20,6 +20,7 @@ import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
+import { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
 import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
 import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
@@ -52,6 +53,11 @@ import {
   configureCreatedRecipesStore,
   type CreatedRecipesStore,
 } from '@application/recipes/created-recipes-store';
+import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
+import {
+  configureTaxonomyStore,
+  type TaxonomyStore,
+} from '@application/recipes/taxonomy-store';
 import {
   configureFavoritesStore,
   type FavoritesStore,
@@ -96,6 +102,7 @@ export interface ApplicationStores {
   likesStore: LikesStore;
   notificationsStore: NotificationsStore;
   userProfileStore: UserProfileStore;
+  taxonomyStore: TaxonomyStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
@@ -120,6 +127,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
   const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
+  const importInstagramRecipeUseCase = new ImportInstagramRecipeUseCase(recipeRepo);
   const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
   const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
@@ -154,6 +162,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createRecipeUseCase,
     listMyRecipesUseCase,
     generateRecipeUseCase,
+    importInstagramRecipeUseCase,
     refineRecipeUseCase,
     updateRecipeUseCase,
     deleteRecipeUseCase,
@@ -194,6 +203,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const userProfileStore = configureUserProfileStore({
     getUserProfile: getUserProfileUseCase,
   });
+  const loadTaxonomyUseCase = container.resolve<LoadTaxonomyUseCase>(
+    TOKENS.LoadTaxonomyUseCase,
+  );
+  const taxonomyStore = configureTaxonomyStore({ loadTaxonomyUseCase });
   return {
     authStore,
     recipeListStore,
@@ -206,6 +219,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     likesStore,
     notificationsStore,
     userProfileStore,
+    taxonomyStore,
     loadFavoritesUseCase,
   };
 };
