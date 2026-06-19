@@ -55,88 +55,97 @@ export const WebRecipeCard = ({
 
   return (
     <Animated.View style={animatedStyle}>
-      <Pressable
+      <View
         {...hoverProps}
-        onPress={() => onOpen(recipe.id)}
-        accessibilityRole="button"
-        accessibilityLabel={recipe.name}
         style={[styles.card, shadows.md, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
       >
-        <View style={styles.imageWrap}>
-          <RecipeImage
-            uri={recipe.image}
-            style={styles.image}
-            accessibilityLabel={recipe.name}
-            placeholderLabel={t().recipes.noPhoto}
-          />
-          <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
-            <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
-              {cuisineLabel(recipe.cuisine).name}
-            </ThemedText>
-          </View>
-          {ownedByMe ? (
-            <View style={[styles.ownedBadge, { backgroundColor: colors.primary }]}>
-              <ThemedText variant="caption" style={[styles.ownedText, { color: colors.primaryText }]}>
-                {t().recipes.youPill}
-              </ThemedText>
-            </View>
-          ) : null}
-          <Pressable
-            onPress={() => onToggleSave(recipe.id)}
-            accessibilityRole="button"
-            accessibilityLabel={saved ? t().recipes.saved : t().recipes.save}
-            hitSlop={spacing.sm}
-            style={[styles.saveBtn, { backgroundColor: colors.overlay }]}
-          >
-            <Ionicons
-              name={saved ? 'bookmark' : 'bookmark-outline'}
-              size={sizes.iconSm}
-              color={colors.onOverlay}
+        {/* Open pressable wraps everything EXCEPT the save bookmark, so the
+            save button is a DOM sibling — never a nested <button> on web. */}
+        <Pressable
+          onPress={() => onOpen(recipe.id)}
+          accessibilityRole="button"
+          accessibilityLabel={recipe.name}
+        >
+          <View style={styles.imageWrap}>
+            <RecipeImage
+              uri={recipe.image}
+              style={styles.image}
+              accessibilityLabel={recipe.name}
+              placeholderLabel={t().recipes.noPhoto}
             />
-          </Pressable>
-        </View>
-
-        <View style={styles.body}>
-          <ThemedText variant="subtitle" numberOfLines={2} style={styles.title}>
-            {recipe.name}
-          </ThemedText>
-          <View style={styles.metaRow}>
-            <Ionicons name="time-outline" size={sizes.iconSm} color={colors.textMuted} />
-            <ThemedText variant="caption" muted>
-              {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
-            </ThemedText>
-            <Ionicons name="speedometer-outline" size={sizes.iconSm} color={colors.textMuted} />
-            <ThemedText variant="caption" muted>
-              {difficultyLabel(recipe.difficulty)}
-            </ThemedText>
-          </View>
-
-          <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>
-            <View style={styles.footerItem}>
-              <MaterialCommunityIcons name="star" size={sizes.iconSm} color={colors.starFilled} />
-              <ThemedText variant="caption" style={{ color: colors.text }}>
-                {recipe.rating.toFixed(1)}
+            <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
+              <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
+                {cuisineLabel(recipe.cuisine).name}
               </ThemedText>
             </View>
-            <View style={styles.footerItem}>
-              <MaterialCommunityIcons
-                name={recipe.likedByMe ? 'heart' : 'heart-outline'}
-                size={sizes.iconSm}
-                color={recipe.likedByMe ? colors.likeActive : colors.textMuted}
-              />
+            {ownedByMe ? (
+              <View style={[styles.ownedBadge, { backgroundColor: colors.primary }]}>
+                <ThemedText variant="caption" style={[styles.ownedText, { color: colors.primaryText }]}>
+                  {t().recipes.youPill}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.body}>
+            <ThemedText variant="subtitle" numberOfLines={2} style={styles.title}>
+              {recipe.name}
+            </ThemedText>
+            <View style={styles.metaRow}>
+              <Ionicons name="time-outline" size={sizes.iconSm} color={colors.textMuted} />
               <ThemedText variant="caption" muted>
-                {recipe.likeCount}
+                {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
+              </ThemedText>
+              <Ionicons name="speedometer-outline" size={sizes.iconSm} color={colors.textMuted} />
+              <ThemedText variant="caption" muted>
+                {difficultyLabel(recipe.difficulty)}
               </ThemedText>
             </View>
+
+            <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>
+              <View style={styles.footerItem}>
+                <MaterialCommunityIcons name="star" size={sizes.iconSm} color={colors.starFilled} />
+                <ThemedText variant="caption" style={{ color: colors.text }}>
+                  {recipe.rating.toFixed(1)}
+                </ThemedText>
+              </View>
+              <View style={styles.footerItem}>
+                <MaterialCommunityIcons
+                  name={recipe.likedByMe ? 'heart' : 'heart-outline'}
+                  size={sizes.iconSm}
+                  color={recipe.likedByMe ? colors.likeActive : colors.textMuted}
+                />
+                <ThemedText variant="caption" muted>
+                  {recipe.likeCount}
+                </ThemedText>
+              </View>
+            </View>
           </View>
-        </View>
-      </Pressable>
+        </Pressable>
+
+        {/* Sibling of the open pressable; absolutely positioned over the
+            image's top-right corner (image is flush to the card top/right). */}
+        <Pressable
+          onPress={() => onToggleSave(recipe.id)}
+          accessibilityRole="button"
+          accessibilityLabel={saved ? t().recipes.saved : t().recipes.save}
+          hitSlop={spacing.sm}
+          style={[styles.saveBtn, { backgroundColor: colors.overlay }]}
+        >
+          <Ionicons
+            name={saved ? 'bookmark' : 'bookmark-outline'}
+            size={sizes.iconSm}
+            color={colors.onOverlay}
+          />
+        </Pressable>
+      </View>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
+    position: 'relative',
     borderRadius: radii.xl,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
