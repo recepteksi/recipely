@@ -23,6 +23,10 @@ export interface WebRecipeGridProps {
   activeCuisineLabel: string | null;
   sortBy: SortKey;
   onOpenSort: () => void;
+  /** Opens the full filter sheet (cuisine / category / difficulty / max-time). */
+  onOpenFilter: () => void;
+  /** Count of applied filters; shown as a badge on the filter button when > 0. */
+  activeFilterCount: number;
   activeDifficulty: Difficulty | null;
   onDifficultyChange: (d: Difficulty | null) => void;
   gridColumns: number;
@@ -38,8 +42,8 @@ export interface WebRecipeGridProps {
  */
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onOpenSort,
-  activeDifficulty, onDifficultyChange, gridColumns, onOpenRecipe,
-  isSaved, onToggleSave,
+  onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
+  gridColumns, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -85,6 +89,24 @@ export const WebRecipeGrid = ({
           segButton(d, difficultyLabel(d), activeDifficulty === d, () => onDifficultyChange(d)),
         )}
       </View>
+      <Pressable
+        onPress={onOpenFilter}
+        accessibilityRole="button"
+        accessibilityLabel={t().recipes.filter}
+        style={[styles.filterBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+      >
+        <Ionicons name="funnel-outline" size={sizes.iconSm} color={colors.textMuted} />
+        <ThemedText style={[styles.filterLabel, { color: colors.text }]}>
+          {t().recipes.filter}
+        </ThemedText>
+        {activeFilterCount > 0 ? (
+          <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
+            <ThemedText style={[styles.filterBadgeText, { color: colors.primaryText }]}>
+              {activeFilterCount}
+            </ThemedText>
+          </View>
+        ) : null}
+      </Pressable>
       <WebSortMenu current={sortBy} onOpen={onOpenSort} />
     </View>
   );
@@ -128,7 +150,34 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
     gap: spacing.md,
+  },
+  filterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    height: sizes.webSortBtn,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderRadius: radii.lg,
+  },
+  filterLabel: {
+    fontSize: fontSizes.caption,
+    fontWeight: '600',
+  },
+  filterBadge: {
+    minWidth: sizes.iconXxs,
+    height: sizes.iconXxs,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadgeText: {
+    fontSize: fontSizes.micro,
+    fontWeight: '700',
   },
   segment: {
     flexDirection: 'row',

@@ -48,7 +48,6 @@ import { useWebShellState } from '@presentation/base/responsive/web-shell-state'
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { shadows } from '@presentation/base/theme/shadows';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
@@ -480,67 +479,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
       </ScrollView>
     ) : null;
 
-  // ─── Sticky header (web shell only — never scrolls away) ────────────────────
-  // On the web shell the WebHeader already exposes a global search input, so
-  // we drop the local SearchBar here and let users filter via WebShellState.
-  const stickyHeader = (
-    <View style={[styles.stickyHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      <View style={styles.pillRow}>
-        <Pressable
-          onPress={openFilterSheet}
-          style={[
-            styles.pill,
-            {
-              backgroundColor: activeFilterCount > 0 ? colors.primary : colors.surface,
-              borderColor: activeFilterCount > 0 ? colors.primary : colors.border,
-            },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.filter}
-        >
-          <Ionicons
-            name="funnel-outline"
-            size={14}
-            color={activeFilterCount > 0 ? colors.primaryText : colors.text}
-          />
-          <ThemedText
-            variant="caption"
-            style={[styles.pillLabel, { color: activeFilterCount > 0 ? colors.primaryText : colors.text }]}
-          >
-            {t().recipes.filter}
-          </ThemedText>
-          {activeFilterCount > 0 ? (
-            <View style={[styles.pillBadge, { backgroundColor: colors.gradientBorder }]}>
-              <ThemedText variant="caption" style={[styles.pillBadgeText, { color: colors.primaryText }]}>
-                {activeFilterCount}
-              </ThemedText>
-            </View>
-          ) : null}
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSheetOpen('sort')}
-          style={[styles.pill, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.sortBy}
-        >
-          <Ionicons name="swap-vertical" size={14} color={colors.text} />
-          <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
-            {sortLabels[sortBy]}
-          </ThemedText>
-        </Pressable>
-
-        {state.status === 'loaded' ? (
-          <ThemedText variant="caption" muted style={styles.countInline}>
-            {filteredRecipes.length} {t().recipes.results}
-          </ThemedText>
-        ) : null}
-      </View>
-
-      {activeChipsRow}
-    </View>
-  );
-
   // ─── Mobile scrolling list header (everything that scrolls away with the feed) ─
   // Ai promo, cuisine strip, result-count + Clear-all row, and the active-filter
   // chips row — all inside the FlatList header so they scroll under the band.
@@ -616,6 +554,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
           }
           sortBy={sortBy}
           onOpenSort={() => setSheetOpen('sort')}
+          onOpenFilter={openFilterSheet}
+          activeFilterCount={activeFilterCount}
           activeDifficulty={filters.difficulties[0] ?? null}
           onDifficultyChange={setDifficultyQuick}
           gridColumns={gridColumns}
@@ -678,7 +618,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
             onNotificationsPress={() => router.push('/notifications')}
             unreadCount={unreadCount}
           />
-          {stickyHeader}
 
           {/* Hero / banner / cuisine grid + recipe grid live inside `body`'s
               centered web column (see the isWebShell body branch). */}
@@ -851,47 +790,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  // ─── Sticky header ──────────────────────────────────────────────────────────
-  stickyHeader: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    ...shadows.sm,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs2,
-    height: sizes.selectorHeight,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.round,
-    borderWidth: 1.5,
-  },
-  pillLabel: {
-    fontWeight: '600',
-    fontSize: fontSizes.caption,
-  },
-  pillBadge: {
-    minWidth: sizes.iconXxs,
-    height: sizes.iconXxs,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillBadgeText: {
-    fontSize: fontSizes.micro,
-    fontWeight: '700',
-  },
-  countInline: {
-    marginLeft: 'auto',
-    fontSize: fontSizes.small,
   },
   // Active filter chips — own full-width row
   activeChipsScroll: {
