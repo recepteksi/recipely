@@ -79,6 +79,12 @@ export interface ThemeColors {
   gradientSurface: string;
   /** Frosted glass border for elements on top of gradient backgrounds. */
   gradientBorder: string;
+  /**
+   * Dark text for the white "View recipe" hero button / rank badge on the web
+   * home. ALWAYS dark (`#0F172A`) in both variants — `colors.primary` can be a
+   * bright pastel in dark themes that fails AA on white, so a constant is used.
+   */
+  heroButtonText: string;
 }
 
 export type ThemeVariant = 'light' | 'dark';
@@ -225,6 +231,7 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   dangerLight: semantics.danger + '1A',
   gradientSurface: semantics.gradientSurface,
   gradientBorder: semantics.gradientBorder,
+  heroButtonText: '#0F172A',
 });
 
 interface DarkArgs {
