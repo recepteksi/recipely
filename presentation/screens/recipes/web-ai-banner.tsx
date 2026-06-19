@@ -37,20 +37,20 @@ export const WebAiBanner = ({ onPress }: WebAiBannerProps): React.JSX.Element =>
           <Ionicons name="sparkles" size={sizes.iconXl} color={colors.onOverlay} />
         </View>
 
-        <View style={[styles.textBlock, { backgroundColor: colors.overlayLight }]}>
-          <ThemedText style={[styles.title, { color: colors.onOverlay }]}>
+        <View style={styles.textBlock}>
+          <ThemedText style={[styles.title, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
             {t().recipes.aiPromo}
           </ThemedText>
-          <ThemedText style={[styles.subtitle, { color: colors.onOverlay }]}>
+          <ThemedText style={[styles.subtitle, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
             {t().recipes.aiPromoSubtitle}
           </ThemedText>
         </View>
 
-        <View style={[styles.startChip, { backgroundColor: colors.primary }]}>
-          <ThemedText style={[styles.startLabel, { color: colors.primaryText }]}>
+        <View style={[styles.startChip, { backgroundColor: colors.onOverlay }]}>
+          <ThemedText style={[styles.startLabel, { color: colors.heroButtonText }]}>
             {t().recipes.aiStart}
           </ThemedText>
-          <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.primaryText} />
+          <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.heroButtonText} />
         </View>
       </LinearGradient>
     </Pressable>
@@ -92,18 +92,19 @@ const styles = StyleSheet.create({
   textBlock: {
     flex: 1,
     gap: spacing.xs,
-    borderRadius: radii.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs2,
   },
   title: {
     fontWeight: '800',
     fontSize: fontSizes.subtitle,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   subtitle: {
     fontWeight: '400',
     fontSize: fontSizes.medium,
     opacity: 0.9,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   startChip: {
     flexShrink: 0,
