@@ -74,6 +74,12 @@ export const DEFAULT_CODE_TTL_SECONDS = 180;
 export const RECIPE_CUISINES_PATH = "/recipes/cuisines";
 export const RECIPE_CATEGORIES_PATH = "/recipes/categories";
 
+// Backend-driven "Trending this week" rail. Inside /api/v1 — path is relative.
+export const RECIPE_TRENDING_PATH = "/recipes/trending";
+
+// Default size of the trending discover rail (backend caps `limit` at 1–30).
+export const TRENDING_RECIPES_LIMIT = 10;
+
 export const RECIPES_PAGE_SIZE = 30;
 
 export const DRAFTS_PAGE_SIZE = 20;

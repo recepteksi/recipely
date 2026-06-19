@@ -12,6 +12,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
 export interface FakeRecipeRepositoryConfig {
   listActiveRecipesResult?: Result<Recipe[], Failure>;
+  listTrendingRecipesResult?: Result<Recipe[], Failure>;
   listMyRecipesResult?: Result<Recipe[], Failure>;
   getRecipeResult?: Result<Recipe, Failure>;
   createRecipeResult?: Result<Recipe, Failure>;
@@ -57,6 +58,12 @@ export class FakeRecipeRepository implements IRecipeRepository {
   listActiveRecipes(_filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
+    );
+  }
+
+  listTrendingRecipes(_limit?: number): Promise<Result<Recipe[], Failure>> {
+    return Promise.resolve(
+      this.config.listTrendingRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
