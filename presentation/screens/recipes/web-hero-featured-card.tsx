@@ -7,11 +7,11 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
+import { WebHeroActionRow } from '@presentation/screens/recipes/web-hero-action-row';
 import {
   HERO_OVERLAY_DEEP,
   HERO_OVERLAY_MID,
   HERO_OVERLAY_FADE,
-  HERO_SAVE_BG,
 } from '@presentation/screens/recipes/web-hero-constants';
 import type { Recipe } from '@domain/recipes/recipe';
 
@@ -60,7 +60,10 @@ export const WebHeroFeaturedCard = ({
           </ThemedText>
         </View>
 
-        <ThemedText numberOfLines={3} style={[styles.title, { color: colors.onOverlay }]}>
+        <ThemedText
+          numberOfLines={3}
+          style={[styles.title, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}
+        >
           {recipe.name}
         </ThemedText>
 
@@ -79,30 +82,11 @@ export const WebHeroFeaturedCard = ({
           </ThemedText>
         </View>
 
-        <View style={styles.buttonRow}>
-          <Pressable
-            onPress={() => onPress(recipe.id)}
-            accessibilityRole="button"
-            accessibilityLabel={t().recipes.viewRecipe}
-            style={[styles.viewBtn, { backgroundColor: colors.onOverlay }]}
-          >
-            <ThemedText style={[styles.viewLabel, { color: colors.heroButtonText }]}>
-              {t().recipes.viewRecipe}
-            </ThemedText>
-          </Pressable>
-          {onSave !== undefined ? (
-            <Pressable
-              onPress={() => onSave(recipe.id)}
-              accessibilityRole="button"
-              accessibilityLabel={savedByMe ? t().recipes.saved : t().recipes.save}
-              style={[styles.saveBtn, { backgroundColor: HERO_SAVE_BG, borderColor: colors.onOverlay }]}
-            >
-              <ThemedText style={[styles.saveLabel, { color: colors.onOverlay }]}>
-                {savedByMe ? t().recipes.saved : t().recipes.save}
-              </ThemedText>
-            </Pressable>
-          ) : null}
-        </View>
+        <WebHeroActionRow
+          onView={() => onPress(recipe.id)}
+          onSave={onSave !== undefined ? () => onSave(recipe.id) : undefined}
+          savedByMe={savedByMe}
+        />
       </View>
     </Pressable>
   );
@@ -162,7 +146,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: fontSizes.hero * 1.04,
     letterSpacing: -1,
-    textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
   },
@@ -174,33 +157,5 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: fontSizes.medium,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.xs2,
-  },
-  viewBtn: {
-    height: sizes.heroActionBtn,
-    borderRadius: radii.lg,
-    paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewLabel: {
-    fontWeight: '700',
-    fontSize: fontSizes.body,
-  },
-  saveBtn: {
-    height: sizes.heroActionBtn,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveLabel: {
-    fontWeight: '700',
-    fontSize: fontSizes.body,
   },
 });
