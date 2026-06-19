@@ -11,6 +11,10 @@ import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { DraftCard } from '@presentation/screens/my-recipes/draft-card';
+import { WebMyRecipesHeader } from '@presentation/screens/my-recipes/web-my-recipes-header';
+import { WebMyRecipesTabs } from '@presentation/screens/my-recipes/web-my-recipes-tabs';
+import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
+import { useSaveRecipe } from '@presentation/screens/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -28,6 +32,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isWebShell, width } = useLayout();
   const { recipeListStore, savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
+  const { isSaved, toggleSave } = useSaveRecipe();
 
   const recipeListState = recipeListStore((s) => s.state);
   const loadRecipes = recipeListStore((s) => s.load);
@@ -98,7 +103,11 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScreenContainer scrollable={false} padded={false}>
         <ResponsiveContainer route="myRecipes" gutter={false} fill>
-        {isWebShell ? null : (
+        {isWebShell ? (
+          <View style={styles.webHeaderWrap}>
+            <WebMyRecipesHeader onCreate={openCreate} />
+          </View>
+        ) : (
           <View style={styles.header}>
             <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
             <View style={styles.headerActions}>
@@ -141,6 +150,19 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           </View>
         )}
 
+        {isWebShell ? (
+          <View style={styles.webTabsWrap}>
+            <WebMyRecipesTabs
+              tabs={[
+                { key: 'saved', label: t().myRecipes.saved, count: savedRecipes.length },
+                { key: 'created', label: t().myRecipes.created, count: createdRecipes.length },
+                { key: 'drafts', label: t().myRecipes.drafts, count: drafts.length },
+              ]}
+              active={tab}
+              onChange={(key) => setTab(key as Tab)}
+            />
+          </View>
+        ) : (
         <View
           style={[
             styles.segmented,
@@ -200,6 +222,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             );
           })}
         </View>
+        )}
 
         {tab === 'drafts' ? (
           drafts.length === 0 ? (
@@ -249,15 +272,25 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             numColumns={gridColumns}
             renderItem={({ item }) => (
               <View style={gridColumns > 1 ? styles.gridCell : null}>
-                <RecipeCard
-                  name={item.name}
-                  image={item.image}
-                  cuisine={item.cuisine}
-                  difficulty={item.difficulty}
-                  rating={item.rating}
-                  tags={item.tags}
-                  onPress={() => openRecipe(item.id)}
-                />
+                {isWebShell ? (
+                  <WebRecipeCard
+                    recipe={item}
+                    saved={isSaved(item.id)}
+                    onOpen={openRecipe}
+                    onToggleSave={(id) => void toggleSave(id)}
+                    ownedByMe={tab === 'created'}
+                  />
+                ) : (
+                  <RecipeCard
+                    name={item.name}
+                    image={item.image}
+                    cuisine={item.cuisine}
+                    difficulty={item.difficulty}
+                    rating={item.rating}
+                    tags={item.tags}
+                    onPress={() => openRecipe(item.id)}
+                  />
+                )}
               </View>
             )}
             columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
@@ -288,6 +321,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  // Web band + underlined tabs share the list's horizontal inset so they line
+  // up with the recipe grid below; top padding clears the web app header.
+  webHeaderWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  webTabsWrap: {
+    paddingHorizontal: spacing.lg,
   },
   headerActions: {
     flexDirection: 'row',

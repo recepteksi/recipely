@@ -15,6 +15,9 @@ const MINI_SKELETON_HEIGHT = (sizes.heroImageHeightWeb - spacing.sm2) / 2;
 
 export interface WebHeroSectionProps {
   onOpenRecipe: (id: string) => void;
+  /** True when the recipe id is in the signed-in user's saved set. */
+  isSaved: (id: string) => boolean;
+  onToggleSave: (id: string) => void;
 }
 
 /**
@@ -23,7 +26,11 @@ export interface WebHeroSectionProps {
  * locale change — server localizes content via `Accept-Language`). Renders a
  * skeleton while loading and `null` on error or fewer than 3 recipes.
  */
-export const WebHeroSection = ({ onOpenRecipe }: WebHeroSectionProps): React.JSX.Element | null => {
+export const WebHeroSection = ({
+  onOpenRecipe,
+  isSaved,
+  onToggleSave,
+}: WebHeroSectionProps): React.JSX.Element | null => {
   const { trendingRecipesStore } = useStores();
   const state = trendingRecipesStore((s) => s.state);
   const load = trendingRecipesStore((s) => s.load);
@@ -74,7 +81,12 @@ export const WebHeroSection = ({ onOpenRecipe }: WebHeroSectionProps): React.JSX
   return (
     <View style={[styles.row, stacked ? styles.stacked : null]}>
       <View style={styles.featured}>
-        <WebHeroFeaturedCard recipe={featured} onPress={onOpenRecipe} />
+        <WebHeroFeaturedCard
+          recipe={featured}
+          onPress={onOpenRecipe}
+          savedByMe={isSaved(featured.id)}
+          onSave={onToggleSave}
+        />
       </View>
       {stacked ? null : (
         <View style={styles.mini}>
