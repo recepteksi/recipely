@@ -189,6 +189,7 @@ export const en = {
   },
   myRecipes: {
     title: 'My Recipes',
+    webSubtitle: 'Your saved, created, and draft recipes in one place.',
     saved: 'Saved',
     created: 'Created',
     emptySaved: 'No saved recipes yet. Bookmark recipes to find them here.',

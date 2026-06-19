@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
+import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
 import { WebSectionHead } from '@presentation/screens/recipes/web-section-head';
 import { WebSortMenu } from '@presentation/screens/recipes/web-sort-menu';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
@@ -27,15 +27,19 @@ export interface WebRecipeGridProps {
   onDifficultyChange: (d: Difficulty | null) => void;
   gridColumns: number;
   onOpenRecipe: (id: string) => void;
+  /** True when the recipe id is in the signed-in user's saved set. */
+  isSaved: (id: string) => boolean;
+  onToggleSave: (id: string) => void;
 }
 
 /**
  * Web-only recipe grid: section head + difficulty segmented control + sort menu
- * above an auto-fill card grid. Reuses `RecipeListItem` for the cards.
+ * above an auto-fill card grid of `WebRecipeCard`s.
  */
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onOpenSort,
   activeDifficulty, onDifficultyChange, gridColumns, onOpenRecipe,
+  isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -48,10 +52,15 @@ export const WebRecipeGrid = ({
   const renderItem = useCallback(
     ({ item }: { item: Recipe }): React.JSX.Element => (
       <View style={styles.gridCell}>
-        <RecipeListItem recipe={item} onPress={() => onOpenRecipe(item.id)} hoverEffect />
+        <WebRecipeCard
+          recipe={item}
+          saved={isSaved(item.id)}
+          onOpen={onOpenRecipe}
+          onToggleSave={onToggleSave}
+        />
       </View>
     ),
-    [onOpenRecipe],
+    [onOpenRecipe, isSaved, onToggleSave],
   );
 
   const segButton = (key: string, label: string, active: boolean, onPress: () => void): React.JSX.Element => (

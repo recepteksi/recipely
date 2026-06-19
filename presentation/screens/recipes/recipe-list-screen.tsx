@@ -28,6 +28,7 @@ import { WebHeroSection } from '@presentation/screens/recipes/web-hero-section';
 import { WebAiBanner } from '@presentation/screens/recipes/web-ai-banner';
 import { WebCuisineGrid } from '@presentation/screens/recipes/web-cuisine-grid';
 import { WebRecipeGrid } from '@presentation/screens/recipes/web-recipe-grid';
+import { useSaveRecipe } from '@presentation/screens/recipes/use-save-recipe';
 import { type SortKey, SORT_TO_API, sortKeyLabels } from '@presentation/screens/recipes/recipe-sort';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
@@ -148,7 +149,8 @@ const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): Rea
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore, notificationsStore } = useStores();
+  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase } = useStores();
+  const { isSaved, toggleSave } = useSaveRecipe();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
   const unreadCount = notificationsStore((s) => s.unreadCount);
@@ -230,6 +232,15 @@ export const RecipeListScreen = (): React.JSX.Element => {
       void load();
     }
   }, [state.status, load]);
+
+  // Web home shows a Save bookmark on each card, so the saved set must be
+  // populated (mobile drives saving from the detail screen instead).
+  useEffect(() => {
+    if (!isWebShell) return;
+    void loadFavoritesUseCase.execute().then((result) => {
+      if (result.ok) savedRecipesStore.getState().setSavedIds(result.value);
+    });
+  }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey): RecipeFilters => ({
@@ -588,7 +599,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
       >
         {isSearching ? null : (
           <>
-            <WebHeroSection onOpenRecipe={openRecipe} />
+            <WebHeroSection
+              onOpenRecipe={openRecipe}
+              isSaved={isSaved}
+              onToggleSave={(id) => void toggleSave(id)}
+            />
             <WebAiBanner onPress={() => router.push('/create-recipe')} />
             <WebCuisineGrid selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
           </>
@@ -605,6 +620,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
           onDifficultyChange={setDifficultyQuick}
           gridColumns={gridColumns}
           onOpenRecipe={openRecipe}
+          isSaved={isSaved}
+          onToggleSave={(id) => void toggleSave(id)}
         />
       </ScrollView>
     );

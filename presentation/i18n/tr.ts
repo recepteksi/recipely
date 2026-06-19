@@ -191,6 +191,7 @@ export const tr: Translations = {
   },
   myRecipes: {
     title: 'Tariflerim',
+    webSubtitle: 'Kaydettiğin, oluşturduğun ve taslak tariflerin tek yerde.',
     saved: 'Kaydettiklerim',
     created: 'Oluşturduklarım',
     emptySaved: 'Henüz kaydedilen tarif yok. Beğendiğin tarifleri yer işaretine ekle.',
