@@ -82,4 +82,16 @@ export const sizes = {
   homeTitleShrink: 96,
   fab: 56,
   fabExtendedHeight: 48,
+  // Web home (WebRecipesPage) redesign (Jun 2026).
+  heroAvatarSm: 28,
+  heroActionBtn: 50,
+  heroMiniMinHeight: 205,
+  rankBadge: 26,
+  aiBannerIcon: 52,
+  sparkleDecor: 80,
+  cuisineTileMin: 110,
+  cuisineTileMinSm: 90,
+  webSortBtn: 42,
+  webEmptyIcon: 56,
+  webContentMax: 1200,
 } as const;

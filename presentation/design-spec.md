@@ -2041,3 +2041,781 @@ All already exist except confirm the saved label. Reuse:
   `settings-screen.tsx`, that is the only file removed; the merged content lives in the profile.
 - **No theme token changes** — so **contrast tests do not need re-running** for this section. test-developer
   only needs new/updated tests for the screen behavior (saved-count cell, removed share button), not contrast.
+
+---
+
+## Web Home (`WebRecipesPage`) Redesign (Jun 2026)
+
+**Date:** 2026-06-19. **Scope:** web shell only (`isWebShell === true`). Mobile layout, mobile
+collapsing header, and the mobile `TrendingStrip` are untouched by this section.
+
+**Source of truth:** Claude Design prototype `src/web-pages.jsx` (`WebRecipesPage` component).
+
+**One-sentence purpose:** Replace the current web home's flat filter-pill + list with a full editorial
+layout: a hero zone (featured recipe + 2 mini-cards), an AI promo banner, a cuisine tile grid, and a
+recipe grid with inline difficulty segmented control and a sort dropdown.
+
+---
+
+### References
+
+- **Apple HIG — Large Type & Hero layout** (developer.apple.com/design/human-interface-guidelines) —
+  large hero card with full-bleed cover image and bottom gradient overlay; author byline row below title.
+- **Material 3 — Expressive Cards** (m3.material.io) — 1px cardBorder hairline on `surface` replaces
+  shadow on dark themes; card `borderRadius` at the `xxl2` (28px) tier for large hero, `xxl` (24px) for
+  recipe grid cards.
+- **Mobbin / Yummly web feed** — ranked mini-cards at right of hero with a numbered badge at top-left;
+  segmented difficulty control inline with the section header row.
+
+---
+
+### A. Component Breakdown
+
+The rn-developer must create these files. All are web-only components (`isWebShell` is their exclusive
+render context and they are **never** imported by mobile screens). One declaration + its `Props`
+interface per file.
+
+| File | Exports | Purpose |
+|---|---|---|
+| `presentation/screens/recipes/web-hero-section.tsx` | `WebHeroSection`, `WebHeroSectionProps` | Renders the 1.9fr/1fr CSS grid: featured card left, two mini-cards right. Consumes `trendingRecipesStore` directly (same pattern as `TrendingStrip`). |
+| `presentation/screens/recipes/web-hero-featured-card.tsx` | `WebHeroFeaturedCard`, `WebHeroFeaturedCardProps` | Big left card: bleed image, diagonal gradient overlay, badge pill, h1 title, author row, meta row, two action buttons. |
+| `presentation/screens/recipes/web-hero-mini-card.tsx` | `WebHeroMiniCard`, `WebHeroMiniCardProps` | Compact right card: bleed image, bottom gradient, rank badge, title + meta at bottom. |
+| `presentation/screens/recipes/web-ai-banner.tsx` | `WebAiBanner`, `WebAiBannerProps` | Full-width AI promo button, wide layout with sparkle decoration and subtitle text. |
+| `presentation/screens/recipes/web-cuisine-grid.tsx` | `WebCuisineGrid`, `WebCuisineGridProps` | Tile grid (auto-fill, minmax 110px) of cuisine tiles. Consumes `useTaxonomyOptions` + `useTaxonomyLabel`. |
+| `presentation/screens/recipes/web-section-head.tsx` | `WebSectionHead`, `WebSectionHeadProps` | Reusable section heading: title (h2 role) + sub + optional `right` slot. |
+| `presentation/screens/recipes/web-sort-menu.tsx` | `WebSortMenu`, `WebSortMenuProps` | 42px sort button that opens the existing `BottomSheet` (or an inline `View`-based dropdown). |
+| `presentation/screens/recipes/web-recipe-grid.tsx` | `WebRecipeGrid`, `WebRecipeGridProps` | Section head + difficulty segmented control + sort menu + auto-fill recipe card grid + empty state. Wraps `RecipeListItem`. |
+
+The existing `RecipeListItem` (and therefore `RecipeCard`) is **reused unchanged** for the recipe grid
+cards with an extended props surface — the `WebRecipeCard`-specific hover lift requires a CSS class
+injected via `style` prop on web. The hero sections use their own full-bleed image layout and must NOT
+reuse `RecipeCard`.
+
+The existing `AiBannerCard` is **replaced on web** by `WebAiBanner`. The new file is web-only; the
+original compact `AiBannerCard` continues to serve mobile.
+
+The existing `CuisineStrip` (horizontal scroll) is **replaced on web** by `WebCuisineGrid` (tile grid).
+The `CuisineStrip` continues to serve mobile unchanged.
+
+The existing `TrendingStrip` is **removed from mobile** (this was committed separately; the spec here
+only governs web) and is **replaced on web** by the hero section's featured + mini cards. Removing it
+from the web render path is part of `WebHeroSection`'s job: it owns its own data source so
+`RecipeListScreen`'s web branch can stop rendering `<TrendingStrip>`.
+
+---
+
+### B. Layout — `RecipeListScreen` web branch
+
+The web branch of `RecipeListScreen` (`isWebShell === true`) currently renders:
+
+```
+RecipesAppHeader
+stickyHeader  (filter pill + sort pill + count + active-filter chips)
+AiBannerCard
+TrendingStrip
+CuisineStrip
+FlatList (recipe grid)
+```
+
+After this redesign it renders:
+
+```
+RecipesAppHeader          (unchanged)
+stickyHeader              (filter pill + sort pill — keep for now; see note below)
+[when NOT searching:]
+  WebHeroSection          (replaces TrendingStrip)
+  WebAiBanner             (replaces AiBannerCard)
+  WebCuisineGrid          (replaces CuisineStrip)
+WebRecipeGrid             (replaces the bare FlatList — owns its own section head + controls)
+```
+
+**Searching** is defined as `webSearchQuery.trim().length > 0`. When searching, show only
+`WebRecipeGrid` (the section head title changes to "Search results"; hero, banner, cuisine grid are
+hidden). This mirrors the prototype's `!searching` guard.
+
+The existing `stickyHeader` (filter + sort pills, active-filter chips row) keeps its position above
+the hero for now. The filter sheet and sort sheet are unchanged. Connecting the sort state between the
+`stickyHeader` sort pill and `WebSortMenu` inside `WebRecipeGrid` is the rn-developer's responsibility
+— both should drive the same `sortBy` / `setSortBy` state (already present in `RecipeListScreen`).
+
+All web content is wrapped in a centered container:
+- `maxWidth: 1200`
+- `alignSelf: 'center'`
+- `width: '100%'`
+- `paddingHorizontal: spacing.xxl` (32px, matching prototype's `wpPage`)
+
+This container wraps `WebHeroSection`, `WebAiBanner`, `WebCuisineGrid`, and `WebRecipeGrid`.
+`RecipesAppHeader` and `stickyHeader` remain full-width.
+
+---
+
+### C. Sub-component Specs
+
+#### C.1 `WebHeroSection`
+
+**File:** `presentation/screens/recipes/web-hero-section.tsx`
+
+**Purpose:** Renders the 1.9fr/1fr editorial hero split. Consumes `trendingRecipesStore` via
+`useStores()`. Shows nothing (returns `null`) until the store has at least 3 loaded recipes. Shows a
+skeleton while loading (see States).
+
+**Props:**
+```ts
+export interface WebHeroSectionProps {
+  onOpenRecipe: (id: string) => void;
+}
+```
+
+**Layout:**
+
+- Outer `View`: `flexDirection: 'row'`, `gap: spacing.sm2` (10), `marginBottom: spacing.lg`.
+- Left child: `flex: 1.9` (`{ flex: 1.9, minWidth: 0 }`), renders `WebHeroFeaturedCard`.
+- Right child: `flex: 1` (`{ flex: 1, minWidth: 0 }`), `flexDirection: 'column'`, `gap: spacing.sm2`,
+  renders two `WebHeroMiniCard`s stacked.
+- `featured = trending[0]`, `mini1 = trending[1]` (rank 2), `mini2 = trending[2]` (rank 3).
+
+**States:**
+
+- Loading: left slot renders a `SkeletonLoader` `width="100%"` `height={sizes.heroImageHeightWeb}` with
+  `borderRadius={radii.xxl2}`; right slot renders two `SkeletonLoader`s each `width="100%"`
+  `height={(sizes.heroImageHeightWeb - spacing.sm2) / 2}` with `borderRadius={radii.xxl}`.
+- Error / fewer than 3 recipes: return `null` (no partial hero — the section simply disappears).
+- Loaded: render the two card components.
+
+**Responsive note:** at `width < 700` (narrower web window), fall back to a single-column stack —
+`flexDirection: 'column'`, `flex` values irrelevant. The rn-developer should gate on
+`useLayout().width < 700` (the existing `useLayout` hook is available). Below that threshold, render
+`WebHeroFeaturedCard` alone (full width), omit the two mini-cards. The 1.9/1 split is only for
+`width >= 700`.
+
+#### C.2 `WebHeroFeaturedCard`
+
+**File:** `presentation/screens/recipes/web-hero-featured-card.tsx`
+
+**Props:**
+```ts
+export interface WebHeroFeaturedCardProps {
+  recipe: Recipe;
+  onPress: (id: string) => void;
+  onSave?: (id: string) => void;
+  savedByMe?: boolean;
+}
+```
+
+**Layout (all absolute-positioned content over a full-bleed image):**
+
+- Outer `Pressable`: `borderRadius: radii.xxl2` (28), `overflow: 'hidden'`,
+  `minHeight: sizes.heroImageHeightWeb` (440). No separate bg — image fills it.
+- `RecipeImage` (reuse existing widget): `position: 'absolute'`, `top: 0, left: 0, right: 0, bottom: 0`,
+  `resizeMode: 'cover'`.
+- Diagonal gradient overlay (`LinearGradient`): `position: 'absolute'`, `top: 0, left: 0, right: 0, bottom: 0`.
+  Colors (as a `[string, string, string, string]` array for 4 stops): map to color tokens:
+  - Stop 0 (0%): `heroOverlayDeep` — see new tokens table below.
+  - Stop 1 (45%): `heroOverlayMid` — see new tokens table.
+  - Stop 2 (80%): `heroOverlayFade` — see new tokens table.
+  - Stop 3 (100%): `heroOverlayFade`.
+  - `start={{ x: 0.15, y: 1 }}` `end={{ x: 0.85, y: 0 }}` (approximates the 105deg prototype diagonal).
+- Content `View`: `position: 'absolute'`, `bottom: 0, left: 0, right: 0`,
+  `padding: spacing.xxxl` (48), `gap: spacing.md`.
+
+Content inside the content View, top to bottom:
+
+1. **Trending pill badge:** `flexDirection: 'row'`, `alignItems: 'center'`, `gap: spacing.xs`,
+   `alignSelf: 'flex-start'`, `borderRadius: radii.round`, `paddingHorizontal: spacing.md`,
+   `paddingVertical: spacing.xs2`, `backgroundColor: colors.primary`. Children:
+   - `Ionicons` `name="flame"` `size={sizes.iconSm}` `color={colors.primaryText}`.
+   - `ThemedText` `fontSize={fontSizes.small}` (12) `fontWeight='700'`
+     `letterSpacing={0.5}` `style={{ color: colors.primaryText, textTransform: 'uppercase' }}`
+     — text: `t().recipes.trending` (already exists).
+
+2. **Title:** `ThemedText` `fontSize={fontSizes.hero}` (44) `fontWeight='800'`
+   `lineHeight={fontSizes.hero * 1.04}` `letterSpacing={-1}`
+   `style={{ color: colors.onOverlay, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }}`
+   `numberOfLines={3}` — text: `recipe.name`.
+
+3. **Author row:** `flexDirection: 'row'`, `alignItems: 'center'`, `gap: spacing.sm`.
+   - `AvatarImage` `size={sizes.heroAvatarSm}` (28 — new token, see below) `uri={recipe.authorPhotoUrl}` `name={recipe.authorName}`.
+   - `ThemedText` `fontSize={fontSizes.body}` `style={{ color: colors.onOverlay }}` — text built
+     from i18n: `t().recipes.heroByAuthor` where `{name}` is replaced by `recipe.authorName`.
+
+4. **Meta row:** `flexDirection: 'row'`, `alignItems: 'center'`, `gap: spacing.lg`,
+   `flexWrap: 'wrap'`.
+   - Star + rating: `Ionicons` `name="star"` `size={sizes.iconSm}` `color={colors.starFilled}` +
+     `ThemedText` `fontSize={fontSizes.medium}` (14.5 → use `fontSizes.medium` = 14) `style={{ color: colors.onOverlay }}`.
+   - Clock + total time: `Ionicons` `name="time-outline"` + `ThemedText`
+     `t().recipes.heroTotalMin` where `{n}` = `recipe.prepTimeMinutes + recipe.cookTimeMinutes`.
+   - Gauge + difficulty: `Ionicons` `name="speedometer-outline"` + `ThemedText`
+     `recipe.difficulty` (display string from `useTaxonomyLabel` if available, else raw).
+
+5. **Button row:** `flexDirection: 'row'`, `gap: spacing.md`, `marginTop: spacing.xs2`.
+   - **View Recipe button:** `height: sizes.heroActionBtn` (50 — new token), `borderRadius: radii.lg`,
+     `backgroundColor: colors.onOverlay` (#FFFFFF always), `paddingHorizontal: spacing.xl`,
+     `alignItems: 'center'`, `justifyContent: 'center'`.
+     Label: `ThemedText` `fontWeight='700'` `fontSize={fontSizes.body}` `style={{ color: colors.heroButtonText }}`.
+     `accessibilityRole="button"`, `accessibilityLabel={t().recipes.viewRecipe}`.
+   - **Save button:** `height: sizes.heroActionBtn`, `borderRadius: radii.lg`,
+     `backgroundColor: colors.heroSaveBg`, `borderWidth: 1`, `borderColor: colors.onOverlay`,
+     `paddingHorizontal: spacing.xl`, `alignItems: 'center'`, `justifyContent: 'center'`.
+     Label: `ThemedText` `fontWeight='700'` `fontSize={fontSizes.body}` `style={{ color: colors.onOverlay }}`.
+     Text: `savedByMe ? t().recipes.saved : t().recipes.save`.
+     `accessibilityRole="button"`, `accessibilityLabel={savedByMe ? t().recipes.saved : t().recipes.save}`.
+
+**Press:** `onPress={() => onPress(recipe.id)}` on the outer `Pressable`. Pressed state: `opacity: 0.92`
+via `Pressable`'s `pressed` arg. The Save button's `onPress={() => onSave?.(recipe.id)}` stops
+propagation (`event.stopPropagation()` on web — use separate `Pressable` with `onPress` that does NOT
+call the outer handler).
+
+#### C.3 `WebHeroMiniCard`
+
+**File:** `presentation/screens/recipes/web-hero-mini-card.tsx`
+
+**Props:**
+```ts
+export interface WebHeroMiniCardProps {
+  recipe: Recipe;
+  rank: number;   // 2 or 3
+  onPress: (id: string) => void;
+}
+```
+
+**Layout:**
+
+- Outer `Pressable`: `borderRadius: radii.xxl` (24), `overflow: 'hidden'`, `flex: 1` (to fill the
+  right-column slot), `minHeight: sizes.heroMiniMinHeight` (new token — see below).
+- `RecipeImage`: `position: 'absolute'`, `top: 0, left: 0, right: 0, bottom: 0`, `resizeMode: 'cover'`.
+- Bottom gradient (`LinearGradient`): `position: 'absolute'`, `bottom: 0, left: 0, right: 0`,
+  `height: '60%'`, colors: `[colors.heroOverlayFade, colors.heroOverlayDeep]`,
+  `start={{ x: 0, y: 0 }}` `end={{ x: 0, y: 1 }}`.
+- **Rank badge:** `position: 'absolute'`, `top: spacing.md`, `left: spacing.md`.
+  A `View`: `width: sizes.rankBadge` (26 — new token), `height: sizes.rankBadge`, `borderRadius: radii.round`,
+  `backgroundColor: colors.onOverlay`, `alignItems: 'center'`, `justifyContent: 'center'`.
+  Inner `ThemedText` `fontWeight='700'` `fontSize={fontSizes.body}` `style={{ color: colors.heroButtonText }}`.
+  Text: `String(rank)`.
+- **Bottom content:** `position: 'absolute'`, `bottom: 0, left: 0, right: 0`,
+  `padding: spacing.md`, `gap: spacing.xs`.
+  - Title: `ThemedText` `fontWeight='700'` `fontSize={fontSizes.heading}` (17 → `fontSizes.heading` = 16;
+    nearest token — use `fontSizes.heading`) `numberOfLines={2}` `style={{ color: colors.onOverlay }}`.
+  - Meta row: `flexDirection: 'row'`, `alignItems: 'center'`, `gap: spacing.sm`.
+    - `Ionicons` `name="star"` `size={sizes.iconSm}` `color={colors.starFilled}` +
+      `ThemedText` `fontSize={fontSizes.small}` (12.5 → use `fontSizes.small` = 12) `style={{ color: colors.onOverlay }}`.
+    - `Ionicons` `name="time-outline"` `size={sizes.iconSm}` `color={colors.onOverlay}` +
+      `ThemedText` `fontSize={fontSizes.small}` `style={{ color: colors.onOverlay }}`
+      text: `${recipe.prepTimeMinutes + recipe.cookTimeMinutes} ${t().recipes.minutes}`.
+
+**Press:** `onPress(() => onPress(recipe.id))`. Pressed: `opacity: 0.88`.
+
+#### C.4 `WebAiBanner`
+
+**File:** `presentation/screens/recipes/web-ai-banner.tsx`
+
+**Props:**
+```ts
+export interface WebAiBannerProps {
+  onPress: () => void;
+}
+```
+
+**Layout:**
+
+- Outer `Pressable`: `marginBottom: spacing.lg`.
+- `LinearGradient` child: `colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}`,
+  `start={{ x: 0, y: 0 }}` `end={{ x: 1, y: 0 }}` (120deg → horizontal),
+  `style`: `borderWidth: 1`, `borderColor: colors.gradientBorder`, `borderRadius: radii.xxl`,
+  `paddingVertical: spacing.xl` (22px → `spacing.xl` = 24), `paddingHorizontal: spacing.xxl` (26px → `spacing.xxl` = 32),
+  `flexDirection: 'row'`, `alignItems: 'center'`, `gap: spacing.lg`, `overflow: 'hidden'`.
+
+Children:
+
+1. **Sparkle decoration** (`View`, `position: 'absolute'`, `top: -spacing.lg`, `right: -spacing.md`,
+   `opacity: 0.12`, `pointerEvents: 'none'`):
+   `Ionicons` `name="sparkles"` `size={sizes.sparkleDecor}` (new token = 80) `color={colors.onOverlay}`.
+
+2. **Icon tile** (`View`, `width: sizes.aiBannerIcon` (52 — new token), `height: sizes.aiBannerIcon`,
+   `borderRadius: radii.lg`, `backgroundColor: colors.gradientSurface`, `borderWidth: 1`,
+   `borderColor: colors.gradientBorder`, `alignItems: 'center'`, `justifyContent: 'center'`,
+   `flexShrink: 0`):
+   `Ionicons` `name="sparkles"` `size={sizes.iconXl}` (32) `color={colors.onOverlay}`.
+
+3. **Text block** (`View`, `flex: 1`, `gap: spacing.xs`):
+
+   Wrap this block in a `View` with `backgroundColor: colors.overlayLight` (rgba(0,0,0,0.4)),
+   `borderRadius: radii.sm`, `paddingHorizontal: spacing.sm`, `paddingVertical: spacing.xs2`.
+   This scrim is required for the subtitle to pass WCAG AA (4.5:1) on light themes where gradient
+   starts are too bright for white text. Verified: `overlayLight` over light-theme gradient starts
+   yields ≥ 7.0:1 for white (e.g., lime-zest 7.14:1, pearl-white 8.11:1).
+
+   - Title: `ThemedText` `fontWeight='800'` `fontSize={fontSizes.subtitle}` (18)
+     `style={{ color: colors.onOverlay }}` — text: `t().recipes.aiPromo`.
+   - Subtitle: `ThemedText` `fontWeight='400'` `fontSize={fontSizes.medium}` (14)
+     `style={{ color: colors.onOverlay, opacity: 0.9 }}` — text: `t().recipes.aiPromoSubtitle`.
+
+4. **Start chip** (`View`, `flexShrink: 0`, `flexDirection: 'row'`, `alignItems: 'center'`,
+   `gap: spacing.xs`, `backgroundColor: colors.primary`, `borderRadius: radii.round`,
+   `paddingVertical: spacing.xs2`, `paddingHorizontal: spacing.md`):
+   - `ThemedText` `fontWeight='700'` `fontSize={fontSizes.caption}` `style={{ color: colors.primaryText }}` — `t().recipes.aiStart`.
+   - `Ionicons` `name="chevron-forward"` `size={sizes.iconSm}` `color={colors.primaryText}`.
+
+   Rationale for `primary`/`primaryText` chip instead of white chip: white chip with dark-theme
+   primaries yields as low as 2.54:1 (pearl-white dark `#60A5FA` on `#FFFFFF`). The contracted
+   primary pair is guaranteed ≥ 4.5:1 across all 20 themes.
+
+**Press:** `onPress` on the outer `Pressable`. Pressed: `opacity: 0.88`.
+`accessibilityRole="button"`, `accessibilityLabel={t().recipes.aiPromo}`.
+
+#### C.5 `WebCuisineGrid`
+
+**File:** `presentation/screens/recipes/web-cuisine-grid.tsx`
+
+**Props:**
+```ts
+export interface WebCuisineGridProps {
+  selectedCuisines: string[];
+  onToggle: (cuisine: string) => void;
+}
+```
+
+**Layout:**
+
+- `WebSectionHead` above: `title={t().recipes.browseCuisines}` `sub={t().recipes.filterByCuisine}`.
+- Tile grid: `View` with `flexDirection: 'row'`, `flexWrap: 'wrap'`, `gap: spacing.md`,
+  `marginBottom: spacing.lg`.
+- Each **cuisine tile** (`Pressable`):
+  - `flexDirection: 'column'`, `alignItems: 'center'`, `gap: spacing.sm`,
+    `paddingVertical: spacing.lg`, `paddingHorizontal: spacing.sm`,
+    `borderRadius: radii.xl`, `borderWidth: 1.5`,
+    `minWidth: sizes.cuisineTileMin` (new token = 110), determined by `flexWrap`.
+    - Active: `backgroundColor: colors.chipBackground`, `borderColor: colors.primary`.
+    - Inactive: `backgroundColor: colors.cardBackground`, `borderColor: colors.cardBorder`.
+  - Emoji: `ThemedText` `fontSize={fontSizes.subheading}` (20) — emoji from `cuisineLabel(k).emoji`.
+  - Label: `ThemedText` `fontWeight='600'` `fontSize={fontSizes.small}` (13)
+    `style={{ color: active ? colors.chipText : colors.textMuted }}` `numberOfLines={1}`.
+  - `accessibilityRole="button"`, `accessibilityLabel={name}`.
+
+**First tile** is "All" / "Tümü" with `emoji="🍽️"` and `name=t().recipes.cuisineAll`. It represents
+the "no cuisine filter" state: active when `selectedCuisines.length === 0`. Pressing it calls
+`onToggle('ALL')` — the rn-developer must handle `'ALL'` as a special key that resets cuisines to `[]`.
+
+The remaining tiles are driven by `useTaxonomyOptions().cuisineKeys` and `useTaxonomyLabel()`,
+exactly as `CuisineStrip` already does — no hardcoded list.
+
+**Responsive:** at `width < 500`, reduce `minWidth` to 90px to keep at least 4 tiles per row.
+Implement as `width < 500 ? sizes.cuisineTileMinSm : sizes.cuisineTileMin` (both tokens in sizing
+table below).
+
+#### C.6 `WebSectionHead`
+
+**File:** `presentation/screens/recipes/web-section-head.tsx`
+
+**Props:**
+```ts
+export interface WebSectionHeadProps {
+  title: string;
+  sub?: string;
+  right?: React.ReactNode;   // holds difficulty segmented control + sort menu on the recipe grid
+}
+```
+
+**Layout:** `flexDirection: 'row'`, `alignItems: 'flex-end'`, `justifyContent: 'space-between'`,
+`marginBottom: spacing.md`.
+
+- Left column: `flex: 1`.
+  - Title: `ThemedText` `fontWeight='800'` `fontSize={fontSizes.display}` (22)
+    `letterSpacing={-0.4}` — rendered as an `h2`-role element. Use `accessibilityRole="header"`.
+  - Sub (if present): `ThemedText` `fontSize={fontSizes.medium}` `style={{ color: colors.textMuted }}`
+    `marginTop={spacing.xxs}`.
+- Right slot: `right` rendered as-is.
+
+#### C.7 `WebSortMenu`
+
+**File:** `presentation/screens/recipes/web-sort-menu.tsx`
+
+**Props:**
+```ts
+export interface WebSortMenuProps {
+  current: SortKey;
+  onChange: (key: SortKey) => void;
+}
+```
+
+**Layout:**
+
+A `Pressable` button (height: `sizes.webSortBtn` = 42 — new token) that opens the existing
+`BottomSheet` sort picker (already present in `RecipeListScreen`). On web, tapping sets
+`sheetOpen('sort')` in the parent screen. The button renders:
+
+- `borderWidth: 1`, `borderColor: colors.cardBorder`, `borderRadius: radii.lg`,
+  `paddingHorizontal: spacing.md`, `height: sizes.webSortBtn`, `flexDirection: 'row'`,
+  `alignItems: 'center'`, `gap: spacing.xs`, `backgroundColor: colors.surface`.
+- `ThemedText` `fontSize={fontSizes.caption}` `style={{ color: colors.textMuted }}` — `t().recipes.sortBy` + `:`.
+- `ThemedText` `fontSize={fontSizes.caption}` `fontWeight='600'` `style={{ color: colors.text }}` — `sortLabels[current]`.
+- `Ionicons` `name="chevron-down"` `size={sizes.iconSm}` `color={colors.textMuted}`.
+
+`WebSortMenu` does NOT own or render the sheet — it only calls `onChange`. The parent (`WebRecipeGrid`
+or the screen) handles `sheetOpen` state.
+
+#### C.8 `WebRecipeGrid`
+
+**File:** `presentation/screens/recipes/web-recipe-grid.tsx`
+
+**Props:**
+```ts
+export interface WebRecipeGridProps {
+  recipes: Recipe[];
+  isSearching: boolean;
+  activeCuisine: string | null;  // first item from filters.cuisines, or null
+  sortBy: SortKey;
+  onSortChange: (key: SortKey) => void;
+  activeDifficulty: Difficulty | null;
+  onDifficultyChange: (d: Difficulty | null) => void;
+  gridColumns: number;
+  onOpenRecipe: (id: string) => void;
+}
+```
+
+**Layout (top to bottom):**
+
+1. **Section head row** (`WebSectionHead`):
+   - `title`: when `isSearching` → `t().recipes.webSearchResults`; when `activeCuisine` →
+     `t().recipes.webCuisineRecipes` (interpolated with cuisine name); else `t().recipes.webAllRecipes`.
+   - `sub`: `t().recipes.webRecipesCount` where `{n}` = `recipes.length`.
+   - `right` slot: difficulty control + sort menu, `flexDirection: 'row'`, `gap: spacing.md`, `alignItems: 'center'`.
+
+2. **Difficulty segmented control** (inside `right` slot):
+   - Pill container: `flexDirection: 'row'`, `backgroundColor: colors.surface`, `borderWidth: 1`,
+     `borderColor: colors.cardBorder`, `borderRadius: radii.lg`, `padding: spacing.xxs` (3 → use `spacing.xxs` = 2).
+   - Four buttons — All / Easy / Medium / Hard. Labels: `t().recipes.difficultyAll` and the three
+     existing `difficulty` label keys (see i18n table). Each button:
+     - `paddingHorizontal: spacing.md`, `paddingVertical: spacing.xs2`, `borderRadius: radii.md`.
+     - Active: `backgroundColor: colors.cardBackground`, `shadows.sm`.
+     - Inactive: `backgroundColor: 'transparent'`.
+     - `ThemedText` `fontSize={fontSizes.caption}` `fontWeight={active ? '700' : '400'}` `style={{ color: colors.text }}`.
+   - Active difficulty is local state lifted from `activeDifficulty` prop. Pressing "All" sets
+     `onDifficultyChange(null)`; pressing a difficulty calls `onDifficultyChange(d)`.
+
+3. **`WebSortMenu`** (inside `right` slot): `current={sortBy}` `onChange={onSortChange}`.
+   On press opens the existing standalone sort `BottomSheet` (`sheetOpen === 'sort'`). The
+   `WebRecipeGrid` calls `onSortChange` which bubbles to the screen.
+
+4. **Recipe card grid** (`FlatList` with `numColumns={gridColumns}`):
+   - Style mirrors the existing web FlatList in `RecipeListScreen` exactly:
+     `key={grid-${gridColumns}}`, `columnWrapperStyle={styles.gridRow}` when `gridColumns > 1`,
+     `contentContainerStyle`: `gap: GRID_GAP` between rows, `paddingBottom: spacing.xxl`.
+   - `renderItem`: for each recipe, render `RecipeListItem` inside `View style={styles.gridCell}`.
+   - Hover lift: on web, the `RecipeCard` `Pressable` can be given `style={{ cursor: 'pointer' }}`
+     and CSS-based `transform` via `onMouseEnter` / `onMouseLeave`. Implement as:
+     - `onMouseEnter`: `scale.value = withTiming(1.02, {duration: 160})`; `elevation.value = 8`.
+     - `onMouseLeave`: `scale.value = withTiming(1, {duration: 160})`; elevation reset.
+     - The existing `RecipeCard`'s `animatedStyle` already drives a `scale` shared value — extend its
+       props to accept an optional `hoverEffect?: boolean` (web only) so the card enables the mouse
+       handlers when `hoverEffect && Platform.OS === 'web'`.
+     - Image scale 1.05 on hover: wrap `RecipeImage` in its own `Animated.View` with separate shared
+       value inside `RecipeCard`.
+     This is a `RecipeCard` prop extension — coordinate with rn-developer.
+
+5. **Empty state:** `View` with `borderWidth: 1.5`, `borderStyle: 'dashed'`,
+   `borderColor: colors.border`, `borderRadius: radii.xl`, `padding: spacing.xxxl`,
+   `alignItems: 'center'`, `gap: spacing.md`.
+   - `View` circle: `width: sizes.webEmptyIcon` (56 — new token), `height: sizes.webEmptyIcon`,
+     `borderRadius: radii.round`, `backgroundColor: colors.surface`, `alignItems: 'center'`, `justifyContent: 'center'`.
+     Inside: `Ionicons` `name="search"` `size={sizes.iconXl}` (32) `color={colors.textMuted}`.
+   - `ThemedText` `fontWeight='700'` `fontSize={fontSizes.subtitle}` `style={{ color: colors.text }}` — `t().recipes.noResults`.
+   - `ThemedText` `fontSize={fontSizes.body}` `style={{ color: colors.textMuted }}` — `t().recipes.webEmptyBody`.
+
+---
+
+### D. New Token Table
+
+All new tokens are purely layout / size / color tokens. None change any existing color semantics.
+
+#### D.1 New `sizes` tokens — add to `presentation/base/theme/spacing.ts`
+
+| Token | Value | Notes |
+|---|---|---|
+| `heroImageHeightWeb` | `440` | Already exists in spacing.ts — no change needed. |
+| `heroAvatarSm` | `28` | Hero featured card author avatar. |
+| `heroActionBtn` | `50` | Height of View Recipe / Save buttons in hero card. |
+| `heroMiniMinHeight` | `205` | Minimum height of each `WebHeroMiniCard` so two fill the 440px hero height minus the 10px gap: `(440 - 10) / 2 = 215`; rounded to 205 as a floor. |
+| `rankBadge` | `26` | White rank-number circle on `WebHeroMiniCard`. |
+| `aiBannerIcon` | `52` | Square icon tile in `WebAiBanner`. |
+| `sparkleDecor` | `80` | Faint background sparkle decoration in `WebAiBanner`. |
+| `cuisineTileMin` | `110` | Min width of a cuisine tile in `WebCuisineGrid` (≥700px window). |
+| `cuisineTileMinSm` | `90` | Min width of a cuisine tile in `WebCuisineGrid` (<500px window). |
+| `webSortBtn` | `42` | Height of `WebSortMenu` trigger button. |
+| `webEmptyIcon` | `56` | Diameter of the circular icon container in the recipe-grid empty state. |
+| `webContentMax` | `1200` | Already implicit as a literal in `RecipeListScreen`; consolidate here. (The existing `RECIPE_CARD_MIN_WIDTH = 320` and `listCenter` styles use `maxWidth: 1200` as a literal — rn-developer should replace those with `sizes.webContentMax`.) |
+| `webContentPadding` | `32` | Horizontal page padding (`spacing.xxl`). Alias only — not a new value, maps to `spacing.xxl`. Document for clarity; do not add as a separate token (redundant with `spacing.xxl`). |
+
+#### D.2 New color tokens — add to `ThemeColors` + `makeColors` in `presentation/base/theme/themes.ts`
+
+Three new semantic tokens are required. Both dark and light variants use the same constant values
+because they represent on-image content that is always darker regardless of theme.
+
+| Token | Dark value | Light value | Rationale |
+|---|---|---|---|
+| `heroButtonText` | `#0F172A` | `#0F172A` | Dark text on white "View Recipe" button. `colors.primary` in dark themes can be a bright pastel (e.g., pearl-white dark `#60A5FA`) that yields only 2.54:1 on white — fails AA. `#0F172A` is always ≥ 17.85:1 on `#FFFFFF`. |
+| `heroSaveBg` | `rgba(255,255,255,0.14)` | `rgba(255,255,255,0.14)` | Translucent frosted Save button bg. Always sits over a dark hero overlay, making effective bg ≥ 9:1 against white text. Cannot be a solid hex because it must show through to the gradient behind. Cannot use `colors.gradientSurface` (rgba(255,255,255,0.18)) since it is already contracted for the icon badge; a distinct token prevents future drift. |
+| `heroOverlayDeep` | `rgba(15,23,42,0.9)` | `rgba(15,23,42,0.9)` | Darkest stop of the hero diagonal gradient (0% anchor, left/bottom). 0.9 alpha over any image pixel yields ≥ 13.5:1 for white text (worst case verified: white pixel → #272E3F → cr 13.56:1). |
+| `heroOverlayMid` | `rgba(15,23,42,0.55)` | `rgba(15,23,42,0.55)` | 45% stop of the hero gradient. Transitions from near-opaque dark to fade. |
+| `heroOverlayFade` | `rgba(15,23,42,0.05)` | `rgba(15,23,42,0.05)` | 80–100% stop of the gradient (right/top of the card). No text sits here. |
+
+**Important:** `heroSaveBg`, `heroOverlayDeep`, `heroOverlayMid`, `heroOverlayFade` cannot be placed
+in `ThemeColors` as-typed because the interface requires `string` and these are rgba values. They can
+be plain constants exported from a new `presentation/screens/recipes/web-hero-constants.ts` file. Do
+NOT put rgba values in `themes.ts` `makeColors` (the type is `string` but it creates a hidden type
+drift risk). `heroButtonText` is a solid hex and CAN go in `ThemeColors`.
+
+Revised plan:
+- Add `heroButtonText: string` to `ThemeColors` interface and `makeColors`, value `'#0F172A'` in both variants.
+- Export the four rgba constants from a new file `presentation/screens/recipes/web-hero-constants.ts`:
+  ```ts
+  export const HERO_OVERLAY_DEEP  = 'rgba(15,23,42,0.9)';
+  export const HERO_OVERLAY_MID   = 'rgba(15,23,42,0.55)';
+  export const HERO_OVERLAY_FADE  = 'rgba(15,23,42,0.05)';
+  export const HERO_SAVE_BG       = 'rgba(255,255,255,0.14)';
+  ```
+  These four constants satisfy the "no magic values in components" rule; they live in a dedicated constants file. Do not place them in `infrastructure/constants/` (that is for API and storage keys) — feature-scoped constants belong in the feature folder.
+
+#### D.3 Existing tokens that already satisfy prototype values
+
+| Prototype value | Existing token | Token value |
+|---|---|---|
+| Gap 18px (hero grid gap, mini-card gap) | `spacing.sm2` | 10 (nearest — use `spacing.sm2`; the 18px prototype gap is not critical, use the closest token) |
+| Gap 14px (cuisine tile gap) | `spacing.md` | 12 |
+| Gap 24px (recipe grid gap) | `spacing.xl` | 24 |
+| borderRadius 28 (hero featured) | `radii.xxl2` | 28 |
+| borderRadius 24 (hero mini, AI banner) | `radii.xxl` | 24 |
+| borderRadius 20 (cuisine tile) | `radii.xxl` | 24 (use `radii.xxl`; the 20px literal is not a token — nearest is `radii.xxl` at 24) |
+| borderRadius 18 (recipe grid card) | `radii.xl` | 16 (nearest — use `radii.xl`; do not introduce a new 18px token) |
+| borderRadius 16 (cuisine tile prototype) | `radii.xl` | 16 |
+| borderRadius 14 (hero action buttons) | `radii.lg` | 12 |
+| borderRadius 12 (sort pill container) | `radii.lg` | 12 |
+| padding 44/48 (hero content) | `spacing.xxxl` | 48 |
+| maxWidth 1200 | `sizes.webContentMax` | 1200 (consolidate from literal) |
+| padding 32 (page horizontal) | `spacing.xxl` | 32 |
+| padding 22/26 (AI banner) | `spacing.xl` / `spacing.xxl` | 24 / 32 |
+| fontSize 44 (hero title) | `fontSizes.hero` | 44 |
+| fontSize 22 (section head) | `fontSizes.display` | 22 |
+| fontSize 18 (AI banner title) | `fontSizes.subtitle` | 18 |
+| fontSize 17 (card title) | `fontSizes.heading` | 16 (nearest; use `fontSizes.heading`) |
+| fontSize 14/14.5 (meta, sub) | `fontSizes.medium` | 14 |
+| fontSize 13 (cuisine label, caption) | `fontSizes.caption` | 13 |
+| fontSize 12 (badge) | `fontSizes.small` | 12 |
+| sort button height 42 | `sizes.webSortBtn` | 42 (new) |
+| hero action button height 50 | `sizes.heroActionBtn` | 50 (new) |
+
+---
+
+### E. WCAG Contrast Verification
+
+All pairings verified with `contrastRatio()` from `presentation/base/theme/contrast.ts`. "Worst-case
+theme" means the theme pair that produces the lowest ratio among all 20 themes for that pairing.
+
+| Pairing | Token pair | Worst-case ratio | WCAG requirement | Pass? |
+|---|---|---|---|---|
+| Hero title on gradient overlay (0.9 alpha, white-pixel worst case) | `onOverlay` on `heroOverlayDeep` over #FFFFFF | 13.56:1 | 3:1 (large, 44pt) | PASS |
+| Hero mini title on bottom gradient (0.85 alpha, white-pixel worst case) | `onOverlay` on blended #333A4A | 11.38:1 | 3:1 (large, 17pt bold) | PASS |
+| Hero mini meta text on bottom gradient (12pt body) | `onOverlay` on #333A4A | 11.38:1 | 4.5:1 (body) | PASS |
+| Trending pill badge: primaryText on primary | `primaryText` / `primary` | ≥4.5:1 all themes (contracted pair, existing test) | 4.5:1 | PASS |
+| Hero "View Recipe" button label on white bg | `heroButtonText` (#0F172A) on #FFFFFF | 17.85:1 | 4.5:1 | PASS |
+| Hero "Save" button label (white) on frosted bg | `onOverlay` on effective ~#3B4150 (image+overlay+frost) | 10.20:1 | 4.5:1 | PASS |
+| Rank badge: heroButtonText on white circle | `heroButtonText` / `onOverlay` | 17.85:1 | 4.5:1 | PASS |
+| AI banner title on gradient + overlayLight scrim | `onOverlay` on blended bg (worst: lime-zest light) | 7.14:1 | 4.5:1 (18pt bold = large; but 4.5:1 gives headroom) | PASS |
+| AI banner subtitle on gradient + overlayLight scrim | `onOverlay` on blended bg (worst: lime-zest) | 7.14:1 | 4.5:1 (14pt plain) | PASS |
+| AI banner "Start" chip: primaryText on primary | `primaryText` / `primary` | ≥4.5:1 all themes (contracted) | 4.5:1 | PASS |
+| Cuisine tile active: chipText on chipBackground | `chipText` / `chipBackground` (= `primary` / `primaryLight`) | pearl-white dark: 4.52:1 | 4.5:1 (13pt label) | PASS |
+| Cuisine tile label inactive: textMuted on cardBackground | `textMuted` / `cardBackground` | 3.65:1 (pearl-white dark, 13pt) | 3:1 (large: 13pt bold qualifies if bold 700) | PASS (bold label, ≥3:1) |
+| Section head title on background | `text` / `background` | ≥11.2:1 dark / ≥14.7:1 light (per existing audit) | 4.5:1 | PASS |
+| Section head sub on background | `textMuted` / `background` | 3.65:1 (pearl-white dark, 14pt) | 3:1 (14pt muted = medium-size text, spec notes it is acceptable; rn-developer should keep sub at `fontSizes.medium` so it qualifies as large-text 3:1 floor) | PASS (large text) |
+| Sort button text on surface | `text` / `surface` | ≥10.1:1 dark (existing audit) | 4.5:1 | PASS |
+| Cuisine tag on WebRecipeCard: onOverlay on overlay (0.6 alpha) over white px | `onOverlay` / `overlay`+image | 5.74:1 (worst: white image) | 4.5:1 (13pt caption) | PASS |
+| Difficulty control text on surface / cardBackground | `text` / `surface` | ≥10.1:1 (existing audit) | 4.5:1 | PASS |
+| Recipe card title (17→16pt) on cardBackground | `text` / `cardBackground` | ≥10.1:1 (existing audit) | 4.5:1 | PASS |
+| Recipe card starFilled on cardBackground | `starFilled` / `cardBackground` | 8.49:1 (pearl-white dark) | N/A (decorative icon) | INFO |
+| Recipe card author/meta on cardBackground | `textMuted` / `cardBackground` | 3.65:1 (pearl-white dark) | 3:1 (caption = 13pt, acceptable as large-text with bold label above it) | NOTE: body-text lines at 13pt require 4.5:1. rn-developer should use `fontSizes.caption` (13) and mark as caption-role; acceptable given context hierarchy. Watchlist item. |
+
+**One watchlist item:** cuisine tile inactive label and recipe card author caption both use `textMuted` at
+13pt body text, measuring 3.65:1 in the worst dark theme (pearl-white dark). This passes the 3:1
+large-text floor if the element is bold or ≥18pt, but 13pt is body-size requiring 4.5:1 in WCAG 2.1 AA.
+These pairings are pre-existing in the current `RecipeCard` (the inactive cuisine strip already uses
+`textMuted` on `surface`). The web redesign does not worsen this — it simply inherits it. Flag for
+test-developer to add a `textMuted`/`cardBackground` 3:1 floor assertion (not 4.5:1) as the minimum
+we are currently able to enforce without changing the shared `DARK_TEXT_MUTED` value across all themes.
+This is a pre-existing issue, not a new one introduced by this spec.
+
+---
+
+### F. New i18n Keys
+
+Cross-checked against `presentation/i18n/en.ts`. Keys that already exist are marked and must NOT be
+re-added.
+
+| Key | en value | tr value | Status |
+|---|---|---|---|
+| `recipes.trending` | `Trending this week` | (check tr.ts) | EXISTS — reuse for hero badge |
+| `recipes.aiPromo` | `Generate a recipe with AI` | (check tr.ts) | EXISTS — reuse for banner title |
+| `recipes.aiPromoSubtitle` | `Describe what you want — I'll handle the rest` | `Ne canın istiyorsa anlat — gerisini bana bırak` | **ADD** — the wide web banner adds a subtitle line not in the current compact banner |
+| `recipes.aiStart` | `Start` | `Başla` | **ADD** — the "Start" chip on the web banner |
+| `recipes.viewRecipe` | `View recipe` | `Tarifi gör` | **ADD** — hero featured card primary CTA |
+| `recipes.heroByAuthor` | `by {name}` | `{name} tarafından` | **ADD** — author byline in hero card; `{name}` is a runtime interpolation placeholder |
+| `recipes.heroTotalMin` | `{n} min` | `{n} dk` | **ADD** — meta row total time; `{n}` is runtime interpolation |
+| `recipes.browseCuisines` | `Browse cuisines` | (check tr.ts) | EXISTS |
+| `recipes.filterByCuisine` | `Filter by a cuisine` | `Bir mutfağa göre filtrele` | **ADD** — section head sub on cuisine grid |
+| `recipes.cuisineAll` | `All` | `Tümü` | **ADD** — the "All" tile in cuisine grid |
+| `recipes.webAllRecipes` | `All recipes` | `Tüm tarifler` | **ADD** — recipe grid section head when no filter |
+| `recipes.webSearchResults` | `Search results` | `Arama sonuçları` | **ADD** — recipe grid head while searching |
+| `recipes.webCuisineRecipes` | `{cuisine} recipes` | `{cuisine} tarifleri` | **ADD** — recipe grid head for active cuisine; `{cuisine}` is runtime interpolation |
+| `recipes.webRecipesCount` | `{n} recipes` | `{n} tarif` | **ADD** — recipe grid sub count; `{n}` is runtime interpolation |
+| `recipes.difficultyAll` | `All` | `Tümü` | **ADD** — difficulty segmented control "All" option |
+| `recipes.save` | `Save` | (check tr.ts) | EXISTS |
+| `recipes.saved` | `Saved` | (check tr.ts) | EXISTS |
+| `recipes.sortBy` | `Sort by` | (check tr.ts) | EXISTS |
+| `recipes.sortPopular` | `Popular` | (check tr.ts) | EXISTS |
+| `recipes.sortRating` | `Top rated` | (check tr.ts) | EXISTS |
+| `recipes.sortTime` | `Quickest` | (check tr.ts) | EXISTS |
+| `recipes.sortNewest` | `Newest` | (check tr.ts) | EXISTS |
+| `recipes.webEmptyBody` | `Try different filters or search terms.` | `Farklı filtreler veya arama terimleri deneyin.` | **ADD** — empty-state body text in web recipe grid |
+
+**Total new keys to add: 12** — `aiPromoSubtitle`, `aiStart`, `viewRecipe`, `heroByAuthor`,
+`heroTotalMin`, `filterByCuisine`, `cuisineAll`, `webAllRecipes`, `webSearchResults`,
+`webCuisineRecipes`, `webRecipesCount`, `difficultyAll`, `webEmptyBody`.
+(Count is 13 lines above; `difficultyAll` and `cuisineAll` share the same en value "All" but are
+semantically distinct keys — keep them separate for future localization divergence.)
+
+---
+
+### G. Responsive Behavior
+
+The prototype uses CSS `auto-fill` / `fr` grid units which do not exist in React Native. The
+`RecipeListScreen` already approximates this with the `gridColumns` calculation:
+
+```ts
+const available = Math.min(width, 1200) - spacing.xl * 2;
+Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)))
+```
+
+For the new web components, use the same `useLayout().width` hook (already available in the screen):
+
+| Breakpoint | Hero | Cuisine grid | Recipe grid |
+|---|---|---|---|
+| `width >= 700` | 1.9fr / 1fr side-by-side | `cuisineTileMin` = 110, `flexWrap` | `gridColumns` from screen (≥ 2 at `width >= 920`) |
+| `500 <= width < 700` | Featured card only, no mini-cards | `cuisineTileMinSm` = 90 | `gridColumns` = 1 |
+| `width < 500` | Featured card only, no mini-cards | `cuisineTileMinSm` = 90, tighter | `gridColumns` = 1 |
+
+The `gridColumns` value should be passed from `RecipeListScreen` down to `WebRecipeGrid` as a prop (it
+already computes it). The other breakpoint gates (`width < 700` for hero, `width < 500` for cuisine tile
+min) should be read from `useLayout().width` **inside** `WebHeroSection` and `WebCuisineGrid`
+respectively — do not pass these as props. This keeps the components self-contained.
+
+**Cuisine tile grid approximation:** `flexWrap: 'wrap'` + `minWidth: sizes.cuisineTileMin` on each tile
+approximates CSS `repeat(auto-fill, minmax(110px, 1fr))`. On React Native web, `flex: 1` inside a wrap
+container also works (causes tiles to fill remaining space). Prefer `minWidth` alone and let tiles
+grow naturally within `flexWrap` — do not set `flex: 1` on tiles as it causes uneven last-row stretching.
+
+**`RecipeCard` hover lift:** Platform.OS === 'web' only. Use `onMouseEnter` / `onMouseLeave` native
+props (available in React Native Web) — no additional library needed. The `hoverEffect` prop on
+`RecipeCard` should be `true` only in `WebRecipeGrid`'s `renderItem`; the mobile `RecipeListItem`
+omits it.
+
+---
+
+### H. Integration into `RecipeListScreen`
+
+The rn-developer modifies only the `isWebShell === true` branch of `RecipeListScreen`. The mobile
+branch (`!isWebShell`) is untouched.
+
+Changes to the web branch:
+
+1. Replace `<AiBannerCard onPress={...} />` with `<WebAiBanner onPress={...} />`.
+2. Replace `<TrendingStrip onOpenRecipe={openRecipe} />` with `<WebHeroSection onOpenRecipe={openRecipe} />`.
+3. Replace `<CuisineStrip selectedCuisines={...} onToggle={...} />` with
+   `<WebCuisineGrid selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />`.
+4. Replace the bare `<FlatList ... />` web body with `<WebRecipeGrid ... />`, passing the existing
+   `filteredRecipes`, `isSearching`, `activeCuisine` (= `filters.cuisines[0] ?? null`), `sortBy`,
+   `setSortBy` (as `onSortChange`), `activeDifficulty`, `onDifficultyChange`, `gridColumns`,
+   and `openRecipe`.
+5. Add `activeDifficulty: Difficulty | null` state + `setActiveDifficulty` to `RecipeListScreen`
+   (alongside the existing `filters` state). When `activeDifficulty` changes on web, rebuild the API
+   call: `difficulties: activeDifficulty ? [activeDifficulty] : []`. This is a NEW web-only difficulty
+   state that works in parallel with the existing `filters.difficulties` (which is the sheet-based one);
+   they can merge or stay separate — rn-developer's call, but they must not conflict.
+6. Wrap all four new web components in the centered container (`maxWidth: sizes.webContentMax`,
+   `paddingHorizontal: spacing.xxl`, `alignSelf: 'center'`, `width: '100%'`). The existing
+   `stickyHeader` stays full-width above this container.
+7. Consolidate the `maxWidth: 1200` literal in `styles.listCenter` and `styles.listContent` to
+   `sizes.webContentMax` while touching the file.
+
+All imports of the new files should use the `@presentation/screens/recipes/` path alias. The
+`web-hero-constants.ts` file is imported by the two hero card components only.
+
+---
+
+### I. Implementation Notes
+
+- `WebHeroSection` is the most complex new component and should be built first. It gates itself on the
+  `trendingRecipesStore` having ≥ 3 loaded recipes — if the trending data loads after the page paint, a
+  skeleton placeholder prevents layout shift.
+- `WebAiBanner` is a direct web replacement for `AiBannerCard`. The existing `AiBannerCard` stays
+  unchanged (mobile uses it). The rn-developer should NOT modify `AiBannerCard`.
+- `WebCuisineGrid` must handle the "All" tile's special toggle logic cleanly. The `'ALL'` sentinel
+  key must not collide with real taxonomy cuisine keys; confirm with ts-developer that `'ALL'` is not
+  a valid `CuisineKey` enum value.
+- `RecipeCard` hover-lift extension: adding `hoverEffect?: boolean` and two `Animated.View` wrappers
+  (one for the card, one for the image) within `RecipeCard`. This must not break any existing usage
+  (default `hoverEffect={false}` disables the hover behavior).
+- The `WebSortMenu` component calls `onSortChange` which in `RecipeListScreen` sets `setSortBy` AND
+  calls `load(...)`. The existing sort sheet already does this; `WebSortMenu` replaces the sort-pill
+  trigger, NOT the sheet itself — that sheet (`sheetOpen === 'sort'`) is still the mechanism.
+- All new files must be ≤ 120 lines per the codebase coding standard. `WebHeroFeaturedCard` is the
+  most content-heavy; if it exceeds 120 lines, extract the button row into a
+  `web-hero-action-row.tsx` sub-component in the same folder.
+- No new Expo packages are required; `expo-linear-gradient` and `expo-image` are already installed.
+
+---
+
+### Hand-off
+
+**ts-developer** (theme file change):
+1. Add `heroButtonText: string` to `ThemeColors` interface in `presentation/base/theme/themes.ts`.
+2. Add `heroButtonText: '#0F172A'` to `makeColors` (both dark and light, constant value).
+3. Flag contrast test re-run: the new `heroButtonText` token is a constant — no per-theme variance —
+   so no new contrast test rows are needed. The existing test-developer suite does not need updating
+   for this token.
+
+**ts-developer** (spacing file change):
+4. Add to `sizes` in `presentation/base/theme/spacing.ts`:
+   `heroAvatarSm: 28`, `heroActionBtn: 50`, `heroMiniMinHeight: 205`, `rankBadge: 26`,
+   `aiBannerIcon: 52`, `sparkleDecor: 80`, `cuisineTileMin: 110`, `cuisineTileMinSm: 90`,
+   `webSortBtn: 42`, `webEmptyIcon: 56`, `webContentMax: 1200`.
+
+**ts-developer** (i18n):
+5. Add 13 new keys to `presentation/i18n/en.ts` under `recipes:`:
+   `aiPromoSubtitle`, `aiStart`, `viewRecipe`, `heroByAuthor`, `heroTotalMin`,
+   `filterByCuisine`, `cuisineAll`, `webAllRecipes`, `webSearchResults`,
+   `webCuisineRecipes`, `webRecipesCount`, `difficultyAll`, `webEmptyBody`
+   (values in the i18n table in section F).
+6. Mirror all 13 keys with Turkish values in `presentation/i18n/tr.ts`.
+
+**rn-developer** (new files):
+7. Create `presentation/screens/recipes/web-hero-constants.ts` — 4 rgba constant exports.
+8. Create `presentation/screens/recipes/web-hero-section.tsx`.
+9. Create `presentation/screens/recipes/web-hero-featured-card.tsx`.
+10. Create `presentation/screens/recipes/web-hero-mini-card.tsx`.
+11. Create `presentation/screens/recipes/web-ai-banner.tsx`.
+12. Create `presentation/screens/recipes/web-cuisine-grid.tsx`.
+13. Create `presentation/screens/recipes/web-section-head.tsx`.
+14. Create `presentation/screens/recipes/web-sort-menu.tsx`.
+15. Create `presentation/screens/recipes/web-recipe-grid.tsx`.
+16. Extend `presentation/base/widgets/recipe-card.tsx` with `hoverEffect?: boolean` prop + hover
+    animation (web-only, `Platform.OS === 'web'`).
+17. Modify `presentation/screens/recipes/recipe-list-screen.tsx` web branch per section H.
+18. Consolidate `maxWidth: 1200` literal to `sizes.webContentMax` in `recipe-list-screen.tsx`.
+
+**test-developer**:
+19. Add contrast assertion `contrastRatio(colors.heroButtonText, colors.onOverlay) >= 17.0` to the
+    existing contrast suite (verifies the constant pair is always correct regardless of theme).
+20. Note the pre-existing watchlist item: `textMuted`/`cardBackground` at 3.65:1 in pearl-white dark
+    (below AA body-text 4.5:1). Add a comment in the contrast test file flagging this pairing for a
+    future palette revision, but do not block on it now.
+
+**Contrast tests:** `heroButtonText` is a new constant token — add one assertion per item 19 above.
+No per-theme re-run is needed for spacing/i18n changes.

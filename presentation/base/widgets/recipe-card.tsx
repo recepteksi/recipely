@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -24,13 +24,15 @@ export interface RecipeCardProps {
   likedByMe?: boolean;
   onPress: () => void;
   onLike?: () => void;
+  /** Web-only: lift the card slightly on mouse hover (used by the web grid). */
+  hoverEffect?: boolean;
 }
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags,
   likeCount = 0, likedByMe = false,
-  onPress, onLike,
+  onPress, onLike, hoverEffect = false,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(1);
@@ -41,6 +43,19 @@ export const RecipeCard = ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
   }));
+
+  // Web-only hover lift: scale up slightly when the pointer enters the card.
+  const hoverProps =
+    hoverEffect && Platform.OS === 'web'
+      ? {
+          onMouseEnter: () => {
+            scale.value = withTiming(1.02, { duration: 160 });
+          },
+          onMouseLeave: () => {
+            scale.value = withTiming(1, { duration: 160 });
+          },
+        }
+      : {};
 
   const heartStyle = useAnimatedStyle(() => ({
     transform: [{ scale: heartScale.value }],
@@ -59,6 +74,7 @@ export const RecipeCard = ({
   return (
     <Animated.View style={animatedStyle}>
     <Pressable
+      {...hoverProps}
       onPress={onPress}
       onPressIn={() => {
         scale.value = withTiming(0.97, { duration: 100 });
