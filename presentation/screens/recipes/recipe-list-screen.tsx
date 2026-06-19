@@ -24,6 +24,7 @@ import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-head
 import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
 import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
 import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
+import { TrendingStrip } from '@presentation/screens/recipes/trending-strip';
 import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
@@ -537,6 +538,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const mobileListHeader = (
     <View style={styles.mobileHeaderBleed}>
       <AiBannerCard onPress={() => router.push('/create-recipe')} />
+      <TrendingStrip onOpenRecipe={openRecipe} />
       <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
       <View style={styles.countRow}>
         <ThemedText variant="caption" muted>
@@ -650,6 +652,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
           {/* Always-visible header: stays stable while recipe list reloads */}
           <AiBannerCard onPress={() => router.push('/create-recipe')} />
+          <TrendingStrip onOpenRecipe={openRecipe} />
           <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
 
           <View style={styles.bodyContainer}>{body}</View>

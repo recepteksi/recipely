@@ -14,7 +14,9 @@ import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
 import {
   IMPORT_REQUEST_TIMEOUT_MS,
+  RECIPE_TRENDING_PATH,
   RECIPES_PAGE_SIZE,
+  TRENDING_RECIPES_LIMIT,
   UPLOAD_URL,
 } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
@@ -44,6 +46,26 @@ export class RecipeRepository implements IRecipeRepository {
       method: 'GET',
       url: '/recipes',
       params,
+    });
+    if (!result.ok) {
+      return result;
+    }
+    const recipes: Recipe[] = [];
+    for (const dto of result.value.items) {
+      const mapped = toRecipe(dto);
+      if (!mapped.ok) {
+        return fail(mapped.failure);
+      }
+      recipes.push(mapped.value);
+    }
+    return ok(recipes);
+  }
+
+  async listTrendingRecipes(limit?: number): Promise<Result<Recipe[], Failure>> {
+    const result = await this.http.request<RecipesListDto>({
+      method: 'GET',
+      url: RECIPE_TRENDING_PATH,
+      params: { limit: limit ?? TRENDING_RECIPES_LIMIT },
     });
     if (!result.ok) {
       return result;
