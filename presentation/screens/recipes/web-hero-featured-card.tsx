@@ -40,12 +40,7 @@ export const WebHeroFeaturedCard = ({
   const authorState = useRecipeAuthor({ ownerId: recipe.ownerId, owner: null, isOwner: false });
   const author = authorState.status === 'resolved' ? authorState.author : null;
   return (
-    <Pressable
-      onPress={() => onPress(recipe.id)}
-      accessibilityRole="button"
-      accessibilityLabel={recipe.name}
-      style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
-    >
+    <View style={styles.card}>
       <RecipeImage
         uri={recipe.image}
         style={styles.image}
@@ -59,7 +54,17 @@ export const WebHeroFeaturedCard = ({
         end={{ x: 0.85, y: 0 }}
         style={styles.gradient}
       />
-      <View style={styles.content}>
+      {/* Full-bleed open overlay rendered BEFORE content so it sits below it
+          in z-order. content is pointerEvents="box-none" so empty areas fall
+          through to this overlay while the action-row buttons (real <button>s
+          in content) stay on top — and are DOM siblings, never nested. */}
+      <Pressable
+        onPress={() => onPress(recipe.id)}
+        accessibilityRole="button"
+        accessibilityLabel={recipe.name}
+        style={({ pressed }) => [styles.openOverlay, pressed ? styles.pressed : null]}
+      />
+      <View style={styles.content} pointerEvents="box-none">
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <Ionicons name="flame" size={sizes.iconSm} color={colors.primaryText} />
           <ThemedText style={[styles.badgeText, { color: colors.primaryText }]}>
@@ -108,7 +113,7 @@ export const WebHeroFeaturedCard = ({
           savedByMe={savedByMe}
         />
       </View>
-    </Pressable>
+    </View>
   );
 };
 
@@ -118,6 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },
+  openOverlay: StyleSheet.absoluteFillObject,
   pressed: {
     opacity: 0.92,
   },
