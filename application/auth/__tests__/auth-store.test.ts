@@ -290,6 +290,69 @@ describe('auth-store', () => {
     if (s.status === 'authenticated') expect(s.session).toBe(session);
   });
 
+  describe('expireSession', () => {
+    it('is a no-op when the status is not authenticated (does not call signOut)', async () => {
+      const repo = new FakeAuthRepository({ currentSessionResult: ok(null) });
+      const signOutSpy = jest.spyOn(repo, 'signOut');
+      const store = makeStore(repo);
+      // Drive the store to `unauthenticated` (not authenticated).
+      await store.getState().hydrate();
+      expect(store.getState().state.status).toBe('unauthenticated');
+      signOutSpy.mockClear();
+
+      await store.getState().expireSession();
+
+      expect(signOutSpy).not.toHaveBeenCalled();
+      expect(store.getState().state.status).toBe('unauthenticated');
+    });
+
+    it('is a no-op while loading and leaves the state untouched', async () => {
+      const store = makeStore(new FakeAuthRepository());
+      // Default state is `idle`; force a `loading` snapshot via signIn in-flight
+      // is unnecessary — `idle` is also non-authenticated and exercises the guard.
+      expect(store.getState().state.status).toBe('idle');
+
+      await store.getState().expireSession();
+
+      expect(store.getState().state.status).toBe('idle');
+    });
+
+    it('clears the session, flips to unauthenticated, and clears savedIds when authenticated', async () => {
+      const session = buildSession();
+      const repo = new FakeAuthRepository({
+        signInResult: ok(session),
+        signOutResult: ok(undefined),
+      });
+      const signOutSpy = jest.spyOn(repo, 'signOut');
+      const savedRecipesStore = configureSavedRecipesStore();
+      const store = configureAuthStore({
+        signIn: new SignInUseCase(repo),
+        requestRegistration: new RequestRegistrationUseCase(repo),
+        verifyRegistration: new VerifyRegistrationUseCase(repo),
+        resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
+        signOut: new SignOutUseCase(repo),
+        getSession: new GetSessionUseCase(repo),
+        loadFavorites: fakeLoadFavorites,
+        savedRecipesStore,
+        signInWithGoogle: new SignInWithGoogleUseCase(repo),
+        signInWithApple: new SignInWithAppleUseCase(repo),
+        requestPasswordReset: new RequestPasswordResetUseCase(repo),
+        resetPassword: new ResetPasswordUseCase(repo),
+        uploadAvatar: new UploadAvatarUseCase(repo),
+        updateProfile: new UpdateProfileUseCase(repo),
+      });
+      await store.getState().signIn('emilys', 'emilyspass');
+      expect(store.getState().state.status).toBe('authenticated');
+      savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));
+
+      await store.getState().expireSession();
+
+      expect(signOutSpy).toHaveBeenCalledTimes(1);
+      expect(store.getState().state.status).toBe('unauthenticated');
+      expect(savedRecipesStore.getState().savedIds.size).toBe(0);
+    });
+  });
+
   describe('updateProfile', () => {
     const buildUpdatedSession = (): AuthSession => {
       const email = Email.create('u@example.com');

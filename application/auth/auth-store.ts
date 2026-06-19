@@ -42,6 +42,15 @@ export interface AuthStoreState {
   /** Re-sends the registration code; returns the refreshed challenge or `null`. */
   resendRegistrationCode: (email: string) => Promise<RegistrationChallenge | null>;
   signOut: () => Promise<void>;
+  /**
+   * Reacts to a 401 from the backend on an authenticated session: clears the
+   * persisted session and flips the store to `unauthenticated` so the auth
+   * guard redirects to login. No-op unless the current status is
+   * `authenticated` — it must never clobber an idle/loading/login flow (e.g. a
+   * wrong-password 401 during sign-in). There is no token-refresh path on the
+   * backend, so an expired/invalid JWT is terminal for the session.
+   */
+  expireSession: () => Promise<void>;
   hydrate: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
@@ -75,8 +84,21 @@ export interface AuthStoreDeps {
 export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;
 
 export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
-  return create<AuthStoreState>((set) => ({
+  return create<AuthStoreState>((set, get) => ({
     state: { status: 'idle' },
+
+    expireSession: async () => {
+      // Only an authenticated session can expire — never clobber idle/loading/
+      // login flows (a 401 during sign-in is a harmless no-op here).
+      if (get().state.status !== 'authenticated') {
+        return;
+      }
+      // Clear the persisted session regardless of the Result — we are logging
+      // out either way; the routing decision is driven by the store status.
+      await deps.signOut.execute();
+      set({ state: { status: 'unauthenticated' } });
+      deps.savedRecipesStore.getState().setSavedIds(new Set());
+    },
 
     hydrate: async () => {
       set({ state: { status: 'loading' } });

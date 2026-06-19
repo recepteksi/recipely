@@ -4,6 +4,7 @@ import {
   type Failure,
   NetworkFailure,
   TimeoutFailure,
+  UnauthorizedFailure,
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
@@ -28,6 +29,12 @@ export interface HttpClientOptions {
   timeoutMs?: number;
   // WHY: keeps logging opt-in — production builds flip this off to drop PII out of logcat/xcode.
   enableLogging?: boolean;
+  /**
+   * Invoked whenever the backend returns 401, so the app can clear the session
+   * and route to login. Side-effect only — the request still resolves to an
+   * UnauthorizedFailure.
+   */
+  onUnauthorized?: () => void;
 }
 
 interface RecipelyDataBody<T> {
@@ -171,10 +178,23 @@ export class HttpClient {
         // Backwards compat / non-/api/v1 responses (eg /health) come through unchanged.
         return ok(dataEnvelope as T);
       }
-      return fail(failureFromResponse(response.status, response.data));
+      return this.failWithUnauthorizedHook(failureFromResponse(response.status, response.data));
     } catch (error: unknown) {
-      return fail(mapAxiosError(error));
+      return this.failWithUnauthorizedHook(mapAxiosError(error));
     }
+  }
+
+  /**
+   * Wraps a mapped failure in `fail()` and fires the `onUnauthorized` hook when
+   * the failure is an `UnauthorizedFailure`. Detecting via the mapped failure
+   * (rather than the raw status) covers both the `validateStatus` path and the
+   * thrown-AxiosError path uniformly. The returned value is unchanged.
+   */
+  private failWithUnauthorizedHook<T>(failure: Failure): Result<T, Failure> {
+    if (failure instanceof UnauthorizedFailure) {
+      this.options.onUnauthorized?.();
+    }
+    return fail(failure);
   }
 
   /**
@@ -255,6 +275,9 @@ export class HttpClient {
           }
           resolve(ok(body as T));
           return;
+        }
+        if (status === 401) {
+          this.options.onUnauthorized?.();
         }
         resolve(fail(failureFromResponse(status, body)));
       };
