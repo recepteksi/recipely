@@ -125,6 +125,7 @@ const makeAuthStore = (userId: string | null) =>
     verifyRegistration: jest.fn(),
     resendRegistrationCode: jest.fn(),
     signOut: jest.fn(),
+    expireSession: jest.fn(),
     hydrate: jest.fn(),
     signInWithGoogle: jest.fn(),
     signInWithApple: jest.fn(),
