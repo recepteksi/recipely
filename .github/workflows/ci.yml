@@ -10,6 +10,13 @@ on:
 permissions:
   contents: write
 
+# Cancel superseded runs on the same ref so a new push doesn't queue behind an
+# obsolete build. `main` is exempt: a release run must never be aborted
+# mid-flight (in-progress Play AAB / Firebase Hosting deploy).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   tag-release:
     name: Tag Release
@@ -240,6 +247,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Cache the Gradle user home (downloaded dependencies + local build
+      # cache) across runs. Biggest single CI speed-up for the Android build,
+      # which otherwise re-resolves and re-compiles everything from scratch.
+      - uses: gradle/actions/setup-gradle@v4
+
       - run: npm ci
 
       - name: Restore google-services.json
@@ -290,6 +302,10 @@ jobs:
             echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
             echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
             echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
+            # Reuse task outputs from the cached Gradle home and run independent
+            # tasks in parallel — both meaningfully cut the assemble/bundle time.
+            echo "org.gradle.caching=true"
+            echo "org.gradle.parallel=true"
           } >> android/gradle.properties
 
       - name: Build release APK
@@ -349,6 +365,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
+      # Cache the Gradle user home (downloaded dependencies + local build
+      # cache) across runs. Biggest single CI speed-up for the Android build,
+      # which otherwise re-resolves and re-compiles everything from scratch.
+      - uses: gradle/actions/setup-gradle@v4
 
       - run: npm ci
 
@@ -416,6 +437,10 @@ jobs:
             echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
             echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
             echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
+            # Reuse task outputs from the cached Gradle home and run independent
+            # tasks in parallel — both meaningfully cut the assemble/bundle time.
+            echo "org.gradle.caching=true"
+            echo "org.gradle.parallel=true"
           } >> android/gradle.properties
 
       - name: Build release AAB
