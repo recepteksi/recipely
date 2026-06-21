@@ -22,7 +22,8 @@ export interface WebRecipeGridProps {
   /** First applied cuisine key, or `null` — drives the section-head title. */
   activeCuisineLabel: string | null;
   sortBy: SortKey;
-  onOpenSort: () => void;
+  /** Selects a sort option; the parent applies it and reloads the list. */
+  onChangeSort: (key: SortKey) => void;
   /** Opens the full filter sheet (cuisine / category / difficulty / max-time). */
   onOpenFilter: () => void;
   /** Count of applied filters; shown as a badge on the filter button when > 0. */
@@ -41,7 +42,7 @@ export interface WebRecipeGridProps {
  * above an auto-fill card grid of `WebRecipeCard`s.
  */
 export const WebRecipeGrid = ({
-  recipes, isSearching, activeCuisineLabel, sortBy, onOpenSort,
+  recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
   gridColumns, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
@@ -107,7 +108,7 @@ export const WebRecipeGrid = ({
           </View>
         ) : null}
       </Pressable>
-      <WebSortMenu current={sortBy} onOpen={onOpenSort} />
+      <WebSortMenu current={sortBy} onChange={onChangeSort} />
     </View>
   );
 
