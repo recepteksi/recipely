@@ -114,11 +114,16 @@ export const WebRecipeGrid = ({
 
   return (
     <View>
-      <WebSectionHead
-        title={title}
-        sub={t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
-        right={right}
-      />
+      {/* Lift the section head (which hosts the sort dropdown) above the recipe
+          grid: the grid is a later sibling and would otherwise paint over the
+          absolutely-positioned popover. */}
+      <View style={styles.headRow}>
+        <WebSectionHead
+          title={title}
+          sub={t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
+          right={right}
+        />
+      </View>
       {recipes.length === 0 ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
@@ -148,6 +153,12 @@ export const WebRecipeGrid = ({
 };
 
 const styles = StyleSheet.create({
+  // Establishes a stacking context above the grid so the sort dropdown popover
+  // (absolutely positioned inside the head) is not painted over by the cards.
+  headRow: {
+    position: 'relative',
+    zIndex: 1,
+  },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
