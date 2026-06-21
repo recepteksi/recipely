@@ -96,12 +96,13 @@ jobs:
       - name: Run Tests
         run: npx jest --ci --coverage
 
-  build-web:
-    name: Build Web
+  # --- Production web (main only) → recipely.net (app-recipely hosting site) ---
+  build-web-prod:
+    name: Build Web (prod)
     runs-on: ubuntu-latest
     needs: [lint-and-typecheck, test, tag-release]
-    # Web build is a release artifact — only ship one when main moves, so dev
-    # / PRs don't burn CI minutes producing throw-away exports.
+    # Production web build is a release artifact — only ship one when main
+    # moves, so dev / PRs don't burn CI minutes producing throw-away exports.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
       APP_VARIANT: production
@@ -143,11 +144,11 @@ jobs:
       - name: Upload Web Build
         uses: actions/upload-artifact@v4
         with:
-          name: web-build-${{ github.ref_name }}-${{ github.run_number }}
+          name: web-build-prod-${{ github.run_number }}
           path: dist
-          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 7 }}
+          retention-days: 30
 
-      - name: Deploy to Firebase Hosting
+      - name: Deploy to Firebase Hosting (prod)
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -156,8 +157,167 @@ jobs:
           target: app-recipely
           channelId: live
 
-  distribute:
-    name: Distribute Android (Firebase APK + Play AAB)
+  # --- Dev web (dev only) → app-recipely-dev.web.app (app-recipely-dev site) ---
+  build-web-dev:
+    name: Build Web (dev)
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    env:
+      # Dev variant: app.config.ts injects extra.variant=development, so the
+      # client targets https://dev-api.recipely.net and the dev web origin.
+      APP_VARIANT: development
+      BUILD_NUMBER: ${{ github.run_number }}
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # Same Firebase project (recipely-c05fc), so most config values are
+      # shared with prod — only the Web app ID + measurement ID differ, since
+      # the dev site is a separate Web app registration in the same project.
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      EXPO_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_PROJECT_ID }}
+      EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      EXPO_PUBLIC_FIREBASE_APP_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_APP_ID_DEV }}
+      EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID_DEV }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so `git describe --tags` in app.config.ts can resolve a
+          # marketing version (falls back to app.json's seed when dev is
+          # untagged).
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build Web
+        run: npm run build:web
+
+      - name: Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-dev-${{ github.run_number }}
+          path: dist
+          retention-days: 7
+
+      - name: Deploy to Firebase Hosting (dev)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: recipely-c05fc
+          target: app-recipely-dev
+          channelId: live
+
+  # --- Dev Android (dev only) → Firebase App Distribution (com.recipely.app.dev) ---
+  distribute-dev:
+    name: Distribute Android Dev (Firebase APK)
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - run: npm ci
+
+      - name: Restore google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          # The merged google-services.json must include the dev package
+          # (com.recipely.app.dev) so the dev variant prebuild resolves it.
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON secret is empty"
+            exit 1
+          fi
+          first_char="${GOOGLE_SERVICES_JSON:0:1}"
+          if [ "$first_char" = "{" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json
+          else
+            printf '%s' "$GOOGLE_SERVICES_JSON" | tr -d ' \t\r\n' | base64 -d > google-services.json
+          fi
+          node -e "JSON.parse(require('fs').readFileSync('google-services.json','utf8'))" \
+            || { echo "::error::google-services.json is not valid JSON after decode"; exit 1; }
+
+      - name: Expo prebuild (Android)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Restore upload keystore
+        env:
+          ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          # Reuse the same upload keystore for the dev variant so consecutive
+          # dev App Distribution releases install over one another.
+          if [ -z "$ANDROID_UPLOAD_KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_UPLOAD_KEYSTORE_BASE64 secret is empty"
+            exit 1
+          fi
+          printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | tr -d ' \t\r\n' \
+            | base64 -d > android/app/upload.keystore
+          keytool -list -keystore android/app/upload.keystore \
+            -alias "${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}" \
+            -storepass "${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}" >/dev/null \
+            || { echo "::error::upload.keystore invalid, wrong store password, or missing key alias"; exit 1; }
+
+      - name: Write signing properties
+        run: |
+          {
+            echo ""
+            echo "RECIPELY_UPLOAD_STORE_FILE=upload.keystore"
+            echo "RECIPELY_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}"
+            echo "RECIPELY_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}"
+            echo "RECIPELY_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}"
+            echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
+          } >> android/gradle.properties
+
+      - name: Build release APK
+        working-directory: android
+        run: |
+          # Dev App Distribution only needs the APK (no Play AAB on dev).
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload to Firebase App Distribution (dev)
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID_DEV }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: android-testers
+          file: android/app/build/outputs/apk/release/app-release.apk
+          releaseNotes: |
+            Recipely Dev (build ${{ github.run_number }})
+
+            ${{ github.event.head_commit.message }}
+
+      - name: Clean up signing material
+        if: always()
+        run: rm -f android/app/upload.keystore android/gradle.properties
+
+  # --- Production Android (main only) → Google Play internal (no Firebase App Distribution) ---
+  distribute-prod:
+    name: Distribute Android Prod (Play AAB)
     runs-on: ubuntu-latest
     needs: [lint-and-typecheck, test, tag-release]
     # Only ship a build when quality gates pass on a push to main.
@@ -258,13 +418,14 @@ jobs:
             echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g"
           } >> android/gradle.properties
 
-      - name: Build release APK + AAB
+      - name: Build release AAB
         working-directory: android
         run: |
-          # APK feeds Firebase App Distribution; AAB is the Play Store artifact.
-          # One Gradle invocation builds both, release-signed via upload.keystore.
+          # AAB is the Play Store artifact; release-signed via upload.keystore.
+          # Firebase App Distribution has moved to the dev branch, so main no
+          # longer builds/ships an APK.
           chmod +x gradlew
-          ./gradlew assembleRelease bundleRelease --no-daemon
+          ./gradlew bundleRelease --no-daemon
 
       - name: Verify AAB is signed with the upload key
         run: |
@@ -283,18 +444,6 @@ jobs:
             echo "::error::AAB is not signed with the upload key (likely debug fallback) — aborting before Play upload"
             exit 1
           fi
-
-      - name: Upload to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          groups: android-testers
-          file: android/app/build/outputs/apk/release/app-release.apk
-          releaseNotes: |
-            ${{ needs.tag-release.outputs.tag }} (build ${{ github.run_number }})
-
-            ${{ github.event.head_commit.message }}
 
       - name: Upload AAB to Google Play (internal)
         uses: r0adkll/upload-google-play@v1

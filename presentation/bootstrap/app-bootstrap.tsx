@@ -20,10 +20,24 @@ export interface AppBootstrapProps {
   children: ReactNode;
 }
 
+// WHY: infrastructure is registered BEFORE the stores exist, so the HTTP
+// client's 401 hook can't reference the auth store directly. This mutable
+// handler is read at call-time — once the stores are created we point it at
+// `expireSession`, breaking the chicken-and-egg without infra importing
+// application.
+let onSessionExpired: () => void = () => {};
+
 // Initialize stores synchronously on module load
 const initializeStores = (): Stores => {
-  registerInfrastructure(container, { localeProvider: getLocale });
-  return registerApplication(container);
+  registerInfrastructure(container, {
+    localeProvider: getLocale,
+    onUnauthorized: () => onSessionExpired(),
+  });
+  const created = registerApplication(container);
+  onSessionExpired = () => {
+    void created.authStore.getState().expireSession();
+  };
+  return created;
 };
 
 const stores = initializeStores();

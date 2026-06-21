@@ -27,6 +27,12 @@ import { API_BASE_URL } from '@infrastructure/constants/api';
 
 export interface InfrastructureOptions {
   localeProvider?: () => string;
+  /**
+   * Invoked on every backend 401. Wired into the HTTP client so the app can
+   * clear the session and route to login; the auth store gates the actual
+   * logout (a 401 outside an authenticated session is a no-op).
+   */
+  onUnauthorized?: () => void;
 }
 
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
@@ -49,6 +55,9 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   };
   if (opts?.localeProvider) {
     httpClientOptions.localeProvider = opts.localeProvider;
+  }
+  if (opts?.onUnauthorized) {
+    httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
   container.register(TOKENS.HttpClient, () => new HttpClient(httpClientOptions));
 

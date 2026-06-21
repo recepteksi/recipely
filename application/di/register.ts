@@ -16,6 +16,7 @@ import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case'
 import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
+import { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
 import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
@@ -41,6 +42,10 @@ import {
   configureRecipeListStore,
   type RecipeListStore,
 } from '@application/recipes/recipe-list-store';
+import {
+  configureTrendingRecipesStore,
+  type TrendingRecipesStore,
+} from '@application/recipes/trending-recipes-store';
 import {
   configureRecipeDetailStore,
   type RecipeDetailStore,
@@ -93,6 +98,7 @@ import {
 export interface ApplicationStores {
   authStore: AuthStore;
   recipeListStore: RecipeListStore;
+  trendingRecipesStore: TrendingRecipesStore;
   recipeDetailStore: RecipeDetailStore;
   savedRecipesStore: SavedRecipesStore;
   createdRecipesStore: CreatedRecipesStore;
@@ -123,6 +129,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const uploadAvatar = new UploadAvatarUseCase(authRepo);
   const updateProfile = new UpdateProfileUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
+  const listTrendingRecipes = new ListTrendingRecipesUseCase(recipeRepo);
   const getRecipe = new GetRecipeUseCase(recipeRepo);
   const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
   const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
@@ -152,6 +159,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const savedRecipesStore = configureSavedRecipesStore();
   const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile });
   const recipeListStore = configureRecipeListStore({ listRecipes });
+  const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
   const favoritesStore = configureFavoritesStore({
     addFavoriteUseCase,
@@ -210,6 +218,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   return {
     authStore,
     recipeListStore,
+    trendingRecipesStore,
     recipeDetailStore,
     savedRecipesStore,
     createdRecipesStore,

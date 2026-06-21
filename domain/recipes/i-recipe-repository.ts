@@ -86,6 +86,8 @@ export type CreateRecipeProgressCallback = (loaded: number, total: number) => vo
 
 export interface IRecipeRepository {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>>;
+  /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
+  listTrendingRecipes(limit?: number): Promise<Result<Recipe[], Failure>>;
   listMyRecipes(): Promise<Result<Recipe[], Failure>>;
   getRecipe(id: string): Promise<Result<Recipe, Failure>>;
   createRecipe(

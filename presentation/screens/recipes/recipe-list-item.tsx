@@ -7,13 +7,15 @@ import type { Recipe } from '@domain/recipes/recipe';
 export interface RecipeListItemProps {
   recipe: Recipe;
   onPress: () => void;
+  /** Web-only: enable the hover lift on the underlying `RecipeCard`. */
+  hoverEffect?: boolean;
 }
 
 /**
  * Wraps `RecipeCard` with reactive per-recipe like state from `likesStore`.
  * Seeding happens on mount so the store is populated before the card renders.
  */
-export const RecipeListItem = ({ recipe, onPress }: RecipeListItemProps): React.JSX.Element => {
+export const RecipeListItem = ({ recipe, onPress, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
   const { likesStore, authStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const authState = authStore((s) => s.state);
@@ -39,6 +41,7 @@ export const RecipeListItem = ({ recipe, onPress }: RecipeListItemProps): React.
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       onPress={onPress}
       onLike={isAuthenticated ? () => void toggle(recipe.id) : undefined}
+      hoverEffect={hoverEffect}
     />
   );
 };

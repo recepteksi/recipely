@@ -1,9 +1,20 @@
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-// Server root — the bare host:port. Override with EXPO_PUBLIC_API_BASE_URL
-// (kept under the existing env var name for backward compat with any device
-// already shipping with that override).
-const DEFAULT_SERVER_URL = "https://api.recipely.net";
+// Build variant, injected by app.config.ts into `extra.variant` at config
+// evaluation time (driven by the APP_VARIANT env var). Lets the dev build
+// (APP_VARIANT=development, com.recipely.app.dev) talk to the dev backend while
+// the production build talks to prod. Falls back to "production" when unset
+// (e.g. inside unit tests, where expoConfig is the static app.json manifest).
+const IS_DEV_VARIANT: boolean =
+  Constants.expoConfig?.extra?.variant === "development";
+
+// Server root — the bare host:port, selected per variant. Override either
+// default with EXPO_PUBLIC_API_BASE_URL (kept under the existing env var name
+// for backward compat with any device already shipping with that override).
+const PROD_SERVER_URL = "https://api.recipely.net";
+const DEV_SERVER_URL = "https://dev-api.recipely.net";
+const DEFAULT_SERVER_URL = IS_DEV_VARIANT ? DEV_SERVER_URL : PROD_SERVER_URL;
 
 const SERVER_URL: string =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
@@ -26,9 +37,14 @@ export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
 export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
 
 // Canonical public web origin (universal-link domain in app.json). Distinct
-// from the API server (api.recipely.net). Used to build shareable deep links
-// that round-trip back into the app via expo-router path matching.
-const DEFAULT_WEB_APP_BASE_URL = "https://recipely.net";
+// from the API server. Used to build shareable deep links that round-trip back
+// into the app via expo-router path matching. Dev points at the dev Firebase
+// Hosting site so shared links stay within the dev web build.
+const PROD_WEB_APP_BASE_URL = "https://recipely.net";
+const DEV_WEB_APP_BASE_URL = "https://app-recipely-dev.web.app";
+const DEFAULT_WEB_APP_BASE_URL = IS_DEV_VARIANT
+  ? DEV_WEB_APP_BASE_URL
+  : PROD_WEB_APP_BASE_URL;
 
 export const WEB_APP_BASE_URL: string =
   process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
@@ -73,6 +89,12 @@ export const DEFAULT_CODE_TTL_SECONDS = 180;
 // relative, so the HTTP client prepends API_BASE_URL.
 export const RECIPE_CUISINES_PATH = "/recipes/cuisines";
 export const RECIPE_CATEGORIES_PATH = "/recipes/categories";
+
+// Backend-driven "Trending this week" rail. Inside /api/v1 — path is relative.
+export const RECIPE_TRENDING_PATH = "/recipes/trending";
+
+// Default size of the trending discover rail (backend caps `limit` at 1–30).
+export const TRENDING_RECIPES_LIMIT = 10;
 
 export const RECIPES_PAGE_SIZE = 30;
 

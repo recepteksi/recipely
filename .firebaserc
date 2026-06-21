@@ -5,7 +5,8 @@
   "targets": {
     "recipely-c05fc": {
       "hosting": {
-        "app-recipely": ["app-recipely"]
+        "app-recipely": ["app-recipely"],
+        "app-recipely-dev": ["app-recipely-dev"]
       }
     }
   }

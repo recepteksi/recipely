@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FlatList,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -25,6 +24,12 @@ import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-h
 import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
 import { AiBannerCard } from '@presentation/screens/recipes/ai-banner-card';
 import { CuisineStrip } from '@presentation/screens/recipes/cuisine-strip';
+import { WebHeroSection } from '@presentation/screens/recipes/web-hero-section';
+import { WebAiBanner } from '@presentation/screens/recipes/web-ai-banner';
+import { WebCuisineGrid } from '@presentation/screens/recipes/web-cuisine-grid';
+import { WebRecipeGrid } from '@presentation/screens/recipes/web-recipe-grid';
+import { useSaveRecipe } from '@presentation/screens/recipes/use-save-recipe';
+import { type SortKey, SORT_TO_API, sortKeyLabels } from '@presentation/screens/recipes/recipe-sort';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
@@ -43,7 +48,6 @@ import { useWebShellState } from '@presentation/base/responsive/web-shell-state'
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { shadows } from '@presentation/base/theme/shadows';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
@@ -60,8 +64,6 @@ const SKELETON_CARD_COUNT = 4;
 /** Rows of skeleton cards to fill the web grid while the list loads. */
 const SKELETON_GRID_ROWS = 2;
 
-type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
-
 interface UiFilters {
   cuisines: string[];
   categories: string[];
@@ -70,14 +72,6 @@ interface UiFilters {
 }
 
 const TIME_OPTIONS: readonly number[] = [0, 15, 30, 45, 60, 90];
-
-const SORT_TO_API: Record<SortKey, RecipeFilters['sort']> = {
-  popular: 'popular',
-  rating: 'rating',
-  time: 'time',
-  newest: 'newest',
-  mostLiked: 'mostLiked',
-};
 
 const emptyFilters: UiFilters = { cuisines: [], categories: [], difficulties: [], maxTime: 0 };
 
@@ -154,7 +148,8 @@ const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): Rea
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { recipeListStore, notificationsStore } = useStores();
+  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase } = useStores();
+  const { isSaved, toggleSave } = useSaveRecipe();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
   const unreadCount = notificationsStore((s) => s.unreadCount);
@@ -220,7 +215,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   // capped to the centered 1200px content max so cards stay readable.
   const gridColumns = useMemo<number>(() => {
     if (!isWebShell) return 1;
-    const available = Math.min(width, 1200) - spacing.xl * 2;
+    const available = Math.min(width, sizes.webContentMax) - spacing.xl * 2;
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
   const [sortBy, setSortBy] = useState<SortKey>('popular');
@@ -236,6 +231,15 @@ export const RecipeListScreen = (): React.JSX.Element => {
       void load();
     }
   }, [state.status, load]);
+
+  // Web home shows a Save bookmark on each card, so the saved set must be
+  // populated (mobile drives saving from the detail screen instead).
+  useEffect(() => {
+    if (!isWebShell) return;
+    void loadFavoritesUseCase.execute().then((result) => {
+      if (result.ok) savedRecipesStore.getState().setSavedIds(result.value);
+    });
+  }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey): RecipeFilters => ({
@@ -304,6 +308,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
     (filters.maxTime > 0 ? 1 : 0);
 
   const effectiveSearch = isWebShell ? webSearchQuery : search;
+  // On web, searching hides the editorial hero / banner / cuisine sections.
+  const isSearching = webSearchQuery.trim().length > 0;
 
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
@@ -312,13 +318,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
   }, [state, effectiveSearch]);
 
-  const sortLabels: Record<SortKey, string> = {
-    popular: t().recipes.sortPopular,
-    rating: t().recipes.sortRating,
-    time: t().recipes.sortTime,
-    newest: t().recipes.sortNewest,
-    mostLiked: t().recipes.sortMostLiked,
-  };
+  const sortLabels = sortKeyLabels();
 
   const togglePendingCuisine = (c: string): void =>
     setPendingFilters((f) => ({
@@ -378,12 +378,24 @@ export const RecipeListScreen = (): React.JSX.Element => {
   };
 
   const toggleCuisineQuick = (cuisine: string): void => {
-    const next = {
-      ...filters,
-      cuisines: filters.cuisines.includes(cuisine)
-        ? filters.cuisines.filter((x) => x !== cuisine)
-        : [...filters.cuisines, cuisine],
-    };
+    // The web cuisine grid's "All" tile sends the 'ALL' sentinel to clear the
+    // cuisine filter; real cuisine keys toggle as on mobile.
+    const nextCuisines =
+      cuisine === 'ALL'
+        ? []
+        : filters.cuisines.includes(cuisine)
+          ? filters.cuisines.filter((x) => x !== cuisine)
+          : [...filters.cuisines, cuisine];
+    const next = { ...filters, cuisines: nextCuisines };
+    setFilters(next);
+    setPendingFilters(next);
+    void load(buildApiFilters(next, sortBy));
+  };
+
+  // Web difficulty segmented control: single-select replaces the difficulty set
+  // (`null` clears it), driving the same `filters.difficulties` flow.
+  const setDifficultyQuick = (d: Difficulty | null): void => {
+    const next = { ...filters, difficulties: d ? [d] : [] };
     setFilters(next);
     setPendingFilters(next);
     void load(buildApiFilters(next, sortBy));
@@ -467,67 +479,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
       </ScrollView>
     ) : null;
 
-  // ─── Sticky header (web shell only — never scrolls away) ────────────────────
-  // On the web shell the WebHeader already exposes a global search input, so
-  // we drop the local SearchBar here and let users filter via WebShellState.
-  const stickyHeader = (
-    <View style={[styles.stickyHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      <View style={styles.pillRow}>
-        <Pressable
-          onPress={openFilterSheet}
-          style={[
-            styles.pill,
-            {
-              backgroundColor: activeFilterCount > 0 ? colors.primary : colors.surface,
-              borderColor: activeFilterCount > 0 ? colors.primary : colors.border,
-            },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.filter}
-        >
-          <Ionicons
-            name="funnel-outline"
-            size={14}
-            color={activeFilterCount > 0 ? colors.primaryText : colors.text}
-          />
-          <ThemedText
-            variant="caption"
-            style={[styles.pillLabel, { color: activeFilterCount > 0 ? colors.primaryText : colors.text }]}
-          >
-            {t().recipes.filter}
-          </ThemedText>
-          {activeFilterCount > 0 ? (
-            <View style={[styles.pillBadge, { backgroundColor: colors.gradientBorder }]}>
-              <ThemedText variant="caption" style={[styles.pillBadgeText, { color: colors.primaryText }]}>
-                {activeFilterCount}
-              </ThemedText>
-            </View>
-          ) : null}
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSheetOpen('sort')}
-          style={[styles.pill, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.sortBy}
-        >
-          <Ionicons name="swap-vertical" size={14} color={colors.text} />
-          <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
-            {sortLabels[sortBy]}
-          </ThemedText>
-        </Pressable>
-
-        {state.status === 'loaded' ? (
-          <ThemedText variant="caption" muted style={styles.countInline}>
-            {filteredRecipes.length} {t().recipes.results}
-          </ThemedText>
-        ) : null}
-      </View>
-
-      {activeChipsRow}
-    </View>
-  );
-
   // ─── Mobile scrolling list header (everything that scrolls away with the feed) ─
   // Ai promo, cuisine strip, result-count + Clear-all row, and the active-filter
   // chips row — all inside the FlatList header so they scroll under the band.
@@ -575,6 +526,45 @@ export const RecipeListScreen = (): React.JSX.Element => {
         onPrimary={onRefresh}
       />
     );
+  } else if (isWebShell) {
+    // The web grid renders its own empty state inline, so the hero / banner /
+    // cuisine grid stay visible above it even with zero results.
+    body = (
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={styles.webContent}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+      >
+        {isSearching ? null : (
+          <>
+            <WebHeroSection
+              onOpenRecipe={openRecipe}
+              isSaved={isSaved}
+              onToggleSave={(id) => void toggleSave(id)}
+            />
+            <WebAiBanner onPress={() => router.push('/create-recipe')} />
+            <WebCuisineGrid selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
+          </>
+        )}
+        <WebRecipeGrid
+          recipes={filteredRecipes}
+          isSearching={isSearching}
+          activeCuisineLabel={
+            filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null
+          }
+          sortBy={sortBy}
+          onOpenSort={() => setSheetOpen('sort')}
+          onOpenFilter={openFilterSheet}
+          activeFilterCount={activeFilterCount}
+          activeDifficulty={filters.difficulties[0] ?? null}
+          onDifficultyChange={setDifficultyQuick}
+          gridColumns={gridColumns}
+          onOpenRecipe={openRecipe}
+          isSaved={isSaved}
+          onToggleSave={(id) => void toggleSave(id)}
+        />
+      </ScrollView>
+    );
   } else if (filteredRecipes.length === 0) {
     body = (
       <View style={styles.center}>
@@ -595,24 +585,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
           )}
         </View>
       </View>
-    );
-  } else if (isWebShell) {
-    body = (
-      <FlatList
-        key={`grid-${gridColumns}`}
-        data={filteredRecipes}
-        keyExtractor={(r) => r.id}
-        renderItem={renderItem}
-        numColumns={gridColumns}
-        columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
-        ItemSeparatorComponent={gridColumns === 1 ? ItemSeparator : undefined}
-        contentContainerStyle={[
-          styles.listContent,
-          gridColumns > 1 ? styles.gridListContent : null,
-        ]}
-        style={[styles.list, styles.listCenter]}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
-      />
     );
   } else {
     // Mobile: single scroll surface. The feed header (banner/cuisines/count/chips)
@@ -646,12 +618,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
             onNotificationsPress={() => router.push('/notifications')}
             unreadCount={unreadCount}
           />
-          {stickyHeader}
 
-          {/* Always-visible header: stays stable while recipe list reloads */}
-          <AiBannerCard onPress={() => router.push('/create-recipe')} />
-          <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
-
+          {/* Hero / banner / cuisine grid + recipe grid live inside `body`'s
+              centered web column (see the isWebShell body branch). */}
           <View style={styles.bodyContainer}>{body}</View>
         </>
       ) : (
@@ -822,47 +791,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  // ─── Sticky header ──────────────────────────────────────────────────────────
-  stickyHeader: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    ...shadows.sm,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs2,
-    height: sizes.selectorHeight,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.round,
-    borderWidth: 1.5,
-  },
-  pillLabel: {
-    fontWeight: '600',
-    fontSize: fontSizes.caption,
-  },
-  pillBadge: {
-    minWidth: sizes.iconXxs,
-    height: sizes.iconXxs,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillBadgeText: {
-    fontSize: fontSizes.micro,
-    fontWeight: '700',
-  },
-  countInline: {
-    marginLeft: 'auto',
-    fontSize: fontSizes.small,
-  },
   // Active filter chips — own full-width row
   activeChipsScroll: {
     paddingHorizontal: spacing.lg,
@@ -923,7 +851,16 @@ const styles = StyleSheet.create({
   listCenter: {
     alignSelf: 'center',
     width: '100%',
-    maxWidth: 1200,
+    maxWidth: sizes.webContentMax,
+  },
+  // Centered web home column wrapping the hero / banner / cuisine + recipe grid.
+  webContent: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: sizes.webContentMax,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   gridListContent: {
     paddingHorizontal: spacing.xl,
