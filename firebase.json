@@ -1,50 +1,100 @@
 {
-  "hosting": {
-    "site": "app-recipely",
-    "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.git/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/privacy",
-        "destination": "/legal/privacy.html"
-      },
-      {
-        "source": "/terms",
-        "destination": "/legal/terms.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "/.well-known/apple-app-site-association",
-        "headers": [
-          { "key": "Content-Type", "value": "application/json" }
-        ]
-      },
-      {
-        "source": "/_expo/static/**",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
-        "source": "**/*.@(js|css|woff2|png|jpg|svg)",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
-        "source": "**/*.html",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-        ]
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "app-recipely",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.git/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/privacy",
+          "destination": "/legal/privacy.html"
+        },
+        {
+          "source": "/terms",
+          "destination": "/legal/terms.html"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "/.well-known/apple-app-site-association",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ]
+        },
+        {
+          "source": "/_expo/static/**",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          ]
+        },
+        {
+          "source": "**/*.@(js|css|woff2|png|jpg|svg)",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          ]
+        },
+        {
+          "source": "**/*.html",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          ]
+        }
+      ]
+    },
+    {
+      "target": "app-recipely-dev",
+      "public": "dist",
+      "ignore": [
+        "firebase.json",
+        "**/.git/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/privacy",
+          "destination": "/legal/privacy.html"
+        },
+        {
+          "source": "/terms",
+          "destination": "/legal/terms.html"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [
+        {
+          "source": "/.well-known/apple-app-site-association",
+          "headers": [
+            { "key": "Content-Type", "value": "application/json" }
+          ]
+        },
+        {
+          "source": "/_expo/static/**",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          ]
+        },
+        {
+          "source": "**/*.@(js|css|woff2|png|jpg|svg)",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+          ]
+        },
+        {
+          "source": "**/*.html",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+          ]
+        }
+      ]
+    }
+  ]
 }
