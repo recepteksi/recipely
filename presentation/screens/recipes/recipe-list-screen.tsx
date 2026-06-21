@@ -61,10 +61,8 @@ const GRID_GAP = spacing.lg2;
 const HEADER_TIMING = { duration: 220, easing: Easing.out(Easing.cubic) } as const;
 /** Cumulative upward scroll (px) before the band is revealed again. */
 const REVEAL_THRESHOLD = spacing.sm;
-/** Skeleton cards shown on mobile / single-column while the list loads. */
+/** Skeleton cards shown on mobile while the list loads. */
 const SKELETON_CARD_COUNT = 4;
-/** Rows of skeleton cards to fill the web grid while the list loads. */
-const SKELETON_GRID_ROWS = 2;
 
 /** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
 const formatLabel = (key: string): string =>
@@ -72,69 +70,18 @@ const formatLabel = (key: string): string =>
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
-interface LoadingSkeletonProps {
-  /** Column count of the loaded list, so the skeleton matches its layout. */
-  gridColumns: number;
-  /** Whether the web shell is active (centers the grid to the content max). */
-  isWebShell: boolean;
-}
-
 /**
- * Placeholder shown while the recipe list loads. Mirrors the loaded list's
- * layout exactly: a left-aligned stacked column on mobile, and on the web shell
- * the same centered (maxWidth 1200) container — a multi-column grid when
- * `gridColumns > 1`, or a centered stacked column on a narrow window.
+ * Mobile loading placeholder: a stacked single column of skeleton cards that
+ * mirrors the non-web list. The web shell shimmers only its recipe grid
+ * in-place (see {@link WebRecipeGrid}), so it never uses this full-screen view.
  */
-const LoadingSkeleton = ({ gridColumns, isWebShell }: LoadingSkeletonProps): React.JSX.Element => {
-  // Mobile: simple stacked single column, matching the non-web list look.
-  if (!isWebShell) {
-    return (
-      <ScrollView contentContainerStyle={styles.skeletonContainer}>
-        {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
-          <SkeletonCard key={i} />
-        ))}
-      </ScrollView>
-    );
-  }
-
-  // Web shell: always centered to the content max, mirroring the loaded list.
-  // Multi-column renders the grid; a narrow window (gridColumns === 1) renders
-  // a stacked column with the same centering and separator spacing.
-  if (gridColumns > 1) {
-    const count = Math.max(SKELETON_CARD_COUNT, gridColumns * SKELETON_GRID_ROWS);
-    const rows = Math.ceil(count / gridColumns);
-    return (
-      <ScrollView
-        style={[styles.list, styles.listCenter]}
-        contentContainerStyle={[styles.listContent, styles.gridListContent]}
-      >
-        {Array.from({ length: rows }, (_, rowIndex) => (
-          <View key={rowIndex} style={styles.gridRow}>
-            {Array.from({ length: gridColumns }, (_, colIndex) => (
-              <View key={colIndex} style={styles.gridCell}>
-                <SkeletonCard />
-              </View>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
-    );
-  }
-
-  return (
-    <ScrollView
-      style={[styles.list, styles.listCenter]}
-      contentContainerStyle={styles.listContent}
-    >
-      {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
-        <View key={i}>
-          {i > 0 ? <ItemSeparator /> : null}
-          <SkeletonCard />
-        </View>
-      ))}
-    </ScrollView>
-  );
-};
+const LoadingSkeleton = (): React.JSX.Element => (
+  <ScrollView contentContainerStyle={styles.skeletonContainer}>
+    {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
+      <SkeletonCard key={i} />
+    ))}
+  </ScrollView>
+);
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -502,9 +449,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
   // ─── Body (varies by state) ─────────────────────────────────────────────────
   let body: React.JSX.Element;
-  if (state.status === 'idle' || state.status === 'loading') {
-    body = <LoadingSkeleton gridColumns={gridColumns} isWebShell={isWebShell} />;
-  } else if (state.status === 'error') {
+  if (state.status === 'error') {
     const failure: Failure = state.failure;
     const content = failureContent(failure);
     body = (
@@ -518,8 +463,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
       />
     );
   } else if (isWebShell) {
-    // The web grid renders its own empty state inline, so the hero / banner /
-    // cuisine grid stay visible above it even with zero results.
+    // Web owns its own loading: the hero / banner / cuisine sections (driven by
+    // a separate store + static data) and the grid's section head with its
+    // sort/filter controls stay mounted while only the grid area shimmers — so
+    // a sort/filter change never blanks the whole page. The grid also renders
+    // its own empty state inline, keeping those sections visible at zero results.
     body = (
       <ScrollView
         style={styles.list}
@@ -539,6 +487,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         )}
         <WebRecipeGrid
           recipes={filteredRecipes}
+          isLoading={state.status !== 'loaded'}
           isSearching={isSearching}
           activeCuisineLabel={
             filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null
@@ -559,6 +508,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
         />
       </ScrollView>
     );
+  } else if (state.status === 'idle' || state.status === 'loading') {
+    // Mobile first/refresh load: full-screen stacked skeleton.
+    body = <LoadingSkeleton />;
   } else if (filteredRecipes.length === 0) {
     body = (
       <View style={styles.center}>
@@ -828,11 +780,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
-  listCenter: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: sizes.webContentMax,
-  },
   // Centered web home column wrapping the hero / banner / cuisine + recipe grid.
   webContent: {
     alignSelf: 'center',
@@ -841,14 +788,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
-  },
-  gridListContent: {
-    paddingHorizontal: spacing.xl,
-    gap: GRID_GAP,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    gap: GRID_GAP,
   },
   gridCell: {
     flex: 1,
