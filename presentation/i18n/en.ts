@@ -130,6 +130,7 @@ export const en = {
     aiPromoSub: "Describe what you want — I'll handle the rest",
     removeFilter: 'remove filter',
     removeTimeFilter: 'Remove time filter',
+    closeFilter: 'Close filters',
     share: 'Share recipe',
     shareTitle: 'Share recipe',
     shareDone: 'Done',

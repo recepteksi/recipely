@@ -42,6 +42,8 @@ import {
 } from '@presentation/base/errors/failure-content';
 import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
+import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
@@ -63,17 +65,6 @@ const REVEAL_THRESHOLD = spacing.sm;
 const SKELETON_CARD_COUNT = 4;
 /** Rows of skeleton cards to fill the web grid while the list loads. */
 const SKELETON_GRID_ROWS = 2;
-
-interface UiFilters {
-  cuisines: string[];
-  categories: string[];
-  difficulties: Difficulty[];
-  maxTime: number;
-}
-
-const TIME_OPTIONS: readonly number[] = [0, 15, 30, 45, 60, 90];
-
-const emptyFilters: UiFilters = { cuisines: [], categories: [], difficulties: [], maxTime: 0 };
 
 /** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
 const formatLabel = (key: string): string =>
@@ -648,8 +639,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
         </>
       )}
 
+      {/* Mobile filter bottom sheet (web uses the centered WebFilterModal below). */}
       <BottomSheet
-        visible={sheetOpen === 'filter'}
+        visible={!isWebShell && sheetOpen === 'filter'}
         title={t().recipes.filter}
         onClose={() => setSheetOpen(null)}
         rightAction={
@@ -745,6 +737,27 @@ export const RecipeListScreen = (): React.JSX.Element => {
           <PrimaryButton label={t().recipes.showResults} onPress={applyFilters} />
         </View>
       </BottomSheet>
+
+      {/* Web filter dialog — centered modal; mobile uses the bottom sheet above. */}
+      <WebFilterModal
+        visible={isWebShell && sheetOpen === 'filter'}
+        pending={pendingFilters}
+        resultCount={filteredRecipes.length}
+        hasActiveFilters={
+          pendingFilters.cuisines.length +
+            pendingFilters.categories.length +
+            pendingFilters.difficulties.length +
+            (pendingFilters.maxTime > 0 ? 1 : 0) >
+          0
+        }
+        onToggleCuisine={togglePendingCuisine}
+        onToggleCategory={togglePendingCategory}
+        onToggleDifficulty={togglePendingDifficulty}
+        onSetMaxTime={setPendingMaxTime}
+        onApply={applyFilters}
+        onReset={resetFilters}
+        onClose={() => setSheetOpen(null)}
+      />
 
       {/* Standalone sort sheet — web shell only; mobile folds sort into the filter sheet. */}
       <BottomSheet

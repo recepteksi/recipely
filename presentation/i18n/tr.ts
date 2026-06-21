@@ -132,6 +132,7 @@ export const tr: Translations = {
     aiPromoSub: 'Ne istediğini anlat — gerisini ben hallederim',
     removeFilter: 'filtreni kaldır',
     removeTimeFilter: 'Süre filtresini kaldır',
+    closeFilter: 'Filtreleri kapat',
     share: 'Tarifi paylaş',
     shareTitle: 'Tarifi paylaş',
     shareDone: 'Kapat',
