@@ -215,7 +215,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   // On mobile, sort lives inside the filter sheet and is applied together with
   // the filters via "Show results"; `pendingSort` holds the in-sheet selection.
   const [pendingSort, setPendingSort] = useState<SortKey>('popular');
-  const [sheetOpen, setSheetOpen] = useState<'filter' | 'sort' | null>(null);
+  const [sheetOpen, setSheetOpen] = useState<'filter' | null>(null);
 
   useEffect(() => {
     if (state.status === 'idle') {
@@ -544,7 +544,10 @@ export const RecipeListScreen = (): React.JSX.Element => {
             filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null
           }
           sortBy={sortBy}
-          onOpenSort={() => setSheetOpen('sort')}
+          onChangeSort={(key) => {
+            setSortBy(key);
+            void load(buildApiFilters(filters, key));
+          }}
           onOpenFilter={openFilterSheet}
           activeFilterCount={activeFilterCount}
           activeDifficulty={filters.difficulties[0] ?? null}
@@ -759,42 +762,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
         onClose={() => setSheetOpen(null)}
       />
 
-      {/* Standalone sort sheet — web shell only; mobile folds sort into the filter sheet. */}
-      <BottomSheet
-        visible={isWebShell && sheetOpen === 'sort'}
-        title={t().recipes.sortBy}
-        onClose={() => setSheetOpen(null)}
-      >
-        {(Object.keys(sortLabels) as SortKey[]).map((key) => {
-          const isActive = sortBy === key;
-          return (
-            <Pressable
-              key={key}
-              onPress={() => {
-                setSortBy(key);
-                void load(buildApiFilters(filters, key));
-                setSheetOpen(null);
-              }}
-              style={[
-                styles.sortRow,
-                { backgroundColor: isActive ? colors.chipBackground : 'transparent' },
-              ]}
-              accessibilityRole="menuitem"
-            >
-              <ThemedText
-                variant="body"
-                style={{ fontWeight: isActive ? '600' : '500' }}
-              >
-                {sortLabels[key]}
-              </ThemedText>
-              {isActive ? (
-                <Ionicons name="checkmark" size={18} color={colors.primary} />
-              ) : null}
-            </Pressable>
-          );
-        })}
-      </BottomSheet>
-
       <TabBar active="recipes" onChange={onTabChange} />
     </SafeAreaView>
   );
@@ -931,15 +898,5 @@ const styles = StyleSheet.create({
   sheetCta: {
     marginTop: spacing.md,
     marginBottom: spacing.sm,
-  },
-  // ─── Sort bottom sheet ──────────────────────────────────────────────────────
-  sortRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: radii.lg,
-    marginBottom: spacing.xs,
   },
 });
