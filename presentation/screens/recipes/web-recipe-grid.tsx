@@ -138,7 +138,7 @@ export const WebRecipeGrid = ({
       {isLoading ? (
         <View style={styles.skeletonGrid}>
           {Array.from({ length: SKELETON_ROWS }, (_, row) => (
-            <View key={row} style={styles.gridRow}>
+            <View key={row} style={styles.skeletonRow}>
               {Array.from({ length: gridColumns }, (_, col) => (
                 <View key={col} style={styles.gridCell}>
                   <SkeletonCard />
@@ -235,6 +235,13 @@ const styles = StyleSheet.create({
   skeletonGrid: {
     gap: GRID_GAP,
     paddingBottom: spacing.xxl,
+  },
+  // Skeleton rows are plain Views (no FlatList numColumns), so they must lay
+  // their cells out horizontally themselves — otherwise the cards stack into a
+  // single column like the mobile skeleton.
+  skeletonRow: {
+    flexDirection: 'row',
+    gap: GRID_GAP,
   },
   gridRow: {
     gap: GRID_GAP,
