@@ -73,6 +73,12 @@ export interface ThemeColors {
   likeActive: string;
   /** Semi-transparent dark overlay for image overlays and floating buttons. */
   overlayLight: string;
+  /**
+   * Slate-tinted scrim behind centered web modal dialogs (e.g. the web filter
+   * modal). ALWAYS the same dark slate tint in both variants — modal scrims are
+   * darken-by-design regardless of theme variant.
+   */
+  scrim: string;
   /** Danger color at 10% opacity, used for danger-tinted button backgrounds. */
   dangerLight: string;
   /** Frosted glass surface for gradient section cards and modals. */
@@ -109,6 +115,7 @@ interface VariantSemantics {
   onSuccess: string;
   likeActive: string;
   overlayLight: string;
+  scrim: string;
   gradientSurface: string;
   gradientBorder: string;
 }
@@ -168,6 +175,7 @@ const darkSemantics: VariantSemantics = {
   onSuccess: '#0F1B0F',
   likeActive: '#F43F5E',
   overlayLight: 'rgba(0,0,0,0.4)',
+  scrim: 'rgba(15,23,42,0.55)',
   gradientSurface: 'rgba(255,255,255,0.18)',
   gradientBorder: 'rgba(255,255,255,0.28)',
 };
@@ -183,6 +191,7 @@ const lightSemantics: VariantSemantics = {
   onSuccess: '#0F1B0F',
   likeActive: '#F43F5E',
   overlayLight: 'rgba(0,0,0,0.4)',
+  scrim: 'rgba(15,23,42,0.55)',
   gradientSurface: 'rgba(255,255,255,0.18)',
   gradientBorder: 'rgba(255,255,255,0.28)',
 };
@@ -228,6 +237,7 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   onSuccess: semantics.onSuccess,
   likeActive: semantics.likeActive,
   overlayLight: semantics.overlayLight,
+  scrim: semantics.scrim,
   dangerLight: semantics.danger + '1A',
   gradientSurface: semantics.gradientSurface,
   gradientBorder: semantics.gradientBorder,

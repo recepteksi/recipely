@@ -27,6 +27,7 @@ export const radii = {
 export const fontSizes = {
   nano: 9,
   micro: 11,
+  sectionLabel: 11.5,
   small: 12,
   medium: 14,
   caption: 13,
@@ -92,6 +93,11 @@ export const sizes = {
   cuisineTileMin: 110,
   cuisineTileMinSm: 90,
   webSortBtn: 42,
+  // Min width of the web sort dropdown popover (anchored to its trigger).
+  webSortMenuMinWidth: 200,
   webEmptyIcon: 56,
   webContentMax: 1200,
+  // Web filter modal (centered dialog) — Jun 2026.
+  webModalMaxWidth: 720,
+  webModalCloseBtn: 38,
 } as const;

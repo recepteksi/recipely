@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
 import { WebSectionHead } from '@presentation/screens/recipes/web-section-head';
 import { WebSortMenu } from '@presentation/screens/recipes/web-sort-menu';
+import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
 import type { SortKey } from '@presentation/screens/recipes/recipe-sort';
 import { useTheme } from '@presentation/base/theme/theme-context';
@@ -15,14 +16,23 @@ import type { Recipe } from '@domain/recipes/recipe';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 
 const GRID_GAP = spacing.lg2;
+/** Skeleton rows shown in the grid area while the list (re)loads. */
+const SKELETON_ROWS = 2;
 
 export interface WebRecipeGridProps {
   recipes: Recipe[];
   isSearching: boolean;
+  /**
+   * True while the recipe list is (re)loading — e.g. after a sort/filter
+   * change. The grid area shows shimmer cards while the section head (and its
+   * sort/filter controls) and the surrounding page stay in place.
+   */
+  isLoading: boolean;
   /** First applied cuisine key, or `null` — drives the section-head title. */
   activeCuisineLabel: string | null;
   sortBy: SortKey;
-  onOpenSort: () => void;
+  /** Selects a sort option; the parent applies it and reloads the list. */
+  onChangeSort: (key: SortKey) => void;
   /** Opens the full filter sheet (cuisine / category / difficulty / max-time). */
   onOpenFilter: () => void;
   /** Count of applied filters; shown as a badge on the filter button when > 0. */
@@ -41,9 +51,9 @@ export interface WebRecipeGridProps {
  * above an auto-fill card grid of `WebRecipeCard`s.
  */
 export const WebRecipeGrid = ({
-  recipes, isSearching, activeCuisineLabel, sortBy, onOpenSort,
+  recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, onOpenRecipe, isSaved, onToggleSave,
+  gridColumns, isLoading, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -107,18 +117,37 @@ export const WebRecipeGrid = ({
           </View>
         ) : null}
       </Pressable>
-      <WebSortMenu current={sortBy} onOpen={onOpenSort} />
+      <WebSortMenu current={sortBy} onChange={onChangeSort} />
     </View>
   );
 
   return (
     <View>
-      <WebSectionHead
-        title={title}
-        sub={t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
-        right={right}
-      />
-      {recipes.length === 0 ? (
+      {/* Lift the section head (which hosts the sort dropdown) above the recipe
+          grid: the grid is a later sibling and would otherwise paint over the
+          absolutely-positioned popover. */}
+      <View style={styles.headRow}>
+        <WebSectionHead
+          title={title}
+          // Suppress the count while reloading — the previous list is gone and
+          // a stale "0 recipes" would be misleading until the fetch resolves.
+          sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
+          right={right}
+        />
+      </View>
+      {isLoading ? (
+        <View style={styles.skeletonGrid}>
+          {Array.from({ length: SKELETON_ROWS }, (_, row) => (
+            <View key={row} style={styles.skeletonRow}>
+              {Array.from({ length: gridColumns }, (_, col) => (
+                <View key={col} style={styles.gridCell}>
+                  <SkeletonCard />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      ) : recipes.length === 0 ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
             <Ionicons name="search" size={sizes.iconXl} color={colors.textMuted} />
@@ -147,6 +176,12 @@ export const WebRecipeGrid = ({
 };
 
 const styles = StyleSheet.create({
+  // Establishes a stacking context above the grid so the sort dropdown popover
+  // (absolutely positioned inside the head) is not painted over by the cards.
+  headRow: {
+    position: 'relative',
+    zIndex: 1,
+  },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -196,6 +231,17 @@ const styles = StyleSheet.create({
   gridContent: {
     gap: GRID_GAP,
     paddingBottom: spacing.xxl,
+  },
+  skeletonGrid: {
+    gap: GRID_GAP,
+    paddingBottom: spacing.xxl,
+  },
+  // Skeleton rows are plain Views (no FlatList numColumns), so they must lay
+  // their cells out horizontally themselves — otherwise the cards stack into a
+  // single column like the mobile skeleton.
+  skeletonRow: {
+    flexDirection: 'row',
+    gap: GRID_GAP,
   },
   gridRow: {
     gap: GRID_GAP,
