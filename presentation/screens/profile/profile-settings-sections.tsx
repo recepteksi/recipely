@@ -1,4 +1,5 @@
-import { StyleSheet, View, Linking } from 'react-native';
+import { useState } from 'react';
+import { Platform, StyleSheet, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
@@ -11,6 +12,8 @@ import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
+import { FeedbackSheet } from '@presentation/screens/profile/feedback-sheet';
+import { WebFeedbackModal } from '@presentation/screens/profile/web-feedback-modal';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 export const ProfileSettingsSections = (): React.JSX.Element => {
@@ -20,6 +23,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
   const signOut = authStore((s) => s.signOut);
 
   const language = useLocale() as 'en' | 'tr';
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const handleSignOut = async (): Promise<void> => {
     await signOut();
@@ -60,6 +64,15 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         />
       </View>
 
+      <SectionHeader title={t().support.section} />
+      <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
+        <SettingsRow
+          icon="help-buoy-outline"
+          label={t().support.sendFeedback}
+          onPress={() => setFeedbackOpen(true)}
+        />
+      </View>
+
       <SectionHeader title={t().settings.about} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <SettingsRow
@@ -83,6 +96,12 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
           onPress={() => void Linking.openURL(TERMS_OF_USE_URL)}
         />
       </View>
+
+      {Platform.OS === 'web' ? (
+        <WebFeedbackModal visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      ) : (
+        <FeedbackSheet visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+      )}
     </View>
   );
 };

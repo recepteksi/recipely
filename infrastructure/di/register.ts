@@ -22,6 +22,8 @@ import { ListNotificationsUseCase } from '@application/notifications/list-notifi
 import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
 import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
+import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
+import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 
@@ -156,5 +158,15 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.GetUserProfileUseCase, () => {
     const repo = container.resolve<UserProfileRepository>(TOKENS.UserProfileRepository);
     return new GetUserProfileUseCase(repo);
+  });
+
+  container.register(TOKENS.FeedbackRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new FeedbackRepository(http);
+  });
+
+  container.register(TOKENS.SubmitFeedbackUseCase, () => {
+    const repo = container.resolve<FeedbackRepository>(TOKENS.FeedbackRepository);
+    return new SubmitFeedbackUseCase(repo);
   });
 };

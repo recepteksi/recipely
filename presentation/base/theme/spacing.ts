@@ -68,6 +68,12 @@ export const sizes = {
   tabBarHeight: 56,
   settingsRowHeight: 52,
   searchBarHeight: 44,
+  // Compact single-line form input (Help & Feedback form fields).
+  inputHeightSm: 46,
+  // Border width for Help & Feedback form inputs.
+  inputBorderWidth: 1.5,
+  // Min height of the multiline message field in the Help & Feedback form.
+  feedbackMessageMinHeight: 112,
   progressBarHeight: 6,
   dotActiveWidth: 18,
   checkboxSize: 24,

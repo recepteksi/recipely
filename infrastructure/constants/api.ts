@@ -65,6 +65,9 @@ export const TERMS_OF_USE_URL: string = `${LEGAL_ORIGIN}/terms`;
 export const recipeWebUrl = (recipeId: string): string =>
   `${WEB_APP_BASE_URL}/recipes/${recipeId}`;
 
+// Feedback submission endpoint. Inside /api/v1 — path is relative.
+export const FEEDBACK_PATH = '/feedback';
+
 export const AUTH_LOGIN_PATH = "/auth/login";
 export const AUTH_REGISTER_PATH = "/auth/register";
 export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
