@@ -96,6 +96,7 @@ function mapDtoToNotification(dto: NotificationItemDto): Result<Notification, Fa
     senderPhotoUrl: dto.senderPhotoUrl,
     recipeId: dto.recipeId,
     recipeTitle: dto.recipeTitle,
+    message: dto.message ?? null,
     read: dto.read,
     createdAt: new Date(dto.createdAt),
   });
