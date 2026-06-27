@@ -85,6 +85,7 @@ export const configureNotificationsStore = (
           senderPhotoUrl: n.senderPhotoUrl,
           recipeId: n.recipeId,
           recipeTitle: n.recipeTitle,
+          message: n.message,
           read: true,
           createdAt: n.createdAt,
         });

@@ -17,6 +17,7 @@ const makeNotification = (id: string, read: boolean): Notification => {
     senderPhotoUrl: null,
     recipeId: 'recipe-1',
     recipeTitle: 'Panna Cotta',
+    message: null,
     read,
     createdAt: new Date('2026-06-01T12:00:00.000Z'),
   });
