@@ -94,6 +94,11 @@ import {
   configureUserProfileStore,
   type UserProfileStore,
 } from '@application/user-profile/user-profile-store';
+import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
+import {
+  configureFeedbackStore,
+  type FeedbackStore,
+} from '@application/feedback/feedback-store';
 
 export interface ApplicationStores {
   authStore: AuthStore;
@@ -109,6 +114,7 @@ export interface ApplicationStores {
   notificationsStore: NotificationsStore;
   userProfileStore: UserProfileStore;
   taxonomyStore: TaxonomyStore;
+  feedbackStore: FeedbackStore;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }
 
@@ -215,6 +221,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.LoadTaxonomyUseCase,
   );
   const taxonomyStore = configureTaxonomyStore({ loadTaxonomyUseCase });
+  const submitFeedbackUseCase = container.resolve<SubmitFeedbackUseCase>(
+    TOKENS.SubmitFeedbackUseCase,
+  );
+  const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
   return {
     authStore,
     recipeListStore,
@@ -229,6 +239,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     notificationsStore,
     userProfileStore,
     taxonomyStore,
+    feedbackStore,
     loadFavoritesUseCase,
   };
 };
