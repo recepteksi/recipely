@@ -57,7 +57,11 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
         accessibilityLabel={t().support.cancel}
       >
         <Pressable
-          style={[styles.card, { backgroundColor: colors.background }, shadows.lg]}
+          style={[
+            styles.card,
+            { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+            shadows.lg,
+          ]}
           onPress={() => {}}
           accessibilityRole="none"
           accessibilityLabel={t().support.sheetTitle}
@@ -65,7 +69,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
           <View style={[styles.header, { borderBottomColor: colors.cardBorder }]}>
             <Pressable
               onPress={handleClose}
-              style={[styles.closeBtn, { backgroundColor: colors.surface }]}
+              style={[styles.closeBtn, { backgroundColor: colors.background }]}
               accessibilityRole="button"
               accessibilityLabel={t().support.cancel}
             >
@@ -142,6 +146,7 @@ const styles = StyleSheet.create({
     maxWidth: sizes.webModalMaxWidth,
     maxHeight: '86%',
     borderRadius: radii.xxl,
+    borderWidth: sizes.inputBorderWidth,
     overflow: 'hidden',
   },
   header: {
