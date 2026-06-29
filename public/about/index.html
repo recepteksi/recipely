@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="robots" content="index,follow"/>
+<link rel="canonical" href="https://recipely.net/about"/>
+<title>Recipely — Recipes, simply yours.</title>
+<link rel="icon" type="image/svg+xml" href="/about/assets/logo.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/about/assets/landing.css"/>
+</head>
+<body>
+
+<!-- ══════════ NAV ══════════ -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="Recipely">
+      <span class="mark"><img src="/about/assets/logo.svg" alt="Recipely logo"/></span>
+      <span class="word">Recipely</span>
+    </a>
+    <nav class="nav-center">
+      <a href="#features" data-en="Features" data-tr="Özellikler">Features</a>
+      <a href="#ai" data-en="AI" data-tr="Yapay Zekâ">AI</a>
+      <a href="#discover" data-en="Discover" data-tr="Keşfet">Discover</a>
+      <a href="#community" data-en="Community" data-tr="Topluluk">Community</a>
+      <a href="#themes" data-en="Themes" data-tr="Temalar">Themes</a>
+    </nav>
+    <div class="nav-right">
+      <div class="seg" data-lang-seg aria-label="Language">
+        <button data-lang="en" class="on">EN</button>
+        <button data-lang="tr">TR</button>
+      </div>
+      <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.3 4.3l1.7 1.7M18 18l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.3 19.7 6 18M18 6l1.7-1.7"/></svg>
+        <svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a6.5 6.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+      <a class="nav-link login" href="/login" data-en="Log in" data-tr="Giriş yap">Log in</a>
+      <a class="btn btn-primary btn-sm" href="/register" data-en="Get started" data-tr="Başla">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="badge-row">
+          <span class="pill" data-en="New" data-tr="Yeni">New</span>
+          <span data-en="AI recipe generation is here" data-tr="Yapay zekâ ile tarif üretme geldi">AI recipe generation is here</span>
+        </span>
+        <h1>
+          <span data-en="Cook anything," data-tr="Ne canın çekiyorsa,">Cook anything,</span><br/>
+          <span class="grad-text" data-en="beautifully." data-tr="harika pişir.">beautifully.</span>
+        </h1>
+        <p class="sub" data-en="Share, discover, and generate recipes with AI — automatically localized, lovingly organized, and timed step by step. Recipely turns any craving into dinner." data-tr="Yapay zekâ ile tarif paylaş, keşfet ve oluştur — otomatik yerelleştirilmiş, özenle düzenlenmiş ve adım adım zamanlanmış. Recipely her isteği akşam yemeğine dönüştürür.">Share, discover, and generate recipes with AI — automatically localized, lovingly organized, and timed step by step. Recipely turns any craving into dinner.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="/register" data-en="Get started free" data-tr="Ücretsiz başla">Get started free</a>
+          <a class="btn btn-ghost" href="/login" data-en="Log in" data-tr="Giriş yap">Log in</a>
+        </div>
+        <div class="hero-trust">
+          <div class="avatars">
+            <span style="background-image:url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&auto=format&fit=crop&q=80')"></span>
+            <span style="background-image:url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&auto=format&fit=crop&q=80')"></span>
+            <span style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&auto=format&fit=crop&q=80')"></span>
+          </div>
+          <div>
+            <span class="stars" aria-hidden="true">★★★★★</span>
+            <div data-en="Loved by 120k+ home cooks" data-tr="120 binden fazla ev aşçısı seviyor">Loved by 120k+ home cooks</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="hero-stage">
+        <div class="fab fab-ai floaty">
+          <span class="sp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7z"/></svg></span>
+          <span data-en="Generated in 4s" data-tr="4 sn'de üretildi">Generated in 4s</span>
+        </div>
+        <div class="fab fab-timer floaty d1">
+          <div class="lbl" data-en="Simmer" data-tr="Pişir">Simmer</div>
+          <div class="tval">12:00</div>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="fab fab-nutri floaty d2">
+          <div class="nu"><b>520</b><span data-en="kcal" data-tr="kcal">kcal</span></div>
+          <div class="nu"><b>32g</b><span data-en="protein" data-tr="protein">protein</span></div>
+          <div class="nu"><b>18g</b><span data-en="fat" data-tr="yağ">fat</span></div>
+        </div>
+
+        <div class="phone">
+          <div class="screen">
+            <div class="scr-top">
+              <div class="scr-title" data-en="Recipes" data-tr="Tarifler">Recipes</div>
+              <div class="scr-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><span data-en="Search recipes…" data-tr="Tarif ara…">Search recipes…</span></div>
+              <div class="scr-pills">
+                <span class="scr-pill on" data-en="All" data-tr="Tümü">All</span>
+                <span class="scr-pill">🍕 <span data-en="Italian" data-tr="İtalyan">Italian</span></span>
+                <span class="scr-pill">🥗 <span data-en="Salad" data-tr="Salata">Salad</span></span>
+                <span class="scr-pill">🍛 <span data-en="Indian" data-tr="Hint">Indian</span></span>
+              </div>
+            </div>
+            <div class="scr-body">
+              <div class="scr-card">
+                <div class="ph"><img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&auto=format&fit=crop&q=70" alt="Margherita pizza"/><span class="cz">🍕 <span data-en="Italian" data-tr="İtalyan">Italian</span></span></div>
+                <div class="bd"><h4>Margherita Pizza</h4><div class="mt"><span class="st">★ 4.6</span><span>🕒 35 <span data-en="min" data-tr="dk">min</span></span></div></div>
+              </div>
+              <div class="scr-card">
+                <div class="ph"><img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop&q=70" alt="Greek salad"/><span class="cz">🥗 <span data-en="Salad" data-tr="Salata">Salad</span></span></div>
+                <div class="bd"><h4>Greek Salad</h4><div class="mt"><span class="st">★ 4.4</span><span>🕒 15 <span data-en="min" data-tr="dk">min</span></span></div></div>
+              </div>
+            </div>
+            <div class="scr-tab"><i class="act"></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ STATS ══════════ -->
+  <div class="marquee">
+    <div class="wrap marquee-inner">
+      <span class="label" data-en="Trusted in kitchens worldwide" data-tr="Dünyanın dört bir yanındaki mutfaklarda">Trusted in kitchens worldwide</span>
+      <div class="stat-row">
+        <div class="stat"><div class="num">120k+</div><div class="cap" data-en="Home cooks" data-tr="Ev aşçısı">Home cooks</div></div>
+        <div class="stat"><div class="num">38k</div><div class="cap" data-en="Recipes shared" data-tr="Paylaşılan tarif">Recipes shared</div></div>
+        <div class="stat"><div class="num">2</div><div class="cap" data-en="Languages" data-tr="Dil">Languages</div></div>
+        <div class="stat"><div class="num">4.9★</div><div class="cap" data-en="App rating" data-tr="Uygulama puanı">App rating</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ BENTO FEATURES ══════════ -->
+  <section class="band" id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow" data-en="Everything you need" data-tr="İhtiyacın olan her şey">Everything you need</span>
+        <h2 data-en="A kitchen companion that thinks ahead." data-tr="Önceden düşünen bir mutfak yardımcısı.">A kitchen companion that thinks ahead.</h2>
+        <p data-en="From a midnight craving to a plated dish — Recipely handles the discovery, the translation, and the timing." data-tr="Gece yarısı isteğinden tabağa kadar — Recipely keşfi, çeviriyi ve zamanlamayı üstlenir.">From a midnight craving to a plated dish — Recipely handles the discovery, the translation, and the timing.</p>
+      </div>
+
+      <div class="bento">
+        <!-- AI generation (big) -->
+        <div class="cell c-ai reveal">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8z"/></svg></div>
+          <h3 data-en="AI recipe generation" data-tr="Yapay zekâ ile tarif üretme">AI recipe generation</h3>
+          <p data-en="Describe a craving or list what's in your fridge — get a complete, structured recipe in seconds." data-tr="İsteğini anlat ya da buzdolabındakileri yaz — saniyeler içinde eksiksiz, düzenli bir tarif al.">Describe a craving or list what's in your fridge — get a complete, structured recipe in seconds.</p>
+          <div class="ai-demo">
+            <div class="ai-prompt"><span class="dot"></span><span class="typed" id="aiTyped" data-text="A 30-min creamy lemon garlic shrimp pasta">A 30-min creamy lemon garlic shrimp pasta</span></div>
+            <div class="ai-result" id="aiResult">
+              <img src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=240&auto=format&fit=crop&q=70" alt="Pasta"/>
+              <div>
+                <div class="ttl">Lemon Garlic Shrimp Pasta</div>
+                <div class="tags"><span>🕒 30 <span data-en="min" data-tr="dk">min</span></span><span data-en="Easy" data-tr="Kolay">Easy</span><span>520 kcal</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-language -->
+        <div class="cell c-lang reveal">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3z"/></svg></div>
+          <h3 data-en="Multi-language recipes" data-tr="Çok dilli tarifler">Multi-language recipes</h3>
+          <p data-en="Every recipe auto-localizes — ingredients, steps and units adapt to your language." data-tr="Her tarif otomatik yerelleşir — malzemeler, adımlar ve birimler diline uyum sağlar.">Every recipe auto-localizes — ingredients, steps and units adapt to your language.</p>
+          <div class="lang-card">
+            <div class="lang-col"><div class="flag">EN</div><div class="ln"><b>2 cups</b> flour · <b>Simmer</b> 10 min</div></div>
+            <div class="lang-col"><div class="flag">TR</div><div class="ln"><b>2 su bardağı</b> un · <b>Kıs</b> 10 dk</div></div>
+          </div>
+        </div>
+
+        <!-- Discover/filters -->
+        <div class="cell c-disc reveal">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/><path d="M4 6h4M4 18h7"/></svg></div>
+          <h3 data-en="Smart discovery" data-tr="Akıllı keşif">Smart discovery</h3>
+          <p data-en="Filter by cuisine, category, difficulty and time. Sort by popular, top-rated or quickest." data-tr="Mutfağa, kategoriye, zorluğa ve süreye göre süz. Popüler, en çok puanlı ya da en hızlıya göre sırala.">Filter by cuisine, category, difficulty and time. Sort by popular, top-rated or quickest.</p>
+          <div class="disc-chips">
+            <span class="dc on" data-en="Popular" data-tr="Popüler">Popular</span>
+            <span class="dc">🍕 <span data-en="Italian" data-tr="İtalyan">Italian</span></span>
+            <span class="dc">≤ 30 <span data-en="min" data-tr="dk">min</span></span>
+            <span class="dc" data-en="Easy" data-tr="Kolay">Easy</span>
+            <span class="dc">🥗 <span data-en="Salad" data-tr="Salata">Salad</span></span>
+          </div>
+        </div>
+
+        <!-- Timers -->
+        <div class="cell c-time reveal">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6M12 5V2"/></svg></div>
+          <h3 data-en="Built-in timers" data-tr="Yerleşik zamanlayıcılar">Built-in timers</h3>
+          <p data-en="Tap any time in a step to start a countdown." data-tr="Bir adımdaki herhangi bir süreye dokunarak geri sayımı başlat.">Tap any time in a step to start a countdown.</p>
+        </div>
+
+        <!-- Collections -->
+        <div class="cell c-coll reveal">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.6L5 20V5a1 1 0 0 1 1-1z"/></svg></div>
+          <h3 data-en="Collections & favorites" data-tr="Koleksiyonlar & favoriler">Collections &amp; favorites</h3>
+          <p data-en="Save what you love into cookbooks you can revisit and share." data-tr="Sevdiklerini, dönüp bakabileceğin ve paylaşabileceğin yemek kitaplarına kaydet.">Save what you love into cookbooks you can revisit and share.</p>
+        </div>
+
+        <!-- Nutrition -->
+        <div class="cell c-nutri reveal">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4-2.5-7-6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4-3 7.5-7 10z"/></svg></div>
+          <h3 data-en="Nutrition at a glance" data-tr="Tek bakışta besin değeri">Nutrition at a glance</h3>
+          <div class="nutri-rings">
+            <div class="ring"><div class="rc" style="background:var(--chip-bg);color:var(--chip-text)">14g</div><div class="rl" data-en="Protein" data-tr="Protein">Protein</div></div>
+            <div class="ring"><div class="rc" style="background:var(--chip-bg);color:var(--chip-text)">38g</div><div class="rl" data-en="Carbs" data-tr="Karb.">Carbs</div></div>
+            <div class="ring"><div class="rc" style="background:var(--chip-bg);color:var(--chip-text)">10g</div><div class="rl" data-en="Fat" data-tr="Yağ">Fat</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ AI SHOWCASE ══════════ -->
+  <section class="band aiband" id="ai">
+    <div class="wrap ai-grid">
+      <div class="ai-copy reveal">
+        <span class="eyebrow" data-en="Cook with AI" data-tr="Yapay zekâ ile pişir">Cook with AI</span>
+        <h2 style="font-family:var(--display);font-weight:800;font-size:38px;letter-spacing:-1px;line-height:1.1;margin:14px 0 0;" data-en="From a sentence to a full recipe." data-tr="Bir cümleden eksiksiz bir tarife.">From a sentence to a full recipe.</h2>
+        <p style="font-size:17px;color:var(--muted);margin:16px 0 0;" data-en="Type what you're in the mood for and Recipely writes a structured recipe — ingredients, steps, times and nutrition. Then refine it or save it to your cookbook." data-tr="Canının ne istediğini yaz, Recipely düzenli bir tarif yazsın — malzemeler, adımlar, süreler ve besin değerleri. Sonra düzenle ya da yemek kitabına kaydet.">Type what you're in the mood for and Recipely writes a structured recipe — ingredients, steps, times and nutrition. Then refine it or save it to your cookbook.</p>
+        <div class="ai-feats">
+          <div class="ai-feat">
+            <div class="ai-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10z"/></svg></div>
+            <div><h4 data-en="Describe it your way" data-tr="Kendi sözlerinle anlat">Describe it your way</h4><p data-en="“Something vegan with chickpeas under 20 minutes.”" data-tr="“20 dakikadan kısa, nohutlu vegan bir şey.”">“Something vegan with chickpeas under 20 minutes.”</p></div>
+          </div>
+          <div class="ai-feat">
+            <div class="ai-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+            <div><h4 data-en="Editable, not magic" data-tr="Sihir değil, düzenlenebilir">Editable, not magic</h4><p data-en="Every generated recipe drops into the full editor to tweak." data-tr="Üretilen her tarif, ince ayar için tam düzenleyiciye düşer.">Every generated recipe drops into the full editor to tweak.</p></div>
+          </div>
+          <div class="ai-feat">
+            <div class="ai-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-3.6L5 20V5a1 1 0 0 1 1-1z"/></svg></div>
+            <div><h4 data-en="Save & share instantly" data-tr="Anında kaydet & paylaş">Save &amp; share instantly</h4><p data-en="Keep it in your collection or share it with the community." data-tr="Koleksiyonunda sakla ya da toplulukla paylaş.">Keep it in your collection or share it with the community.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-chat reveal">
+        <div class="hd">
+          <span class="sp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9z"/></svg></span>
+          <b>Recipely AI</b>
+          <span data-en="Powered by your prompt" data-tr="İsteğinle çalışır">Powered by your prompt</span>
+        </div>
+        <div class="bubble user" data-en="Make me a cozy autumn soup with butternut squash 🍂" data-tr="Bana balkabaklı, sonbahara yakışan sıcacık bir çorba yap 🍂">Make me a cozy autumn soup with butternut squash 🍂</div>
+        <div class="bubble bot" data-en="Done! Here's a creamy roasted butternut squash soup — 35 minutes, serves 4." data-tr="Hazır! İşte kremalı, fırınlanmış balkabağı çorbası — 35 dakika, 4 kişilik.">Done! Here's a creamy roasted butternut squash soup — 35 minutes, serves 4.</div>
+        <div class="gen-card">
+          <div class="gph"><img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=700&auto=format&fit=crop&q=70" alt="Butternut squash soup"/></div>
+          <div class="gbd">
+            <h4 data-en="Roasted Butternut Squash Soup" data-tr="Fırınlanmış Balkabağı Çorbası">Roasted Butternut Squash Soup</h4>
+            <div class="gen-meta"><span>🕒 35 <span data-en="min" data-tr="dk">min</span></span><span>★ 4.7</span><span data-en="Easy" data-tr="Kolay">Easy</span><span>240 kcal</span></div>
+            <div class="gen-steps">
+              <div class="gs"><b>1</b><span data-en="Roast cubed squash with olive oil for 20 min." data-tr="Küp doğranmış balkabağını zeytinyağıyla 20 dk fırınla.">Roast cubed squash with olive oil for 20 min.</span></div>
+              <div class="gs"><b>2</b><span data-en="Simmer with broth, onion and ginger." data-tr="Et suyu, soğan ve zencefille kıs.">Simmer with broth, onion and ginger.</span></div>
+              <div class="gs"><b>3</b><span data-en="Blend smooth, swirl in cream, season." data-tr="Pürüzsüz olana dek karıştır, krema ekle, baharatla.">Blend smooth, swirl in cream, season.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ DISCOVER ══════════ -->
+  <section class="band" id="discover">
+    <div class="wrap">
+      <div class="sec-head center reveal">
+        <span class="eyebrow" data-en="See it in action" data-tr="İş başında gör">See it in action</span>
+        <h2 data-en="Beautiful recipes, right in your pocket." data-tr="Cebinde, pırıl pırıl tarifler.">Beautiful recipes, right in your pocket.</h2>
+        <p data-en="Browse a world of dishes with rich photography, cuisine tags, ratings and prep times. Tap a cuisine to filter." data-tr="Zengin fotoğraflar, mutfak etiketleri, puanlar ve sürelerle bir dünya yemeği keşfet. Süzmek için bir mutfağa dokun.">Browse a world of dishes with rich photography, cuisine tags, ratings and prep times. Tap a cuisine to filter.</p>
+      </div>
+
+      <div class="filter-bar reveal">
+        <button class="fchip on" data-filter="all" data-en="All" data-tr="Tümü">All</button>
+        <button class="fchip" data-filter="Italian" data-en="Italian" data-tr="İtalyan">Italian</button>
+        <button class="fchip" data-filter="Chinese" data-en="Chinese" data-tr="Çin">Chinese</button>
+        <button class="fchip" data-filter="Indian" data-en="Indian" data-tr="Hint">Indian</button>
+        <button class="fchip" data-filter="American" data-en="American" data-tr="Amerikan">American</button>
+        <button class="fchip" data-filter="Mediterranean" data-en="Mediterranean" data-tr="Akdeniz">Mediterranean</button>
+        <button class="fchip" data-filter="Dessert" data-en="Dessert" data-tr="Tatlı">Dessert</button>
+      </div>
+
+      <div class="cards">
+        <article class="rcard reveal" data-cuisine="Indian">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=700&auto=format&fit=crop&q=72" alt="Chicken biryani"/><span class="cuisine">🍛 <span data-en="Indian" data-tr="Hint">Indian</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Chicken Biryani</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.8</span><span class="m">🕒 75 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Medium" data-tr="Orta">Medium</span></div></div>
+        </article>
+        <article class="rcard reveal" data-cuisine="Italian">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=700&auto=format&fit=crop&q=72" alt="Mushroom risotto"/><span class="cuisine">🍝 <span data-en="Italian" data-tr="İtalyan">Italian</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Mushroom Risotto</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.6</span><span class="m">🕒 45 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Hard" data-tr="Zor">Hard</span></div></div>
+        </article>
+        <article class="rcard reveal" data-cuisine="Dessert">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=700&auto=format&fit=crop&q=72" alt="Chocolate chip cookies"/><span class="cuisine">🍪 <span data-en="Dessert" data-tr="Tatlı">Dessert</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Chocolate Chip Cookies</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.9</span><span class="m">🕒 25 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Easy" data-tr="Kolay">Easy</span></div></div>
+        </article>
+        <article class="rcard reveal" data-cuisine="Italian">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=700&auto=format&fit=crop&q=72" alt="Margherita pizza"/><span class="cuisine">🍕 <span data-en="Italian" data-tr="İtalyan">Italian</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Classic Margherita Pizza</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.6</span><span class="m">🕒 35 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Easy" data-tr="Kolay">Easy</span></div></div>
+        </article>
+        <article class="rcard reveal" data-cuisine="Chinese">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=700&auto=format&fit=crop&q=72" alt="Beef and broccoli"/><span class="cuisine">🥢 <span data-en="Chinese" data-tr="Çin">Chinese</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Beef &amp; Broccoli</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.5</span><span class="m">🕒 35 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Medium" data-tr="Orta">Medium</span></div></div>
+        </article>
+        <article class="rcard reveal" data-cuisine="American">
+          <div class="photo"><img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=700&auto=format&fit=crop&q=72" alt="Pancakes"/><span class="cuisine">🥞 <span data-en="American" data-tr="Amerikan">American</span></span><span class="fav" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.7-9.3-9C1.2 9 2.5 5.5 5.8 5.5c2 0 3.3 1.2 4.2 2.6.9-1.4 2.2-2.6 4.2-2.6 3.3 0 4.6 3.5 3.1 6.5C19 16.3 12 21 12 21z"/></svg></span></div>
+          <div class="body"><h4>Fluffy Pancakes</h4><div class="meta"><span class="m rating"><span class="star">★</span> 4.7</span><span class="m">🕒 25 <span data-en="min" data-tr="dk">min</span></span><span class="m" data-en="Easy" data-tr="Kolay">Easy</span></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ COOK MODE ══════════ -->
+  <section class="band cookband" id="cook">
+    <div class="wrap cook-grid">
+      <div class="cook-panel reveal">
+        <div class="ttl">
+          <h4 data-en="Margherita Pizza" data-tr="Margherita Pizza">Margherita Pizza</h4>
+          <span class="cook-progress"><span id="cookCount">1/5</span> <span data-en="done" data-tr="tamam">done</span></span>
+        </div>
+        <div class="pbar"><i id="cookFill" style="width:20%"></i></div>
+        <div class="step done" data-step><div class="num">1</div><div class="sx" data-en="Preheat oven to 475°F (245°C)." data-tr="Fırını 245°C'ye ısıt.">Preheat oven to 475°F (245°C).</div></div>
+        <div class="step" data-step><div class="num">2</div><div class="sx" data-en="Roll out the dough on a floured surface." data-tr="Hamuru unlanmış yüzeyde aç.">Roll out the dough on a floured surface.</div></div>
+        <div class="step" data-step><div class="num">3</div><div class="sx"><span data-en="Spread sauce, add mozzarella, bake for " data-tr="Sosu sür, mozzarella ekle, ">Spread sauce, add mozzarella, bake for </span><button class="tchip" data-timer="12"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4M9 2h6"/></svg><span data-face>12:00</span></button>.</div></div>
+        <div class="step" data-step><div class="num">4</div><div class="sx"><span data-en="Rest the pizza for " data-tr="Pizzayı ">Rest the pizza for </span><button class="tchip" data-timer="3"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4M9 2h6"/></svg><span data-face>3:00</span></button>.</div></div>
+        <div class="step" data-step><div class="num">5</div><div class="sx" data-en="Scatter basil, drizzle olive oil, serve." data-tr="Fesleğen serp, zeytinyağı gezdir, servis et.">Scatter basil, drizzle olive oil, serve.</div></div>
+      </div>
+
+      <div class="cook-copy reveal">
+        <span class="eyebrow" data-en="Cook mode" data-tr="Pişirme modu">Cook mode</span>
+        <h2 style="font-family:var(--display);font-weight:800;font-size:38px;letter-spacing:-1px;line-height:1.1;margin:14px 0 0;" data-en="Step by step, timed to the second." data-tr="Adım adım, saniyesine kadar zamanlı.">Step by step, timed to the second.</h2>
+        <p style="font-size:17px;color:var(--muted);margin:16px 0 0;" data-en="Check off steps as you go and tap any time to start a live countdown — right inside the recipe. Try it: tap a timer or check a step." data-tr="İlerledikçe adımları işaretle ve herhangi bir süreye dokunarak canlı geri sayımı başlat — tam tarifin içinde. Dene: bir zamanlayıcıya dokun ya da bir adımı işaretle.">Check off steps as you go and tap any time to start a live countdown — right inside the recipe. Try it: tap a timer or check a step.</p>
+        <div class="cook-feats">
+          <div class="ai-feat">
+            <div class="ai-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6"/></svg></div>
+            <div><h4 data-en="Inline countdowns" data-tr="Satır içi geri sayım">Inline countdowns</h4><p data-en="Times mentioned in steps become tappable timers automatically." data-tr="Adımlarda geçen süreler otomatik olarak dokunulabilir zamanlayıcı olur.">Times mentioned in steps become tappable timers automatically.</p></div>
+          </div>
+          <div class="ai-feat">
+            <div class="ai-i"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+            <div><h4 data-en="Track your progress" data-tr="İlerlemeni takip et">Track your progress</h4><p data-en="A progress bar keeps you oriented from prep to plate." data-tr="İlerleme çubuğu, hazırlıktan tabağa kadar yolunu kaybettirmez.">A progress bar keeps you oriented from prep to plate.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ COMMUNITY ══════════ -->
+  <section class="band" id="community">
+    <div class="wrap">
+      <div class="sec-head center reveal">
+        <span class="eyebrow" data-en="A community of cooks" data-tr="Aşçılar topluluğu">A community of cooks</span>
+        <h2 data-en="Follow the creators you love." data-tr="Sevdiğin yaratıcıları takip et.">Follow the creators you love.</h2>
+        <p data-en="Discover home cooks and chefs, follow their cookbooks, and share your own recipes with a tap." data-tr="Ev aşçılarını ve şefleri keşfet, yemek kitaplarını takip et ve kendi tariflerini tek dokunuşla paylaş.">Discover home cooks and chefs, follow their cookbooks, and share your own recipes with a tap.</p>
+      </div>
+
+      <div class="creators">
+        <div class="creator reveal">
+          <div class="av" style="background-image:url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&auto=format&fit=crop&q=80')"></div>
+          <div class="nm">Olivia Hart <span class="vf" title="Verified"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.3 1.9-1 2.8 1 2.8-2.3 1.9-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9L3.4 15l1-2.8-1-2.8 2.3-1.9.9-2.9 3-.2z"/><path d="M8.5 12.2l2.3 2.3 4.5-4.7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="un">@oliviabakes</div>
+          <div class="cstats"><div><b>31</b><span data-en="Recipes" data-tr="Tarif">Recipes</span></div><div><b>4.9k</b><span data-en="Followers" data-tr="Takipçi">Followers</span></div></div>
+          <button class="btn btn-primary btn-sm follow" data-en="Follow" data-tr="Takip et">Follow</button>
+        </div>
+        <div class="creator reveal">
+          <div class="av" style="background-image:url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&auto=format&fit=crop&q=80')"></div>
+          <div class="nm">Sofia Bianchi <span class="vf" title="Verified"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.3 1.9-1 2.8 1 2.8-2.3 1.9-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9L3.4 15l1-2.8-1-2.8 2.3-1.9.9-2.9 3-.2z"/><path d="M8.5 12.2l2.3 2.3 4.5-4.7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="un">@sofiacooks</div>
+          <div class="cstats"><div><b>24</b><span data-en="Recipes" data-tr="Tarif">Recipes</span></div><div><b>2.1k</b><span data-en="Followers" data-tr="Takipçi">Followers</span></div></div>
+          <button class="btn btn-ghost btn-sm follow" data-en="Follow" data-tr="Takip et">Follow</button>
+        </div>
+        <div class="creator reveal">
+          <div class="av" style="background-image:url('https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&auto=format&fit=crop&q=80')"></div>
+          <div class="nm">Lin Wei</div>
+          <div class="un">@linskitchen</div>
+          <div class="cstats"><div><b>18</b><span data-en="Recipes" data-tr="Tarif">Recipes</span></div><div><b>1.3k</b><span data-en="Followers" data-tr="Takipçi">Followers</span></div></div>
+          <button class="btn btn-ghost btn-sm follow" data-en="Follow" data-tr="Takip et">Follow</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ THEMES ══════════ -->
+  <section class="band themeband" id="themes">
+    <div class="wrap">
+      <div class="sec-head center reveal">
+        <span class="eyebrow" data-en="Make it yours" data-tr="Sana özel">Make it yours</span>
+        <h2 data-en="20 themes. Light & dark. Your kitchen, your mood." data-tr="20 tema. Açık & koyu. Mutfağın, ruh halin.">20 themes. Light &amp; dark. Your kitchen, your mood.</h2>
+        <p data-en="Pick a palette and watch this page retint live — the same theming you get inside the app." data-tr="Bir palet seç ve bu sayfanın canlı renk değiştirmesini izle — uygulamadakiyle aynı tema sistemi.">Pick a palette and watch this page retint live — the same theming you get inside the app.</p>
+      </div>
+      <div class="swatches reveal">
+        <button class="sw on" data-accent="tangerine"><span class="chip"></span><span class="nm">Tangerine</span></button>
+        <button class="sw" data-accent="crimson"><span class="chip"></span><span class="nm">Crimson</span></button>
+        <button class="sw" data-accent="golden"><span class="chip"></span><span class="nm">Golden</span></button>
+        <button class="sw" data-accent="emerald"><span class="chip"></span><span class="nm">Emerald</span></button>
+        <button class="sw" data-accent="teal"><span class="chip"></span><span class="nm">Teal</span></button>
+        <button class="sw" data-accent="ocean"><span class="chip"></span><span class="nm">Ocean</span></button>
+        <button class="sw" data-accent="indigo"><span class="chip"></span><span class="nm">Indigo</span></button>
+        <button class="sw" data-accent="violet"><span class="chip"></span><span class="nm">Violet</span></button>
+        <button class="sw" data-accent="rose"><span class="chip"></span><span class="nm">Rose</span></button>
+        <button class="sw" data-accent="coral"><span class="chip"></span><span class="nm">Coral</span></button>
+      </div>
+      <p class="theme-note" data-en="…and 10 more, each with a hand-tuned light and dark variant." data-tr="…ve 10 tane daha, her biri elle ayarlanmış açık ve koyu varyantıyla.">…and 10 more, each with a hand-tuned light and dark variant.</p>
+    </div>
+  </section>
+
+  <!-- ══════════ DOWNLOAD ══════════ -->
+  <section class="band" id="download" style="padding-top:32px;">
+    <div class="wrap">
+      <div class="download reveal">
+        <div class="dl-eyebrow" data-en="Get the app" data-tr="Uygulamayı edin">Get the app</div>
+        <h2 data-en="Your next favorite meal is one tap away." data-tr="Yeni favori yemeğin bir dokunuş uzakta.">Your next favorite meal is one tap away.</h2>
+        <p data-en="Available on iOS and Android. Free to download — start cooking in minutes." data-tr="iOS ve Android'de. Ücretsiz indir — dakikalar içinde pişirmeye başla.">Available on iOS and Android. Free to download — start cooking in minutes.</p>
+        <div class="badges">
+          <a class="store-badge" href="#" aria-label="Download on the App Store">
+            <svg class="sb-glyph" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.04c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.78 1.3 10.33.86 1.25 1.89 2.65 3.23 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.03 2.28-1.27 3.13-2.53.99-1.45 1.4-2.85 1.42-2.92-.03-.01-2.72-1.04-2.75-4.13zM14.46 5.27c.71-.87 1.2-2.07 1.07-3.27-1.03.04-2.28.69-3.02 1.55-.66.76-1.24 1.99-1.08 3.16 1.15.09 2.32-.58 3.03-1.44z"/></svg>
+            <span><span class="sb-top" data-en="Download on the" data-tr="İndir">Download on the</span><br/><span class="sb-name">App Store</span></span>
+          </a>
+          <a class="store-badge" href="#" aria-label="Get it on Google Play">
+            <svg class="sb-glyph" viewBox="0 0 24 24"><path d="M3.6 2.3c-.2.2-.3.5-.3.9v17.6c0 .4.1.7.3.9l.1.1L13.5 12 3.7 2.2l-.1.1z" fill="#00D0FF"/><path d="M17 15.5l-3.5-3.5 3.5-3.5 4 2.3c1.1.6 1.1 1.7 0 2.4l-4 2.3z" fill="#FFCE00"/><path d="M3.7 21.8c.3.3.8.4 1.4 0L17 14.9l-3.5-3.5-9.8 10.4z" fill="#FF3D44"/><path d="M3.7 2.2l9.8 9.8L17 8.5 5.1 1.7c-.6-.3-1.1-.3-1.4.5z" fill="#00F076"/></svg>
+            <span><span class="sb-top" data-en="GET IT ON" data-tr="EDİNİN">GET IT ON</span><br/><span class="sb-name">Google Play</span></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CLOSING (minimal) ══════════ -->
+  <div class="closing">
+    <a class="brand" href="#top" aria-label="Recipely">
+      <span class="mark"><img src="/about/assets/logo.svg" alt="Recipely logo"/></span>
+      <span class="word">Recipely</span>
+    </a>
+    <div>© 2026 Recipely · <span data-en="Recipes, simply yours." data-tr="Tariflerin senin elinde.">Recipes, simply yours.</span></div>
+  </div>
+
+</main>
+
+<script src="/about/assets/landing.js"></script>
+</body>
+</html>
