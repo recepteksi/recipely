@@ -80,11 +80,7 @@ export const CollapsingHomeHeader = ({
 
   return (
     <Animated.View
-      style={[
-        styles.band,
-        bandStyle,
-        { backgroundColor: colors.background, borderBottomColor: colors.border },
-      ]}
+      style={[styles.band, bandStyle, { backgroundColor: colors.background }]}
     >
       <View style={styles.titleRow}>
         <View style={styles.titles}>
@@ -141,7 +137,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: sizes.homeHeaderMax,
     zIndex: 20,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
