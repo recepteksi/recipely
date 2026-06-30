@@ -24,6 +24,7 @@ import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet'
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -62,6 +63,7 @@ const InfoChip = ({
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
@@ -447,37 +449,60 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                     </View>
 
                     {isOwner ? (
-                      <View style={styles.ownerActions}>
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={t().myRecipes.editRecipe}
-                          onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
-                          style={({ pressed }) => [
-                            styles.ownerBtn,
-                            { backgroundColor: colors.primaryLight, opacity: pressed ? 0.75 : 1 },
-                          ]}
-                        >
-                          <Ionicons name="pencil-outline" size={16} color={colors.primary} />
-                          <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.primary }]}>
-                            {t().myRecipes.editRecipe}
-                          </ThemedText>
-                        </Pressable>
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={t().myRecipes.deleteRecipe}
-                          onPress={() => setShowDeleteSheet(true)}
-                          style={({ pressed }) => [
-                            styles.ownerBtn,
-                            styles.ownerBtnDanger,
-                            { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
-                          ]}
-                        >
-                          <Ionicons name="trash-outline" size={16} color={colors.danger} />
-                          <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                            {t().myRecipes.deleteRecipe}
-                          </ThemedText>
-                        </Pressable>
-                      </View>
+                      isWebShell ? (
+                        // WEB: design's header-cluster button language — ghost
+                        // "Edit" pill + ghost "Delete" pill (danger-tinted).
+                        <View style={styles.ownerActionsWeb}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t().myRecipes.editRecipe}
+                            onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                            style={({ pressed }) => [
+                              styles.ghostPill,
+                              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+                            ]}
+                          >
+                            <Ionicons name="create-outline" size={16} color={colors.text} />
+                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.text }]}>
+                              {t().myRecipes.editRecipe}
+                            </ThemedText>
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t().myRecipes.deleteRecipe}
+                            onPress={() => setShowDeleteSheet(true)}
+                            style={({ pressed }) => [
+                              styles.ghostPill,
+                              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+                            ]}
+                          >
+                            <Ionicons name="trash-outline" size={16} color={colors.danger} />
+                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
+                              {t().myRecipes.deleteRecipe}
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      ) : (
+                        // MOBILE: edit lives in the floating overlay cluster (a
+                        // pencil button, per the design); delete stays inline as
+                        // a single danger button.
+                        <View style={styles.ownerActions}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={t().myRecipes.deleteRecipe}
+                            onPress={() => setShowDeleteSheet(true)}
+                            style={({ pressed }) => [
+                              styles.ownerBtn,
+                              { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
+                            ]}
+                          >
+                            <Ionicons name="trash-outline" size={16} color={colors.danger} />
+                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
+                              {t().myRecipes.deleteRecipe}
+                            </ThemedText>
+                          </Pressable>
+                        </View>
+                      )
                     ) : null}
 
                     <SectionHeader
@@ -663,6 +688,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           return (
             <>
               <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
+                {isOwner && !isWebShell ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t().myRecipes.editRecipe}
+                    onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                    style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
+                  >
+                    <Ionicons name="pencil" size={sizes.iconMd} color={colors.onOverlay} />
+                  </Pressable>
+                ) : null}
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t().recipes.share}
@@ -783,6 +818,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.xl,
   },
+  ownerActionsWeb: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    alignSelf: 'flex-start',
+  },
   ownerBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -792,7 +833,16 @@ const styles = StyleSheet.create({
     height: sizes.searchBarHeight,
     borderRadius: radii.round,
   },
-  ownerBtnDanger: {},
+  ghostPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs2,
+    height: sizes.searchBarHeight,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+  },
   ownerBtnLabel: {
     fontWeight: '600',
     fontSize: fontSizes.caption,
