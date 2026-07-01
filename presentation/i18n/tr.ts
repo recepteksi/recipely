@@ -103,6 +103,7 @@ export const tr: Translations = {
     rating: 'Puan',
     ingredients: 'Malzemeler',
     instructions: 'Yapılış',
+    nutrition: 'Besin Değerleri',
     minutes: 'dk',
     searchPlaceholder: 'Tarif ara...',
     noResults: 'Aramanızla eşleşen tarif yok.',

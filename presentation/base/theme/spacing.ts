@@ -31,6 +31,7 @@ export const fontSizes = {
   small: 12,
   medium: 14,
   caption: 13,
+  captionLg: 13.5,
   label: 13,
   body: 15,
   heading: 16,
@@ -45,6 +46,8 @@ export const fontSizes = {
 export const sizes = {
   iconXxs: 18,
   iconSm: 16,
+  // Caption-row inline icons (cuisine globe, rating star) on recipe detail.
+  iconCaption: 15,
   iconMd: 20,
   iconLg: 24,
   iconXl: 32,

@@ -7,7 +7,7 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { MediaGallery } from '@presentation/base/widgets/media-gallery';
-import { TimeCard } from '@presentation/base/widgets/time-card';
+import { RecipeMetaCard } from '@presentation/base/widgets/recipe-meta-card';
 import { IngredientCard } from '@presentation/base/widgets/ingredient-card';
 import { InstructionCard } from '@presentation/base/widgets/instruction-card';
 import { CommentCard } from '@presentation/base/widgets/comment-card';
@@ -31,34 +31,6 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import type { MediaItem } from '@domain/recipes/media-item';
-
-interface InfoChipProps {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  iconColor?: string;
-  chipBg: string;
-  chipTextColor: string;
-}
-
-const InfoChip = ({
-  icon,
-  label,
-  iconColor,
-  chipBg,
-  chipTextColor,
-}: InfoChipProps): React.JSX.Element => (
-  <View style={[styles.chip, { backgroundColor: chipBg }]}>
-    <MaterialCommunityIcons
-      name={icon}
-      size={14}
-      color={iconColor ?? chipTextColor}
-      style={styles.chipIcon}
-    />
-    <ThemedText variant="caption" style={{ color: chipTextColor }}>
-      {label}
-    </ThemedText>
-  </View>
-);
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -311,6 +283,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   ? images
                   : [{ type: 'image', url: recipe.image }];
 
+              const liked = likeState?.likedByMe ?? recipe.likedByMe;
+              const likeCount = likeState?.likeCount ?? recipe.likeCount;
+              const commentTotal = commentState?.total ?? 0;
+              const nutrition = recipe.nutrition;
+              const hasNutrition =
+                recipe.caloriesPerServing > 0 ||
+                (nutrition?.protein ?? 0) > 0 ||
+                (nutrition?.carbs ?? 0) > 0 ||
+                (nutrition?.fat ?? 0) > 0 ||
+                (nutrition?.fiber ?? 0) > 0;
+
               return (
                 <View>
                   <MediaGallery media={media} />
@@ -323,61 +306,92 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   >
                     <ThemedText variant="title">{recipe.name}</ThemedText>
 
-                    <View style={styles.chipsRow}>
-                      <InfoChip
-                        icon="earth"
-                        label={cuisineLabel(recipe.cuisine).name}
-                        chipBg={colors.chipBackground}
-                        chipTextColor={colors.chipText}
-                      />
-                      <InfoChip
-                        icon="speedometer"
-                        label={recipe.difficulty}
-                        chipBg={colors.chipBackground}
-                        chipTextColor={colors.chipText}
-                      />
-                      <InfoChip
-                        icon="star"
-                        label={recipe.rating.toFixed(1)}
-                        iconColor={colors.starFilled}
-                        chipBg={colors.chipBackground}
-                        chipTextColor={colors.chipText}
-                      />
-                      <InfoChip
-                        icon="heart"
-                        label={String(likeState?.likeCount ?? recipe.likeCount)}
-                        iconColor={likeState?.likedByMe ?? recipe.likedByMe ? colors.likeActive : colors.chipText}
-                        chipBg={colors.chipBackground}
-                        chipTextColor={colors.chipText}
-                      />
+                    <View style={styles.captionRow}>
+                      {recipe.cuisine.length > 0 ? (
+                        <View style={styles.captionItem}>
+                          <Ionicons
+                            name="globe-outline"
+                            size={sizes.iconCaption}
+                            color={colors.textMuted}
+                          />
+                          <ThemedText style={[styles.captionText, { color: colors.textMuted }]}>
+                            {cuisineLabel(recipe.cuisine).name}
+                          </ThemedText>
+                        </View>
+                      ) : null}
+                      {recipe.rating > 0 ? (
+                        <View style={styles.captionItem}>
+                          <Ionicons name="star" size={sizes.iconCaption} color={colors.starFilled} />
+                          <ThemedText style={[styles.captionRating, { color: colors.text }]}>
+                            {recipe.rating.toFixed(1)}
+                          </ThemedText>
+                        </View>
+                      ) : null}
                     </View>
 
-                    <View style={styles.timeRow}>
-                      <TimeCard
-                        label={t().recipes.prepTime}
-                        minutes={recipe.prepTimeMinutes}
-                        iconName="time-outline"
-                        recipeId={recipeId}
-                        recipeName={recipe.name}
-                        slot="prep"
-                      />
-                      <TimeCard
-                        label={t().recipes.cookTime}
-                        minutes={recipe.cookTimeMinutes}
-                        iconName="flame-outline"
-                        recipeId={recipeId}
-                        recipeName={recipe.name}
-                        slot="cook"
-                      />
+                    <View style={styles.statsStrip}>
+                      <Pressable
+                        onPress={handleToggleLike}
+                        disabled={!userId}
+                        accessibilityRole="button"
+                        accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+                        style={styles.statItem}
+                      >
+                        <MaterialCommunityIcons
+                          name={liked ? 'heart' : 'heart-outline'}
+                          size={sizes.iconSm}
+                          color={liked ? colors.likeActive : colors.textMuted}
+                        />
+                        <ThemedText
+                          style={[
+                            styles.statText,
+                            { color: liked ? colors.likeActive : colors.textMuted },
+                          ]}
+                        >
+                          {String(likeCount)}
+                        </ThemedText>
+                      </Pressable>
+                      {recipe.viewCount > 0 ? (
+                        <View style={styles.statItem}>
+                          <Ionicons name="eye-outline" size={sizes.iconSm} color={colors.textMuted} />
+                          <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
+                            {recipe.viewCount.toLocaleString()}
+                          </ThemedText>
+                        </View>
+                      ) : null}
+                      {commentTotal > 0 ? (
+                        <View style={styles.statItem}>
+                          <Ionicons
+                            name="chatbubble-outline"
+                            size={sizes.iconSm}
+                            color={colors.textMuted}
+                          />
+                          <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
+                            {String(commentTotal)}
+                          </ThemedText>
+                        </View>
+                      ) : null}
                     </View>
 
-                    <View style={styles.nutritionRow}>
-                      <NutritionCard
-                        caloriesPerServing={recipe.caloriesPerServing}
-                        servings={recipe.servings}
-                        nutrition={recipe.nutrition}
-                      />
-                    </View>
+                    <RecipeMetaCard
+                      prepTimeMinutes={recipe.prepTimeMinutes}
+                      cookTimeMinutes={recipe.cookTimeMinutes}
+                      servings={recipe.servings}
+                      difficulty={recipe.difficulty}
+                      recipeId={recipeId}
+                      recipeName={recipe.name}
+                    />
+
+                    {hasNutrition ? (
+                      <>
+                        <SectionHeader title={t().recipes.nutrition} />
+                        <NutritionCard
+                          caloriesPerServing={recipe.caloriesPerServing}
+                          servings={recipe.servings}
+                          nutrition={recipe.nutrition}
+                        />
+                      </>
+                    ) : null}
 
                     {authorState.status === 'loading' ? (
                       <View style={styles.authorSkeleton}>
@@ -421,7 +435,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       </View>
                     ) : null}
 
-                    <SectionHeader title={t().recipes.ingredients} />
+                    <SectionHeader
+                      title={`${t().recipes.ingredients} · ${recipe.ingredients.length}`}
+                    />
                     <View style={styles.cardsList}>
                       {recipe.ingredients.map((item, i) => (
                         <IngredientCard
@@ -433,7 +449,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       ))}
                     </View>
 
-                    <SectionHeader title={t().recipes.instructions} />
+                    <SectionHeader
+                      title={`${t().recipes.instructions} · ${recipe.instructions.length}`}
+                    />
                     <View style={styles.cardsList}>
                       {recipe.instructions.map((step, i) => (
                         <InstructionCard
@@ -764,29 +782,39 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.xxl,
   },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  chip: {
+  captionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs2,
+    gap: spacing.md,
+    marginTop: spacing.xs2,
   },
-  chipIcon: {
-    marginRight: spacing.xs,
-  },
-  timeRow: {
+  captionItem: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.md,
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  nutritionRow: {
-    marginTop: spacing.md,
+  captionText: {
+    fontSize: fontSizes.captionLg,
+    fontWeight: '600',
+  },
+  captionRating: {
+    fontSize: fontSizes.captionLg,
+    fontWeight: '700',
+  },
+  statsStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  statText: {
+    fontSize: fontSizes.caption,
+    fontWeight: '600',
   },
   authorSkeleton: {
     flexDirection: 'row',
