@@ -19,6 +19,7 @@ import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { RecipeAuthorCard } from '@presentation/screens/recipes/recipe-author-card';
 import { useRecipeAuthor, type ResolvedAuthor } from '@presentation/screens/recipes/use-recipe-author';
+import { WebRecipeDetail } from '@presentation/screens/recipes/web-recipe-detail';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet';
 import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
@@ -293,6 +294,40 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                 (nutrition?.carbs ?? 0) > 0 ||
                 (nutrition?.fat ?? 0) > 0 ||
                 (nutrition?.fiber ?? 0) > 0;
+
+              if (isWebShell) {
+                return (
+                  <WebRecipeDetail
+                    recipe={recipe}
+                    recipeId={recipeId}
+                    media={media}
+                    isOwner={isOwner}
+                    authorState={authorState}
+                    liked={liked}
+                    likeCount={likeCount}
+                    userId={userId}
+                    isSaved={isSaved}
+                    saveDisabled={isLoading || !userId}
+                    onBack={() => router.back()}
+                    onToggleLike={() => void handleToggleLike()}
+                    onToggleSave={() => void handleToggleSave()}
+                    onEdit={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                    onDelete={() => setShowDeleteSheet(true)}
+                    checkedIngredients={checkedIngredients}
+                    onToggleIngredient={toggleIngredient}
+                    completedSteps={completedSteps}
+                    onToggleStep={toggleStep}
+                    commentState={commentState}
+                    commentInput={commentInput}
+                    submitError={submitError}
+                    onChangeCommentInput={setCommentInput}
+                    onAddComment={() => void handleAddComment()}
+                    onLoadMoreComments={() => void commentsStore.getState().loadMore(recipeId)}
+                    onToggleCommentLike={(id) => void handleToggleCommentLike(id)}
+                    onDeleteComment={(id) => void handleDeleteComment(id)}
+                  />
+                );
+              }
 
               return (
                 <View>
@@ -648,13 +683,15 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       </ScrollView>
       </ResponsiveContainer>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.back()}
-        style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
-      >
-        <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
-      </Pressable>
+      {!isWebShell ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
+        </Pressable>
+      ) : null}
 
       <BottomSheet
         visible={showDeleteSheet}
@@ -705,6 +742,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           const firstImageUrl = images.length > 0 ? images[0].url : recipe.image;
           return (
             <>
+              {!isWebShell ? (
               <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
                 {isOwner && !isWebShell ? (
                   <Pressable
@@ -751,6 +789,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   />
                 </Pressable>
               </View>
+              ) : null}
               <RecipeShareSheet
                 visible={shareOpen}
                 onClose={() => setShareOpen(false)}

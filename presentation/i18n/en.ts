@@ -162,6 +162,7 @@ export const en = {
     difficultyMedium: 'Medium',
     difficultyHard: 'Hard',
     webEmptyBody: 'Try different filters or search terms.',
+    backToRecipes: 'Back to recipes',
   },
   settings: {
     title: 'Settings',

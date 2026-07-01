@@ -41,6 +41,8 @@ export const fontSizes = {
   title: 24,
   headline: 32,
   hero: 44,
+  // Web recipe-detail h1 title (two-column SaaS layout).
+  webDetailTitle: 40,
 } as const;
 
 export const sizes = {
@@ -109,4 +111,18 @@ export const sizes = {
   // Web filter modal (centered dialog) — Jun 2026.
   webModalMaxWidth: 720,
   webModalCloseBtn: 38,
+  // Web recipe-detail two-column layout (Jul 2026).
+  // Below this viewport width the two columns collapse to a single column.
+  webDetailTwoColMin: 1024,
+  // Gap between the main content column and the sticky sidebar.
+  webDetailColGap: 36,
+  // Vertical gap between stacked sidebar cards.
+  webDetailStackGap: 18,
+  // Offset of the sticky sidebar from the top of the scroll container.
+  webDetailStickyTop: 88,
+  // Thumbnail strip cells under the hero image.
+  webDetailThumbWidth: 88,
+  webDetailThumbHeight: 64,
+  // Author avatar in the header stats row.
+  webDetailAuthorAvatar: 32,
 } as const;
