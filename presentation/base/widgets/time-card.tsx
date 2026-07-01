@@ -15,6 +15,12 @@ export interface TimeCardProps {
   recipeName: string;
   /** Distinguishes the prep vs cook timer for the same recipe (`'prep'` | `'cook'`). */
   slot: string;
+  /**
+   * When true the card renders chrome-less (no own border/background/radius) as a
+   * flush, vertically-stacked segment inside a shared meta card. Countdown
+   * behaviour is unchanged.
+   */
+  segment?: boolean;
 }
 
 interface ControlButtonProps {
@@ -60,6 +66,7 @@ export const TimeCard = ({
   recipeId,
   recipeName,
   slot,
+  segment = false,
 }: TimeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const timer = useRecipeTimer({
@@ -84,11 +91,71 @@ export const TimeCard = ({
       ? formatTimer(remainingSeconds)
       : `${String(minutes)} ${t().recipes.minutes}`;
 
+  const controls = (
+    <View style={styles.controls}>
+      {!isActive ? (
+        <ControlButton
+          icon="play"
+          bg={colors.primary}
+          iconColor={colors.onOverlay}
+          label={t().timer.start}
+          onPress={() => void timer.start()}
+          disabled={minutes <= 0}
+        />
+      ) : isDone ? (
+        <ControlButton
+          icon="checkmark-done"
+          bg={colors.successLight}
+          iconColor={colors.success}
+          label={t().timer.done}
+          onPress={() => void timer.stop()}
+        />
+      ) : (
+        <>
+          <ControlButton
+            icon={isPaused ? 'play' : 'pause'}
+            bg={isPaused ? colors.primary : colors.warning}
+            iconColor={colors.onOverlay}
+            label={t().timer.start}
+            onPress={() => void (isPaused ? timer.resume() : timer.pause())}
+          />
+          <ControlButton
+            icon="close"
+            bg={colors.chipBackground}
+            iconColor={colors.textMuted}
+            label={t().common.cancel}
+            onPress={() => void timer.stop()}
+          />
+        </>
+      )}
+    </View>
+  );
+
+  if (segment) {
+    return (
+      <View style={styles.segment}>
+        <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+          <Ionicons name={isDone ? 'checkmark' : iconName} size={sizes.iconXxs} color={iconTint} />
+        </View>
+        <ThemedText
+          style={[styles.value, styles.segmentValue, { color: isDone ? colors.success : colors.text }]}
+          numberOfLines={1}
+        >
+          {valueText}
+        </ThemedText>
+        <ThemedText variant="label" muted style={styles.segmentLabel} numberOfLines={1}>
+          {label}
+        </ThemedText>
+        {controls}
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor }]}>
       <View style={styles.header}>
         <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
-          <Ionicons name={isDone ? 'checkmark' : iconName} size={18} color={iconTint} />
+          <Ionicons name={isDone ? 'checkmark' : iconName} size={sizes.iconXxs} color={iconTint} />
         </View>
         <ThemedText variant="label" muted style={styles.label} numberOfLines={2}>
           {label}
@@ -102,43 +169,7 @@ export const TimeCard = ({
         {valueText}
       </ThemedText>
 
-      <View style={styles.controls}>
-        {!isActive ? (
-          <ControlButton
-            icon="play"
-            bg={colors.primary}
-            iconColor={colors.onOverlay}
-            label={t().timer.start}
-            onPress={() => void timer.start()}
-            disabled={minutes <= 0}
-          />
-        ) : isDone ? (
-          <ControlButton
-            icon="checkmark-done"
-            bg={colors.successLight}
-            iconColor={colors.success}
-            label={t().timer.done}
-            onPress={() => void timer.stop()}
-          />
-        ) : (
-          <>
-            <ControlButton
-              icon={isPaused ? 'play' : 'pause'}
-              bg={isPaused ? colors.primary : colors.warning}
-              iconColor={colors.onOverlay}
-              label={t().timer.start}
-              onPress={() => void (isPaused ? timer.resume() : timer.pause())}
-            />
-            <ControlButton
-              icon="close"
-              bg={colors.chipBackground}
-              iconColor={colors.textMuted}
-              label={t().common.cancel}
-              onPress={() => void timer.stop()}
-            />
-          </>
-        )}
-      </View>
+      {controls}
     </View>
   );
 };
@@ -152,7 +183,22 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm2,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
+  },
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  segmentValue: {
+    fontSize: fontSizes.heading,
+  },
+  segmentLabel: {
+    fontSize: fontSizes.micro,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
