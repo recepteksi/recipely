@@ -330,7 +330,7 @@ section.band { padding: 96px 0; position: relative; }
 .themeband { text-align: center; }
 .swatches { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 44px; }
 .sw { width: 92px; cursor: pointer; border: none; background: transparent; padding: 0; }
-.sw .chip { width: 92px; height: 70px; border-radius: 18px; box-shadow: var(--shadow-sm); border: 3px solid transparent; transition: transform .18s, border-color .2s; position: relative; overflow: hidden; }
+.sw .chip { display: block; width: 92px; height: 70px; border-radius: 18px; box-shadow: var(--shadow-sm); border: 3px solid transparent; transition: transform .18s, border-color .2s; position: relative; overflow: hidden; }
 .sw:hover .chip { transform: translateY(-4px); }
 .sw.on .chip { border-color: var(--text); }
 .sw .chip::after { content: ""; position: absolute; left: 10px; bottom: 10px; width: 26px; height: 26px; border-radius: 8px; background: rgba(255,255,255,0.9); }
