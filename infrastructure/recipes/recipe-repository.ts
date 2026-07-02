@@ -13,6 +13,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
 import {
+  AI_REQUEST_TIMEOUT_MS,
   IMPORT_REQUEST_TIMEOUT_MS,
   RECIPE_TRENDING_PATH,
   RECIPES_PAGE_SIZE,
@@ -251,7 +252,9 @@ export class RecipeRepository implements IRecipeRepository {
   // WHY: locale is intentionally not in the body — HttpClient already attaches
   // the `Accept-Language` header via its localeProvider, and the backend reads
   // `req.locale` from that header. Keeping it off the wire avoids two sources of
-  // truth for the request locale.
+  // truth for the request locale. The per-request `timeout` override is required
+  // because the synchronous Gemini call routinely exceeds the client's default
+  // 10s JSON timeout, which would abort a request the backend then completes.
   async generateRecipe(
     prompt: string,
     _locale: string,
@@ -260,6 +263,7 @@ export class RecipeRepository implements IRecipeRepository {
       method: 'POST',
       url: '/recipes/generate',
       data: { prompt },
+      timeout: AI_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {
       return result;
@@ -300,7 +304,9 @@ export class RecipeRepository implements IRecipeRepository {
 
   // WHY: like generateRecipe, refine returns a NOT-persisted preview Recipe and
   // the locale rides Accept-Language (kept off the body to avoid two sources of
-  // truth). The current in-progress recipe is sent as a DraftRecipeSnapshot.
+  // truth). The current in-progress recipe is sent as a DraftRecipeSnapshot. The
+  // per-request `timeout` override is required for the same reason as generate —
+  // the synchronous Gemini call routinely exceeds the default 10s JSON timeout.
   async refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
@@ -309,6 +315,7 @@ export class RecipeRepository implements IRecipeRepository {
       method: 'POST',
       url: '/recipes/refine',
       data: { currentRecipe, instruction },
+      timeout: AI_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {
       return result;
