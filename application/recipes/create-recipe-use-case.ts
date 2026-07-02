@@ -1,11 +1,9 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  IRecipeRepository,
-} from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 
 /**
  * Creates a new recipe by uploading a cover image and recipe fields as

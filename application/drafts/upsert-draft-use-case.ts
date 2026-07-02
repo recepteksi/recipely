@@ -1,10 +1,8 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type {
-  IRecipeDraftRepository,
-  UpsertDraftInput,
-} from '@domain/drafts/i-recipe-draft-repository';
+import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
 /**
  * Creates or updates a draft. The caller supplies the `id` (a client-generated

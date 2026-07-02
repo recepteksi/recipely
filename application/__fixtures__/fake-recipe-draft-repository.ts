@@ -1,11 +1,9 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type {
-  IRecipeDraftRepository,
-  PagedDrafts,
-  UpsertDraftInput,
-} from '@domain/drafts/i-recipe-draft-repository';
+import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { PagedDrafts } from '@domain/drafts/paged-drafts';
+import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
 export interface FakeRecipeDraftRepositoryConfig {
   listDraftsResult?: Result<PagedDrafts, Failure>;

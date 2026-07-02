@@ -1,7 +1,8 @@
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Comment } from '@domain/comments/comment';
-import type { CommentPage, ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { CommentDto, CommentPageDto } from '@infrastructure/comments/comment-dto';
 

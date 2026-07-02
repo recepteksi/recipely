@@ -53,7 +53,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;

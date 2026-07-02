@@ -1,10 +1,8 @@
 import { ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Notification } from '@domain/notifications/notification';
-import type {
-  INotificationRepository,
-  NotificationListResult,
-} from '@domain/notifications/i-notification-repository';
+import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
+import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type {
   NotificationItemDto,

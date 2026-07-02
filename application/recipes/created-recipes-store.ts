@@ -10,11 +10,9 @@ import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
 import type { RecipeListStore } from '@application/recipes/recipe-list-store';
 import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 
 export type CreateRecipeState =

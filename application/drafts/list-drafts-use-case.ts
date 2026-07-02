@@ -1,9 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type {
-  IRecipeDraftRepository,
-  PagedDrafts,
-} from '@domain/drafts/i-recipe-draft-repository';
+import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 
 export interface ListDraftsInput {
   page: number;

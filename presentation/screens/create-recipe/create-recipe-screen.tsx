@@ -15,11 +15,9 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
-import type {
-  CreateRecipeInput,
-  RecipeMediaUpload,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';

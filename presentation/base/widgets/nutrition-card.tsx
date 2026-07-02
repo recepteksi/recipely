@@ -3,7 +3,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeNutrition } from '@domain/recipes/recipe';
+import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 
 export interface NutritionCardProps {
   caloriesPerServing: number;

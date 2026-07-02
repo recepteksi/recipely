@@ -1,7 +1,8 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { IRecipeRepository, RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 /**
  * Fetches the paginated list of publicly active recipes for the discovery feed.

@@ -1,7 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 
 export type RecipeListState =

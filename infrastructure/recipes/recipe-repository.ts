@@ -1,14 +1,12 @@
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  IRecipeRepository,
-  RecipeFilters,
-  RecipeMediaUpload,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
