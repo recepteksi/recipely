@@ -54,6 +54,24 @@ describe('toRecipe', () => {
     }
   });
 
+  it('maps media to an empty gallery when there is no media and the cover image is empty', () => {
+    const r = toRecipe({ ...fullDto, media: [], image: '' });
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.media).toEqual([]);
+    }
+  });
+
+  it('maps media to an empty gallery when the cover image is whitespace only', () => {
+    const r = toRecipe({ ...fullDto, media: undefined, image: '  ' });
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.media).toEqual([]);
+    }
+  });
+
   it('rejects a DTO with empty name', () => {
     const r = toRecipe({ ...fullDto, name: '' });
     expect(r.ok).toBe(false);

@@ -9,6 +9,7 @@ export interface NotificationItemDto {
   senderPhotoUrl: string | null;
   recipeId: string | null;
   recipeTitle: string | null;
+  message: string | null;
   read: boolean;
   createdAt: string;
 }

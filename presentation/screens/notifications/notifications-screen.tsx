@@ -64,6 +64,8 @@ const toNotifItem = (n: Notification): NotifItem => ({
   recipeName: n.recipeTitle ?? undefined,
   daysAgo: daysSince(n.createdAt),
   read: n.read,
+  // Surface free-text payload (e.g. the comment body) as the secondary line.
+  body: n.message ?? undefined,
 });
 
 interface SectionData {

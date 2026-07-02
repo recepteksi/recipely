@@ -5,6 +5,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
+import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -47,6 +48,7 @@ interface RequestCall {
   url?: string;
   data?: unknown;
   params?: unknown;
+  timeout?: number;
 }
 
 const makeHttp = (
@@ -90,6 +92,10 @@ describe('RecipeRepository.refineRecipe', () => {
       currentRecipe: snapshot,
       instruction: 'add more garlic',
     });
+    // The synchronous Gemini call routinely exceeds the default 10s JSON
+    // timeout, so a per-request override is required or the client would abort
+    // a request the backend then completes.
+    expect(calls[0].timeout).toBe(AI_REQUEST_TIMEOUT_MS);
   });
 
   it('propagates HttpClient failure unchanged', async () => {

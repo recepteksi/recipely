@@ -10,6 +10,7 @@ export interface NotificationProps {
   senderPhotoUrl: string | null;
   recipeId: string | null;
   recipeTitle: string | null;
+  message: string | null;
   read: boolean;
   createdAt: Date;
 }
@@ -52,6 +53,11 @@ export class Notification extends Entity<NotificationProps> {
 
   get recipeTitle(): string | null {
     return this.props.recipeTitle;
+  }
+
+  /** Free-text payload (e.g. the comment body); null for types without text. */
+  get message(): string | null {
+    return this.props.message;
   }
 
   get read(): boolean {

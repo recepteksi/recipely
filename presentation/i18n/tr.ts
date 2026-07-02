@@ -103,6 +103,7 @@ export const tr: Translations = {
     rating: 'Puan',
     ingredients: 'Malzemeler',
     instructions: 'Yapılış',
+    nutrition: 'Besin Değerleri',
     minutes: 'dk',
     searchPlaceholder: 'Tarif ara...',
     noResults: 'Aramanızla eşleşen tarif yok.',
@@ -163,6 +164,7 @@ export const tr: Translations = {
     difficultyMedium: 'Orta',
     difficultyHard: 'Zor',
     webEmptyBody: 'Farklı filtreler veya arama terimleri deneyin.',
+    backToRecipes: 'Tariflere dön',
   },
   settings: {
     title: 'Ayarlar',
