@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -267,10 +268,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     current.status === 'error' ? current.failure : undefined;
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
       <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scroll}>
         <StateView status={status} failure={failure} onRetry={onRetry}>
@@ -802,7 +800,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           );
         })()
       ) : null}
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   );
 };
 

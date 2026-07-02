@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
@@ -34,7 +35,7 @@ export const BottomSheet = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View style={styles.root}>
+      <KeyboardAvoider style={styles.root}>
         <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
         <View
           style={[
@@ -81,7 +82,7 @@ export const BottomSheet = ({
             {children}
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoider>
     </Modal>
   );
 };

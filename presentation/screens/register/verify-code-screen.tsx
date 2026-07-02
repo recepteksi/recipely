@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -233,10 +226,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   if (isLandscapeShell) {
     return (
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoider style={styles.flex}>
         <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -263,15 +253,12 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
             </View>
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoider style={styles.flex}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
@@ -305,7 +292,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           {cardBody}
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   );
 };
 
