@@ -112,6 +112,13 @@ export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 // headroom over the backend budget so only genuinely stuck requests time out.
 export const IMPORT_REQUEST_TIMEOUT_MS = 130_000;
 
+// WHY: the text-only AI endpoints (generate/refine) call Gemini synchronously,
+// which routinely runs well past the 10s JSON default — cold calls especially —
+// so the default budget aborts a request the backend then completes. They never
+// approach the video-import budget (no download/transcription), so give them
+// their own headroom between the two.
+export const AI_REQUEST_TIMEOUT_MS = 90_000;
+
 // WHY: image uploads regularly exceed 10s on cellular (a 3 MB JPEG at 1 Mbps
 // upload is ~25s). The default 10s budget surfaces as `ECONNABORTED` →
 // NetworkFailure('Request timed out'), which mobile users see as "Network
