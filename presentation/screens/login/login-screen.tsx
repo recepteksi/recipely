@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -9,6 +8,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
@@ -87,10 +87,7 @@ export const LoginScreen = (): React.JSX.Element => {
 
   if (isLandscapeShell) {
     return (
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoider style={styles.flex}>
         <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -121,7 +118,7 @@ export const LoginScreen = (): React.JSX.Element => {
             ) : null}
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
     );
   }
 
@@ -276,10 +273,7 @@ export const LoginScreen = (): React.JSX.Element => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoider style={styles.flex}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
@@ -312,7 +306,7 @@ export const LoginScreen = (): React.JSX.Element => {
           </ThemedText>
         ) : null}
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   );
 };
 

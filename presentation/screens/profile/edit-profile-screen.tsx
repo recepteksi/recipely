@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -119,9 +118,8 @@ export const EditProfileScreen = (): React.JSX.Element => {
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView
+      <KeyboardAvoider
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={insets.top + spacing.xxl}
       >
         <ScrollView
@@ -241,7 +239,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
             </View>
           </ResponsiveContainer>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
     </View>
   );
 };

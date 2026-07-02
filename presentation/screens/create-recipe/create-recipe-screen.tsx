@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -461,10 +462,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
   if (phase === 'prompt') {
     return (
-      <KeyboardAvoidingView
-        style={styles.root}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoider style={styles.root}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
           <PromptPhase
             insets={insets}
@@ -480,7 +478,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             onResumeDraft={resumeLatestDraft}
           />
         </ResponsiveContainer>
-      </KeyboardAvoidingView>
+      </KeyboardAvoider>
     );
   }
 
@@ -495,10 +493,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="createRecipe" gutter={false} fill>
         <View
           style={[
@@ -619,7 +614,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onDiscard={() => void onDiscardAndExit()}
         onKeepEditing={() => setExitOpen(false)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardAvoider>
   );
 };
 
