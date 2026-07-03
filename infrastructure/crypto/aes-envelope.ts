@@ -1,14 +1,7 @@
 import { gcm } from '@noble/ciphers/aes.js';
 import { randomBytes } from '@noble/ciphers/utils.js';
-
-// Wire-format envelope shared with recipely-backend. `payload` is base64 of
-// (ciphertext || 16-byte auth tag); `iv` is base64 of a fresh 12-byte random
-// IV per encryption. Plaintext is JSON of `{ data: <T> }` on success or
-// `{ error: ... }` on failure — same as the backend.
-export interface Envelope {
-  payload: string;
-  iv: string;
-}
+import type { Envelope } from '@infrastructure/crypto/envelope';
+import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
@@ -46,17 +39,6 @@ function fromBase64(b64: string): Uint8Array {
     return out;
   }
   return new Uint8Array(Buffer.from(b64, 'base64'));
-}
-
-/**
- * Thrown when AES-GCM decryption of an envelope fails, either because the
- * ciphertext is malformed or the auth tag does not match (tampered payload).
- */
-export class EnvelopeDecryptError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'EnvelopeDecryptError';
-  }
 }
 
 /**

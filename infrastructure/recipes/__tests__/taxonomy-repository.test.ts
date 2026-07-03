@@ -5,7 +5,7 @@ import {
   RECIPE_CATEGORIES_PATH,
   RECIPE_CUISINES_PATH,
 } from '@infrastructure/constants/api';
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy-dto';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy-item-dto';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy-repository';
 
 const turkish: TaxonomyItemDto = { key: 'TURKISH', name: 'Turkish', emoji: '🇹🇷' };

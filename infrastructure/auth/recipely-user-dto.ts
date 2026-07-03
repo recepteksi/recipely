@@ -10,8 +10,3 @@ export interface RecipelyUserDto {
   createdAt: string;
   role?: string;
 }
-
-export interface RecipelyAuthSessionDto {
-  token: string;
-  user: RecipelyUserDto;
-}

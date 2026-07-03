@@ -4,10 +4,8 @@ import { Notification } from '@domain/notifications/notification';
 import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http-client';
-import type {
-  NotificationItemDto,
-  NotificationsResponseDto,
-} from '@infrastructure/notifications/notification-dto';
+import type { NotificationItemDto } from '@infrastructure/notifications/notification-item-dto';
+import type { NotificationsResponseDto } from '@infrastructure/notifications/notifications-response-dto';
 
 /**
  * Implements `INotificationRepository` against the Recipely backend. All

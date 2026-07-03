@@ -7,10 +7,8 @@ import {
   RECIPE_CATEGORIES_PATH,
   RECIPE_CUISINES_PATH,
 } from '@infrastructure/constants/api';
-import type {
-  CategoriesResponseDto,
-  CuisinesResponseDto,
-} from '@infrastructure/recipes/taxonomy-dto';
+import type { CategoriesResponseDto } from '@infrastructure/recipes/categories-response-dto';
+import type { CuisinesResponseDto } from '@infrastructure/recipes/cuisines-response-dto';
 import { toTaxonomyItems } from '@infrastructure/recipes/taxonomy-mapper';
 
 /**

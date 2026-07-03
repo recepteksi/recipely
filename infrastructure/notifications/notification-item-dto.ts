@@ -13,9 +13,3 @@ export interface NotificationItemDto {
   read: boolean;
   createdAt: string;
 }
-
-export interface NotificationsResponseDto {
-  items: NotificationItemDto[];
-  total: number;
-  unreadCount: number;
-}

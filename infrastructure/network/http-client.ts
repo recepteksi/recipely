@@ -17,38 +17,13 @@ import {
 import {
   decryptEnvelope,
   encryptEnvelope,
-  EnvelopeDecryptError,
   keyFromHex,
-  type Envelope,
 } from '@infrastructure/crypto/aes-envelope';
-
-export interface HttpClientOptions {
-  baseUrl: string;
-  tokenProvider: () => Promise<string | null>;
-  localeProvider?: () => string;
-  timeoutMs?: number;
-  // WHY: keeps logging opt-in — production builds flip this off to drop PII out of logcat/xcode.
-  enableLogging?: boolean;
-  /**
-   * Invoked whenever the backend returns 401, so the app can clear the session
-   * and route to login. Side-effect only — the request still resolves to an
-   * UnauthorizedFailure.
-   */
-  onUnauthorized?: () => void;
-}
-
-interface RecipelyDataBody<T> {
-  data: T;
-}
-
-/**
- * Progress callback shape for multipart uploads. Decoupled from axios so
- * callers don't need to import axios types just to receive byte counts.
- */
-export interface UploadProgressEvent {
-  loaded: number;
-  total: number;
-}
+import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
+import type { Envelope } from '@infrastructure/crypto/envelope';
+import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import type { RecipelyDataBody } from '@infrastructure/network/recipely-data-body';
+import type { UploadProgressEvent } from '@infrastructure/network/upload-progress-event';
 
 function isEnvelope(body: unknown): body is Envelope {
   return (
