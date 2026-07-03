@@ -2,12 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
-
-export interface WebMyRecipesTab {
-  key: string;
-  label: string;
-  count: number;
-}
+import type { WebMyRecipesTab } from '@presentation/screens/my-recipes/web-my-recipes-tab';
 
 export interface WebMyRecipesTabsProps {
   tabs: readonly WebMyRecipesTab[];

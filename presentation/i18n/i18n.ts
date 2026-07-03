@@ -1,4 +1,5 @@
-import { en, type Translations } from './en';
+import { en } from './en';
+import type { Translations } from './translations';
 import { tr } from './tr';
 import { getLocales } from 'expo-localization';
 import { kvStore } from '@infrastructure/storage/kv-store';

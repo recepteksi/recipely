@@ -3,7 +3,7 @@ import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
 import { ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { UpsertDraftInput } from '@domain/drafts/i-recipe-draft-repository';
+import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
 const input: UpsertDraftInput = {
   id: 'd1',

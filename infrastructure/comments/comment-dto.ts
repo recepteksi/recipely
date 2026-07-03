@@ -13,10 +13,3 @@ export interface CommentDto {
   likeCount?: number;
   likedByMe?: boolean;
 }
-
-export interface CommentPageDto {
-  items: CommentDto[];
-  total: number;
-  page: number;
-  pageSize: number;
-}

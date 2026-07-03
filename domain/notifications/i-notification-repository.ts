@@ -1,12 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { Notification } from '@domain/notifications/notification';
-
-export interface NotificationListResult {
-  items: Notification[];
-  total: number;
-  unreadCount: number;
-}
+import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 
 /** Repository contract for backend notification operations. */
 export interface INotificationRepository {

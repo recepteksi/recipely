@@ -1,42 +1,16 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  IRecipeRepository,
-  RecipeFilters,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-
-export interface FakeRecipeRepositoryConfig {
-  listActiveRecipesResult?: Result<Recipe[], Failure>;
-  listTrendingRecipesResult?: Result<Recipe[], Failure>;
-  listMyRecipesResult?: Result<Recipe[], Failure>;
-  getRecipeResult?: Result<Recipe, Failure>;
-  createRecipeResult?: Result<Recipe, Failure>;
-  generateRecipeResult?: Result<Recipe, Failure>;
-  importInstagramRecipeResult?: Result<Recipe, Failure>;
-  refineRecipeResult?: Result<Recipe, Failure>;
-  updateRecipeResult?: Result<Recipe, Failure>;
-  deleteRecipeResult?: Result<void, Failure>;
-}
-
-export interface GenerateRecipeCall {
-  prompt: string;
-  locale: string;
-}
-
-export interface ImportInstagramRecipeCall {
-  url: string;
-  locale: string;
-}
-
-export interface RefineRecipeCall {
-  currentRecipe: DraftRecipeSnapshot;
-  instruction: string;
-}
+import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
+import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
+import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
+import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
 
 /**
  * In-memory test double for `IRecipeRepository`. Returns pre-configured

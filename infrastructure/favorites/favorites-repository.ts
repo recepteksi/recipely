@@ -2,13 +2,7 @@ import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
-
-interface FavoritesListResponse {
-  items: { id: string }[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 
 /**
  * Implements `IFavoritesRepository` against the Recipely backend. Persists

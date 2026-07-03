@@ -15,11 +15,9 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
-import type {
-  CreateRecipeInput,
-  RecipeMediaUpload,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
@@ -39,8 +37,7 @@ import { RefineDock } from '@presentation/screens/create-recipe/refine-dock';
 import { PhotosSheet } from '@presentation/screens/create-recipe/photos-sheet';
 import { ExitSheet } from '@presentation/screens/create-recipe/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-
-type Phase = 'prompt' | 'generating' | 'preview';
+import type { Phase } from '@presentation/screens/create-recipe/phase';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;

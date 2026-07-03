@@ -2,15 +2,14 @@ import { fail, ok, type Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/api';
 import { generateNonce, hashNonce } from '@infrastructure/auth/nonce-generator';
+import type { GoogleSigninMod } from '@infrastructure/auth/google-signin-mod';
+import type { FirebaseAuthMod } from '@infrastructure/auth/firebase-auth-mod';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
 // WHY: static imports of @react-native-google-signin and @react-native-firebase/auth
 // trigger TurboModule / RNFBAppModule initialisation at module-load time, crashing
 // Expo Go before any try/catch can intervene. The IIFE catches that throw once;
 // the provider functions return a graceful Failure when the module is unavailable.
-type GoogleSigninMod = typeof import('@react-native-google-signin/google-signin');
-type FirebaseAuthMod = typeof import('@react-native-firebase/auth');
-
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const googleSigninMod: GoogleSigninMod | null = (() => { try { return require('@react-native-google-signin/google-signin') as GoogleSigninMod; } catch { return null; } })();
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -3,14 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, radii } from '@presentation/base/theme';
-
-export type WebHeaderTabKey = 'recipes' | 'myRecipes';
-
-interface TabConfig {
-  key: WebHeaderTabKey;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
+import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
+import type { TabConfig } from '@presentation/base/widgets/web-header/tab-config';
 
 export interface WebHeaderTabsProps {
   active: WebHeaderTabKey | null;

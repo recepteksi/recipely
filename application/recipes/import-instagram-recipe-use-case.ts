@@ -3,12 +3,9 @@ import { type Failure, ValidationFailure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 
-const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
+import type { ImportInstagramRecipeInput } from '@application/recipes/import-instagram-recipe-input';
 
-export interface ImportInstagramRecipeInput {
-  url: string;
-  locale: string;
-}
+const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
 
 /**
  * Imports an Instagram reel/video into a preview `Recipe`. Two client-side

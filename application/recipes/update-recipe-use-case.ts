@@ -1,11 +1,9 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type {
-  IRecipeRepository,
-  UpdateRecipeInput,
-  CreateRecipeProgressCallback,
-} from '@domain/recipes/i-recipe-repository';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 
 /**
  * Updates an existing recipe by its `id`. When a new `imageUri` is supplied

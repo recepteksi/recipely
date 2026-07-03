@@ -1,5 +1,6 @@
 import { configureTaxonomyStore } from '@application/recipes/taxonomy-store';
-import type { LoadTaxonomyUseCase, TaxonomyCatalog } from '@application/recipes/load-taxonomy-use-case';
+import type { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
+import type { TaxonomyCatalog } from '@application/recipes/taxonomy-catalog';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';

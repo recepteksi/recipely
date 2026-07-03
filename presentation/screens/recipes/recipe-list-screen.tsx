@@ -40,7 +40,8 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-content';
-import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { TabBar } from '@presentation/base/widgets/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';
@@ -53,7 +54,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;

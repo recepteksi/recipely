@@ -1,28 +1,7 @@
-import type { ThemeColors, ThemeVariant } from '@presentation/base/theme/themes';
-
-/**
- * Severity is the semantic role of a feedback surface, independent of the app's
- * brand hue. Maps directly to the Recipely "Error States" design system:
- * - `danger`  — an action failed or content can't be shown (red)
- * - `warning` — a persistent condition the user should know about (amber)
- * - `success` — a confirmation (green); feedback surfaces aren't only for errors
- * - `neutral` — nothing is wrong, there's just nothing here yet (muted)
- */
-export type Severity = 'danger' | 'warning' | 'success' | 'neutral';
-
-/** The four tinted tokens every severity surface is built from. */
-export interface SeveritySurface {
-  /** Background fill for banners, cards, and chat bubbles. */
-  bg: string;
-  /** Hairline border. */
-  border: string;
-  /** Body / label text color that meets contrast on `bg`. */
-  text: string;
-  /** Icon / accent color. */
-  icon: string;
-  /** Illustration disc fill behind the icon. */
-  disc: string;
-}
+import type { ThemeColors } from '@presentation/base/theme/theme-colors';
+import type { ThemeVariant } from '@presentation/base/theme/theme-variant';
+import type { Severity } from '@presentation/base/theme/severity';
+import type { SeveritySurface } from '@presentation/base/theme/severity-surface';
 
 export type SeveritySurfaces = Record<Severity, SeveritySurface>;
 

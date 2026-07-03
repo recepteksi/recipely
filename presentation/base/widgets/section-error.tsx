@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import type { Severity } from '@presentation/base/theme/error-surfaces';
+import type { Severity } from '@presentation/base/theme/severity';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 
 const DISC_SIZE = 52;

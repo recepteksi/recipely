@@ -1,137 +1,11 @@
-export type ThemeId =
-  | 'midnight-slate'
-  | 'pearl-white'
-  | 'crimson-ember'
-  | 'amber-sunset'
-  | 'golden-hour'
-  | 'lime-zest'
-  | 'emerald-garden'
-  | 'teal-lagoon'
-  | 'cyan-frost'
-  | 'ocean-deep'
-  | 'indigo-night'
-  | 'violet-bloom'
-  | 'royal-purple'
-  | 'fuchsia-flash'
-  | 'rose-quartz'
-  | 'coral-reef'
-  | 'mint-breeze'
-  | 'tangerine-dream'
-  | 'lavender-mist'
-  | 'chartreuse-zap';
-
-export interface ThemeColors {
-  background: string;
-  surface: string;
-  text: string;
-  textMuted: string;
-  primary: string;
-  primaryText: string;
-  primaryLight: string;
-  primaryGradientStart: string;
-  primaryGradientEnd: string;
-  secondary: string;
-  secondaryText: string;
-  danger: string;
-  success: string;
-  successLight: string;
-  warning: string;
-  warningLight: string;
-  border: string;
-  chipBackground: string;
-  chipText: string;
-  cardBackground: string;
-  cardBorder: string;
-  inputBackground: string;
-  inputBorder: string;
-  inputBorderFocused: string;
-  skeleton: string;
-  skeletonHighlight: string;
-  shadow: string;
-  overlay: string;
-  starFilled: string;
-  starEmpty: string;
-  tabBarBackground: string;
-  tabBarBorder: string;
-  tabBarActive: string;
-  tabBarInactive: string;
-  avatarBackground: string;
-  sectionBackground: string;
-  /**
-   * Text/icon color for content sitting on `colors.overlay` (semi-transparent dark
-   * backdrop on hero images, recipe-card chips). ALWAYS white in both variants —
-   * overlays are darken-by-design regardless of theme variant.
-   */
-  onOverlay: string;
-  /**
-   * Text/icon color for content sitting on `colors.success` (checkmarks in checkbox/
-   * task widgets, success-state badge fill). ALWAYS dark in both variants — `success`
-   * is always a green tinted toward 0.4-0.5 luminance and requires dark text.
-   */
-  onSuccess: string;
-  /** Rose-red used for liked/active heart icons — consistent across all themes. */
-  likeActive: string;
-  /** Semi-transparent dark overlay for image overlays and floating buttons. */
-  overlayLight: string;
-  /**
-   * Slate-tinted scrim behind centered web modal dialogs (e.g. the web filter
-   * modal). ALWAYS the same dark slate tint in both variants — modal scrims are
-   * darken-by-design regardless of theme variant.
-   */
-  scrim: string;
-  /** Danger color at 10% opacity, used for danger-tinted button backgrounds. */
-  dangerLight: string;
-  /** Frosted glass surface for gradient section cards and modals. */
-  gradientSurface: string;
-  /** Frosted glass border for elements on top of gradient backgrounds. */
-  gradientBorder: string;
-  /**
-   * Dark text for the white "View recipe" hero button / rank badge on the web
-   * home. ALWAYS dark (`#0F172A`) in both variants — `colors.primary` can be a
-   * bright pastel in dark themes that fails AA on white, so a constant is used.
-   */
-  heroButtonText: string;
-}
-
-export type ThemeVariant = 'light' | 'dark';
-
-interface ThemeDefinition {
-  name: string;
-  nameTr: string;
-  description: string;
-  preferredVariant: ThemeVariant;
-  light: ThemeColors;
-  dark: ThemeColors;
-}
-
-interface VariantSemantics {
-  danger: string;
-  success: string;
-  warning: string;
-  starFilled: string;
-  overlay: string;
-  shadow: string;
-  onOverlay: string;
-  onSuccess: string;
-  likeActive: string;
-  overlayLight: string;
-  scrim: string;
-  gradientSurface: string;
-  gradientBorder: string;
-}
-
-interface Palette {
-  primary: string;
-  primaryText: string;
-  primaryLight: string;
-  gradientStart: string;
-  gradientEnd: string;
-  background: string;
-  text: string;
-  textMuted: string;
-  secondary: string;
-  secondaryText: string;
-}
+import type { ThemeId } from '@presentation/base/theme/theme-id';
+import type { ThemeColors } from '@presentation/base/theme/theme-colors';
+import type { ThemeVariant } from '@presentation/base/theme/theme-variant';
+import type { ThemeDefinition } from '@presentation/base/theme/theme-definition';
+import type { VariantSemantics } from '@presentation/base/theme/variant-semantics';
+import type { Palette } from '@presentation/base/theme/palette';
+import type { DarkArgs } from '@presentation/base/theme/dark-args';
+import type { LightArgs } from '@presentation/base/theme/light-args';
 
 const HEX6 = /^#[0-9a-fA-F]{6}$/;
 
@@ -244,19 +118,6 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   heroButtonText: '#0F172A',
 });
 
-interface DarkArgs {
-  primary: string;
-  primaryText: string;
-  primaryLight: string;
-  gradientStart: string;
-  gradientEnd: string;
-  background: string;
-  secondary: string;
-  secondaryText: string;
-  text?: string;
-  textMuted?: string;
-}
-
 const makeDark = (a: DarkArgs): ThemeColors => {
   const palette: Palette = {
     primary: a.primary,
@@ -273,19 +134,6 @@ const makeDark = (a: DarkArgs): ThemeColors => {
   const surface = mixHex(a.background, DARK_SURFACE_TARGET, 0.5);
   return makeColors(palette, darkSemantics, surface);
 };
-
-interface LightArgs {
-  primary: string;
-  primaryText: string;
-  primaryLight: string;
-  gradientStart: string;
-  gradientEnd: string;
-  background: string;
-  secondary: string;
-  secondaryText: string;
-  text?: string;
-  textMuted?: string;
-}
 
 const makeLight = (a: LightArgs): ThemeColors => {
   const palette: Palette = {

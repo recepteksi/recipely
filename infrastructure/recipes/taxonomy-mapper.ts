@@ -1,5 +1,5 @@
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy-dto';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy-item-dto';
 
 /**
  * Maps one raw taxonomy DTO to a domain `TaxonomyItem`, or `null` when the

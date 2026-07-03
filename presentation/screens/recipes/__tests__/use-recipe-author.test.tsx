@@ -4,14 +4,14 @@ import { NetworkFailure } from '@core/failure';
 import { container } from '@core/di/container-instance';
 import { TOKENS } from '@core/di/tokens';
 import { UserProfile } from '@domain/user-profile/user-profile';
-import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-use-case';
+import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import {
   useRecipeAuthor,
-  type RecipeAuthorInput,
-  type RecipeAuthorState,
-  type ResolvedAuthor,
 } from '@presentation/screens/recipes/use-recipe-author';
+import type { RecipeAuthorInput } from '@presentation/screens/recipes/recipe-author-input';
+import type { RecipeAuthorState } from '@presentation/screens/recipes/recipe-author-state';
+import type { ResolvedAuthor } from '@presentation/screens/recipes/resolved-author';
 
 const makeProfile = (overrides: Partial<Parameters<typeof UserProfile.create>[0]> = {}): UserProfile => {
   const result = UserProfile.create({

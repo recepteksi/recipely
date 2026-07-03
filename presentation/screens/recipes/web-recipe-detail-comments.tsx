@@ -5,7 +5,7 @@ import { CommentCard } from '@presentation/base/widgets/comment-card';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeCommentsState } from '@application/comments/comments-store';
+import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;

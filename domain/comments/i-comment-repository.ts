@@ -1,13 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Comment } from '@domain/comments/comment';
-
-export interface CommentPage {
-  items: Comment[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+import type { CommentPage } from '@domain/comments/comment-page';
 
 export interface ICommentRepository {
   listByRecipe(recipeId: string, page: number, pageSize: number): Promise<Result<CommentPage, Failure>>;

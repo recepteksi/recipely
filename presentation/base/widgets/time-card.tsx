@@ -1,6 +1,7 @@
-import { StyleSheet, Pressable, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ControlButton } from '@presentation/base/widgets/control-button';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
@@ -22,37 +23,6 @@ export interface TimeCardProps {
    */
   segment?: boolean;
 }
-
-interface ControlButtonProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  bg: string;
-  iconColor: string;
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-}
-
-const ControlButton = ({
-  icon,
-  bg,
-  iconColor,
-  label,
-  onPress,
-  disabled,
-}: ControlButtonProps): React.JSX.Element => (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityLabel={label}
-    onPress={onPress}
-    disabled={disabled}
-    style={({ pressed }) => [
-      styles.ctrlBtn,
-      { backgroundColor: bg, opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
-    ]}
-  >
-    <Ionicons name={icon} size={sizes.iconSm} color={iconColor} />
-  </Pressable>
-);
 
 /**
  * Vertical countdown card for a recipe prep/cook time. The timer is backed by
@@ -228,12 +198,5 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: 'row',
     gap: spacing.sm,
-  },
-  ctrlBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

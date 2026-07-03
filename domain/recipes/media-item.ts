@@ -1,4 +1,4 @@
-export type MediaType = 'image' | 'video';
+import type { MediaType } from '@domain/recipes/media-type';
 
 export interface MediaItem {
   type: MediaType;

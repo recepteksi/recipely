@@ -1,8 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
-
-export type DevicePlatform = 'ios' | 'android' | 'web';
+import type { DevicePlatform } from '@application/notifications/device-platform';
 
 /**
  * Registers the current device's push token with the backend so it can receive

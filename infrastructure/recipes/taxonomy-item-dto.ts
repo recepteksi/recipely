@@ -6,13 +6,3 @@ export interface TaxonomyItemDto {
   name: string;
   emoji: string;
 }
-
-/** Response body of `GET /recipes/cuisines`. */
-export interface CuisinesResponseDto {
-  cuisines: TaxonomyItemDto[];
-}
-
-/** Response body of `GET /recipes/categories`. */
-export interface CategoriesResponseDto {
-  categories: TaxonomyItemDto[];
-}

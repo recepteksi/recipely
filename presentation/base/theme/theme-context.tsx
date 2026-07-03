@@ -2,19 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
-import { getThemeColors, type ThemeId, type ThemeColors } from './themes';
-
-export type ThemePreference = 'system' | 'light' | 'dark';
-export type EffectiveScheme = 'light' | 'dark';
-
-export interface ThemeContextValue {
-  themeId: ThemeId;
-  preference: ThemePreference;
-  scheme: EffectiveScheme;
-  colors: ThemeColors;
-  setThemeId: (id: ThemeId) => void;
-  setPreference: (pref: ThemePreference) => void;
-}
+import { getThemeColors } from './themes';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
+import type { ThemeColors } from '@presentation/base/theme/theme-colors';
+import type { ThemePreference } from '@presentation/base/theme/theme-preference';
+import type { EffectiveScheme } from '@presentation/base/theme/effective-scheme';
+import type { ThemeContextValue } from '@presentation/base/theme/theme-context-value';
 
 const ThemeContext = createContext<ThemeContextValue>({
   themeId: 'pearl-white',

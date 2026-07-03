@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { FormBanner } from '@presentation/base/widgets/form-banner';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { InputView } from '@presentation/screens/login/forgot-password-input-view';
+import { SuccessView } from '@presentation/screens/login/forgot-password-success-view';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 const AUTH_CARD_MAX_WIDTH = 460;
@@ -152,133 +152,6 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   );
 };
 
-interface InputViewProps {
-  email: string;
-  onChangeEmail: (v: string) => void;
-  focused: boolean;
-  onFocus: () => void;
-  onBlur: () => void;
-  loading: boolean;
-  onSend: () => void;
-  onBack: () => void;
-  error: string | undefined;
-}
-
-const InputView = ({
-  email, onChangeEmail, focused, onFocus, onBlur, loading, onSend, onBack, error,
-}: InputViewProps): React.JSX.Element => {
-  const colors = useTheme().colors;
-  return (
-    <>
-      <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
-        <Ionicons
-          name="mail-outline"
-          size={20}
-          color={colors.textMuted}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.inputBackground,
-              color: colors.text,
-              borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
-            },
-          ]}
-          placeholder={t().forgotPassword.emailPlaceholder}
-          placeholderTextColor={colors.textMuted}
-          value={email}
-          onChangeText={onChangeEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          returnKeyType="send"
-          onFocus={onFocus}
-          onBlur={onBlur}
-          onSubmitEditing={onSend}
-        />
-      </View>
-
-      <ThemedText variant="caption" muted style={styles.hint}>
-        {t().forgotPassword.hint}
-      </ThemedText>
-
-      {error !== undefined ? (
-        <View style={styles.bannerRow}>
-          <FormBanner message={error} />
-        </View>
-      ) : null}
-
-      <View style={styles.buttonRow}>
-        <PrimaryButton
-          label={loading ? t().forgotPassword.sending : t().forgotPassword.send}
-          onPress={onSend}
-          loading={loading}
-          disabled={email.trim().length === 0}
-        />
-      </View>
-
-      <Pressable
-        onPress={onBack}
-        style={styles.textLink}
-        accessibilityRole="button"
-        accessibilityLabel={t().forgotPassword.backToLogin}
-      >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
-          {t().forgotPassword.backToLogin}
-        </ThemedText>
-      </Pressable>
-    </>
-  );
-};
-
-interface SuccessViewProps {
-  email: string;
-  onBack: () => void;
-  onTryDifferent: () => void;
-}
-
-const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps): React.JSX.Element => {
-  const colors = useTheme().colors;
-  return (
-    <>
-      <View style={[styles.successCircle, { backgroundColor: colors.successLight }]}>
-        <Ionicons name="checkmark-circle" size={40} color={colors.success} />
-      </View>
-
-      <ThemedText variant="subtitle" style={styles.cardTitle}>
-        {t().forgotPassword.sentTitle}
-      </ThemedText>
-
-      <ThemedText variant="body" muted style={styles.cardSubtitle}>
-        {t().forgotPassword.sentBody}{' '}
-        <ThemedText variant="body" style={{ fontWeight: '700' }}>
-          {email}
-        </ThemedText>
-      </ThemedText>
-
-      <View style={styles.buttonRow}>
-        <PrimaryButton
-          label={t().forgotPassword.backToLogin}
-          onPress={onBack}
-        />
-      </View>
-
-      <Pressable
-        onPress={onTryDifferent}
-        style={styles.textLink}
-        accessibilityRole="button"
-        accessibilityLabel={t().forgotPassword.tryDifferent}
-      >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
-          {t().forgotPassword.tryDifferent}
-        </ThemedText>
-      </Pressable>
-    </>
-  );
-};
-
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   scrollContent: { flexGrow: 1 },
@@ -327,63 +200,12 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     textAlign: 'center',
   },
-  cardTitle: {
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: spacing.xs,
-  },
-  cardSubtitle: {
-    textAlign: 'center',
-    paddingHorizontal: spacing.sm,
-  },
   card: {
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
     marginTop: -40,
     marginBottom: spacing.xxl,
-  },
-  inputWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: spacing.lg,
-    zIndex: 1,
-  },
-  input: {
-    height: sizes.inputHeight,
-    borderWidth: 1.5,
-    borderRadius: radii.lg,
-    paddingLeft: spacing.xxxl,
-    paddingRight: spacing.lg,
-    fontSize: fontSizes.body,
-  },
-  hint: {
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    fontSize: fontSizes.small,
-  },
-  bannerRow: {
-    marginTop: spacing.md,
-  },
-  buttonRow: {
-    marginTop: spacing.lg,
-  },
-  textLink: {
-    alignSelf: 'center',
-    marginTop: spacing.lg,
-    paddingVertical: spacing.xs,
-  },
-  successCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
   },
   splitRoot: {
     flex: 1,

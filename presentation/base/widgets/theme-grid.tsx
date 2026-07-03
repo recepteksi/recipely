@@ -3,11 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import {
-  ALL_THEMES,
-  getThemeDefinition,
-  type ThemeId,
-} from '@presentation/base/theme/themes';
+import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/themes';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
 

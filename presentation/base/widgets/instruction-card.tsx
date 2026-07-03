@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { InlineTimer } from '@presentation/base/widgets/inline-timer';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import type { TextPart } from '@presentation/base/widgets/text-part';
 
 export interface InstructionCardProps {
   index: number;
@@ -16,12 +17,6 @@ export interface InstructionCardProps {
 }
 
 const TIME_RE = /(\d+(?:\.\d+)?)\s*(minutes?|mins?|dakika|dk)/gi;
-
-interface TextPart {
-  kind: 'text' | 'timer';
-  value: string;
-  minutes?: number;
-}
 
 export const splitStepWithTimers = (text: string): TextPart[] => {
   const out: TextPart[] = [];

@@ -5,17 +5,8 @@ import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
 import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
-
-/** A resolved display label for a single cuisine or category key. */
-export interface TaxonomyLabel {
-  name: string;
-  emoji: string;
-}
-
-export interface UseTaxonomyLabelResult {
-  cuisineLabel: (key: string) => TaxonomyLabel;
-  categoryLabel: (key: string) => TaxonomyLabel;
-}
+import type { TaxonomyLabel } from '@presentation/screens/recipes/taxonomy-label';
+import type { UseTaxonomyLabelResult } from '@presentation/screens/recipes/use-taxonomy-label-result';
 
 const toMap = (items: readonly TaxonomyItem[]): Map<string, TaxonomyItem> =>
   new Map(items.map((item) => [item.key, item]));

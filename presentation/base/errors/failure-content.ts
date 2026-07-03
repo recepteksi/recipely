@@ -1,9 +1,8 @@
-import type { Ionicons } from '@expo/vector-icons';
 import type { Failure } from '@presentation/base/types';
 import { t } from '@presentation/i18n';
-import type { Severity } from '@presentation/base/theme/error-surfaces';
-
-type IoniconName = keyof typeof Ionicons.glyphMap;
+import type { Severity } from '@presentation/base/theme/severity';
+import type { IoniconName } from '@presentation/base/errors/ionicon-name';
+import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
 
 /**
  * Full-screen / section content for a failure: a warm title and a plain,
@@ -14,19 +13,6 @@ export interface FailureContent {
   title: string;
   body: string;
 }
-
-// The per-code entries in the `errors` i18n namespace (each is { title, body, short }).
-type FailureContentKey =
-  | 'network'
-  | 'timeout'
-  | 'server'
-  | 'notFound'
-  | 'unauthorized'
-  | 'forbidden'
-  | 'conflict'
-  | 'rateLimit'
-  | 'validation'
-  | 'unknown';
 
 // WHY: every failure carries a stable `code` (set by its class). The user-facing
 // copy is selected from that code alone, so the same error always reads the same
