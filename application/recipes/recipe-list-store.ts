@@ -1,25 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
-
-export type RecipeListState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; recipes: Recipe[] }
-  | { status: 'error'; failure: Failure };
-
-export interface RecipeListStoreState {
-  state: RecipeListState;
-  load: (filters?: RecipeFilters) => Promise<void>;
-  replace: (recipe: Recipe) => void;
-  remove: (id: string) => void;
-}
-
-export interface RecipeListStoreDeps {
-  listRecipes: ListRecipesUseCase;
-}
+import type { RecipeListStoreState } from '@application/recipes/recipe-list-store-state';
+import type { RecipeListStoreDeps } from '@application/recipes/recipe-list-store-deps';
 
 export type RecipeListStore = UseBoundStore<StoreApi<RecipeListStoreState>>;
 

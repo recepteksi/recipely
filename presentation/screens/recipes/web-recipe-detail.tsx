@@ -14,7 +14,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { MediaItem } from '@domain/recipes/media-item';
-import type { RecipeCommentsState } from '@application/comments/comments-store';
+import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
 
 export interface WebRecipeDetailProps {
   recipe: Recipe;

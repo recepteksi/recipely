@@ -2,11 +2,7 @@ import { fail, type Result } from '@core/result/result';
 import { type Failure, ValidationFailure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-
-export interface GenerateRecipeInput {
-  prompt: string;
-  locale: string;
-}
+import type { GenerateRecipeInput } from '@application/recipes/generate-recipe-input';
 
 /**
  * Generates a recipe from a free-text AI prompt. Returns a

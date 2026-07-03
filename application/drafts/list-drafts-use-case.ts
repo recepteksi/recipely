@@ -2,11 +2,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
-
-export interface ListDraftsInput {
-  page: number;
-  pageSize: number;
-}
+import type { ListDraftsInput } from '@application/drafts/list-drafts-input';
 
 /** Lists a page of the authenticated user's recipe drafts. */
 export class ListDraftsUseCase {

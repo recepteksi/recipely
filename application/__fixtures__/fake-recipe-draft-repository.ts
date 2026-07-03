@@ -4,19 +4,8 @@ import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
-
-export interface FakeRecipeDraftRepositoryConfig {
-  listDraftsResult?: Result<PagedDrafts, Failure>;
-  getLatestDraftResult?: Result<RecipeDraft | null, Failure>;
-  getDraftResult?: Result<RecipeDraft, Failure>;
-  upsertDraftResult?: Result<RecipeDraft, Failure>;
-  deleteDraftResult?: Result<void, Failure>;
-}
-
-export interface ListDraftsCall {
-  page: number;
-  pageSize: number;
-}
+import type { FakeRecipeDraftRepositoryConfig } from '@application/__fixtures__/fake-recipe-draft-repository-config';
+import type { ListDraftsCall } from '@application/__fixtures__/list-drafts-call';
 
 /**
  * In-memory test double for `IRecipeDraftRepository`. Returns pre-configured

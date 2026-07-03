@@ -1,26 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
-import type { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
-
-export type TaxonomyStatus = 'idle' | 'loading' | 'ready' | 'error';
-
-export interface TaxonomyStoreState {
-  cuisines: readonly TaxonomyItem[];
-  categories: readonly TaxonomyItem[];
-  status: TaxonomyStatus;
-  failure: Failure | null;
-  /**
-   * Loads the cuisine + category catalogs. Idempotent: a no-op while already
-   * `loading` or once `ready`, so screens can call it freely on mount without
-   * triggering duplicate fetches.
-   */
-  load: () => Promise<void>;
-}
-
-export interface TaxonomyStoreDeps {
-  loadTaxonomyUseCase: LoadTaxonomyUseCase;
-}
+import type { TaxonomyStoreState } from '@application/recipes/taxonomy-store-state';
+import type { TaxonomyStoreDeps } from '@application/recipes/taxonomy-store-deps';
 
 export type TaxonomyStore = UseBoundStore<StoreApi<TaxonomyStoreState>>;
 

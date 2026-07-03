@@ -2,10 +2,8 @@ import { configureCreatedRecipesStore } from '@application/recipes/created-recip
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
-import type {
-  ImportInstagramRecipeInput,
-  ImportInstagramRecipeUseCase,
-} from '@application/recipes/import-instagram-recipe-use-case';
+import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
+import type { ImportInstagramRecipeInput } from '@application/recipes/import-instagram-recipe-input';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';

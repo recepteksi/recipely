@@ -1,22 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
-import type { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
-
-export type TrendingRecipesState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; recipes: Recipe[] }
-  | { status: 'error'; failure: Failure };
-
-export interface TrendingRecipesStoreState {
-  state: TrendingRecipesState;
-  load: (limit?: number) => Promise<void>;
-}
-
-export interface TrendingRecipesStoreDeps {
-  listTrendingRecipes: ListTrendingRecipesUseCase;
-}
+import type { TrendingRecipesStoreState } from '@application/recipes/trending-recipes-store-state';
+import type { TrendingRecipesStoreDeps } from '@application/recipes/trending-recipes-store-deps';
 
 export type TrendingRecipesStore = UseBoundStore<StoreApi<TrendingRecipesStoreState>>;
 

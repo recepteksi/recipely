@@ -1,22 +1,10 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { UnknownFailure, type Failure } from '@core/failure';
+import { UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
-import type { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
-
-export interface FeedbackStoreState {
-  isSubmitting: boolean;
-  error: Failure | null;
-  /** Returns `true` on success, `false` on failure (sets `error`). */
-  submit: (input: FeedbackSubmission) => Promise<boolean>;
-  /** Clears `error` and resets `isSubmitting` to `false`. */
-  reset: () => void;
-}
+import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
+import type { ConfigureFeedbackStoreOptions } from '@application/feedback/configure-feedback-store-options';
 
 export type FeedbackStore = UseBoundStore<StoreApi<FeedbackStoreState>>;
-
-export interface ConfigureFeedbackStoreOptions {
-  submitFeedbackUseCase: SubmitFeedbackUseCase;
-}
 
 /**
  * Creates the Zustand store for the Help & Feedback screen.

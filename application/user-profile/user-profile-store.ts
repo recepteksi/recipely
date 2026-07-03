@@ -1,23 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { UserProfile } from '@domain/user-profile/user-profile';
-import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
-
-export type UserProfileState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; profile: UserProfile }
-  | { status: 'error'; failure: Failure };
-
-export interface UserProfileStoreState {
-  state: UserProfileState;
-  load: (userId: string) => Promise<void>;
-  reset: () => void;
-}
-
-export interface UserProfileStoreDeps {
-  getUserProfile: GetUserProfileUseCase;
-}
+import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
+import type { UserProfileStoreDeps } from '@application/user-profile/user-profile-store-deps';
 
 export type UserProfileStore = UseBoundStore<StoreApi<UserProfileStoreState>>;
 

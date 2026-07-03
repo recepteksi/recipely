@@ -2,23 +2,11 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { ok, type Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import type { Comment } from '@domain/comments/comment';
-import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
-import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
-import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
-import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { CommentsStoreState } from '@application/comments/comments-store-state';
+import type { ConfigureCommentsStoreOptions } from '@application/comments/configure-comments-store-options';
 
 const DEFAULT_PAGE_SIZE = 20;
-
-export interface RecipeCommentsState {
-  items: Comment[];
-  total: number;
-  page: number;
-  isLoading: boolean;
-  isLoadingMore: boolean;
-  isSubmitting: boolean;
-  error: Failure | null;
-}
 
 const defaultRecipeState = (): RecipeCommentsState => ({
   items: [],
@@ -30,29 +18,7 @@ const defaultRecipeState = (): RecipeCommentsState => ({
   error: null,
 });
 
-export interface CommentsStoreState {
-  byRecipe: Record<string, RecipeCommentsState>;
-  load(recipeId: string): Promise<void>;
-  loadMore(recipeId: string): Promise<void>;
-  addComment(recipeId: string, body: string): Promise<boolean>;
-  deleteComment(recipeId: string, commentId: string): Promise<boolean>;
-  /**
-   * Toggle a comment's like with an optimistic in-place update; rolls back on
-   * failure. Returns the `Result` so the caller can surface a toast when the
-   * toggle is rejected — the optimistic rollback alone is easy to miss.
-   */
-  toggleLike(recipeId: string, commentId: string): Promise<Result<void, Failure>>;
-}
-
 export type CommentsStore = UseBoundStore<StoreApi<CommentsStoreState>>;
-
-export interface ConfigureCommentsStoreOptions {
-  listComments: ListCommentsUseCase;
-  addComment: AddCommentUseCase;
-  deleteComment: DeleteCommentUseCase;
-  likeComment: LikeCommentUseCase;
-  unlikeComment: UnlikeCommentUseCase;
-}
 
 export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): CommentsStore => {
   const { listComments, addComment, deleteComment, likeComment, unlikeComment } = deps;

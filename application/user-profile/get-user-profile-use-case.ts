@@ -2,10 +2,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { UserProfile } from '@domain/user-profile/user-profile';
 import type { IUserProfileRepository } from '@domain/user-profile/i-user-profile-repository';
-
-export interface GetUserProfileInput {
-  userId: string;
-}
+import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';
 
 /** Fetches the public profile for any user by their ID. */
 export class GetUserProfileUseCase {
