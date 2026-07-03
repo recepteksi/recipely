@@ -110,7 +110,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.421167568469-fg6bdiun08t9iebtnhg1ulnvu9f4bnne"
+          "iosUrlScheme": "com.googleusercontent.apps.421167568469-hl9tkgpi61p1rrir349b9ild9h976kgd"
         }
       ],
       "./plugins/withAndroidReleaseSigning"

@@ -9,14 +9,39 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 type Variant = 'production' | 'development';
 
-const PROD_BUNDLE_ID = 'com.recipely.app';
-const DEV_BUNDLE_ID = 'com.recipely.app.dev';
+const ANDROID_PROD_PACKAGE = 'com.recipely.app';
+const ANDROID_DEV_PACKAGE = 'com.recipely.app.dev';
+
+// iOS uses the reverse-DNS of recipely.net: `com.recipely.app` is already
+// registered to another Apple team, so the Android package name cannot be
+// reused as the iOS bundle identifier.
+const IOS_PROD_BUNDLE_ID = 'net.recipely.app';
+const IOS_DEV_BUNDLE_ID = 'net.recipely.app.dev';
+
+const IOS_PROD_GOOGLE_SERVICES_FILE = './GoogleService-Info.plist';
+const IOS_DEV_GOOGLE_SERVICES_FILE = './GoogleService-Info.dev.plist';
+
+// REVERSED_CLIENT_ID of each Firebase iOS app's OAuth client; must match the
+// GoogleService-Info plist that ships with the same variant.
+const IOS_PROD_GOOGLE_URL_SCHEME =
+  'com.googleusercontent.apps.421167568469-hl9tkgpi61p1rrir349b9ild9h976kgd';
+const IOS_DEV_GOOGLE_URL_SCHEME =
+  'com.googleusercontent.apps.421167568469-v6qorc4n7abqbb2vteulr3424p19p72o';
+
+const GOOGLE_SIGNIN_PLUGIN = '@react-native-google-signin/google-signin';
 
 const variant: Variant =
   (process.env.APP_VARIANT as Variant | undefined) ?? 'production';
 
 const isDev = variant === 'development';
-const bundleId = isDev ? DEV_BUNDLE_ID : PROD_BUNDLE_ID;
+const androidPackage = isDev ? ANDROID_DEV_PACKAGE : ANDROID_PROD_PACKAGE;
+const iosBundleId = isDev ? IOS_DEV_BUNDLE_ID : IOS_PROD_BUNDLE_ID;
+const iosGoogleServicesFile = isDev
+  ? IOS_DEV_GOOGLE_SERVICES_FILE
+  : IOS_PROD_GOOGLE_SERVICES_FILE;
+const iosGoogleUrlScheme = isDev
+  ? IOS_DEV_GOOGLE_URL_SCHEME
+  : IOS_PROD_GOOGLE_URL_SCHEME;
 const displayName = isDev ? 'Recipely (Dev)' : 'Recipely';
 const scheme = isDev ? 'recipely-dev' : 'recipely';
 
@@ -55,6 +80,20 @@ const getVersion = (fallback: string): string => {
   return tag !== null && tag.length > 0 ? tag.replace(/^v/, '') : fallback;
 };
 
+/** Swaps the google-signin plugin's iosUrlScheme for the active variant so
+ * each iOS build opens with its own Firebase OAuth client's reversed ID. */
+const withVariantGoogleUrlScheme = (
+  plugins: ExpoConfig['plugins'],
+): ExpoConfig['plugins'] =>
+  plugins?.map((plugin) =>
+    Array.isArray(plugin) && plugin[0] === GOOGLE_SIGNIN_PLUGIN
+      ? [
+          GOOGLE_SIGNIN_PLUGIN,
+          { ...(plugin[1] ?? {}), iosUrlScheme: iosGoogleUrlScheme },
+        ]
+      : plugin,
+  );
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const buildNumber = getBuildNumber();
   const version = getVersion(config.version ?? '1.0.0');
@@ -65,14 +104,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? 'recipely',
     version,
     scheme,
+    plugins: withVariantGoogleUrlScheme(config.plugins),
     ios: {
       ...config.ios,
-      bundleIdentifier: bundleId,
+      bundleIdentifier: iosBundleId,
       buildNumber: String(buildNumber),
+      googleServicesFile: iosGoogleServicesFile,
     },
     android: {
       ...config.android,
-      package: bundleId,
+      package: androidPackage,
       versionCode: buildNumber,
     },
     extra: {
