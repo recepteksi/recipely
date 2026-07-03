@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import { MAX_VISIBLE_TOASTS, type ToastInput, type ToastItem } from './toast-model';
+import { MAX_VISIBLE_TOASTS } from './toast-model';
+import type { ToastInput } from '@presentation/base/feedback/toast-input';
+import type { ToastItem } from '@presentation/base/feedback/toast-item';
 
 let counter = 0;
 const nextId = (): string => {

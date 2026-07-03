@@ -40,7 +40,8 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-content';
-import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { TabBar } from '@presentation/base/widgets/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';

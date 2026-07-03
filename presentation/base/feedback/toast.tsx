@@ -6,12 +6,13 @@ import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfa
 import {
   toastBackground,
   TOAST_FOREGROUND,
-  type Severity,
 } from '@presentation/base/theme/error-surfaces';
+import type { Severity } from '@presentation/base/theme/severity';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { DEFAULT_TOAST_DURATION_MS, type ToastItem } from '@presentation/base/feedback/toast-model';
+import { DEFAULT_TOAST_DURATION_MS } from '@presentation/base/feedback/toast-model';
+import type { ToastItem } from '@presentation/base/feedback/toast-item';
 
 const ENTER_OFFSET = 16;
 const EXIT_DURATION_MS = 160;

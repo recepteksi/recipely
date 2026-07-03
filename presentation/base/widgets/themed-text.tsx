@@ -1,8 +1,7 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { fontSizes } from '@presentation/base/theme';
-
-export type ThemedTextVariant = 'headline' | 'title' | 'subtitle' | 'body' | 'caption' | 'label';
+import type { ThemedTextVariant } from '@presentation/base/widgets/themed-text-variant';
 
 export interface ThemedTextProps extends TextProps {
   variant?: ThemedTextVariant;

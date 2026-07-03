@@ -7,7 +7,7 @@ import { InstructionCard } from '@presentation/base/widgets/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/screens/recipes/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/screens/recipes/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/screens/recipes/web-recipe-detail-comments';
-import type { RecipeAuthorState } from '@presentation/screens/recipes/use-recipe-author';
+import type { RecipeAuthorState } from '@presentation/screens/recipes/recipe-author-state';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';

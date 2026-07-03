@@ -1,10 +1,5 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-
-export interface WebShellStateValue {
-  /** Global search query driven by the WebHeader search input. */
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-}
+import type { WebShellStateValue } from '@presentation/base/responsive/web-shell-state-value';
 
 const WebShellStateContext = createContext<WebShellStateValue>({
   searchQuery: '',

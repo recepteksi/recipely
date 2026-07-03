@@ -8,10 +8,10 @@ import type { GetUserProfileInput } from '@application/user-profile/get-user-pro
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import {
   useRecipeAuthor,
-  type RecipeAuthorInput,
-  type RecipeAuthorState,
-  type ResolvedAuthor,
 } from '@presentation/screens/recipes/use-recipe-author';
+import type { RecipeAuthorInput } from '@presentation/screens/recipes/recipe-author-input';
+import type { RecipeAuthorState } from '@presentation/screens/recipes/recipe-author-state';
+import type { ResolvedAuthor } from '@presentation/screens/recipes/resolved-author';
 
 const makeProfile = (overrides: Partial<Parameters<typeof UserProfile.create>[0]> = {}): UserProfile => {
   const result = UserProfile.create({

@@ -20,7 +20,8 @@ import {
   textContent,
   type RenderResult,
 } from '@presentation/base/test-support/render-component';
-import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { emptyFilters, type UiFilters } from '@presentation/screens/recipes/ui-filters';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy-store-state';

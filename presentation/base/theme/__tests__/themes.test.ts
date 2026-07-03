@@ -1,11 +1,8 @@
 import { contrastRatio, relativeLuminance } from '@presentation/base/theme';
-import {
-  ALL_THEMES,
-  getThemeColors,
-  type ThemeColors,
-  type ThemeId,
-  type ThemeVariant,
-} from '@presentation/base/theme/themes';
+import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/themes';
+import type { ThemeColors } from '@presentation/base/theme/theme-colors';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
+import type { ThemeVariant } from '@presentation/base/theme/theme-variant';
 
 interface ContrastPair {
   label: string;

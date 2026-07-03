@@ -12,14 +12,13 @@ import { RecipeMetaCard } from '@presentation/base/widgets/recipe-meta-card';
 import { IngredientCard } from '@presentation/base/widgets/ingredient-card';
 import { InstructionCard } from '@presentation/base/widgets/instruction-card';
 import { CommentCard } from '@presentation/base/widgets/comment-card';
-import {
-  StateView,
-  type StateViewStatus,
-} from '@presentation/base/widgets/state-view';
+import { StateView } from '@presentation/base/widgets/state-view';
+import type { StateViewStatus } from '@presentation/base/widgets/state-view-status';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { RecipeAuthorCard } from '@presentation/screens/recipes/recipe-author-card';
-import { useRecipeAuthor, type ResolvedAuthor } from '@presentation/screens/recipes/use-recipe-author';
+import { useRecipeAuthor } from '@presentation/screens/recipes/use-recipe-author';
+import type { ResolvedAuthor } from '@presentation/screens/recipes/resolved-author';
 import { WebRecipeDetail } from '@presentation/screens/recipes/web-recipe-detail';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { RecipeShareSheet } from '@presentation/base/widgets/recipe-share-sheet';

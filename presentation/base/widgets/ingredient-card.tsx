@@ -3,16 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import type { ParsedIngredient } from '@presentation/base/widgets/parsed-ingredient';
 
 export interface IngredientCardProps {
   raw: string;
   checked: boolean;
   onToggle: () => void;
-}
-
-interface ParsedIngredient {
-  qty: string;
-  name: string;
 }
 
 const FRACTION_RE = /[¼½¾⅓⅔⅛⅜⅝⅞]/;

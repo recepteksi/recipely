@@ -6,18 +6,12 @@ import { useLayout } from '@presentation/base/responsive/layout-context';
 import { sizes, spacing, fontSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { t } from '@presentation/i18n';
-
-export type TabBarKey = 'recipes' | 'myRecipes' | 'profile';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
+import type { TabConfig } from '@presentation/base/widgets/tab-config';
 
 export interface TabBarProps {
   active: TabBarKey;
   onChange: (key: TabBarKey) => void;
-}
-
-interface TabConfig {
-  key: TabBarKey;
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
 }
 
 /**

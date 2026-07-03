@@ -18,7 +18,8 @@
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
-import { StoresProvider, type Stores } from '@presentation/bootstrap/stores-context';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useSaveRecipe, type UseSaveRecipeResult } from '@presentation/screens/recipes/use-save-recipe';
 import type { SavedRecipesStoreState } from '@application/recipes/saved-recipes-store-state';

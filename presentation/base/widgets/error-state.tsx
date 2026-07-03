@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import type { Severity } from '@presentation/base/theme/error-surfaces';
+import type { Severity } from '@presentation/base/theme/severity';
 import { spacing } from '@presentation/base/theme';
 
 const DISC_SIZE = 104;

@@ -1,7 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { registerApplication } from '@application/di/register';
-
-export type Stores = ReturnType<typeof registerApplication>;
+import type { Stores } from '@presentation/bootstrap/stores';
 
 const StoresContext = createContext<Stores | null>(null);
 

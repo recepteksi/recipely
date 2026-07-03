@@ -13,6 +13,7 @@ import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/recipe-category';
 import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
+import type { Catalog } from '@presentation/screens/create-recipe/catalog';
 
 /**
  * `kind` selects which catalog (cuisine vs category) is shown. The emitted
@@ -28,11 +29,6 @@ export type TaxonomyPickerSheetProps = {
 };
 
 const GRID_COLUMNS = 3;
-
-interface Catalog {
-  items: readonly TaxonomyItem[];
-  title: string;
-}
 
 const localItems = (
   values: readonly string[],

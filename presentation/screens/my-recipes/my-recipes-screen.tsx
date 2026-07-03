@@ -7,7 +7,9 @@ import { ScreenContainer } from '@presentation/base/widgets/screen-container';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
-import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { TabBar } from '@presentation/base/widgets/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
+import type { Tab } from '@presentation/screens/my-recipes/tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { DraftCard } from '@presentation/screens/my-recipes/draft-card';
@@ -24,8 +26,6 @@ import type { Recipe } from '@domain/recipes/recipe';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
-
-type Tab = 'saved' | 'created' | 'drafts';
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();

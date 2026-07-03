@@ -37,8 +37,7 @@ import { RefineDock } from '@presentation/screens/create-recipe/refine-dock';
 import { PhotosSheet } from '@presentation/screens/create-recipe/photos-sheet';
 import { ExitSheet } from '@presentation/screens/create-recipe/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-
-type Phase = 'prompt' | 'generating' | 'preview';
+import type { Phase } from '@presentation/screens/create-recipe/phase';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;

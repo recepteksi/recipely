@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/avatar-image';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
-import type { RecipeAuthorState } from '@presentation/screens/recipes/use-recipe-author';
+import type { RecipeAuthorState } from '@presentation/screens/recipes/recipe-author-state';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
