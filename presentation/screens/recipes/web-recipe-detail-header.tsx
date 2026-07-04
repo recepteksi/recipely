@@ -15,7 +15,6 @@ export interface WebRecipeDetailHeaderProps {
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
-  canInteract: boolean;
   onToggleLike: () => void;
   isOwner: boolean;
   onEdit: () => void;
@@ -29,13 +28,16 @@ export interface WebRecipeDetailHeaderProps {
  * Web recipe-detail header: a chip row (cuisine + difficulty), an h1-style
  * title, an author/stats row, and the owner Edit + Save action pills. Replaces
  * the mobile floating circle button cluster on the web shell.
+ *
+ * The like button is always pressable regardless of auth state — a guest tap
+ * is caught by `onToggleLike` (wired to `useGuestGate` in the parent screen),
+ * which opens a sign-in prompt instead of running the toggle.
  */
 export const WebRecipeDetailHeader = ({
   recipe,
   authorState,
   liked,
   likeCount,
-  canInteract,
   onToggleLike,
   isOwner,
   onEdit,
@@ -93,10 +95,9 @@ export const WebRecipeDetailHeader = ({
           ) : null}
           <Pressable
             onPress={onToggleLike}
-            disabled={!canInteract}
             accessibilityRole="button"
             accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
-            style={[styles.statItem, { opacity: canInteract ? 1 : 0.5 }]}
+            style={styles.statItem}
           >
             <MaterialCommunityIcons
               name={liked ? 'heart' : 'heart-outline'}

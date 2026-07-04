@@ -88,7 +88,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         authorState={props.authorState}
         liked={props.liked}
         likeCount={props.likeCount}
-        canInteract={props.userId !== null}
         onToggleLike={props.onToggleLike}
         isOwner={props.isOwner}
         onEdit={props.onEdit}

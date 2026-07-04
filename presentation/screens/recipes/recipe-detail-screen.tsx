@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
@@ -15,6 +15,8 @@ import { CommentCard } from '@presentation/base/widgets/comment-card';
 import { StateView } from '@presentation/base/widgets/state-view';
 import type { StateViewStatus } from '@presentation/base/widgets/state-view-status';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { SignInPromptSheet } from '@presentation/base/widgets/sign-in-prompt-sheet';
+import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { NutritionCard } from '@presentation/base/widgets/nutrition-card';
 import { RecipeAuthorCard } from '@presentation/screens/recipes/recipe-author-card';
 import { useRecipeAuthor } from '@presentation/screens/recipes/use-recipe-author';
@@ -35,6 +37,7 @@ import type { MediaItem } from '@domain/recipes/media-item';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const pathname = usePathname();
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
@@ -50,6 +53,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
+  const goToSignIn = useCallback(() => {
+    closePrompt();
+    // Cast: the dynamic redirect param can't be statically verified against
+    // expo-router's typed-routes union — same pattern as useAuthGuard.
+    router.push(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+  }, [closePrompt, pathname, router]);
   const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
   const ownProfileState = userProfileStore((s) => s.state);
@@ -129,31 +139,18 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   }, [commentInput, commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
-     
-    console.log('[SaveButton] handleToggleSave called!', { isLoading, userId, recipeId });
-    if (isLoading || !userId) {
-      console.log('[SaveButton] Skipping: isLoading=' + isLoading + ', userId=' + userId);
-      return;
+    if (isLoading || !userId) return;
+    if (isSaved) {
+      await favoritesStore.getState().removeFavorite(userId, recipeId);
+    } else {
+      await favoritesStore.getState().addFavorite(userId, recipeId);
     }
-    try {
-      console.log('[SaveButton] Toggling favorite...', { userId, recipeId, isSaved });
-      if (isSaved) {
-        console.log('[SaveButton] Removing favorite...');
-        await favoritesStore.getState().removeFavorite(userId, recipeId);
-      } else {
-        console.log('[SaveButton] Adding favorite...');
-        await favoritesStore.getState().addFavorite(userId, recipeId);
-      }
-      // WHY: the store records the failure on its `error` field rather than
-      // throwing — surface it as a toast so a rejected save never passes silently.
-      const failure = favoritesStore.getState().error;
-      if (failure !== null) {
-        showErrorToast(failure);
-        favoritesStore.getState().clearError();
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error('[SaveButton] Error:', errorMsg);
+    // WHY: the store records the failure on its `error` field rather than
+    // throwing — surface it as a toast so a rejected save never passes silently.
+    const failure = favoritesStore.getState().error;
+    if (failure !== null) {
+      showErrorToast(failure);
+      favoritesStore.getState().clearError();
     }
   }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
 
@@ -304,10 +301,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                     likeCount={likeCount}
                     userId={userId}
                     isSaved={isSaved}
-                    saveDisabled={isLoading || !userId}
+                    saveDisabled={isLoading}
                     onBack={() => router.back()}
-                    onToggleLike={() => void handleToggleLike()}
-                    onToggleSave={() => void handleToggleSave()}
+                    onToggleLike={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
+                    onToggleSave={() => requestGate(() => void handleToggleSave(), t().recipes.signInToSave)}
                     onEdit={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
                     onDelete={() => setShowDeleteSheet(true)}
                     checkedIngredients={checkedIngredients}
@@ -318,9 +315,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                     commentInput={commentInput}
                     submitError={submitError}
                     onChangeCommentInput={setCommentInput}
-                    onAddComment={() => void handleAddComment()}
+                    onAddComment={() => requestGate(() => void handleAddComment(), t().comments.signInToComment)}
                     onLoadMoreComments={() => void commentsStore.getState().loadMore(recipeId)}
-                    onToggleCommentLike={(id) => void handleToggleCommentLike(id)}
+                    onToggleCommentLike={(id) =>
+                      requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment)
+                    }
                     onDeleteComment={(id) => void handleDeleteComment(id)}
                   />
                 );
@@ -363,8 +362,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
                     <View style={styles.statsStrip}>
                       <Pressable
-                        onPress={handleToggleLike}
-                        disabled={!userId}
+                        onPress={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
                         accessibilityRole="button"
                         accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
                         style={styles.statItem}
@@ -585,8 +583,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                             isOwn={comment.authorId === userId}
                             likeCount={comment.likeCount}
                             likedByMe={comment.likedByMe}
-                            canLike={userId !== null}
-                            onToggleLike={() => void handleToggleCommentLike(comment.id)}
+                            canLike
+                            onToggleLike={() =>
+                              requestGate(() => void handleToggleCommentLike(comment.id), t().comments.signInToLikeComment)
+                            }
                             onDelete={() => void handleDeleteComment(comment.id)}
                           />
                         ))}
@@ -610,57 +610,53 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       </Pressable>
                     ) : null}
 
-                    {userId !== null ? (
-                      <View style={styles.commentInputRow}>
-                        <TextInput
-                          value={commentInput}
-                          onChangeText={setCommentInput}
-                          placeholder={t().comments.placeholder}
-                          placeholderTextColor={colors.textMuted}
-                          style={[
-                            styles.commentInput,
-                            {
-                              backgroundColor: colors.surface,
-                              color: colors.text,
-                              borderColor: colors.border,
-                            },
-                          ]}
-                          multiline
-                          maxLength={2000}
-                          onFocus={() => {
-                            setTimeout(
-                              () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-                              150,
-                            );
-                          }}
-                        />
-                        <Pressable
-                          onPress={() => void handleAddComment()}
-                          disabled={
-                            commentState?.isSubmitting === true ||
-                            commentInput.trim().length === 0
-                          }
-                          style={({ pressed }) => [
-                            styles.commentSendBtn,
-                            {
-                              backgroundColor: colors.primary,
-                              opacity:
-                                pressed ||
-                                commentState?.isSubmitting === true ||
-                                commentInput.trim().length === 0
-                                  ? 0.6
-                                  : 1,
-                            },
-                          ]}
-                        >
-                          <Ionicons name="send" size={16} color={colors.onOverlay} />
-                        </Pressable>
-                      </View>
-                    ) : (
-                      <ThemedText variant="caption" muted style={styles.signInHint}>
-                        {t().comments.signInToComment}
-                      </ThemedText>
-                    )}
+                    <View style={styles.commentInputRow}>
+                      <TextInput
+                        value={commentInput}
+                        onChangeText={setCommentInput}
+                        placeholder={t().comments.placeholder}
+                        placeholderTextColor={colors.textMuted}
+                        style={[
+                          styles.commentInput,
+                          {
+                            backgroundColor: colors.surface,
+                            color: colors.text,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                        multiline
+                        maxLength={2000}
+                        onFocus={() => {
+                          setTimeout(
+                            () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                            150,
+                          );
+                        }}
+                      />
+                      <Pressable
+                        onPress={() => requestGate(() => void handleAddComment(), t().comments.signInToComment)}
+                        disabled={
+                          commentState?.isSubmitting === true ||
+                          commentInput.trim().length === 0
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel={t().comments.send}
+                        style={({ pressed }) => [
+                          styles.commentSendBtn,
+                          {
+                            backgroundColor: colors.primary,
+                            opacity:
+                              pressed ||
+                              commentState?.isSubmitting === true ||
+                              commentInput.trim().length === 0
+                                ? 0.6
+                                : 1,
+                          },
+                        ]}
+                      >
+                        <Ionicons name="send" size={16} color={colors.onOverlay} />
+                      </Pressable>
+                    </View>
 
                     {submitError !== null ? (
                       <ThemedText
@@ -732,6 +728,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         </View>
       </BottomSheet>
 
+      <SignInPromptSheet
+        visible={promptVisible}
+        onClose={closePrompt}
+        onSignIn={goToSignIn}
+        message={promptMessage}
+      />
+
       {current.status === 'loaded' ? (
         (() => {
           const recipe = current.recipe;
@@ -760,11 +763,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   <Ionicons name="share-social-outline" size={sizes.iconMd} color={colors.onOverlay} />
                 </Pressable>
                 <Pressable
-                  onPress={handleToggleLike}
+                  onPress={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
                   accessibilityRole="button"
                   accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
-                  disabled={!userId}
-                  style={[styles.floatingBtn, { opacity: !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+                  style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
                 >
                   <MaterialCommunityIcons
                     name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
@@ -773,16 +775,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   />
                 </Pressable>
                 <Pressable
-                  onPress={handleToggleSave}
+                  onPress={() => requestGate(() => void handleToggleSave(), t().recipes.signInToSave)}
                   accessibilityRole="button"
                   accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-                  disabled={isLoading || !userId}
-                  style={[styles.floatingBtn, { opacity: isLoading || !userId ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+                  disabled={isLoading}
+                  style={[styles.floatingBtn, { opacity: isLoading ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
                 >
                   <Ionicons
                     name={isSaved ? 'bookmark' : 'bookmark-outline'}
                     size={20}
-                    color={isLoading || !userId ? colors.textMuted : colors.onOverlay}
+                    color={isLoading ? colors.textMuted : colors.onOverlay}
                   />
                 </Pressable>
               </View>
@@ -991,9 +993,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  signInHint: {
-    marginTop: spacing.sm,
   },
   submitError: {
     marginTop: spacing.xs,
