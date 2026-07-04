@@ -337,7 +337,9 @@ jobs:
   # App Distribution (which needed per-device UDID registration for ad-hoc).
   distribute-ios-dev:
     name: Distribute iOS Dev (TestFlight)
-    runs-on: macos-15
+    # App Store Connect rejects uploads not built with the iOS 26 SDK
+    # (Xcode 26+) as of 2026-04-28. macos-15 only carries Xcode 16.4.
+    runs-on: macos-26
     needs: [lint-and-typecheck, test]
     # Kill switch: set the IOS_CI_ENABLED repo variable to '0' to pause iOS
     # distribution without touching the workflow.
@@ -720,7 +722,9 @@ jobs:
   # but for the prod bundle / "Recipely" app record.
   distribute-ios-prod:
     name: Distribute iOS Prod (TestFlight)
-    runs-on: macos-15
+    # App Store Connect rejects uploads not built with the iOS 26 SDK
+    # (Xcode 26+) as of 2026-04-28. macos-15 only carries Xcode 16.4.
+    runs-on: macos-26
     needs: [lint-and-typecheck, test, tag-release]
     # Same IOS_CI_ENABLED gate as distribute-ios-dev — see that job's comment.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.IOS_CI_ENABLED == '1'
