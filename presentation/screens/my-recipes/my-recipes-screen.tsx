@@ -22,7 +22,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
@@ -70,7 +70,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   }, []);
 
   const savedRecipes = useMemo(() => {
-    const all: readonly Recipe[] =
+    const all: readonly RecipeSummary[] =
       recipeListState.status === 'loaded' ? recipeListState.recipes : [];
     return all.filter((r) => savedIds.has(r.id));
   }, [recipeListState, savedIds]);
@@ -267,7 +267,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
         ) : (
           <FlatList
             key={`grid-${gridColumns}`}
-            data={items as Recipe[]}
+            data={items as RecipeSummary[]}
             keyExtractor={(r) => r.id}
             numColumns={gridColumns}
             renderItem={({ item }) => (
@@ -287,7 +287,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
                     cuisine={item.cuisine}
                     difficulty={item.difficulty}
                     rating={item.rating}
-                    tags={item.tags}
                     onPress={() => openRecipe(item.id)}
                   />
                 )}

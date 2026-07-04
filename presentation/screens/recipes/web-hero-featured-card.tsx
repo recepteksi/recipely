@@ -3,22 +3,20 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/recipe-image';
-import { AvatarImage } from '@presentation/base/widgets/avatar-image';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
-import { useRecipeAuthor } from '@presentation/screens/recipes/use-recipe-author';
 import { WebHeroActionRow } from '@presentation/screens/recipes/web-hero-action-row';
 import {
   HERO_OVERLAY_DEEP,
   HERO_OVERLAY_MID,
   HERO_OVERLAY_FADE,
 } from '@presentation/screens/recipes/web-hero-constants';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface WebHeroFeaturedCardProps {
-  recipe: Recipe;
+  recipe: RecipeSummary;
   onPress: (id: string) => void;
   /** When provided, renders the cosmetic frosted "Save" button. */
   onSave?: (id: string) => void;
@@ -33,12 +31,7 @@ export const WebHeroFeaturedCard = ({
   savedByMe = false,
 }: WebHeroFeaturedCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const totalMin = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
-  // A single hero recipe = one profile fetch (grid cards never resolve authors).
-  // Resolve by ownerId only; while loading/unavailable the row is omitted rather
-  // than showing a broken/placeholder author.
-  const authorState = useRecipeAuthor({ ownerId: recipe.ownerId, owner: null, isOwner: false });
-  const author = authorState.status === 'resolved' ? authorState.author : null;
+  const totalMin = recipe.totalTimeMinutes;
   return (
     <View style={styles.card}>
       <RecipeImage
@@ -78,19 +71,6 @@ export const WebHeroFeaturedCard = ({
         >
           {recipe.name}
         </ThemedText>
-
-        {author !== null ? (
-          <View style={styles.authorRow}>
-            <AvatarImage
-              size={sizes.heroAvatarSm}
-              uri={author.authorPhotoUrl}
-              name={author.authorName}
-            />
-            <ThemedText style={[styles.author, { color: colors.onOverlay }]}>
-              {t().recipes.heroByAuthor.replace('{name}', author.authorName)}
-            </ThemedText>
-          </View>
-        ) : null}
 
         <View style={styles.metaRow}>
           <Ionicons name="star" size={sizes.iconSm} color={colors.starFilled} />
@@ -174,14 +154,6 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  author: {
-    fontSize: fontSizes.body,
   },
   metaRow: {
     flexDirection: 'row',

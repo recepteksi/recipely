@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { RecipeCard } from '@presentation/base/widgets/recipe-card';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface RecipeListItemProps {
-  recipe: Recipe;
+  recipe: RecipeSummary;
   onPress: () => void;
   /** Web-only: enable the hover lift on the underlying `RecipeCard`. */
   hoverEffect?: boolean;
@@ -36,7 +36,6 @@ export const RecipeListItem = ({ recipe, onPress, hoverEffect }: RecipeListItemP
       cuisine={cuisineLabel(recipe.cuisine).name}
       difficulty={recipe.difficulty}
       rating={recipe.rating}
-      tags={recipe.tags}
       likeCount={likeState?.likeCount ?? recipe.likeCount}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       onPress={onPress}

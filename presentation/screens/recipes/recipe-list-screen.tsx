@@ -52,7 +52,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
@@ -341,7 +341,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: Recipe }) => {
+    ({ item }: { item: RecipeSummary }) => {
       if (gridColumns > 1) {
         return (
           <View style={styles.gridCell}>
