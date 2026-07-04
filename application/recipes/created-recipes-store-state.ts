@@ -1,4 +1,5 @@
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
@@ -10,7 +11,14 @@ import type { DeleteRecipeState } from '@application/recipes/delete-recipe-state
 import type { RefineRecipeState } from '@application/recipes/refine-recipe-state';
 
 export interface CreatedRecipesStoreState {
-  recipes: readonly Recipe[];
+  // WHY: `recipes` and `localRecipes` split the two jobs this used to do as
+  // one `Recipe[]` field. `recipes` is the lean list for the "My Recipes"
+  // grid, populated by `loadMyRecipes` (backend now returns RecipeSummary for
+  // /me/recipes). `localRecipes` is the full-detail override cache read by
+  // `findById` (detail/edit screens fall back to a network fetch when an id
+  // isn't present here) and is kept fresh by create/update/delete.
+  recipes: readonly RecipeSummary[];
+  localRecipes: readonly Recipe[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
   // WHY: reuses GenerateRecipeState — the import flow has the identical

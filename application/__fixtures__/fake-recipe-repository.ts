@@ -6,6 +6,7 @@ import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
@@ -29,19 +30,19 @@ export class FakeRecipeRepository implements IRecipeRepository {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
+  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  listTrendingRecipes(_limit?: number): Promise<Result<Recipe[], Failure>> {
+  listTrendingRecipes(_limit?: number): Promise<Result<RecipeSummary[], Failure>> {
     return Promise.resolve(
       this.config.listTrendingRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  listMyRecipes(): Promise<Result<Recipe[], Failure>> {
+  listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
     return Promise.resolve(
       this.config.listMyRecipesResult ?? fail(new UnknownFailure('not configured')),
     );

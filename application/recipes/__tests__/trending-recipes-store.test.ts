@@ -3,41 +3,36 @@ import type { ListTrendingRecipesUseCase } from '@application/recipes/list-trend
 import { NetworkFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (
+  overrides: Partial<Parameters<typeof RecipeSummary.create>[0]> = {},
+): RecipeSummary => {
+  const result = RecipeSummary.create({
     id: 'r1',
     name: 'Stub Recipe',
+    image: 'https://cdn.example.com/r1.webp',
     cuisine: CuisineKey.Italian,
     category: RecipeCategory.Dinner,
     difficulty: Difficulty.Easy,
-    ingredients: ['flour'],
-    instructions: ['mix'],
-    prepTimeMinutes: 10,
-    cookTimeMinutes: 20,
-    servings: 2,
-    caloriesPerServing: 0,
-    image: 'https://cdn.example.com/r1.webp',
-    media: [{ type: 'image', url: 'https://cdn.example.com/r1.webp' }],
+    totalTimeMinutes: 30,
     rating: 4.5,
-    tags: ['quick'],
-    mealType: ['Dinner'],
-    ownerId: 'owner-1',
+    moderationStatus: 'approved',
     likeCount: 0,
     likedByMe: false,
+    commentCount: 0,
     viewCount: 0,
     ...overrides,
   });
-  if (!result.ok) throw new Error('failed to build Recipe fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
   return result.value;
 };
 
 const makeUseCase = (
-  result: Result<Recipe[], Failure>,
+  result: Result<RecipeSummary[], Failure>,
 ): { execute: jest.Mock } => ({
   execute: jest.fn().mockResolvedValue(result),
 });
@@ -54,8 +49,8 @@ describe('trending-recipes-store', () => {
 
   it('transitions through loading to loaded with the recipes on success', async () => {
     const recipes = [makeRecipe({ id: 'r1' }), makeRecipe({ id: 'r2' })];
-    let resolve: (r: Result<Recipe[], Failure>) => void = () => {};
-    const pending = new Promise<Result<Recipe[], Failure>>((r) => {
+    let resolve: (r: Result<RecipeSummary[], Failure>) => void = () => {};
+    const pending = new Promise<Result<RecipeSummary[], Failure>>((r) => {
       resolve = r;
     });
     const useCase = { execute: jest.fn().mockReturnValue(pending) };

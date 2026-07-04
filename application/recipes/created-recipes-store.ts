@@ -1,4 +1,5 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
+import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/created-recipes-store-state';
 import type { CreatedRecipesStoreDeps } from '@application/recipes/created-recipes-store-deps';
 
@@ -7,6 +8,7 @@ export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreStat
 export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): CreatedRecipesStore => {
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
+    localRecipes: [],
     createState: { status: 'idle' },
     generateState: { status: 'idle' },
     importState: { status: 'idle' },
@@ -14,11 +16,36 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     deleteState: { status: 'idle' },
     refineState: { status: 'idle' },
     aiDraft: null,
-    add: (recipe) => set((s) => ({ recipes: [recipe, ...s.recipes] })),
-    remove: (id) => set((s) => ({ recipes: s.recipes.filter((r) => r.id !== id) })),
+    // WHY: localRecipes is the source of truth for `findById`; recipes (the
+    // lean "My Recipes" grid data) is kept in sync alongside it via
+    // `recipeToSummary` so a create/update/delete doesn't need a re-fetch to
+    // show up in both places. The conversion only fails on the
+    // practically-impossible case of an already-valid Recipe producing an
+    // invalid RecipeSummary — skip the lean-list update in that case.
+    add: (recipe) =>
+      set((s) => {
+        const summary = recipeToSummary(recipe);
+        return {
+          localRecipes: [recipe, ...s.localRecipes],
+          recipes: summary.ok ? [summary.value, ...s.recipes] : s.recipes,
+        };
+      }),
+    remove: (id) =>
+      set((s) => ({
+        localRecipes: s.localRecipes.filter((r) => r.id !== id),
+        recipes: s.recipes.filter((r) => r.id !== id),
+      })),
     replace: (recipe) =>
-      set((s) => ({ recipes: s.recipes.map((r) => (r.id === recipe.id ? recipe : r)) })),
-    findById: (id) => get().recipes.find((r) => r.id === id),
+      set((s) => {
+        const summary = recipeToSummary(recipe);
+        return {
+          localRecipes: s.localRecipes.map((r) => (r.id === recipe.id ? recipe : r)),
+          recipes: summary.ok
+            ? s.recipes.map((r) => (r.id === summary.value.id ? summary.value : r))
+            : s.recipes,
+        };
+      }),
+    findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: 'creating' } });
       const result = await deps.createRecipeUseCase.execute(input, onProgress);
@@ -27,10 +54,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         return;
       }
       const recipe = result.value;
-      set((s) => ({
-        createState: { status: 'success', recipe },
-        recipes: [recipe, ...s.recipes],
-      }));
+      get().add(recipe);
+      set({ createState: { status: 'success', recipe } });
     },
     loadMyRecipes: async () => {
       const result = await deps.listMyRecipesUseCase.execute();
@@ -100,7 +125,12 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       const recipe = result.value;
       get().replace(recipe);
       // Propagate the edit to sibling caches so every screen sees fresh data.
-      deps.recipeListStore.getState().replace(recipe);
+      // recipeListStore holds the lean RecipeSummary[] list cache, so the
+      // full Recipe is first converted down to a summary.
+      const summary = recipeToSummary(recipe);
+      if (summary.ok) {
+        deps.recipeListStore.getState().replace(summary.value);
+      }
       deps.recipeDetailStore.getState().replace(recipe);
       set({ updateState: { status: 'success', recipe } });
     },

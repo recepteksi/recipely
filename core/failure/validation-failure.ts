@@ -1,9 +1,16 @@
 import { Failure } from './failure';
+import type { ValidationFieldError } from './validation-field-error';
 
 /**
  * Failure produced when user-supplied input does not pass domain or API
  * validation rules. The optional `field` names the offending input so the UI
  * can highlight the correct form control.
+ *
+ * The backend joins every failing field into one string on `message`, using
+ * the format `"field1: msg1; field2: msg2"` (semicolon-space separated
+ * segments, each `path: message` or just `message` when there is no path).
+ * `field` only ever holds the first offending field for backward
+ * compatibility; use `fieldErrors` to recover the full per-field breakdown.
  */
 export class ValidationFailure extends Failure {
   readonly code = 'validation';
@@ -12,5 +19,25 @@ export class ValidationFailure extends Failure {
     readonly field?: string,
   ) {
     super();
+  }
+
+  /**
+   * Splits `message` into structured per-field entries. Segments are
+   * separated by `'; '`; within a segment, the first `': '` (if present)
+   * separates the field name from its message — otherwise the whole segment
+   * is treated as a fieldless message. Purely additive: `message`/`field`
+   * keep working unchanged for existing callers.
+   */
+  get fieldErrors(): ValidationFieldError[] {
+    return this.message.split('; ').map((segment) => {
+      const separatorIndex = segment.indexOf(': ');
+      if (separatorIndex === -1) {
+        return { message: segment };
+      }
+      return {
+        field: segment.slice(0, separatorIndex),
+        message: segment.slice(separatorIndex + 2),
+      };
+    });
   }
 }

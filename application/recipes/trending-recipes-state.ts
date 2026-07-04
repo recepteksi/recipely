@@ -1,8 +1,8 @@
 import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export type TrendingRecipesState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'loaded'; recipes: Recipe[] }
+  | { status: 'loaded'; recipes: RecipeSummary[] }
   | { status: 'error'; failure: Failure };
