@@ -52,6 +52,24 @@ describe('useAuthGuard', () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
+  it('redirects a guest on a trailing-slash detail path (not exactly one segment)', () => {
+    mockPathname = '/recipes/abc123/';
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fabc123%2F');
+  });
+
+  it('redirects a guest on a nested recipe sub-route (e.g. edit)', () => {
+    mockPathname = '/recipes/abc123/edit';
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fabc123%2Fedit');
+  });
+
   it('redirects a guest on the recipe list route (no trailing segment)', () => {
     mockPathname = '/recipes';
     mockStatus = 'unauthenticated';

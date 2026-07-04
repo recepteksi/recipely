@@ -56,6 +56,20 @@ describe('useGuestGate', () => {
     expect(latest().promptMessage).toBe('Sign in to like this recipe.');
   });
 
+  it('overwrites promptMessage when requestGate is called again with a different message', () => {
+    const { latest } = driveHook(null);
+
+    act(() => {
+      latest().requestGate(jest.fn(), 'Sign in to like this recipe.');
+    });
+    expect(latest().promptMessage).toBe('Sign in to like this recipe.');
+
+    act(() => {
+      latest().requestGate(jest.fn(), 'Sign in to save this recipe.');
+    });
+    expect(latest().promptMessage).toBe('Sign in to save this recipe.');
+  });
+
   it('closePrompt hides the prompt', () => {
     const { latest } = driveHook(null);
 
