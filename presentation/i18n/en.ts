@@ -161,6 +161,7 @@ export const en = {
     difficultyMedium: 'Medium',
     difficultyHard: 'Hard',
     webEmptyBody: 'Try different filters or search terms.',
+    refreshing: 'Refreshing…',
     backToRecipes: 'Back to recipes',
     signInToLike: 'Sign in to like this recipe.',
     signInToSave: 'Sign in to save this recipe.',

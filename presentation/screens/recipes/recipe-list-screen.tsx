@@ -35,11 +35,13 @@ import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-o
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { ErrorState } from '@presentation/base/widgets/error-state';
+import { useRefreshFailureToast } from '@presentation/screens/recipes/use-refresh-failure-toast';
 import {
   failureContent,
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-content';
+import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
 import { TabBar } from '@presentation/base/widgets/tab-bar';
 import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
@@ -211,6 +213,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
     }
     void load(buildApiFilters(filtersRef.current, sortByRef.current));
   }, [language, load, buildApiFilters]);
+
+  // Surfaces a failed filter/sort refetch as a toast (the stale list stays on
+  // screen per the store's design) — see `useRefreshFailureToast` for the
+  // once-per-occurrence transition guard.
+  useRefreshFailureToast(state.status === 'loaded' ? state.refreshFailure : undefined);
 
   const openRecipe = useCallback(
     (id: string) => {
@@ -489,6 +496,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         <WebRecipeGrid
           recipes={filteredRecipes}
           isLoading={state.status !== 'loaded'}
+          isRefreshing={isRecipeListRefreshing(state)}
           isSearching={isSearching}
           activeCuisineLabel={
             filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null
@@ -547,7 +555,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         scrollEventThrottle={16}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRecipeListRefreshing(state)} onRefresh={onRefresh} />}
       />
     );
   }

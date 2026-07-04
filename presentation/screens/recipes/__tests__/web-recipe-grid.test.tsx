@@ -14,6 +14,7 @@
 import {
   renderComponent,
   textContent,
+  allByTestId,
   type RenderResult,
 } from '@presentation/base/test-support/render-component';
 import { WebRecipeGrid } from '@presentation/screens/recipes/web-recipe-grid';
@@ -46,6 +47,7 @@ const baseProps: WebRecipeGridProps = {
   onDifficultyChange: jest.fn(),
   gridColumns: 3,
   isLoading: false,
+  isRefreshing: false,
   onOpenRecipe: jest.fn(),
   isSaved: () => false,
   onToggleSave: jest.fn(),
@@ -73,5 +75,24 @@ describe('WebRecipeGrid — loading', () => {
     expect(texts).toContain(t().recipes.webAllRecipes);
     expect(texts).toContain(t().recipes.noResults);
     expect(texts).toContain(t().recipes.webEmptyBody);
+  });
+});
+
+describe('WebRecipeGrid — background refresh indicator', () => {
+  it('shows a subtle inline spinner (not the full skeleton) while refreshing an already-loaded list', () => {
+    const { root } = renderGrid({ isLoading: false, isRefreshing: true });
+
+    // `ActivityIndicator` forwards `testID` to more than one internal node, so
+    // assert presence rather than an exact count.
+    expect(allByTestId(root, 'web-recipe-grid-refresh-indicator').length).toBeGreaterThan(0);
+    // Section head + (empty-state) chrome stay mounted — no shimmer replaces them.
+    expect(textContent(root)).not.toContain('skeleton-card');
+    expect(textContent(root)).toContain(t().recipes.webAllRecipes);
+  });
+
+  it('hides the spinner when not refreshing', () => {
+    const { root } = renderGrid({ isRefreshing: false });
+
+    expect(allByTestId(root, 'web-recipe-grid-refresh-indicator')).toHaveLength(0);
   });
 });
