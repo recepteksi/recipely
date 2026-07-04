@@ -7,7 +7,6 @@
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/screens/recipes/web-hero-featured-card';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { t } from '@presentation/i18n';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -40,8 +39,6 @@ describe('WebHeroFeaturedCard — author row removed', () => {
 
     const texts = textContent(root);
     expect(texts).toContain(recipe.value.name);
-    expect(texts.some((text) => text.startsWith('by ') || text === t().recipes.heroByAuthor)).toBe(
-      false,
-    );
+    expect(texts.some((text) => text.startsWith('by '))).toBe(false);
   });
 });

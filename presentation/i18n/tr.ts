@@ -151,7 +151,6 @@ export const tr: Translations = {
     aiPromoSubtitle: 'Ne canın istiyorsa anlat — gerisini bana bırak',
     aiStart: 'Başla',
     viewRecipe: 'Tarifi gör',
-    heroByAuthor: '{name} tarafından',
     heroTotalMin: '{n} dk',
     filterByCuisine: 'Bir mutfağa göre filtrele',
     cuisineAll: 'Tümü',

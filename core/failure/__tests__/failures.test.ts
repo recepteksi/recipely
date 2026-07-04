@@ -37,3 +37,33 @@ describe('Failure hierarchy — stable codes', () => {
     expect(new ForbiddenFailure().message.length).toBeGreaterThan(0);
   });
 });
+
+describe('ValidationFailure.fieldErrors', () => {
+  it('treats a single-field message with no separators as one fieldless entry', () => {
+    // WHY: fieldErrors parses only `message`, not the constructor's `field`
+    // argument — a message with no `': '` in it never recovers a field, even
+    // though the failure itself carries one via `.field`.
+    const f = new ValidationFailure('Recipe id must be non-empty', 'id');
+
+    expect(f.fieldErrors).toEqual([{ message: 'Recipe id must be non-empty' }]);
+    expect(f.field).toBe('id');
+  });
+
+  it('splits a multi-field message into per-field entries', () => {
+    const f = new ValidationFailure('name: too short; category: invalid');
+
+    expect(f.fieldErrors).toEqual([
+      { field: 'name', message: 'too short' },
+      { field: 'category', message: 'invalid' },
+    ]);
+  });
+
+  it('treats a segment with no field prefix as fieldless, even alongside fielded segments', () => {
+    const f = new ValidationFailure('name: too short; a general problem');
+
+    expect(f.fieldErrors).toEqual([
+      { field: 'name', message: 'too short' },
+      { message: 'a general problem' },
+    ]);
+  });
+});
