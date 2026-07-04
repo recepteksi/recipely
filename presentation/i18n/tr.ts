@@ -164,6 +164,8 @@ export const tr: Translations = {
     difficultyHard: 'Zor',
     webEmptyBody: 'Farklı filtreler veya arama terimleri deneyin.',
     backToRecipes: 'Tariflere dön',
+    signInToLike: 'Bu tarifi beğenmek için giriş yapın.',
+    signInToSave: 'Bu tarifi kaydetmek için giriş yapın.',
   },
   settings: {
     title: 'Ayarlar',
@@ -435,6 +437,12 @@ export const tr: Translations = {
     total: 'yorum',
     like: 'Yorumu beğen',
     unlike: 'Beğeniyi geri al',
+    signInToLikeComment: 'Bu yorumu beğenmek için giriş yapın.',
+  },
+  signInPrompt: {
+    title: 'Giriş gerekli',
+    message: 'Tarifleri beğenmek, kaydetmek ve yorum yapmak için giriş yapın.',
+    cta: 'Giriş Yap',
   },
   register: {
     title: 'Hesap oluştur',

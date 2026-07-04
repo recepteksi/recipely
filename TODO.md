@@ -77,12 +77,21 @@ Verified against the backend repo before starting — see notes per item.
 
 ## Phase 2 — Guest View Authorization Flows & Deep Linking
 
-- [ ] Public shared recipe preview for guests (backend verified:
+- [x] Public shared recipe preview for guests (backend verified:
       recipely-backend `dd78b76` — `GET /recipes/:id` now public,
-      unpublished filtered by owner). Update route guards so a deep link to
-      a published recipe doesn't bounce guests to login.
-- [ ] Conditional auth-interception CTAs for guest mutation attempts (like,
-      bookmark, comment, "See More").
+      unpublished filtered by owner; re-verified directly against
+      `recipes.routes.ts` that list/trending/mutations still require auth).
+      `presentation/navigation/use-auth-guard.ts` now exempts only the
+      single-recipe detail path (`RECIPE_DETAIL_PATH` regex), not the list.
+- [x] Conditional auth-interception CTAs for guest mutation attempts (like,
+      bookmark, comment, comment-like). New `useGuestGate` hook +
+      `SignInPromptSheet` widget, wired into native (`recipe-detail-screen.tsx`)
+      and web (`web-recipe-detail*.tsx`). **"See More" skipped as N/A** — no
+      such gated-expansion UI exists anywhere in the codebase to retrofit.
+  - Branch `feat/guest-recipe-access`, 3 commits, code-reviewer approved
+    (no blocking findings; 2 minor test gaps it flagged were closed).
+    Quality gate: lint clean, `tsc --noEmit` clean, jest 88 suites / 971
+    tests passing. Not yet merged.
 
 ## Phase 3 — State Lifecycle & Navigational Performance
 

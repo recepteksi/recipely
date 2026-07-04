@@ -4,7 +4,9 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
- * by {@link useAuthGuard}; auth screens and the index splash live here.
+ * by {@link useAuthGuard}; auth screens and the index splash live here. Exact
+ * matches only — dynamic public routes (e.g. recipe detail) are matched
+ * separately by {@link RECIPE_DETAIL_PATH}.
  */
 export const PUBLIC_PATHS = new Set<string>([
   '/',
@@ -15,13 +17,28 @@ export const PUBLIC_PATHS = new Set<string>([
   '/reset-password',
 ]);
 
-const isPublicPath = (pathname: string): boolean => PUBLIC_PATHS.has(pathname);
+/**
+ * The single-recipe detail route (`/recipes/:recipeId`) is public — the
+ * backend serves `GET /recipes/:id` without auth so guests can view a shared
+ * recipe. Deliberately excludes `/recipes` (the list, no trailing segment)
+ * and every other `/recipes/*` sub-route: only exactly one path segment
+ * after `/recipes` matches.
+ */
+const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
+
+const isPublicPath = (pathname: string): boolean =>
+  PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname);
 
 /**
  * Redirects to `/login` whenever the session resolves as unauthenticated (or
  * errored) on a route that requires auth — covers both "never logged in" and
  * "signed out". No-ops while the session is still hydrating (`idle`/`loading`)
  * so a valid session is never bounced on a hard reload / deep link.
+ *
+ * Public routes are exempt: the exact-match set in {@link PUBLIC_PATHS} plus
+ * the recipe-detail dynamic route matched by {@link RECIPE_DETAIL_PATH} (the
+ * only `/recipes/*` path that's public — the list, trending, and every
+ * mutation endpoint still require auth server-side).
  *
  * When bouncing from a gated path worth returning to (i.e. not `/` and not
  * `/login`), a `redirect` query param is appended so that the login screen

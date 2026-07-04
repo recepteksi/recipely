@@ -162,6 +162,8 @@ export const en = {
     difficultyHard: 'Hard',
     webEmptyBody: 'Try different filters or search terms.',
     backToRecipes: 'Back to recipes',
+    signInToLike: 'Sign in to like this recipe.',
+    signInToSave: 'Sign in to save this recipe.',
   },
   settings: {
     title: 'Settings',
@@ -433,6 +435,12 @@ export const en = {
     total: 'comments',
     like: 'Like comment',
     unlike: 'Unlike comment',
+    signInToLikeComment: 'Sign in to like this comment.',
+  },
+  signInPrompt: {
+    title: 'Sign in required',
+    message: 'Sign in to like, save, and comment on recipes.',
+    cta: 'Sign In',
   },
   register: {
     title: 'Create account',
