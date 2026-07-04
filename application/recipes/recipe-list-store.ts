@@ -6,13 +6,31 @@ import type { RecipeListStoreDeps } from '@application/recipes/recipe-list-store
 export type RecipeListStore = UseBoundStore<StoreApi<RecipeListStoreState>>;
 
 export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListStore => {
-  return create<RecipeListStoreState>((set) => ({
+  return create<RecipeListStoreState>((set, get) => ({
     state: { status: 'idle' },
+    // WHY: a filter change while a list is already `loaded` re-fetches in
+    // place — the previous `recipes` stay on screen (with `isRefreshing:
+    // true`) instead of resetting to a data-less `loading` state, so the
+    // header/filter chips a screen renders only in the `loaded` branch
+    // don't get unmounted mid-refetch. The very first load from `idle`
+    // still transitions to plain `loading` (there's nothing to preserve).
+    // A failed refresh keeps showing the stale `recipes` and surfaces the
+    // error via `refreshFailure` rather than blanking the screen.
     load: async (filters?: RecipeFilters) => {
-      set({ state: { status: 'loading' } });
+      const current = get().state;
+      if (current.status === 'loaded') {
+        set({ state: { ...current, isRefreshing: true, refreshFailure: undefined } });
+      } else {
+        set({ state: { status: 'loading' } });
+      }
       const result = await deps.listRecipes.execute(filters);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        set((s) => ({
+          state:
+            s.state.status === 'loaded'
+              ? { ...s.state, isRefreshing: false, refreshFailure: result.failure }
+              : { status: 'error', failure: result.failure },
+        }));
         return;
       }
       set({ state: { status: 'loaded', recipes: result.value } });
