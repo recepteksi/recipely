@@ -95,7 +95,6 @@ export const sizes = {
   fab: 56,
   fabExtendedHeight: 48,
   // Web home (WebRecipesPage) redesign (Jun 2026).
-  heroAvatarSm: 28,
   heroActionBtn: 50,
   heroMiniMinHeight: 205,
   rankBadge: 26,

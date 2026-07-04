@@ -30,6 +30,8 @@ export interface RecipeProps {
   likeCount: number;
   likedByMe: boolean;
   viewCount: number;
+  moderationStatus: string;
+  commentCount: number;
 }
 
 /**
@@ -117,5 +119,11 @@ export class Recipe extends Entity<RecipeProps> {
 
   get viewCount(): number {
     return this.props.viewCount;
+  }
+  get moderationStatus(): string {
+    return this.props.moderationStatus;
+  }
+  get commentCount(): number {
+    return this.props.commentCount;
   }
 }

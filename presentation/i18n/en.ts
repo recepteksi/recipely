@@ -149,7 +149,6 @@ export const en = {
     aiPromoSubtitle: "Describe what you want — I'll handle the rest",
     aiStart: 'Start',
     viewRecipe: 'View recipe',
-    heroByAuthor: 'by {name}',
     heroTotalMin: '{n} min',
     filterByCuisine: 'Filter by a cuisine',
     cuisineAll: 'All',

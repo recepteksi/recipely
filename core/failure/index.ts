@@ -5,6 +5,7 @@ export { UnauthorizedFailure } from './unauthorized-failure';
 export { ForbiddenFailure } from './forbidden-failure';
 export { NotFoundFailure } from './not-found-failure';
 export { ValidationFailure } from './validation-failure';
+export type { ValidationFieldError } from './validation-field-error';
 export { ConflictFailure } from './conflict-failure';
 export { RateLimitFailure } from './rate-limit-failure';
 export { ServerFailure } from './server-failure';

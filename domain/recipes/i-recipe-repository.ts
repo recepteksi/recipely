@@ -1,6 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
@@ -8,10 +9,10 @@ import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 
 export interface IRecipeRepository {
-  listActiveRecipes(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>>;
+  listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>>;
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
-  listTrendingRecipes(limit?: number): Promise<Result<Recipe[], Failure>>;
-  listMyRecipes(): Promise<Result<Recipe[], Failure>>;
+  listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>>;
+  listMyRecipes(): Promise<Result<RecipeSummary[], Failure>>;
   getRecipe(id: string): Promise<Result<Recipe, Failure>>;
   createRecipe(
     input: CreateRecipeInput,

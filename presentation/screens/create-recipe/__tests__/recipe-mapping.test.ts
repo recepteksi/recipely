@@ -35,6 +35,8 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
     likeCount: 0,
     likedByMe: false,
     viewCount: 0,
+    moderationStatus: 'approved',
+    commentCount: 0,
     ...overrides,
   });
 

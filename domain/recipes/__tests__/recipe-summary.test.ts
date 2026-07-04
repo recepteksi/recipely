@@ -1,4 +1,4 @@
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -6,40 +6,38 @@ import { Difficulty } from '@domain/recipes/difficulty';
 const validProps = {
   id: 'r1',
   name: 'Margherita Pizza',
+  image: 'https://cdn.dummyjson.com/recipe-images/1.webp',
   cuisine: CuisineKey.Italian,
   category: RecipeCategory.Dinner,
   difficulty: Difficulty.Easy,
-  ingredients: ['Flour', 'Tomato', 'Mozzarella'],
-  instructions: ['Make dough', 'Add toppings', 'Bake'],
-  prepTimeMinutes: 20,
-  cookTimeMinutes: 15,
-  servings: 4,
-  caloriesPerServing: 320,
-  image: 'https://cdn.dummyjson.com/recipe-images/1.webp',
-  media: [{ type: 'image' as const, url: 'https://cdn.dummyjson.com/recipe-images/1.webp' }],
+  totalTimeMinutes: 35,
   rating: 4.6,
-  tags: ['Pizza', 'Italian'],
-  mealType: ['Dinner'],
-  ownerId: 'o1',
-  likeCount: 0,
-  likedByMe: false,
-  viewCount: 0,
   moderationStatus: 'approved',
-  commentCount: 0,
+  likeCount: 3,
+  likedByMe: true,
+  commentCount: 2,
+  viewCount: 100,
 };
 
-describe('Recipe.create', () => {
+describe('RecipeSummary.create', () => {
   it('accepts valid props', () => {
-    const r = Recipe.create(validProps);
+    const r = RecipeSummary.create(validProps);
 
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.id).toBe('r1');
       expect(r.value.name).toBe('Margherita Pizza');
+      expect(r.value.image).toBe('https://cdn.dummyjson.com/recipe-images/1.webp');
       expect(r.value.cuisine).toBe(CuisineKey.Italian);
       expect(r.value.category).toBe(RecipeCategory.Dinner);
       expect(r.value.difficulty).toBe(Difficulty.Easy);
-      expect(r.value.ingredients).toEqual(['Flour', 'Tomato', 'Mozzarella']);
+      expect(r.value.totalTimeMinutes).toBe(35);
+      expect(r.value.rating).toBe(4.6);
+      expect(r.value.moderationStatus).toBe('approved');
+      expect(r.value.likeCount).toBe(3);
+      expect(r.value.likedByMe).toBe(true);
+      expect(r.value.commentCount).toBe(2);
+      expect(r.value.viewCount).toBe(100);
     }
   });
 
@@ -47,15 +45,15 @@ describe('Recipe.create', () => {
     ['id', { ...validProps, id: ' ' }],
     ['name', { ...validProps, name: '' }],
   ])('rejects blank %s', (field, props) => {
-    const r = Recipe.create(props);
+    const r = RecipeSummary.create(props);
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure.field).toBe(field);
   });
 
   it('entity equality is id-based', () => {
-    const a = Recipe.create(validProps);
-    const b = Recipe.create({ ...validProps, name: 'Different' });
+    const a = RecipeSummary.create(validProps);
+    const b = RecipeSummary.create({ ...validProps, name: 'Different' });
 
     if (a.ok && b.ok) expect(a.value.equals(b.value)).toBe(true);
   });

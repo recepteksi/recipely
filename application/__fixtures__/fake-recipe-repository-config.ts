@@ -1,11 +1,12 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface FakeRecipeRepositoryConfig {
-  listActiveRecipesResult?: Result<Recipe[], Failure>;
-  listTrendingRecipesResult?: Result<Recipe[], Failure>;
-  listMyRecipesResult?: Result<Recipe[], Failure>;
+  listActiveRecipesResult?: Result<RecipeSummary[], Failure>;
+  listTrendingRecipesResult?: Result<RecipeSummary[], Failure>;
+  listMyRecipesResult?: Result<RecipeSummary[], Failure>;
   getRecipeResult?: Result<Recipe, Failure>;
   createRecipeResult?: Result<Recipe, Failure>;
   generateRecipeResult?: Result<Recipe, Failure>;

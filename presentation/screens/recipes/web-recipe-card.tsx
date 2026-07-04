@@ -9,13 +9,13 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 const HOVER_LIFT = 1.02;
 const HOVER_DURATION = 160;
 
 export interface WebRecipeCardProps {
-  recipe: Recipe;
+  recipe: RecipeSummary;
   /** True when the recipe is in the signed-in user's saved set. */
   saved: boolean;
   onOpen: (id: string) => void;
@@ -38,7 +38,7 @@ export const WebRecipeCard = ({
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const scale = useSharedValue(1);
-  const totalMin = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
+  const totalMin = recipe.totalTimeMinutes;
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const hoverProps =
