@@ -122,7 +122,7 @@ export const tr: Translations = {
     maxTime: 'En fazla süre',
     any: 'Hepsi',
     results: 'tarif',
-    clearFilters: 'Temizle',
+    clearFilters: 'Filtreleri Temizle',
     showResults: 'Göster',
     like: 'Beğen',
     unlike: 'Beğeniyi kaldır',
