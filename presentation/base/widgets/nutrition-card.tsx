@@ -79,9 +79,8 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
       </View>
       {fiberValue > 0 ? (
         <View style={[styles.fiberRow, { borderTopColor: colors.border }]}>
-          <ThemedText variant="caption" muted>{strings.fiber}</ThemedText>
           <ThemedText variant="caption" style={{ color: colors.text }}>
-            {`${String(fiberValue)} ${strings.g}`}
+            {strings.fiberValue.replace('{value}', String(fiberValue))}
           </ThemedText>
         </View>
       ) : null}
@@ -111,7 +110,7 @@ const styles = StyleSheet.create({
   },
   fiberRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     marginTop: spacing.sm,
     paddingTop: spacing.sm,

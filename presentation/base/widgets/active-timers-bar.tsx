@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { TimerChip } from '@presentation/base/widgets/timer-chip';
@@ -6,12 +7,35 @@ import { timerStore } from '@application/timers/timer-store';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 
-/** Floating bar showing every active timer across all screens. Tap a chip to open its recipe. */
+/**
+ * Matches the single-recipe detail route (`/recipes/:recipeId`) so this bar
+ * can tell whether a timer belongs to the recipe currently on screen — see
+ * {@link ActiveTimersBar}.
+ */
+const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
+
+/**
+ * Floating bar showing every active timer that isn't already visible inline
+ * on the current screen — tap a chip to open its recipe.
+ *
+ * Mounted once at the root so a timer keeps surfacing (and stays
+ * controllable) while the user navigates away from the recipe that started
+ * it, and so multiple simultaneous timers (prep + cook on one recipe, or
+ * timers across several recipes/instruction steps) are all reachable from
+ * one place. The one case it deliberately hides is a timer for the recipe
+ * whose detail screen is currently open: that timer already has a live
+ * inline countdown (the prep/cook stat segment, or the step's inline chip),
+ * so repeating it here would be a literal on-screen duplicate.
+ */
 export const ActiveTimersBar = (): React.JSX.Element | null => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
   const timers = timerStore((s) => s.timers);
-  const entries = Object.values(timers);
+  const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[1] ?? null;
+  const entries = Object.values(timers).filter(
+    (entry) => entry.recipeId !== currentRecipeId,
+  );
 
   if (entries.length === 0) return null;
 
