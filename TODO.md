@@ -105,26 +105,51 @@ Verified against the backend repo before starting — see notes per item.
       indicator (web) and a one-shot toast on refresh failure. Branch
       `feat/recipe-list-partial-refresh` (PR #129), code-reviewer approved
       (zero findings), merged to `dev`. 91 suites / 991 tests passing.
-- [x] **Profile bio edit → cache/store invalidation — investigated, does NOT
-      reproduce, N/A.** `bio` is only read/written in `edit-profile-screen.tsx`
-      (via `authStore.updateProfile`, which correctly updates the session);
-      it is not displayed anywhere else in the app (not on `profile-screen.tsx`,
-      not on any author card) — confirmed by grep, no display consumer exists.
-      There is no stale-cache bug because there is no display surface to go
-      stale. Confirmed with user: no code change, leave as-is.
+- [x] **Profile bio edit → cache/store invalidation.** Initially investigated
+      and marked N/A (no display surface existed for bio anywhere, so nothing
+      could go stale). **Reopened in Phase 4** once direct tester evidence
+      surfaced ("Profil düzenle kısmında bioma yazdığım şeyi profilde
+      görmüyorum" — expected to see it and didn't): added a bio display to
+      `profile-screen.tsx`, sourced from `authStore`'s already-fresh
+      `session.user.bio`. See Phase 4 for the shipped fix (PR #134).
 
-## Phase 4 — Core Presentation Layout & Responsive UX (screenshots in `~/Desktop/Hatalar/`)
+## Phase 4 — Core Presentation Layout & Responsive UX (screenshots + WhatsApp
+tester feedback in `~/Desktop/Hatalar/`) — all shipped, merged to `dev`
 
-- [ ] Status bar overlapping "Recipes" header/branding on native
-- [ ] Filter bottom sheet: drag handle vs redundant close (X) control
-- [ ] Search results overlay positioned under keyboard, decoupled from
-      scrolling card stack
-- [ ] Prep-time badge wrapping inside recipe instruction rich text
-- [ ] Form field validation — bind parsed per-field errors (Phase 1) to
-      inputs with red border/warning icon
-- [ ] AI assistant viewport height during keyboard show/hide
-- [ ] TR localization — remove fixed heights on theme/option selectors so
-      longer labels wrap without shifting layout
-- [ ] Micro UI cleanup: center filter-count badge, rename "Clear" →
-      "Clear Filters", dedupe author cards, "Fiber: 11g" row formatting,
-      trim palette picker to 3–4 colors
+- [x] Status bar overlapping "Recipely"/"Recipes" header on native — root
+      cause: the absolutely-positioned collapsing header band fell outside
+      its parent SafeAreaView's flow. PR #130.
+- [x] Filter/Share bottom sheet: grabber is now a real swipe+tap-to-dismiss
+      control (RN `PanResponder`, no gesture-handler root needed); redundant
+      header "×" hidden by default now that the grabber is a real dismiss
+      affordance. PR #136.
+- [x] Search results overlay — mobile now swaps the whole body for a
+      dedicated `RecipeSearchOverlay` under the sticky search bar instead of
+      scrolling past the AI banner/cuisine strip. PR #131.
+- [x] Timer badge wrapping inside instruction text — a "45-50 minutes" range
+      was badge-ifying only the trailing number, splitting the sentence;
+      whole ranges are now kept as plain text. PR #132.
+- [x] Form field validation — `ValidationFailure.fieldErrors` (Phase 1) is
+      now bound to Cuisine/Category/Servings/Difficulty/Prep/Cook/
+      Ingredients/Instructions with a red border + inline message, backend
+      field names confirmed against the real Zod validators. PR #135.
+- [x] AI assistant viewport — fixed double-padding against the parent
+      `KeyboardAvoider` during keyboard show/hide; collapse control is now a
+      clearer "X" that also dismisses the keyboard. PR #135.
+- [x] TR localization — theme-palette swatch labels reserve a fixed
+      two-line height instead of a single-line height TR names could
+      overflow. PR #133.
+- [x] Micro UI cleanup: filter-count badge digit centered (lineHeight/
+      includeFontPadding fix); "Clear" renamed to "Clear Filters" (en/tr);
+      "Recipe by" author card moved near the title instead of after
+      nutrition; duplicate floating timer widget deduped against the recipe
+      detail screen's own inline countdown; Fiber row reformatted to a
+      single "Fiber: 11g" string; theme palette trimmed from 19 to 4 colors.
+      PRs #131, #132, #133.
+- [x] **Bonus (not in the original list, found via tester feedback):**
+      profile bio display added (PR #134, reopens the Phase 3 N/A above);
+      pull-to-refresh spinner confirmed already fixed as a side effect of
+      Phase 3 (no separate PR needed).
+
+Deliberately skipped as N/A: "See More" auth-interception (Phase 2 scope) —
+no such gated-expansion UI exists anywhere in the codebase to retrofit.
