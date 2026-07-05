@@ -16,9 +16,8 @@ const flattenStyle = (style: unknown): Record<string, unknown> => {
 };
 
 describe('ThemeGrid — palette size', () => {
-  it('offers at most 4 selectable themes (trimmed from the original 20)', () => {
-    expect(ALL_THEMES.length).toBeGreaterThanOrEqual(3);
-    expect(ALL_THEMES.length).toBeLessThanOrEqual(4);
+  it('offers exactly 4 selectable themes (trimmed from the original 19)', () => {
+    expect(ALL_THEMES.length).toBe(4);
   });
 
   it('keeps the default theme (pearl-white) in the trimmed palette', () => {
