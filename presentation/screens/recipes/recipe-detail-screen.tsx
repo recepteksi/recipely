@@ -403,26 +403,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                       ) : null}
                     </View>
 
-                    <RecipeMetaCard
-                      prepTimeMinutes={recipe.prepTimeMinutes}
-                      cookTimeMinutes={recipe.cookTimeMinutes}
-                      servings={recipe.servings}
-                      difficulty={recipe.difficulty}
-                      recipeId={recipeId}
-                      recipeName={recipe.name}
-                    />
-
-                    {hasNutrition ? (
-                      <>
-                        <SectionHeader title={t().recipes.nutrition} />
-                        <NutritionCard
-                          caloriesPerServing={recipe.caloriesPerServing}
-                          servings={recipe.servings}
-                          nutrition={recipe.nutrition}
-                        />
-                      </>
-                    ) : null}
-
+                    {/* WHY: placed here (right below the title/rating/stats
+                    row) rather than after nutrition — tester feedback flagged
+                    a large empty gap in this spot with the author card
+                    stranded far below; closing that gap here also reads
+                    better since "who made this" belongs near the title. */}
                     {authorState.status === 'loading' ? (
                       <View style={styles.authorSkeleton}>
                         <SkeletonLoader
@@ -442,6 +427,26 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         recipeCount={authorState.author.recipeCount}
                         isOwner={authorState.author.isOwner}
                       />
+                    ) : null}
+
+                    <RecipeMetaCard
+                      prepTimeMinutes={recipe.prepTimeMinutes}
+                      cookTimeMinutes={recipe.cookTimeMinutes}
+                      servings={recipe.servings}
+                      difficulty={recipe.difficulty}
+                      recipeId={recipeId}
+                      recipeName={recipe.name}
+                    />
+
+                    {hasNutrition ? (
+                      <>
+                        <SectionHeader title={t().recipes.nutrition} />
+                        <NutritionCard
+                          caloriesPerServing={recipe.caloriesPerServing}
+                          servings={recipe.servings}
+                          nutrition={recipe.nutrition}
+                        />
+                      </>
                     ) : null}
 
                     {recipe.tags.length > 0 ? (

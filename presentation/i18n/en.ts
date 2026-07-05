@@ -420,6 +420,7 @@ export const en = {
     carbs: 'Carbs',
     fat: 'Fat',
     fiber: 'Fiber',
+    fiberValue: 'Fiber: {value}g',
     kcal: 'kcal',
     g: 'g',
   },

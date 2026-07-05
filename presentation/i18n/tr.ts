@@ -422,6 +422,7 @@ export const tr: Translations = {
     carbs: 'Karbonhidrat',
     fat: 'Yağ',
     fiber: 'Lif',
+    fiberValue: 'Lif: {value}g',
     kcal: 'kcal',
     g: 'g',
   },
