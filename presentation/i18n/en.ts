@@ -327,6 +327,7 @@ export const en = {
     chipHealthier: 'Healthier',
     chipKid: 'Kid-friendly',
     assistant: 'AI assistant',
+    closeAssistant: 'Close AI assistant',
     refineHint: 'Ask for as many changes as you like',
     prep: 'Prep',
     cook: 'Cook',

@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { FieldErrorText } from '@presentation/screens/create-recipe/field-error-text';
 
 export interface SelectTileProps {
   label: string;
@@ -10,6 +11,8 @@ export interface SelectTileProps {
   value: string | null;
   placeholder: string;
   onPress: () => void;
+  /** Backend validation message for this field, if any — renders a red border + inline warning. */
+  error?: string;
 }
 
 /**
@@ -23,37 +26,44 @@ export const SelectTile = ({
   value,
   placeholder,
   onPress,
+  error,
 }: SelectTileProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const hasValue = value !== null;
+  const hasError = error !== undefined;
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${value ?? placeholder}`}
-      style={[styles.tile, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-    >
-      <ThemedText variant="caption" style={[styles.label, { color: colors.textMuted }]}>
-        {label.toUpperCase()}
-      </ThemedText>
-      <View style={styles.valueRow}>
-        <ThemedText style={styles.emoji}>{emoji}</ThemedText>
-        <ThemedText
-          variant="body"
-          numberOfLines={1}
-          style={[styles.value, { color: hasValue ? colors.text : colors.textMuted }]}
-        >
-          {value ?? placeholder}
+    <View style={styles.wrapper}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${value ?? placeholder}`}
+        style={[styles.tile, { backgroundColor: colors.surface, borderColor: hasError ? colors.danger : colors.cardBorder }]}
+      >
+        <ThemedText variant="caption" style={[styles.label, { color: colors.textMuted }]}>
+          {label.toUpperCase()}
         </ThemedText>
-        <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.textMuted} style={styles.chevron} />
-      </View>
-    </Pressable>
+        <View style={styles.valueRow}>
+          <ThemedText style={styles.emoji}>{emoji}</ThemedText>
+          <ThemedText
+            variant="body"
+            numberOfLines={1}
+            style={[styles.value, { color: hasValue ? colors.text : colors.textMuted }]}
+          >
+            {value ?? placeholder}
+          </ThemedText>
+          <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.textMuted} style={styles.chevron} />
+        </View>
+      </Pressable>
+      {hasError ? <FieldErrorText message={error} /> : null}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  tile: {
+  wrapper: {
     flex: 1,
+  },
+  tile: {
     borderRadius: radii.lg,
     borderWidth: 1,
     paddingHorizontal: spacing.md,

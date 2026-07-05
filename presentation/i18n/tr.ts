@@ -329,6 +329,7 @@ export const tr: Translations = {
     chipHealthier: 'Daha sağlıklı',
     chipKid: 'Çocuk dostu',
     assistant: 'AI asistan',
+    closeAssistant: 'AI asistanını kapat',
     refineHint: 'İstediğin kadar değişiklik isteyebilirsin',
     prep: 'Hazırlık',
     cook: 'Pişirme',

@@ -28,7 +28,7 @@ import {
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/recipe-mapping';
-import { showErrorToast } from '@presentation/base/feedback/show-toast';
+import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
 import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
@@ -38,6 +38,13 @@ import { PhotosSheet } from '@presentation/screens/create-recipe/photos-sheet';
 import { ExitSheet } from '@presentation/screens/create-recipe/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { Phase } from '@presentation/screens/create-recipe/phase';
+import { ValidationFailure, type Failure } from '@core/failure';
+import {
+  mapFieldErrorsToInputs,
+  NO_CREATE_RECIPE_FIELD_ERRORS,
+} from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';
+import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/create-recipe-field-key';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
@@ -118,6 +125,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const [chatInput, setChatInput] = useState('');
   const [chatExpanded, setChatExpanded] = useState(false);
   const [missingMessage, setMissingMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<CreateRecipeFieldErrors>(NO_CREATE_RECIPE_FIELD_ERRORS);
   const [photosOpen, setPhotosOpen] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
 
@@ -261,46 +269,86 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     router.replace({ pathname: '/create-recipe', params: { draftId: latestDraft.id } });
   }, [latestDraft, router]);
 
+  // Clears a single field's inline validation error once the user edits it,
+  // leaving any other still-invalid fields highlighted.
+  const clearFieldError = useCallback((key: CreateRecipeFieldKey): void => {
+    setFieldErrors((prev) => {
+      if (prev.fields[key] === undefined) return prev;
+      const nextFields: CreateRecipeFieldErrors['fields'] = { ...prev.fields };
+      delete nextFields[key];
+      return { ...prev, fields: nextFields };
+    });
+  }, []);
+
+  // WHY: a `ValidationFailure` carries a per-field breakdown (`fieldErrors`) the
+  // generic toast never surfaced — nothing on the form was ever highlighted, so
+  // "Check the highlighted fields" pointed at nothing. This binds each entry to
+  // its matching input (red border + inline message) in addition to the toast;
+  // entries this screen has no input for still reach the user via a toast
+  // instead of being silently dropped.
+  const surfaceSaveFailure = useCallback((failure: Failure): void => {
+    showErrorToast(failure);
+    if (!(failure instanceof ValidationFailure)) {
+      setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
+      return;
+    }
+    const parsed = mapFieldErrorsToInputs(failure.fieldErrors);
+    setFieldErrors(parsed);
+    if (parsed.unmatched.length > 0) {
+      showToast({ severity: 'danger', message: parsed.unmatched.join(' ') });
+    }
+  }, []);
+
   const updateField = useCallback(
-    <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]): void =>
-      setRecipe((r) => ({ ...r, [key]: value })),
-    [],
+    <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]): void => {
+      setRecipe((r) => ({ ...r, [key]: value }));
+      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKey);
+    },
+    [clearFieldError],
   );
 
   const changeIngredient = useCallback(
-    (i: number, value: string): void =>
-      setRecipe((r) => ({ ...r, ingredients: r.ingredients.map((x, idx) => (idx === i ? value : x)) })),
-    [],
+    (i: number, value: string): void => {
+      setRecipe((r) => ({ ...r, ingredients: r.ingredients.map((x, idx) => (idx === i ? value : x)) }));
+      clearFieldError('ingredients');
+    },
+    [clearFieldError],
   );
   const removeIngredient = useCallback(
-    (i: number): void =>
+    (i: number): void => {
       setRecipe((r) => ({
         ...r,
         ingredients: r.ingredients.length <= 1 ? [''] : r.ingredients.filter((_, idx) => idx !== i),
-      })),
-    [],
+      }));
+      clearFieldError('ingredients');
+    },
+    [clearFieldError],
   );
-  const addIngredient = useCallback(
-    (): void => setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, ''] })),
-    [],
-  );
+  const addIngredient = useCallback((): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, ''] }));
+    clearFieldError('ingredients');
+  }, [clearFieldError]);
   const changeStep = useCallback(
-    (i: number, value: string): void =>
-      setRecipe((r) => ({ ...r, instructions: r.instructions.map((x, idx) => (idx === i ? value : x)) })),
-    [],
+    (i: number, value: string): void => {
+      setRecipe((r) => ({ ...r, instructions: r.instructions.map((x, idx) => (idx === i ? value : x)) }));
+      clearFieldError('instructions');
+    },
+    [clearFieldError],
   );
   const removeStep = useCallback(
-    (i: number): void =>
+    (i: number): void => {
       setRecipe((r) => ({
         ...r,
         instructions: r.instructions.length <= 1 ? [''] : r.instructions.filter((_, idx) => idx !== i),
-      })),
-    [],
+      }));
+      clearFieldError('instructions');
+    },
+    [clearFieldError],
   );
-  const addStep = useCallback(
-    (): void => setRecipe((r) => ({ ...r, instructions: [...r.instructions, ''] })),
-    [],
-  );
+  const addStep = useCallback((): void => {
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, ''] }));
+    clearFieldError('instructions');
+  }, [clearFieldError]);
 
   const addMedia = useCallback(
     (items: MediaItem[]): void => setRecipe((r) => ({ ...r, media: [...r.media, ...items] })),
@@ -335,6 +383,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       return;
     }
     setMissingMessage(null);
+    setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
     const locale = getLocale();
     const cleanInstructions = recipe.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
     const input: CreateRecipeInput = {
@@ -370,10 +419,10 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     // trace was a console 4xx. Surface it as a toast so the user always gets a
     // reaction, then reset so the button is tappable again.
     if (state.status === 'error') {
-      showErrorToast(state.failure);
+      surfaceSaveFailure(state.failure);
       createdRecipesStore.getState().resetCreateState();
     }
-  }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router]);
+  }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router, surfaceSaveFailure]);
 
   const handleUpdate = useCallback(async (): Promise<void> => {
     if (recipeId === undefined) return;
@@ -383,6 +432,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       return;
     }
     setMissingMessage(null);
+    setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
     const locale = getLocale();
     const cleanInstructions = recipe.instructions.map((s) => s.trim()).filter((s) => s.length > 0);
     const images = recipe.media.filter((m) => m.type === 'image');
@@ -410,10 +460,10 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       return;
     }
     if (state.status === 'error') {
-      showErrorToast(state.failure);
+      surfaceSaveFailure(state.failure);
       createdRecipesStore.getState().resetUpdateState();
     }
-  }, [recipe, recipeId, createdRecipesStore, router]);
+  }, [recipe, recipeId, createdRecipesStore, router, surfaceSaveFailure]);
 
   const handleSave = useCallback((): void => {
     if (isEditMode) void handleUpdate();
@@ -565,6 +615,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           <RecipePreviewEditor
             recipe={recipe}
             missingMessage={missingMessage}
+            fieldErrors={fieldErrors.fields}
             onChangeName={(v) => updateField('name', v)}
             onChangeCuisine={(v) => updateField('cuisine', v)}
             onChangeCategory={(v) => updateField('category', v)}
