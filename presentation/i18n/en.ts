@@ -8,6 +8,8 @@ export const en = {
     cancel: 'Cancel',
     of: 'of',
     clear: 'Clear',
+    close: 'Close',
+    closeHint: 'Double tap or swipe down to close',
   },
   errors: {
     retry: 'Try again',
@@ -134,7 +136,6 @@ export const en = {
     closeFilter: 'Close filters',
     share: 'Share recipe',
     shareTitle: 'Share recipe',
-    shareDone: 'Done',
     shareChannelMessage: 'Message',
     shareChannelEmail: 'Email',
     shareChannelMore: 'More',

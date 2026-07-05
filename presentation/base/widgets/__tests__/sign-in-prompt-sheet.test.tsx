@@ -5,9 +5,20 @@
  */
 
 import { act } from 'react-test-renderer';
-import { byRole, renderComponent, textContent } from '@presentation/base/test-support/render-component';
+import { renderComponent, textContent, type RenderResult } from '@presentation/base/test-support/render-component';
 import { SignInPromptSheet } from '@presentation/base/widgets/sign-in-prompt-sheet';
 import { t } from '@presentation/i18n';
+
+/**
+ * The sheet's shared `BottomSheet` grabber also has `accessibilityRole="button"`
+ * (see `bottom-sheet.tsx`), so a plain role lookup now matches two nodes here
+ * — the primary "Sign In" button is the one with a real `onPress` (the
+ * grabber only wires `onAccessibilityTap`).
+ */
+const primaryButton = (root: RenderResult['root']) =>
+  root.findAll(
+    (node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function',
+  )[0];
 
 describe('SignInPromptSheet', () => {
   it('renders the generic title and message when no per-action message is given', () => {
@@ -41,7 +52,7 @@ describe('SignInPromptSheet', () => {
       <SignInPromptSheet visible onClose={jest.fn()} onSignIn={onSignIn} />,
     );
 
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
+    act(() => (primaryButton(root).props.onPress as () => void)());
 
     expect(onSignIn).toHaveBeenCalledTimes(1);
   });

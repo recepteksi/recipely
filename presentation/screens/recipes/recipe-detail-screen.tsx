@@ -694,7 +694,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       <BottomSheet
         visible={showDeleteSheet}
         title={t().myRecipes.deleteConfirmTitle}
-        hideCloseButton
         onClose={() => { setShowDeleteSheet(false); setDeleteError(null); }}
       >
         <ThemedText variant="body" muted style={styles.deleteSheetBody}>
