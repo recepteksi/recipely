@@ -19,6 +19,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
+import { RecipeSearchOverlay } from '@presentation/screens/recipes/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
 import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
@@ -254,8 +255,10 @@ export const RecipeListScreen = (): React.JSX.Element => {
     (filters.maxTime > 0 ? 1 : 0);
 
   const effectiveSearch = isWebShell ? webSearchQuery : search;
-  // On web, searching hides the editorial hero / banner / cuisine sections.
-  const isSearching = webSearchQuery.trim().length > 0;
+  // Searching hides the editorial hero / banner / cuisine sections (web) or
+  // swaps the whole body for a dedicated results surface (mobile) — see the
+  // `isSearching` body branch below and `RecipeSearchOverlay`.
+  const isSearching = effectiveSearch.trim().length > 0;
 
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
@@ -520,17 +523,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   } else if (state.status === 'idle' || state.status === 'loading') {
     // Mobile first/refresh load: full-screen stacked skeleton.
     body = <LoadingSkeleton />;
+  } else if (isSearching) {
+    // Mobile: dedicated search-results surface. Replaces the AI banner / cuisine
+    // strip / normal grid entirely so results render directly under the sticky
+    // search bar instead of requiring a scroll past unrelated sections (also
+    // owns its own zero-results empty state).
+    body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={openRecipe} />;
   } else if (filteredRecipes.length === 0) {
     body = (
       <View style={styles.center}>
-        {state.recipes.length === 0
-          ? <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
-          : <Ionicons name="search" size={48} color={colors.textMuted} />
-        }
+        <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
-          {activeFilterCount > 0 || search.trim().length > 0
-            ? t().recipes.noResults
-            : t().recipes.empty}
+          {activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
         <View style={styles.retryButton}>
           {activeFilterCount > 0 ? (
@@ -561,9 +565,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
   }
 
   // The mobile loaded feed embeds its own header (banner/cuisines/count/chips) and
-  // sits under the collapsing band; the other states render below the band via
-  // bodyTopInset so the skeleton / error / empty view isn't hidden behind it.
-  const isMobileLoadedFeed = !isWebShell && state.status === 'loaded' && filteredRecipes.length > 0;
+  // sits under the collapsing band; the other states — including the search
+  // overlay, which needs to clear the band itself — render below the band via
+  // bodyTopInset so they're never hidden behind it.
+  const isMobileLoadedFeed =
+    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > 0;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>

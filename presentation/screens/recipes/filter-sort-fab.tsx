@@ -130,7 +130,9 @@ export const FilterSortFab = ({
 
       {activeCount > 0 ? (
         <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-          <ThemedText style={styles.badgeText}>{badgeText}</ThemedText>
+          <ThemedText style={styles.badgeText} numberOfLines={1}>
+            {badgeText}
+          </ThemedText>
         </View>
       ) : null}
     </Animated.View>
@@ -182,6 +184,9 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#FFFFFF',
     fontSize: fontSizes.nano,
+    lineHeight: fontSizes.nano,
     fontWeight: '700',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
 });

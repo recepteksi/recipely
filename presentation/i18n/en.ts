@@ -120,7 +120,7 @@ export const en = {
     maxTime: 'Max time',
     any: 'Any',
     results: 'recipes',
-    clearFilters: 'Clear',
+    clearFilters: 'Clear Filters',
     showResults: 'Show',
     like: 'Like',
     unlike: 'Unlike',

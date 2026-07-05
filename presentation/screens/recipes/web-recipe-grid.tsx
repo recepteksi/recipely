@@ -126,7 +126,10 @@ export const WebRecipeGrid = ({
         </ThemedText>
         {activeFilterCount > 0 ? (
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
-            <ThemedText style={[styles.filterBadgeText, { color: colors.primaryText }]}>
+            <ThemedText
+              style={[styles.filterBadgeText, { color: colors.primaryText }]}
+              numberOfLines={1}
+            >
               {activeFilterCount}
             </ThemedText>
           </View>
@@ -227,7 +230,10 @@ const styles = StyleSheet.create({
   },
   filterBadgeText: {
     fontSize: fontSizes.micro,
+    lineHeight: fontSizes.micro,
     fontWeight: '700',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   segment: {
     flexDirection: 'row',
