@@ -126,6 +126,7 @@ export const ProfileScreen = (): React.JSX.Element => {
               <Pressable
                 onPress={() => router.push('/edit-profile')}
                 style={styles.bioPrompt}
+                hitSlop={spacing.sm}
                 accessibilityRole="button"
                 accessibilityLabel={t().profile.addBioPrompt}
               >
