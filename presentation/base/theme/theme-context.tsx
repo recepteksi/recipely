@@ -2,21 +2,30 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
-import { getThemeColors } from './themes';
-import type { ThemeId } from '@presentation/base/theme/theme-id';
+import { ALL_THEMES, getThemeColors } from './themes';
+import { DEFAULT_THEME_ID, type ThemeId } from '@presentation/base/theme/theme-id';
 import type { ThemeColors } from '@presentation/base/theme/theme-colors';
 import type { ThemePreference } from '@presentation/base/theme/theme-preference';
 import type { EffectiveScheme } from '@presentation/base/theme/effective-scheme';
 import type { ThemeContextValue } from '@presentation/base/theme/theme-context-value';
 
 const ThemeContext = createContext<ThemeContextValue>({
-  themeId: 'pearl-white',
+  themeId: DEFAULT_THEME_ID,
   preference: 'system',
   scheme: 'light',
   colors: {} as ThemeColors,
   setThemeId: () => {},
   setPreference: () => {},
 });
+
+/**
+ * Guards against a `theme_id` value persisted before the palette was trimmed
+ * (or otherwise corrupted) — anything no longer in `ALL_THEMES` would make
+ * `getThemeColors` throw on an undefined lookup, so callers must fall back to
+ * the default rather than trusting storage blindly.
+ */
+const isKnownThemeId = (value: string): value is ThemeId =>
+  (ALL_THEMES as string[]).includes(value);
 
 export interface AppThemeProviderProps {
   children: ReactNode;
@@ -28,15 +37,16 @@ const isThemePreference = (v: string): v is ThemePreference =>
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
   const hydrated = useIsHydrated();
-  const [themeId, setThemeIdState] = useState<ThemeId>('pearl-white');
+  const [themeId, setThemeIdState] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   // Load persisted theme + preference on mount
   useEffect(() => {
     void kvStore.getItem('theme_id').then((stored) => {
-      if (stored) {
-        setThemeIdState(stored as ThemeId);
-      }
+      // A previously-persisted theme may no longer be part of the palette
+      // (e.g. after trimming it down) — fall back to the default instead of
+      // handing an unknown id to `getThemeColors`, which would crash.
+      setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
     void kvStore.getItem('theme_preference').then((stored) => {
       if (stored !== null && isThemePreference(stored)) {

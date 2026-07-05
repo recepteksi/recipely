@@ -73,14 +73,6 @@ const hueFamily = (hex: string): HueFamily => {
   return 'b';
 };
 
-const SIBLING_GROUPS: Record<string, ThemeId[]> = {
-  reds: ['crimson-ember', 'rose-quartz', 'coral-reef'],
-  oranges: ['amber-sunset', 'tangerine-dream'],
-  greens: ['lime-zest', 'emerald-garden', 'mint-breeze', 'chartreuse-zap'],
-  blues: ['pearl-white', 'cyan-frost', 'ocean-deep', 'teal-lagoon'],
-  purples: ['indigo-night', 'violet-bloom', 'royal-purple', 'fuchsia-flash', 'lavender-mist'],
-};
-
 const SIBLING_LUMINANCE_DELTA = 0.0015;
 
 describe('themes — backgrounds are distinct (regression)', () => {
@@ -88,9 +80,10 @@ describe('themes — backgrounds are distinct (regression)', () => {
     const backgrounds = ALL_THEMES.map((id) => getThemeColors(id, variant).background);
     const distinct = new Set(backgrounds);
 
-    expect(backgrounds).toHaveLength(20);
-    expect(distinct.size).toBeGreaterThan(1);
-    expect(distinct.size).toBeGreaterThanOrEqual(18);
+    // Palette was trimmed to 4 maximally-distinct hues (blue/red/green/purple)
+    // — every background should be unique, not just "mostly" distinct.
+    expect(backgrounds).toHaveLength(4);
+    expect(distinct.size).toBe(4);
   });
 
   it('dark themes do not all share #0B0B0D', () => {
@@ -158,31 +151,32 @@ describe.each(themeVariantCases)('themes — onOverlay over photo backdrop — $
   });
 });
 
-describe('themes — sibling palette distinctness (regression)', () => {
-  for (const [groupName, ids] of Object.entries(SIBLING_GROUPS)) {
-    for (const variant of VARIANTS) {
-      for (let i = 0; i < ids.length; i += 1) {
-        for (let j = i + 1; j < ids.length; j += 1) {
-          const a = ids[i];
-          const b = ids[j];
-          it(`${groupName} ${variant}: ${a} vs ${b} are visually distinct`, () => {
-            const aBg = stripAlpha(getThemeColors(a, variant).background);
-            const bBg = stripAlpha(getThemeColors(b, variant).background);
-            const lumA = relativeLuminance(aBg);
-            const lumB = relativeLuminance(bBg);
-            const lumDelta = Math.abs(lumA - lumB);
-            const hueA = hueFamily(aBg);
-            const hueB = hueFamily(bBg);
-            const distinct = lumDelta >= SIBLING_LUMINANCE_DELTA || hueA !== hueB;
+describe('themes — palette-wide distinctness (regression)', () => {
+  // Trimmed to 4 themes chosen specifically to sit in different hue families
+  // (blue / red / green / purple) — every pair, not just curated "siblings",
+  // must read as visually distinct.
+  for (const variant of VARIANTS) {
+    for (let i = 0; i < ALL_THEMES.length; i += 1) {
+      for (let j = i + 1; j < ALL_THEMES.length; j += 1) {
+        const a = ALL_THEMES[i];
+        const b = ALL_THEMES[j];
+        it(`${variant}: ${a} vs ${b} are visually distinct`, () => {
+          const aBg = stripAlpha(getThemeColors(a, variant).background);
+          const bBg = stripAlpha(getThemeColors(b, variant).background);
+          const lumA = relativeLuminance(aBg);
+          const lumB = relativeLuminance(bBg);
+          const lumDelta = Math.abs(lumA - lumB);
+          const hueA = hueFamily(aBg);
+          const hueB = hueFamily(bBg);
+          const distinct = lumDelta >= SIBLING_LUMINANCE_DELTA || hueA !== hueB;
 
-            if (!distinct) {
-              throw new Error(
-                `siblings ${a} ${variant} (${aBg} L=${lumA.toFixed(4)} ${hueA}-dominant) and ${b} ${variant} (${bBg} L=${lumB.toFixed(4)} ${hueB}-dominant): same luminance AND same hue family — visually identical`,
-              );
-            }
-            expect(distinct).toBe(true);
-          });
-        }
+          if (!distinct) {
+            throw new Error(
+              `${a} ${variant} (${aBg} L=${lumA.toFixed(4)} ${hueA}-dominant) and ${b} ${variant} (${bBg} L=${lumB.toFixed(4)} ${hueB}-dominant): same luminance AND same hue family — visually identical`,
+            );
+          }
+          expect(distinct).toBe(true);
+        });
       }
     }
   }

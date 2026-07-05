@@ -1,21 +1,12 @@
 export type ThemeId =
-  | 'midnight-slate'
   | 'pearl-white'
   | 'crimson-ember'
-  | 'amber-sunset'
-  | 'golden-hour'
-  | 'lime-zest'
   | 'emerald-garden'
-  | 'teal-lagoon'
-  | 'cyan-frost'
-  | 'ocean-deep'
-  | 'indigo-night'
-  | 'violet-bloom'
-  | 'royal-purple'
-  | 'fuchsia-flash'
-  | 'rose-quartz'
-  | 'coral-reef'
-  | 'mint-breeze'
-  | 'tangerine-dream'
-  | 'lavender-mist'
-  | 'chartreuse-zap';
+  | 'royal-purple';
+
+/**
+ * Theme applied to a fresh install and used as the fallback when a persisted
+ * `theme_id` no longer exists in the palette (e.g. after trimming the list of
+ * selectable themes) — see `theme-context.tsx`.
+ */
+export const DEFAULT_THEME_ID: ThemeId = 'pearl-white';
