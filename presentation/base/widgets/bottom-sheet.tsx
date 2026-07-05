@@ -1,31 +1,40 @@
 import { type ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { BottomSheetHeader } from '@presentation/base/widgets/bottom-sheet-header';
 import { useTheme } from '@presentation/base/theme/theme-context';
+import { useDragToDismiss } from '@presentation/base/hooks/use-drag-to-dismiss';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
 
 export interface BottomSheetProps {
   visible: boolean;
   title: string;
   onClose: () => void;
-  hideCloseButton?: boolean;
+  /**
+   * Shows the header "×" close button. Defaults to hidden: the grabber
+   * (tap or drag) is the app's single dismiss affordance, on top of the
+   * backdrop tap — see `use-drag-to-dismiss.ts`. Opt in only where a call
+   * site genuinely needs a second, always-visible close control.
+   */
+  showCloseButton?: boolean;
   rightAction?: { label: string; onPress: () => void };
   children: ReactNode;
 }
 
-/** Modal bottom sheet with a grabber, header, optional close button, and scrollable content area. */
+/** Modal bottom sheet with a draggable grabber, header, optional close button, and scrollable content area. */
 export const BottomSheet = ({
   visible,
   title,
   onClose,
-  hideCloseButton = false,
+  showCloseButton = false,
   rightAction,
   children,
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { translateY, panHandlers } = useDragToDismiss(onClose, visible);
 
   return (
     <Modal
@@ -37,51 +46,39 @@ export const BottomSheet = ({
     >
       <KeyboardAvoider style={styles.root}>
         <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
-        <View
+        <Animated.View
           style={[
             styles.sheet,
             {
               backgroundColor: colors.background,
               paddingBottom: Math.max(insets.bottom, spacing.lg),
+              transform: [{ translateY }],
             },
           ]}
         >
-          <View style={styles.grabberWrap}>
+          <View
+            {...panHandlers}
+            style={styles.grabberWrap}
+            accessible
+            accessibilityRole="adjustable"
+            accessibilityLabel={t().common.close}
+            onAccessibilityTap={onClose}
+          >
             <View style={[styles.grabber, { backgroundColor: colors.border }]} />
           </View>
-          <View style={styles.header}>
-            {hideCloseButton ? (
-              <View style={styles.headerSide} />
-            ) : (
-              <Pressable onPress={onClose} hitSlop={8} style={styles.headerSide}>
-                <ThemedText variant="body" muted>×</ThemedText>
-              </Pressable>
-            )}
-            <ThemedText variant="subtitle">{title}</ThemedText>
-            {rightAction !== undefined ? (
-              <Pressable
-                onPress={rightAction.onPress}
-                hitSlop={8}
-                style={[styles.headerSide, styles.headerRight]}
-              >
-                <ThemedText
-                  variant="body"
-                  style={[styles.rightActionLabel, { color: colors.primary }]}
-                >
-                  {rightAction.label}
-                </ThemedText>
-              </Pressable>
-            ) : (
-              <View style={[styles.headerSide, styles.headerRight]} />
-            )}
-          </View>
+          <BottomSheetHeader
+            title={title}
+            onClose={onClose}
+            showCloseButton={showCloseButton}
+            rightAction={rightAction}
+          />
           <ScrollView
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
             {children}
           </ScrollView>
-        </View>
+        </Animated.View>
       </KeyboardAvoider>
     </Modal>
   );
@@ -109,23 +106,6 @@ const styles = StyleSheet.create({
     width: sizes.iconBtn,
     height: spacing.xs,
     borderRadius: radii.xs,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  headerSide: {
-    minWidth: 50,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  rightActionLabel: {
-    fontWeight: '600',
   },
   content: {
     paddingHorizontal: spacing.lg,

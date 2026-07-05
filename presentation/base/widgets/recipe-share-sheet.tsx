@@ -86,8 +86,6 @@ export const RecipeShareSheet = ({
       visible={visible}
       title={t().recipes.shareTitle}
       onClose={onClose}
-      hideCloseButton
-      rightAction={{ label: t().recipes.shareDone, onPress: onClose }}
     >
       {/* Recipe preview card */}
       <View

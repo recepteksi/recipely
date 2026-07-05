@@ -10,6 +10,7 @@ export const tr: Translations = {
     cancel: 'İptal',
     of: '/',
     clear: 'Temizle',
+    close: 'Kapat',
   },
   errors: {
     retry: 'Tekrar dene',
@@ -136,7 +137,6 @@ export const tr: Translations = {
     closeFilter: 'Filtreleri kapat',
     share: 'Tarifi paylaş',
     shareTitle: 'Tarifi paylaş',
-    shareDone: 'Kapat',
     shareChannelMessage: 'Mesaj',
     shareChannelEmail: 'E-posta',
     shareChannelMore: 'Diğer',
