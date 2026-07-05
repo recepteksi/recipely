@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import {
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import { useKeyboardVisible } from '@presentation/screens/create-recipe/use-keyboard-visible';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];
@@ -47,10 +49,22 @@ export const RefineDock = ({
   const colors = useTheme().colors;
   const scrollRef = useRef<ScrollView>(null);
   const canSend = chatInput.trim().length > 0 && !refining;
+  // WHY: `KeyboardAvoidingView` (in the parent screen) already pads its content
+  // up flush with the keyboard's top edge once shown — that alone clears the
+  // home indicator area too, since the keyboard occludes it. Adding the fixed
+  // `bottomInset` (needed only while the keyboard is hidden) on top of that
+  // padding left a visible gap between the input and the keyboard.
+  const keyboardVisible = useKeyboardVisible();
+  const resolvedBottomInset = keyboardVisible ? 0 : bottomInset;
 
   const submitFreeText = (): void => {
     if (!canSend) return;
     onSubmit(chatInput.trim());
+  };
+
+  const closeAssistant = (): void => {
+    Keyboard.dismiss();
+    onCollapse();
   };
 
   return (
@@ -75,13 +89,13 @@ export const RefineDock = ({
               </ThemedText>
             </View>
             <Pressable
-              onPress={onCollapse}
+              onPress={closeAssistant}
               hitSlop={8}
               style={styles.collapseBtn}
               accessibilityRole="button"
-              accessibilityLabel={t().createRecipe.assistant}
+              accessibilityLabel={t().createRecipe.closeAssistant}
             >
-              <Ionicons name="chevron-down" size={sizes.iconSm} color={colors.textMuted} />
+              <Ionicons name="close" size={sizes.iconSm} color={colors.textMuted} />
             </Pressable>
           </View>
           <ScrollView
@@ -173,7 +187,7 @@ export const RefineDock = ({
         })}
       </ScrollView>
 
-      <View style={[styles.inputRow, { paddingBottom: bottomInset + spacing.md }]}>
+      <View style={[styles.inputRow, { paddingBottom: resolvedBottomInset + spacing.md }]}>
         <View style={[styles.inputField, { backgroundColor: colors.background, borderColor: colors.inputBorder }]}>
           <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primary} />
           <TextInput

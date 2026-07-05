@@ -17,10 +17,15 @@ import { SelectTile } from '@presentation/screens/create-recipe/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/screens/create-recipe/taxonomy-picker-sheet';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
+import { FieldErrorText } from '@presentation/screens/create-recipe/field-error-text';
+import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
   missingMessage: string | null;
+  /** Per-field backend validation messages, keyed by input — highlights the offending fields. */
+  fieldErrors?: CreateRecipeFieldErrors['fields'];
   onChangeName: (value: string) => void;
   onChangeCuisine: (value: string) => void;
   onChangeCategory: (value: string) => void;
@@ -53,6 +58,7 @@ const clamp = (value: number, min: number, max: number): number =>
 export const RecipePreviewEditor = ({
   recipe,
   missingMessage,
+  fieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS.fields,
   onChangeName,
   onChangeCuisine,
   onChangeCategory,
@@ -101,8 +107,15 @@ export const RecipePreviewEditor = ({
             onChangeText={onChangeName}
             placeholder={t().createRecipe.namePlaceholder}
             placeholderTextColor={colors.textMuted}
-            style={[styles.nameInput, { color: colors.text }]}
+            style={[
+              styles.nameInput,
+              { color: colors.text },
+              fieldErrors.name !== undefined
+                ? { borderWidth: 1.5, borderColor: colors.danger, borderRadius: radii.md, padding: spacing.sm }
+                : null,
+            ]}
           />
+          {fieldErrors.name !== undefined ? <FieldErrorText message={fieldErrors.name} /> : null}
           <View style={styles.taxonomyRow}>
             <SelectTile
               label={t().createRecipe.cuisineLabel}
@@ -110,6 +123,7 @@ export const RecipePreviewEditor = ({
               value={cuisine?.name ?? null}
               placeholder={t().createRecipe.selectCuisine}
               onPress={() => setPicker('cuisine')}
+              error={fieldErrors.cuisine}
             />
             <SelectTile
               label={t().createRecipe.categoryLabel}
@@ -117,12 +131,13 @@ export const RecipePreviewEditor = ({
               value={category.name}
               placeholder={t().createRecipe.selectCategory}
               onPress={() => setPicker('category')}
+              error={fieldErrors.category}
             />
           </View>
         </View>
 
         <View style={[styles.specCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-          <SpecRow icon="people" label={t().createRecipe.servings}>
+          <SpecRow icon="people" label={t().createRecipe.servings} error={fieldErrors.servings}>
             <Stepper
               value={recipe.servings}
               decreaseLabel={t().createRecipe.servings}
@@ -131,14 +146,14 @@ export const RecipePreviewEditor = ({
               onIncrement={() => onChangeServings(clamp(recipe.servings + 1, SERVINGS_MIN, SERVINGS_MAX))}
             />
           </SpecRow>
-          <SpecRow icon="speedometer" label={t().createRecipe.difficulty}>
+          <SpecRow icon="speedometer" label={t().createRecipe.difficulty} error={fieldErrors.difficulty}>
             <DifficultyToggle
               value={recipe.difficulty}
               label={(d) => DIFFICULTY_LABELS[d]}
               onChange={onChangeDifficulty}
             />
           </SpecRow>
-          <SpecRow icon="time-outline" label={t().createRecipe.prep}>
+          <SpecRow icon="time-outline" label={t().createRecipe.prep} error={fieldErrors.prepTimeMinutes}>
             <Stepper
               value={recipe.prepTimeMinutes}
               suffix={t().createRecipe.minShort}
@@ -148,7 +163,7 @@ export const RecipePreviewEditor = ({
               onIncrement={() => onChangePrep(recipe.prepTimeMinutes + TIME_STEP)}
             />
           </SpecRow>
-          <SpecRow icon="flame" label={t().createRecipe.cook} last>
+          <SpecRow icon="flame" label={t().createRecipe.cook} error={fieldErrors.cookTimeMinutes} last>
             <Stepper
               value={recipe.cookTimeMinutes}
               suffix={t().createRecipe.minShort}
@@ -168,7 +183,17 @@ export const RecipePreviewEditor = ({
             </View>
             <ThemedText variant="caption" muted>{ingredientCount}</ThemedText>
           </View>
-          <View style={styles.ingredientList}>
+          {fieldErrors.ingredients !== undefined ? (
+            <FieldErrorText message={fieldErrors.ingredients} />
+          ) : null}
+          <View
+            style={[
+              styles.ingredientList,
+              fieldErrors.ingredients !== undefined
+                ? { borderWidth: 1, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
+                : null,
+            ]}
+          >
             {recipe.ingredients.map((value, i) => (
               <IngredientRow
                 key={`ing-${i}`}
@@ -200,7 +225,17 @@ export const RecipePreviewEditor = ({
             </View>
             <ThemedText variant="caption" muted>{stepCount}</ThemedText>
           </View>
-          <View style={styles.stepList}>
+          {fieldErrors.instructions !== undefined ? (
+            <FieldErrorText message={fieldErrors.instructions} />
+          ) : null}
+          <View
+            style={[
+              styles.stepList,
+              fieldErrors.instructions !== undefined
+                ? { borderWidth: 1, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
+                : null,
+            ]}
+          >
             {recipe.instructions.map((value, i) => (
               <StepRow
                 key={`step-${i}`}
