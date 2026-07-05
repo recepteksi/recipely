@@ -9,6 +9,7 @@ export const en = {
     of: 'of',
     clear: 'Clear',
     close: 'Close',
+    closeHint: 'Double tap or swipe down to close',
   },
   errors: {
     retry: 'Try again',

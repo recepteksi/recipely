@@ -11,6 +11,7 @@ export const tr: Translations = {
     of: '/',
     clear: 'Temizle',
     close: 'Kapat',
+    closeHint: 'Kapatmak için iki kez dokunun veya aşağı kaydırın',
   },
   errors: {
     retry: 'Tekrar dene',

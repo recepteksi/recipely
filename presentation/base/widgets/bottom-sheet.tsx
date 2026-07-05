@@ -59,9 +59,11 @@ export const BottomSheet = ({
           <View
             {...panHandlers}
             style={styles.grabberWrap}
+            hitSlop={spacing.sm}
             accessible
-            accessibilityRole="adjustable"
+            accessibilityRole="button"
             accessibilityLabel={t().common.close}
+            accessibilityHint={t().common.closeHint}
             onAccessibilityTap={onClose}
           >
             <View style={[styles.grabber, { backgroundColor: colors.border }]} />

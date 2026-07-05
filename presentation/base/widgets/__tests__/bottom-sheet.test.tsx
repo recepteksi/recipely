@@ -12,14 +12,18 @@ import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { t } from '@presentation/i18n';
 
 /**
- * The explicit header "×" is the only "Close"-labeled node with role
- * `button` (the grabber uses role `adjustable`, see `bottom-sheet.tsx`), so
- * this combination uniquely identifies it regardless of how many
- * composite/host layers `findAll` walks through for a single Pressable.
+ * The explicit header "×" and the grabber both use role `button` + the same
+ * "Close" label (the grabber is dismissible by plain tap too, not just
+ * drag/VoiceOver) — `onPress` is what actually distinguishes them: the header
+ * button is a real `Pressable` with `onPress`, while the grabber only wires
+ * `onAccessibilityTap` (see `bottom-sheet.tsx`).
  */
 const explicitCloseButton = (root: RenderResult['root']) =>
   root.findAll(
-    (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === t().common.close,
+    (node) =>
+      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityLabel === t().common.close &&
+      typeof node.props.onPress === 'function',
   )[0];
 
 /** The node exposing `onAccessibilityTap` — the draggable grabber. */
