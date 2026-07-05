@@ -571,6 +571,7 @@ export const tr: Translations = {
     activity: 'Aktivite',
     activityRecent: 'Son hareketler',
     bio: 'Ev mutfağı, küçük adımlar. Akdeniz ve Türk tariflerini sade tutmaya çalışıyorum.',
+    addBioPrompt: 'Profilini düzenle kısmından "Hakkında" bölümüne mutfağınla ilgili kısa bir not ekle.',
     today: 'Bugün',
     daysAgo: 'gün önce',
     nothingYet: 'Henüz bir şey yok.',
