@@ -24,6 +24,8 @@ const validProps = {
   likeCount: 0,
   likedByMe: false,
   viewCount: 0,
+  moderationStatus: 'approved',
+  commentCount: 0,
 };
 
 describe('Recipe.create', () => {

@@ -2,21 +2,9 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from './breakpoints';
 import { useIsHydrated } from './use-is-hydrated';
-
-export type Breakpoint = 'mobile' | 'tablet' | 'desktop' | 'wide';
-export type Orientation = 'portrait' | 'landscape';
-
-export interface LayoutContextValue {
-  width: number;
-  height: number;
-  aspectRatio: number;
-  orientation: Orientation;
-  breakpoint: Breakpoint;
-  /** True on Platform.OS === 'web' when the viewport is wide enough for the desktop shell. */
-  isWebShell: boolean;
-  /** True for portrait phones and any narrow viewport regardless of platform. */
-  isCompact: boolean;
-}
+import type { Breakpoint } from '@presentation/base/responsive/breakpoint';
+import type { Orientation } from '@presentation/base/responsive/orientation';
+import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';
 
 const DEFAULT_VALUE: LayoutContextValue = {
   width: 0,

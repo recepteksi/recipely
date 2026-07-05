@@ -3,17 +3,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { FieldErrorText } from '@presentation/screens/create-recipe/field-error-text';
 
 export interface SpecRowProps {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   last?: boolean;
+  /** Backend validation message for this field, if any — tints the row and adds an inline warning. */
+  error?: string;
   children: React.ReactNode;
 }
 
 /** A full-width row inside the spec card: icon badge + label, control at right. */
-export const SpecRow = ({ icon, label, last, children }: SpecRowProps): React.JSX.Element => {
+export const SpecRow = ({ icon, label, last, error, children }: SpecRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const hasError = error !== undefined;
   return (
     <View
       style={[
@@ -21,25 +25,38 @@ export const SpecRow = ({ icon, label, last, children }: SpecRowProps): React.JS
         {
           borderBottomColor: colors.border,
           borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
+          backgroundColor: hasError ? colors.dangerLight : undefined,
         },
       ]}
     >
-      <View style={[styles.iconBadge, { backgroundColor: colors.chipBackground }]}>
-        <Ionicons name={icon} size={sizes.iconSm} color={colors.primary} />
+      <View style={styles.mainRow}>
+        <View style={[styles.iconBadge, { backgroundColor: colors.chipBackground }]}>
+          <Ionicons name={icon} size={sizes.iconSm} color={colors.primary} />
+        </View>
+        <ThemedText style={[styles.label, { color: colors.text }]}>{label}</ThemedText>
+        <View style={styles.control}>{children}</View>
       </View>
-      <ThemedText style={[styles.label, { color: colors.text }]}>{label}</ThemedText>
-      <View style={styles.control}>{children}</View>
+      {hasError ? (
+        <View style={styles.errorRow}>
+          <FieldErrorText message={error} />
+        </View>
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   root: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm2,
+  },
+  mainRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm2,
+  },
+  errorRow: {
+    marginLeft: sizes.iconBtn + spacing.md,
   },
   iconBadge: {
     width: sizes.iconBtn,

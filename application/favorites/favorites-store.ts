@@ -1,24 +1,9 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { UnknownFailure, type Failure } from '@core/failure';
-import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
-import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
-
-export interface FavoritesStoreState {
-  isLoading: boolean;
-  error: Failure | null;
-  addFavorite: (userId: string, recipeId: string) => Promise<void>;
-  removeFavorite: (userId: string, recipeId: string) => Promise<void>;
-  clearError: () => void;
-}
+import { UnknownFailure } from '@core/failure';
+import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
+import type { ConfigureFavoritesStoreOptions } from '@application/favorites/configure-favorites-store-options';
 
 export type FavoritesStore = UseBoundStore<StoreApi<FavoritesStoreState>>;
-
-export interface ConfigureFavoritesStoreOptions {
-  addFavoriteUseCase: AddFavoriteUseCase;
-  removeFavoriteUseCase: RemoveFavoriteUseCase;
-  savedRecipesStore: SavedRecipesStore;
-}
 
 export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): FavoritesStore => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;

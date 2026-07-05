@@ -1,11 +1,9 @@
 import { ok, type Result } from '@core/result/result';
 import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type {
-  IRecipeDraftRepository,
-  PagedDrafts,
-  UpsertDraftInput,
-} from '@domain/drafts/i-recipe-draft-repository';
+import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { PagedDrafts } from '@domain/drafts/paged-drafts';
+import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
 import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';

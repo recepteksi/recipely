@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 
 /**
@@ -10,7 +10,7 @@ import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 export class ListTrendingRecipesUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 
-  execute(limit?: number): Promise<Result<Recipe[], Failure>> {
+  execute(limit?: number): Promise<Result<RecipeSummary[], Failure>> {
     return this.repo.listTrendingRecipes(limit);
   }
 }

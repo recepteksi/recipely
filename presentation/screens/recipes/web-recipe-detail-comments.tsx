@@ -5,7 +5,7 @@ import { CommentCard } from '@presentation/base/widgets/comment-card';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeCommentsState } from '@application/comments/comments-store';
+import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;
@@ -19,7 +19,13 @@ export interface WebRecipeDetailCommentsProps {
   onDeleteComment: (commentId: string) => void;
 }
 
-/** Comments section for the web recipe detail: h2 header, input, list, and load-more. Reuses the parent's handlers/state. */
+/**
+ * Comments section for the web recipe detail: h2 header, input, list, and
+ * load-more. Reuses the parent's handlers/state. The input row and like
+ * button are always shown/enabled — a guest's tap is caught by
+ * `onAddComment` / `onToggleCommentLike` (wired to `useGuestGate` in the
+ * parent screen), which opens a sign-in prompt instead of running the action.
+ */
 export const WebRecipeDetailComments = ({
   commentState,
   userId,
@@ -43,38 +49,32 @@ export const WebRecipeDetailComments = ({
         {total > 0 ? `${t().comments.title} · ${String(total)}` : t().comments.title}
       </ThemedText>
 
-      {userId !== null ? (
-        <View style={styles.inputRow}>
-          <TextInput
-            value={commentInput}
-            onChangeText={onChangeCommentInput}
-            placeholder={t().comments.placeholder}
-            placeholderTextColor={colors.textMuted}
-            style={[
-              styles.input,
-              { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border },
-            ]}
-            multiline
-            maxLength={2000}
-          />
-          <Pressable
-            onPress={onAddComment}
-            disabled={submitDisabled}
-            accessibilityRole="button"
-            accessibilityLabel={t().comments.send}
-            style={({ pressed }) => [
-              styles.sendBtn,
-              { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? 0.6 : 1 },
-            ]}
-          >
-            <Ionicons name="send" size={sizes.iconSm} color={colors.onOverlay} />
-          </Pressable>
-        </View>
-      ) : (
-        <ThemedText variant="caption" muted style={styles.hint}>
-          {t().comments.signInToComment}
-        </ThemedText>
-      )}
+      <View style={styles.inputRow}>
+        <TextInput
+          value={commentInput}
+          onChangeText={onChangeCommentInput}
+          placeholder={t().comments.placeholder}
+          placeholderTextColor={colors.textMuted}
+          style={[
+            styles.input,
+            { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border },
+          ]}
+          multiline
+          maxLength={2000}
+        />
+        <Pressable
+          onPress={onAddComment}
+          disabled={submitDisabled}
+          accessibilityRole="button"
+          accessibilityLabel={t().comments.send}
+          style={({ pressed }) => [
+            styles.sendBtn,
+            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? 0.6 : 1 },
+          ]}
+        >
+          <Ionicons name="send" size={sizes.iconSm} color={colors.onOverlay} />
+        </Pressable>
+      </View>
 
       {submitError !== null ? (
         <ThemedText variant="caption" style={[styles.error, { color: colors.danger }]}>
@@ -100,7 +100,7 @@ export const WebRecipeDetailComments = ({
               isOwn={comment.authorId === userId}
               likeCount={comment.likeCount}
               likedByMe={comment.likedByMe}
-              canLike={userId !== null}
+              canLike
               onToggleLike={() => onToggleCommentLike(comment.id)}
               onDelete={() => onDeleteComment(comment.id)}
             />
@@ -156,7 +156,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  hint: {},
   error: {},
   loader: {
     marginVertical: spacing.md,

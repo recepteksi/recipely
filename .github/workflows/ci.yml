@@ -331,6 +331,233 @@ jobs:
         if: always()
         run: rm -f android/app/upload.keystore android/gradle.properties
 
+  # --- Dev iOS (dev only) → TestFlight (net.recipely.app.dev) ---
+  # Dev IPAs are App Store-signed and uploaded to the "Recipely Dev" app's
+  # TestFlight, so testers install via the TestFlight app instead of Firebase
+  # App Distribution (which needed per-device UDID registration for ad-hoc).
+  distribute-ios-dev:
+    name: Distribute iOS Dev (TestFlight)
+    # App Store Connect rejects uploads not built with the iOS 26 SDK
+    # (Xcode 26+) as of 2026-04-28. macos-15 only carries Xcode 16.4.
+    runs-on: macos-26
+    needs: [lint-and-typecheck, test]
+    # Kill switch: set the IOS_CI_ENABLED repo variable to '0' to pause iOS
+    # distribution without touching the workflow.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && vars.IOS_CI_ENABLED == '1'
+    env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # app.config.ts derives ios.buildNumber from BUILD_NUMBER, so the IPA and
+      # the Android dev APK of the same run carry the same build number.
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so `git describe --tags` in app.config.ts can resolve
+          # a marketing version (falls back to app.json's seed when untagged).
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Restore GoogleService-Info.dev.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_DEV: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_DEV }}
+        run: |
+          # app.config.ts points the dev variant at GoogleService-Info.dev.plist;
+          # the secret may be raw XML or base64 — accept either, like the
+          # Android google-services.json restore does.
+          if [ -z "$GOOGLE_SERVICE_INFO_PLIST_DEV" ]; then
+            echo "::error::GOOGLE_SERVICE_INFO_PLIST_DEV secret is empty"
+            exit 1
+          fi
+          first_char="${GOOGLE_SERVICE_INFO_PLIST_DEV:0:1}"
+          if [ "$first_char" = "<" ]; then
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_DEV" > GoogleService-Info.dev.plist
+          else
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_DEV" | tr -d ' \t\r\n' | base64 -d > GoogleService-Info.dev.plist
+          fi
+          plutil -lint GoogleService-Info.dev.plist
+
+      - name: Expo prebuild (iOS)
+        run: npx expo prebuild --platform ios --no-install
+
+      # CocoaPods re-downloads every spec on a fresh runner; caching its
+      # download cache is the biggest iOS CI speed-up short of caching Pods/.
+      - uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: pods-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: pods-${{ runner.os }}-
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+
+      - name: Install signing certificate & profile
+        env:
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_P12_PASSWORD }}
+          IOS_APPSTORE_PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_DEV_BASE64 }}
+        run: |
+          # Import the Apple Distribution certificate into a throwaway keychain
+          # and install the dev App Store provisioning profile. The profile's
+          # Name is exported for the archive/export steps so the secrets stay
+          # the only place that knows which profile is in use.
+          set -euo pipefail
+          # The p12 password is guarded too: we always create the p12 with one,
+          # so an empty value means a mis-set secret, not a password-less cert.
+          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_APPSTORE_PROFILE_BASE64" ]; then
+            echo "::error::iOS signing secrets are missing"
+            exit 1
+          fi
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          KEYCHAIN_PATH="$RUNNER_TEMP/ios-build.keychain-db"
+          printf '%s' "$IOS_DIST_CERT_P12_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/dist-cert.p12"
+          printf '%s' "$IOS_APPSTORE_PROFILE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/appstore.mobileprovision"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/dist-cert.p12" -k "$KEYCHAIN_PATH" \
+            -P "$IOS_DIST_CERT_P12_PASSWORD" -A -t cert -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security cms -D -i "$RUNNER_TEMP/appstore.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          PROFILE_UUID=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/profile.plist")
+          PROFILE_NAME=$(plutil -extract Name raw -o - "$RUNNER_TEMP/profile.plist")
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$RUNNER_TEMP/appstore.mobileprovision" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+      - name: Configure app target signing
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Signing overrides on the xcodebuild command line apply to every
+          # target — including Pods library targets, which reject provisioning
+          # profiles outright ("X does not support provisioning profiles").
+          # Scope manual signing to the app target only by editing the
+          # generated project. xcodeproj ships with the runner's fastlane; the
+          # gem install is a fallback for leaner images.
+          set -euo pipefail
+          gem list -i '^xcodeproj$' >/dev/null || sudo gem install xcodeproj --no-document
+          ruby - <<'RUBY'
+          require 'xcodeproj'
+          project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
+          app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
+          app or abort('no application target found in the generated project')
+          app.build_configurations.each do |config|
+            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          end
+          project.save
+          RUBY
+
+      - name: Build & export App Store IPA (dev)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Prebuild derives the Xcode project name from the display name
+          # ("Recipely (Dev)" → RecipelyDev), so resolve workspace/scheme from
+          # disk instead of hard-coding them.
+          set -euo pipefail
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -n1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" archive
+          # "app-store-connect" is Xcode 15.4+'s name for the App Store export.
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>net.recipely.app.dev</key><string>$PROFILE_NAME</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          IPA_PATH=$(ls "$RUNNER_TEMP"/export/*.ipa | head -n1)
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+
+      # Keep the IPA even if the TestFlight upload flakes — a macOS build is
+      # too expensive to lose to a transient distribution error.
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-dev-${{ github.run_number }}
+          path: ${{ env.IPA_PATH }}
+          retention-days: 7
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          # fastlane refuses to run in a non-UTF-8 locale.
+          LC_ALL: en_US.UTF-8
+          LANG: en_US.UTF-8
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+        run: |
+          # Same fastlane pilot upload as distribute-ios-prod; the bundle ID in
+          # the IPA (net.recipely.app.dev) routes it to the "Recipely Dev" app.
+          set -euo pipefail
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8_BASE64" ]; then
+            echo "::error::App Store Connect API key secrets are missing"
+            exit 1
+          fi
+          command -v fastlane >/dev/null \
+            || { echo "::error::fastlane not found on the runner image"; exit 1; }
+          node -e '
+            const fs = require("fs");
+            const key = Buffer.from(process.env.ASC_KEY_P8_BASE64.replace(/\s/g, ""), "base64").toString("utf8");
+            if (!key.startsWith("-----BEGIN")) {
+              console.error("ASC_KEY_P8_BASE64 did not decode to a PEM key — is the secret base64-encoded?");
+              process.exit(1);
+            }
+            fs.writeFileSync(process.env.RUNNER_TEMP + "/asc-api-key.json", JSON.stringify({
+              key_id: process.env.ASC_KEY_ID,
+              issuer_id: process.env.ASC_ISSUER_ID,
+              key,
+              duration: 1200,
+              in_house: false,
+            }));
+          '
+          # Processing takes Apple ~5-30 min; don't burn macOS minutes waiting.
+          fastlane pilot upload \
+            --ipa "$IPA_PATH" \
+            --api_key_path "$RUNNER_TEMP/asc-api-key.json" \
+            --skip_waiting_for_build_processing true
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/ios-build.keychain-db" || true
+          # Restore the default keychain search list in case the runner is ever
+          # non-ephemeral (same caution as the Android cleanup).
+          security list-keychains -d user -s login.keychain-db || true
+          rm -f "$RUNNER_TEMP/dist-cert.p12" "$RUNNER_TEMP/appstore.mobileprovision" \
+            "$RUNNER_TEMP/profile.plist" "$RUNNER_TEMP/ExportOptions.plist" \
+            "$RUNNER_TEMP/asc-api-key.json"
+          rm -rf "$HOME/Library/MobileDevice/Provisioning Profiles"
+
   # --- Production Android (main only) → Google Play internal (no Firebase App Distribution) ---
   distribute-prod:
     name: Distribute Android Prod (Play AAB)
@@ -488,3 +715,223 @@ jobs:
         # Self-hosted runners may not wipe the workspace between jobs, so the
         # keystore and the appended signing passwords must not linger on disk.
         run: rm -f android/app/upload.keystore android/gradle.properties
+
+  # --- Production iOS (main only) → TestFlight (net.recipely.app) ---
+  # Prod IPAs are App Store-signed and uploaded to TestFlight, versioned from
+  # the tag that tag-release just pushed. Same lane shape as distribute-ios-dev,
+  # but for the prod bundle / "Recipely" app record.
+  distribute-ios-prod:
+    name: Distribute iOS Prod (TestFlight)
+    # App Store Connect rejects uploads not built with the iOS 26 SDK
+    # (Xcode 26+) as of 2026-04-28. macos-15 only carries Xcode 16.4.
+    runs-on: macos-26
+    needs: [lint-and-typecheck, test, tag-release]
+    # Same IOS_CI_ENABLED gate as distribute-ios-dev — see that job's comment.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.IOS_CI_ENABLED == '1'
+    env:
+      APP_VARIANT: production
+      EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # Mirrors the Android distribute job so app.config.ts derives the same
+      # versionCode / buildNumber for every target of a single CI run.
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need history + the just-pushed tag so `git describe` reads the
+          # bumped version inside app.config.ts.
+          fetch-depth: 0
+          ref: ${{ needs.tag-release.outputs.tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Restore GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          # The secret may be raw XML or base64 — accept either, like the
+          # Android google-services.json restore does.
+          if [ -z "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            echo "::error::GOOGLE_SERVICE_INFO_PLIST secret is empty"
+            exit 1
+          fi
+          first_char="${GOOGLE_SERVICE_INFO_PLIST:0:1}"
+          if [ "$first_char" = "<" ]; then
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist
+          else
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | tr -d ' \t\r\n' | base64 -d > GoogleService-Info.plist
+          fi
+          plutil -lint GoogleService-Info.plist
+
+      - name: Expo prebuild (iOS)
+        run: npx expo prebuild --platform ios --no-install
+
+      # CocoaPods re-downloads every spec on a fresh runner; caching its
+      # download cache is the biggest iOS CI speed-up short of caching Pods/.
+      - uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: pods-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: pods-${{ runner.os }}-
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+
+      - name: Install signing certificate & profile
+        env:
+          IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
+          IOS_DIST_CERT_P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_P12_PASSWORD }}
+          IOS_APPSTORE_PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_BASE64 }}
+        run: |
+          # Same throwaway-keychain dance as distribute-ios-dev, with the prod
+          # App Store profile (net.recipely.app) instead of an ad-hoc one.
+          set -euo pipefail
+          # The p12 password is guarded too: we always create the p12 with one,
+          # so an empty value means a mis-set secret, not a password-less cert.
+          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_APPSTORE_PROFILE_BASE64" ]; then
+            echo "::error::iOS signing secrets are missing"
+            exit 1
+          fi
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          KEYCHAIN_PATH="$RUNNER_TEMP/ios-build.keychain-db"
+          printf '%s' "$IOS_DIST_CERT_P12_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/dist-cert.p12"
+          printf '%s' "$IOS_APPSTORE_PROFILE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/appstore.mobileprovision"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$RUNNER_TEMP/dist-cert.p12" -k "$KEYCHAIN_PATH" \
+            -P "$IOS_DIST_CERT_P12_PASSWORD" -A -t cert -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security cms -D -i "$RUNNER_TEMP/appstore.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          PROFILE_UUID=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/profile.plist")
+          PROFILE_NAME=$(plutil -extract Name raw -o - "$RUNNER_TEMP/profile.plist")
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$RUNNER_TEMP/appstore.mobileprovision" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+
+      - name: Configure app target signing
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Same app-target-only manual signing as distribute-ios-dev — global
+          # xcodebuild overrides would break the Pods targets.
+          set -euo pipefail
+          gem list -i '^xcodeproj$' >/dev/null || sudo gem install xcodeproj --no-document
+          ruby - <<'RUBY'
+          require 'xcodeproj'
+          project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
+          app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
+          app or abort('no application target found in the generated project')
+          app.build_configurations.each do |config|
+            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          end
+          project.save
+          RUBY
+
+      - name: Build & export App Store IPA
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Workspace/scheme resolved from disk (prebuild derives them from the
+          # display name: "Recipely" → Recipely).
+          set -euo pipefail
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -n1)
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" archive
+          # "app-store-connect" is Xcode 15.4+'s name for the App Store export.
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>net.recipely.app</key><string>$PROFILE_NAME</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          IPA_PATH=$(ls "$RUNNER_TEMP"/export/*.ipa | head -n1)
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+
+      # Keep the IPA even if the TestFlight upload flakes — a macOS build is
+      # too expensive to lose to a transient distribution error.
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-prod-${{ github.run_number }}
+          path: ${{ env.IPA_PATH }}
+          retention-days: 30
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          # fastlane refuses to run in a non-UTF-8 locale.
+          LC_ALL: en_US.UTF-8
+          LANG: en_US.UTF-8
+          FASTLANE_SKIP_UPDATE_CHECK: '1'
+        run: |
+          # altool app uploads are deprecated; fastlane pilot (preinstalled on
+          # the macOS runner image) uploads through the App Store Connect API
+          # using the same key that signs our JWTs.
+          set -euo pipefail
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_KEY_P8_BASE64" ]; then
+            echo "::error::App Store Connect API key secrets are missing"
+            exit 1
+          fi
+          command -v fastlane >/dev/null \
+            || { echo "::error::fastlane not found on the runner image"; exit 1; }
+          node -e '
+            const fs = require("fs");
+            const key = Buffer.from(process.env.ASC_KEY_P8_BASE64.replace(/\s/g, ""), "base64").toString("utf8");
+            if (!key.startsWith("-----BEGIN")) {
+              console.error("ASC_KEY_P8_BASE64 did not decode to a PEM key — is the secret base64-encoded?");
+              process.exit(1);
+            }
+            fs.writeFileSync(process.env.RUNNER_TEMP + "/asc-api-key.json", JSON.stringify({
+              key_id: process.env.ASC_KEY_ID,
+              issuer_id: process.env.ASC_ISSUER_ID,
+              key,
+              duration: 1200,
+              in_house: false,
+            }));
+          '
+          # Processing takes Apple ~5-30 min; don't burn macOS minutes waiting.
+          fastlane pilot upload \
+            --ipa "$IPA_PATH" \
+            --api_key_path "$RUNNER_TEMP/asc-api-key.json" \
+            --skip_waiting_for_build_processing true
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/ios-build.keychain-db" || true
+          # Restore the default keychain search list in case the runner is ever
+          # non-ephemeral (same caution as the Android cleanup).
+          security list-keychains -d user -s login.keychain-db || true
+          rm -f "$RUNNER_TEMP/dist-cert.p12" "$RUNNER_TEMP/appstore.mobileprovision" \
+            "$RUNNER_TEMP/profile.plist" "$RUNNER_TEMP/ExportOptions.plist" \
+            "$RUNNER_TEMP/asc-api-key.json"
+          rm -rf "$HOME/Library/MobileDevice/Provisioning Profiles"

@@ -2,10 +2,8 @@ import { configureCreatedRecipesStore } from '@application/recipes/created-recip
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
-import type {
-  RefineRecipeInput,
-  RefineRecipeUseCase,
-} from '@application/recipes/refine-recipe-use-case';
+import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
+import type { RefineRecipeInput } from '@application/recipes/refine-recipe-input';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
@@ -43,6 +41,8 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
     likeCount: 0,
     likedByMe: false,
     viewCount: 0,
+    moderationStatus: 'approved',
+    commentCount: 0,
     ...overrides,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');

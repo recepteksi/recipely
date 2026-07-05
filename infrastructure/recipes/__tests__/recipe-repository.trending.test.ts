@@ -1,41 +1,31 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { HttpClient } from '@infrastructure/network/http-client';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const validDto: RecipeDto = {
+const validDto: RecipeListItemDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
   name: 'Trending Spicy Pasta',
+  image: 'https://cdn.recipely.io/recipe-images/trending-1.webp',
   cuisine: CuisineKey.Italian,
   category: RecipeCategory.Dinner,
   difficulty: Difficulty.Easy,
-  ingredients: ['Pasta', 'Chili'],
-  instructions: ['Boil', 'Toss'],
-  prepTimeMinutes: 5,
-  cookTimeMinutes: 10,
-  servings: 2,
-  caloriesPerServing: 450,
-  image: 'https://cdn.recipely.io/recipe-images/trending-1.webp',
+  totalTimeMinutes: 15,
   rating: 4.2,
-  tags: ['Trending', 'Quick'],
-  mealType: ['Dinner'],
-  ownerId: 'owner-7',
+  moderationStatus: 'approved',
   likeCount: 0,
   likedByMe: false,
   commentCount: 0,
   viewCount: 0,
-  moderationStatus: 'approved',
-  createdAt: '2026-05-11T12:00:00.000Z',
-  updatedAt: '2026-05-11T12:00:00.000Z',
 };
 
-const makeList = (items: RecipeDto[]): RecipesListDto => ({
+const makeList = (items: RecipeListItemDto[]): RecipesListDto => ({
   items,
   total: items.length,
   page: 1,
@@ -85,8 +75,8 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     expect(calls[0].params).toEqual({ limit: 3 });
   });
 
-  it('maps every item in the list envelope into a Recipe[]', async () => {
-    const second: RecipeDto = { ...validDto, id: 'second-id', name: 'Trending Tacos' };
+  it('maps every item in the list envelope into a RecipeSummary[]', async () => {
+    const second: RecipeListItemDto = { ...validDto, id: 'second-id', name: 'Trending Tacos' };
     const { http } = makeHttp(ok(makeList([validDto, second])));
     const repo = new RecipeRepository(http);
 
@@ -95,7 +85,7 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value).toHaveLength(2);
-      expect(r.value[0]).toBeInstanceOf(Recipe);
+      expect(r.value[0]).toBeInstanceOf(RecipeSummary);
       expect(r.value[0].id).toBe(validDto.id);
       expect(r.value[0].name).toBe('Trending Spicy Pasta');
       expect(r.value[1].id).toBe('second-id');
@@ -114,8 +104,8 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     if (!r.ok) expect(r.failure).toBe(failure);
   });
 
-  it('returns the validation failure from toRecipe when a DTO is malformed (e.g. empty name)', async () => {
-    const malformed: RecipeDto = { ...validDto, id: 'bad-id', name: '' };
+  it('returns the validation failure from toRecipeSummary when a DTO is malformed (e.g. empty name)', async () => {
+    const malformed: RecipeListItemDto = { ...validDto, id: 'bad-id', name: '' };
     const { http } = makeHttp(ok(makeList([validDto, malformed])));
     const repo = new RecipeRepository(http);
 

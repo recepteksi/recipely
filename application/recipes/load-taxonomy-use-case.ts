@@ -1,13 +1,7 @@
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { ITaxonomyRepository } from '@domain/recipes/i-taxonomy-repository';
-import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
-
-/** The combined taxonomy catalog returned by `LoadTaxonomyUseCase`. */
-export interface TaxonomyCatalog {
-  cuisines: TaxonomyItem[];
-  categories: TaxonomyItem[];
-}
+import type { TaxonomyCatalog } from '@application/recipes/taxonomy-catalog';
 
 /**
  * Loads the cuisine and category catalogs in parallel and combines them. Fails

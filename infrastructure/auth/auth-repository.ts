@@ -18,10 +18,8 @@ import {
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
 import { decodeJwtPayload } from '@infrastructure/network/decode-jwt';
-import type {
-  RecipelyAuthSessionDto,
-  RecipelyUserDto,
-} from '@infrastructure/auth/user-info-dto';
+import type { RecipelyAuthSessionDto } from '@infrastructure/auth/recipely-auth-session-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';

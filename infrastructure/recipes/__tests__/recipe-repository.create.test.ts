@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
-import type { CreateRecipeInput } from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';

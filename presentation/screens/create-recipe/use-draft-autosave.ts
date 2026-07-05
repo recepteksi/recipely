@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { UpsertDraftStoreInput } from '@application/drafts/drafts-store';
+import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
 import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
 import {
   editableHasContent,

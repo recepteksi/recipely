@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { InlineTimer } from '@presentation/base/widgets/inline-timer';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import type { TextPart } from '@presentation/base/widgets/text-part';
 
 export interface InstructionCardProps {
   index: number;
@@ -15,13 +16,15 @@ export interface InstructionCardProps {
   recipeName: string;
 }
 
-const TIME_RE = /(\d+(?:\.\d+)?)\s*(minutes?|mins?|dakika|dk)/gi;
-
-interface TextPart {
-  kind: 'text' | 'timer';
-  value: string;
-  minutes?: number;
-}
+const DURATION_UNIT = 'minutes?|mins?|dakika|dk';
+// Alternation, tried in order at every match position: a "45-50 minutes"
+// range is matched whole by the first branch (captured in group 1) before the
+// second branch gets a chance to latch onto just the trailing number — that
+// ordering is what previously produced the "45-" + badge("50 min") split.
+const TIME_RE = new RegExp(
+  `(\\d+(?:\\.\\d+)?\\s*-\\s*\\d+(?:\\.\\d+)?\\s*(?:${DURATION_UNIT}))|(\\d+(?:\\.\\d+)?)\\s*(?:${DURATION_UNIT})`,
+  'gi',
+);
 
 export const splitStepWithTimers = (text: string): TextPart[] => {
   const out: TextPart[] = [];
@@ -32,8 +35,14 @@ export const splitStepWithTimers = (text: string): TextPart[] => {
     if (match.index > last) {
       out.push({ kind: 'text', value: text.slice(last, match.index) });
     }
-    const minutes = parseFloat(match[1]);
-    out.push({ kind: 'timer', value: match[0], minutes });
+    if (match[1] !== undefined) {
+      // A range ("45-50 minutes") isn't a single actionable duration — keep
+      // it as plain text rather than badge-ify a partial, misleading match.
+      out.push({ kind: 'text', value: match[0] });
+    } else {
+      const minutes = parseFloat(match[2]);
+      out.push({ kind: 'timer', value: match[0], minutes });
+    }
     last = match.index + match[0].length;
     match = TIME_RE.exec(text);
   }

@@ -1,47 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import { type Result } from '@core/result/result';
-import type { Failure } from '@core/failure';
-import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import type { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import type { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import type { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import type { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
+import type { DraftsStoreDeps } from '@application/drafts/drafts-store-deps';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
-
-export type DraftsListState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded' }
-  | { status: 'error'; failure: Failure };
-
-export interface UpsertDraftStoreInput {
-  id: string;
-  prompt: string;
-  snapshot: DraftRecipeSnapshot;
-  chatHistory: ChatMessage[];
-}
-
-export interface DraftsStoreState {
-  drafts: readonly RecipeDraft[];
-  listState: DraftsListState;
-  latestDraft: RecipeDraft | null;
-  loadDrafts: () => Promise<void>;
-  loadLatestDraft: () => Promise<void>;
-  upsertDraft: (input: UpsertDraftStoreInput) => Promise<RecipeDraft | null>;
-  deleteDraft: (id: string) => Promise<Result<void, Failure>>;
-  getDraft: (id: string) => Promise<RecipeDraft | null>;
-}
-
-export interface DraftsStoreDeps {
-  listDraftsUseCase: ListDraftsUseCase;
-  getLatestDraftUseCase: GetLatestDraftUseCase;
-  getDraftUseCase: GetDraftUseCase;
-  upsertDraftUseCase: UpsertDraftUseCase;
-  deleteDraftUseCase: DeleteDraftUseCase;
-}
 
 export type DraftsStore = UseBoundStore<StoreApi<DraftsStoreState>>;
 

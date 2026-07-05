@@ -19,6 +19,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
+import { RecipeSearchOverlay } from '@presentation/screens/recipes/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
 import { FilterSortFab } from '@presentation/screens/recipes/filter-sort-fab';
@@ -35,12 +36,15 @@ import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-o
 import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/primary-button';
 import { ErrorState } from '@presentation/base/widgets/error-state';
+import { useRefreshFailureToast } from '@presentation/screens/recipes/use-refresh-failure-toast';
 import {
   failureContent,
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-content';
-import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import { TabBar } from '@presentation/base/widgets/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';
@@ -51,9 +55,9 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
@@ -211,6 +215,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
     void load(buildApiFilters(filtersRef.current, sortByRef.current));
   }, [language, load, buildApiFilters]);
 
+  // Surfaces a failed filter/sort refetch as a toast (the stale list stays on
+  // screen per the store's design) — see `useRefreshFailureToast` for the
+  // once-per-occurrence transition guard.
+  useRefreshFailureToast(state.status === 'loaded' ? state.refreshFailure : undefined);
+
   const openRecipe = useCallback(
     (id: string) => {
       router.push({ pathname: '/recipes/[recipeId]', params: { recipeId: id } });
@@ -246,8 +255,10 @@ export const RecipeListScreen = (): React.JSX.Element => {
     (filters.maxTime > 0 ? 1 : 0);
 
   const effectiveSearch = isWebShell ? webSearchQuery : search;
-  // On web, searching hides the editorial hero / banner / cuisine sections.
-  const isSearching = webSearchQuery.trim().length > 0;
+  // Searching hides the editorial hero / banner / cuisine sections (web) or
+  // swaps the whole body for a dedicated results surface (mobile) — see the
+  // `isSearching` body branch below and `RecipeSearchOverlay`.
+  const isSearching = effectiveSearch.trim().length > 0;
 
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
@@ -340,7 +351,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: Recipe }) => {
+    ({ item }: { item: RecipeSummary }) => {
       if (gridColumns > 1) {
         return (
           <View style={styles.gridCell}>
@@ -488,6 +499,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         <WebRecipeGrid
           recipes={filteredRecipes}
           isLoading={state.status !== 'loaded'}
+          isRefreshing={isRecipeListRefreshing(state)}
           isSearching={isSearching}
           activeCuisineLabel={
             filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null
@@ -511,17 +523,18 @@ export const RecipeListScreen = (): React.JSX.Element => {
   } else if (state.status === 'idle' || state.status === 'loading') {
     // Mobile first/refresh load: full-screen stacked skeleton.
     body = <LoadingSkeleton />;
+  } else if (isSearching) {
+    // Mobile: dedicated search-results surface. Replaces the AI banner / cuisine
+    // strip / normal grid entirely so results render directly under the sticky
+    // search bar instead of requiring a scroll past unrelated sections (also
+    // owns its own zero-results empty state).
+    body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={openRecipe} />;
   } else if (filteredRecipes.length === 0) {
     body = (
       <View style={styles.center}>
-        {state.recipes.length === 0
-          ? <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
-          : <Ionicons name="search" size={48} color={colors.textMuted} />
-        }
+        <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
-          {activeFilterCount > 0 || search.trim().length > 0
-            ? t().recipes.noResults
-            : t().recipes.empty}
+          {activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
         <View style={styles.retryButton}>
           {activeFilterCount > 0 ? (
@@ -546,15 +559,17 @@ export const RecipeListScreen = (): React.JSX.Element => {
         scrollEventThrottle={16}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRecipeListRefreshing(state)} onRefresh={onRefresh} />}
       />
     );
   }
 
   // The mobile loaded feed embeds its own header (banner/cuisines/count/chips) and
-  // sits under the collapsing band; the other states render below the band via
-  // bodyTopInset so the skeleton / error / empty view isn't hidden behind it.
-  const isMobileLoadedFeed = !isWebShell && state.status === 'loaded' && filteredRecipes.length > 0;
+  // sits under the collapsing band; the other states — including the search
+  // overlay, which needs to clear the band itself — render below the band via
+  // bodyTopInset so they're never hidden behind it.
+  const isMobileLoadedFeed =
+    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > 0;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>

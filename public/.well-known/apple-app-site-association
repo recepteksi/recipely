@@ -3,11 +3,11 @@
     "apps": [],
     "details": [
       {
-        "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app",
+        "appID": "8PB3FJ7CPA.net.recipely.app",
         "paths": ["*"]
       },
       {
-        "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.recipely.app.dev",
+        "appID": "8PB3FJ7CPA.net.recipely.app.dev",
         "paths": ["*"]
       }
     ]

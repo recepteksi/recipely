@@ -1,10 +1,6 @@
+import type { HealthStatus } from '@domain/network/health-status';
+import type { IHealthCheckService } from '@domain/network/i-health-check-service';
 import { HEALTH_URL } from '@infrastructure/constants/api';
-
-export type HealthStatus = 'unknown' | 'connected' | 'disconnected';
-
-export interface IHealthCheckService {
-  check(): Promise<HealthStatus>;
-}
 
 /**
  * Probes the backend health endpoint with a 5-second timeout to determine

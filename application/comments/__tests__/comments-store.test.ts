@@ -7,7 +7,7 @@ import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import { Comment, type CommentProps } from '@domain/comments/comment';
-import type { CommentPage } from '@domain/comments/i-comment-repository';
+import type { CommentPage } from '@domain/comments/comment-page';
 
 const RECIPE_ID = 'recipe-3';
 

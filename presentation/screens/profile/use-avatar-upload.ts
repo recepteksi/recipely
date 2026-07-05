@@ -4,14 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { showSuccessToast, showToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
-
-/** What the avatar-upload hook hands back to the profile screen. */
-export interface AvatarUpload {
-  pickAndUpload: () => Promise<void>;
-  isUploading: boolean;
-}
-
-type PickSource = 'camera' | 'library';
+import type { AvatarUpload } from '@presentation/screens/profile/avatar-upload';
+import type { PickSource } from '@presentation/screens/profile/pick-source';
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: 'image/jpeg',

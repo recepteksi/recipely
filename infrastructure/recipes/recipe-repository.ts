@@ -1,14 +1,13 @@
 import { fail, ok, type Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  IRecipeRepository,
-  RecipeFilters,
-  RecipeMediaUpload,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
@@ -22,7 +21,7 @@ import {
 } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
-import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
+import { toRecipe, toRecipeSummary } from '@infrastructure/recipes/recipe-mapper';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles
@@ -33,7 +32,7 @@ import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 export class RecipeRepository implements IRecipeRepository {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>> {
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>> {
     const params: Record<string, unknown> = { page: 1, pageSize: RECIPES_PAGE_SIZE };
     if (filters?.search) params['search'] = filters.search;
     if (filters?.cuisines?.length) params['cuisines'] = filters.cuisines.join(',');
@@ -51,9 +50,9 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: Recipe[] = [];
+    const recipes: RecipeSummary[] = [];
     for (const dto of result.value.items) {
-      const mapped = toRecipe(dto);
+      const mapped = toRecipeSummary(dto);
       if (!mapped.ok) {
         return fail(mapped.failure);
       }
@@ -62,7 +61,7 @@ export class RecipeRepository implements IRecipeRepository {
     return ok(recipes);
   }
 
-  async listTrendingRecipes(limit?: number): Promise<Result<Recipe[], Failure>> {
+  async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: RECIPE_TRENDING_PATH,
@@ -71,9 +70,9 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: Recipe[] = [];
+    const recipes: RecipeSummary[] = [];
     for (const dto of result.value.items) {
-      const mapped = toRecipe(dto);
+      const mapped = toRecipeSummary(dto);
       if (!mapped.ok) {
         return fail(mapped.failure);
       }
@@ -82,7 +81,7 @@ export class RecipeRepository implements IRecipeRepository {
     return ok(recipes);
   }
 
-  async listMyRecipes(): Promise<Result<Recipe[], Failure>> {
+  async listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: '/me/recipes',
@@ -91,9 +90,9 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: Recipe[] = [];
+    const recipes: RecipeSummary[] = [];
     for (const dto of result.value.items) {
-      const mapped = toRecipe(dto);
+      const mapped = toRecipeSummary(dto);
       if (!mapped.ok) {
         return fail(mapped.failure);
       }

@@ -1,24 +1,6 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
-import type { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
-
-export type RecipeDetailState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; recipe: Recipe }
-  | { status: 'error'; failure: Failure };
-
-export interface RecipeDetailStoreState {
-  byId: Record<string, RecipeDetailState>;
-  load: (id: string) => Promise<void>;
-  replace: (recipe: Recipe) => void;
-  remove: (id: string) => void;
-}
-
-export interface RecipeDetailStoreDeps {
-  getRecipe: GetRecipeUseCase;
-}
+import type { RecipeDetailStoreState } from '@application/recipes/recipe-detail-store-state';
+import type { RecipeDetailStoreDeps } from '@application/recipes/recipe-detail-store-deps';
 
 export type RecipeDetailStore = UseBoundStore<StoreApi<RecipeDetailStoreState>>;
 

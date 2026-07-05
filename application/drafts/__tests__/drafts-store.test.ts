@@ -1,5 +1,6 @@
 import { configureDraftsStore } from '@application/drafts/drafts-store';
-import type { ListDraftsUseCase, ListDraftsInput } from '@application/drafts/list-drafts-use-case';
+import type { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
+import type { ListDraftsInput } from '@application/drafts/list-drafts-input';
 import type { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
 import type { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
 import type { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
@@ -7,10 +8,8 @@ import type { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-ca
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type {
-  PagedDrafts,
-  UpsertDraftInput,
-} from '@domain/drafts/i-recipe-draft-repository';
+import type { PagedDrafts } from '@domain/drafts/paged-drafts';
+import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
 const makeDraft = (id: string): RecipeDraft => ({
   id,

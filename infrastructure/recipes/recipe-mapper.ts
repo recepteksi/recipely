@@ -1,8 +1,10 @@
 import { type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
+import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -41,6 +43,32 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     ownerId: dto.ownerId,
     likeCount: dto.likeCount ?? 0,
     likedByMe: dto.likedByMe ?? false,
+    viewCount: dto.viewCount ?? 0,
+    moderationStatus: dto.moderationStatus,
+    commentCount: dto.commentCount ?? 0,
+  });
+};
+
+/**
+ * Maps a lean `RecipeListItemDto` (list/my-recipes/trending endpoints) into a
+ * domain `RecipeSummary` entity.
+ */
+export const toRecipeSummary = (
+  dto: RecipeListItemDto,
+): Result<RecipeSummary, ValidationFailure> => {
+  return RecipeSummary.create({
+    id: dto.id,
+    name: dto.name,
+    image: dto.image,
+    cuisine: dto.cuisine,
+    category: dto.category,
+    difficulty: dto.difficulty,
+    totalTimeMinutes: dto.totalTimeMinutes,
+    rating: dto.rating,
+    moderationStatus: dto.moderationStatus,
+    likeCount: dto.likeCount ?? 0,
+    likedByMe: dto.likedByMe ?? false,
+    commentCount: dto.commentCount ?? 0,
     viewCount: dto.viewCount ?? 0,
   });
 };

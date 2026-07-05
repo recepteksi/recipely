@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
@@ -12,7 +12,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 
 const GRID_GAP = spacing.lg2;
@@ -20,7 +20,7 @@ const GRID_GAP = spacing.lg2;
 const SKELETON_ROWS = 2;
 
 export interface WebRecipeGridProps {
-  recipes: Recipe[];
+  recipes: RecipeSummary[];
   isSearching: boolean;
   /**
    * True while the recipe list is (re)loading — e.g. after a sort/filter
@@ -28,6 +28,13 @@ export interface WebRecipeGridProps {
    * sort/filter controls) and the surrounding page stay in place.
    */
   isLoading: boolean;
+  /**
+   * True while a filter/sort change is refetching an already-loaded list
+   * (`state.isRefreshing` in the store). Unlike `isLoading`, this never
+   * replaces the grid — it only shows a small inline spinner next to the
+   * section-head controls so the stale cards stay fully visible underneath.
+   */
+  isRefreshing: boolean;
   /** First applied cuisine key, or `null` — drives the section-head title. */
   activeCuisineLabel: string | null;
   sortBy: SortKey;
@@ -53,7 +60,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, isLoading, onOpenRecipe, isSaved, onToggleSave,
+  gridColumns, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -64,7 +71,7 @@ export const WebRecipeGrid = ({
       : t().recipes.webAllRecipes;
 
   const renderItem = useCallback(
-    ({ item }: { item: Recipe }): React.JSX.Element => (
+    ({ item }: { item: RecipeSummary }): React.JSX.Element => (
       <View style={styles.gridCell}>
         <WebRecipeCard
           recipe={item}
@@ -93,6 +100,14 @@ export const WebRecipeGrid = ({
 
   const right = (
     <View style={styles.controls}>
+      {isRefreshing ? (
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          testID="web-recipe-grid-refresh-indicator"
+          accessibilityLabel={t().recipes.refreshing}
+        />
+      ) : null}
       <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
         {segButton('ALL', t().recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
         {DIFFICULTY_VALUES.map((d) =>
@@ -111,7 +126,10 @@ export const WebRecipeGrid = ({
         </ThemedText>
         {activeFilterCount > 0 ? (
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
-            <ThemedText style={[styles.filterBadgeText, { color: colors.primaryText }]}>
+            <ThemedText
+              style={[styles.filterBadgeText, { color: colors.primaryText }]}
+              numberOfLines={1}
+            >
               {activeFilterCount}
             </ThemedText>
           </View>
@@ -212,7 +230,10 @@ const styles = StyleSheet.create({
   },
   filterBadgeText: {
     fontSize: fontSizes.micro,
+    lineHeight: fontSizes.micro,
     fontWeight: '700',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   segment: {
     flexDirection: 'row',

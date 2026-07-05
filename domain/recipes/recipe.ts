@@ -3,13 +3,7 @@ import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
-
-export interface RecipeNutrition {
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  fiber?: number;
-}
+import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 
 export interface RecipeProps {
   id: string;
@@ -36,6 +30,8 @@ export interface RecipeProps {
   likeCount: number;
   likedByMe: boolean;
   viewCount: number;
+  moderationStatus: string;
+  commentCount: number;
 }
 
 /**
@@ -123,5 +119,11 @@ export class Recipe extends Entity<RecipeProps> {
 
   get viewCount(): number {
     return this.props.viewCount;
+  }
+  get moderationStatus(): string {
+    return this.props.moderationStatus;
+  }
+  get commentCount(): number {
+    return this.props.commentCount;
   }
 }

@@ -4,7 +4,7 @@ import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
-import type { RecipelyUserDto } from '@infrastructure/auth/user-info-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';

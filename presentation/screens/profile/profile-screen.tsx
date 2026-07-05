@@ -17,7 +17,8 @@ import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { TabBar, type TabBarKey } from '@presentation/base/widgets/tab-bar';
+import { TabBar } from '@presentation/base/widgets/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
 import { ProfileSettingsSections } from '@presentation/screens/profile/profile-settings-sections';
@@ -48,6 +49,7 @@ export const ProfileScreen = (): React.JSX.Element => {
   const email = user?.email.value ?? '';
   const photoUri = user?.photoUrl ?? undefined;
   const handle = email.split('@')[0];
+  const bio = user?.bio?.trim() ?? '';
 
   useEffect(() => {
     if (userId !== undefined && profileState.status === 'idle') {
@@ -116,6 +118,23 @@ export const ProfileScreen = (): React.JSX.Element => {
                 @{handle}
               </ThemedText>
             ) : null}
+            {bio.length > 0 ? (
+              <ThemedText variant="body" style={styles.bioText}>
+                {bio}
+              </ThemedText>
+            ) : (
+              <Pressable
+                onPress={() => router.push('/edit-profile')}
+                style={styles.bioPrompt}
+                hitSlop={spacing.sm}
+                accessibilityRole="button"
+                accessibilityLabel={t().profile.addBioPrompt}
+              >
+                <ThemedText variant="caption" muted style={styles.bioPromptText}>
+                  {t().profile.addBioPrompt}
+                </ThemedText>
+              </Pressable>
+            )}
           </View>
 
           {isLoadingProfile ? (
@@ -252,6 +271,17 @@ const styles = StyleSheet.create({
   handle: {
     marginTop: 2,
     textAlign: 'center',
+  },
+  bioText: {
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  bioPrompt: {
+    marginTop: spacing.sm,
+  },
+  bioPromptText: {
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   statsLoading: {
     marginTop: spacing.lg,

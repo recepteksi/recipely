@@ -10,8 +10,7 @@ import {
 } from '@presentation/base/errors/failure-content';
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
-
-export type StateViewStatus = 'loading' | 'error' | 'empty' | 'content';
+import type { StateViewStatus } from '@presentation/base/widgets/state-view-status';
 
 export interface StateViewProps {
   status: StateViewStatus;

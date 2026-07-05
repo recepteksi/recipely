@@ -1,5 +1,5 @@
 import { t } from '@presentation/i18n';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 /** Sort options offered in the recipe list UI. */
 export type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';

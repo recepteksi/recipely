@@ -3,11 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import {
-  ALL_THEMES,
-  getThemeDefinition,
-  type ThemeId,
-} from '@presentation/base/theme/themes';
+import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/themes';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
 
@@ -18,6 +15,11 @@ export interface ThemeGridProps {
 
 const CHIP_WIDTH = 76;
 const SWATCH_SIZE = 56;
+const LABEL_LINE_HEIGHT = 13;
+/** Reserve exactly two lines of label height so switching between a short
+ * (English) and long (Turkish, or any other locale) theme name never shifts
+ * the section below the grid — see `numberOfLines={2}` on the label below. */
+const LABEL_MIN_HEIGHT = LABEL_LINE_HEIGHT * 2;
 
 /** Horizontal scrollable grid of colour-swatch chips for selecting the active theme. */
 export const ThemeGrid = ({
@@ -122,7 +124,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     fontSize: fontSizes.micro,
     textAlign: 'center',
-    lineHeight: 13,
+    lineHeight: LABEL_LINE_HEIGHT,
+    minHeight: LABEL_MIN_HEIGHT,
   },
   labelActive: {
     fontWeight: '700',

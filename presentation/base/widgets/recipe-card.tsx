@@ -19,7 +19,8 @@ export interface RecipeCardProps {
   cuisine: string;
   difficulty: string;
   rating: number;
-  tags: string[];
+  /** Omitted for lean list/grid contexts (`RecipeSummary` has no tags); the tags row is hidden when absent or empty. */
+  tags?: string[];
   likeCount?: number;
   likedByMe?: boolean;
   onPress: () => void;
@@ -30,7 +31,7 @@ export interface RecipeCardProps {
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
-  name, image, cuisine, difficulty, rating, tags,
+  name, image, cuisine, difficulty, rating, tags = [],
   likeCount = 0, likedByMe = false,
   onPress, onLike, hoverEffect = false,
 }: RecipeCardProps): React.JSX.Element => {
@@ -112,11 +113,13 @@ export const RecipeCard = ({
         <ThemedText variant="subtitle" numberOfLines={1}>{name}</ThemedText>
         <View style={styles.bottomRow}>
           <View style={styles.tagsRow}>
-            {tags.slice(0, 2).map((tag) => (
-              <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
-                <ThemedText variant="caption" style={{ color: colors.chipText }}>{tag}</ThemedText>
-              </View>
-            ))}
+            {tags.length > 0
+              ? tags.slice(0, 2).map((tag) => (
+                  <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
+                    <ThemedText variant="caption" style={{ color: colors.chipText }}>{tag}</ThemedText>
+                  </View>
+                ))
+              : null}
           </View>
           <View style={styles.metaRow}>
             <View style={styles.ratingRow}>

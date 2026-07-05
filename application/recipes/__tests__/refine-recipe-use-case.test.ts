@@ -36,6 +36,8 @@ const makeRecipe = (): Recipe => {
     likeCount: 0,
     likedByMe: false,
     viewCount: 0,
+    moderationStatus: 'approved',
+    commentCount: 0,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;

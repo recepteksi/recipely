@@ -1,12 +1,14 @@
-import { act } from 'react-test-renderer';
+import { act, create, type ReactTestInstance } from 'react-test-renderer';
 import { TextInput } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   byRole,
   renderComponent,
   textContent,
   type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
 import { t } from '@presentation/i18n';
 
@@ -52,7 +54,72 @@ const renderHeader = (
   return { root, onNotificationsPress, onSearchChange };
 };
 
+/** Recursively flattens a possibly-nested RN style prop into one object. */
+const flattenStyle = (style: unknown): Record<string, unknown> =>
+  Array.isArray(style)
+    ? Object.assign({}, ...style.map(flattenStyle))
+    : ((style as Record<string, unknown> | undefined) ?? {});
+
+/**
+ * Renders with an explicit top safe-area inset (bypassing the fixed
+ * zero-inset metrics in `renderComponent`) so the band's resting `top` can be
+ * asserted against a real device-like notch/status-bar value.
+ */
+const renderHeaderWithTopInset = (topInset: number): ReactTestInstance => {
+  const Probe = (): React.JSX.Element => {
+    const scrollY = useSharedValue(0);
+    const headerTranslateY = useSharedValue(0);
+    return (
+      <CollapsingHomeHeader
+        scrollY={scrollY}
+        headerTranslateY={headerTranslateY}
+        reduceMotion
+        onNotificationsPress={jest.fn()}
+        unreadCount={0}
+        searchValue=""
+        onSearchChange={jest.fn()}
+      />
+    );
+  };
+
+  let renderer!: ReturnType<typeof create>;
+  act(() => {
+    renderer = create(
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 320, height: 640 },
+          insets: { top: topInset, left: 0, right: 0, bottom: 0 },
+        }}
+      >
+        <AppThemeProvider>
+          <Probe />
+        </AppThemeProvider>
+      </SafeAreaProvider>,
+    );
+  });
+  return renderer.root;
+};
+
+/** The absolutely-positioned band (identified by its fixed zIndex). */
+const bandStyle = (root: ReactTestInstance): Record<string, unknown> => {
+  const node = root.findAll((n) => flattenStyle(n.props.style).zIndex === 20)[0];
+  return flattenStyle(node?.props.style);
+};
+
 describe('CollapsingHomeHeader', () => {
+  it('offsets the band by the top safe-area inset so it clears the status bar / notch', () => {
+    const root = renderHeaderWithTopInset(47);
+
+    expect(bandStyle(root).top).toBe(47);
+  });
+
+  it('does not add extra offset when there is no top inset (no-notch devices)', () => {
+    const root = renderHeaderWithTopInset(0);
+
+    expect(bandStyle(root).top).toBe(0);
+  });
+
+
   it('renders the screen title from the recipes i18n namespace', () => {
     const { root } = renderHeader();
 

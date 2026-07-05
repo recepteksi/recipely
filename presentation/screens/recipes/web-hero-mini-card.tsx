@@ -7,10 +7,10 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/screens/recipes/web-hero-constants';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface WebHeroMiniCardProps {
-  recipe: Recipe;
+  recipe: RecipeSummary;
   /** Rank number rendered in the top-left badge (2 or 3). */
   rank: number;
   onPress: (id: string) => void;
@@ -19,7 +19,7 @@ export interface WebHeroMiniCardProps {
 /** Compact ranked hero card: bleed image, bottom gradient, rank badge, meta. */
 export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const totalMin = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
+  const totalMin = recipe.totalTimeMinutes;
   return (
     <Pressable
       onPress={() => onPress(recipe.id)}

@@ -1,11 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
-
-export interface DeleteCommentInput {
-  recipeId: string;
-  commentId: string;
-}
+import type { DeleteCommentInput } from '@application/comments/delete-comment-input';
 
 /**
  * Removes a comment from a recipe, scoped by both `recipeId` and `commentId`

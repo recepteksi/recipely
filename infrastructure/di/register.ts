@@ -1,6 +1,7 @@
 import { type Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
-import { HttpClient, type HttpClientOptions } from '@infrastructure/network/http-client';
+import { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';

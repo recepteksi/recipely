@@ -5,7 +5,7 @@ import {
 } from '@presentation/base/errors/failure-content';
 import { t } from '@presentation/i18n';
 import { toastStore } from '@presentation/base/feedback/toast-store';
-import type { ToastInput } from '@presentation/base/feedback/toast-model';
+import type { ToastInput } from '@presentation/base/feedback/toast-input';
 
 /** Optional retry affordance attached to an error toast. */
 export interface ToastRetry {

@@ -1,94 +1,18 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { MediaType } from '@domain/recipes/media-item';
-import type { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-
-/**
- * A single media file attached to a recipe on create/update. `uri` is either a
- * local file URI (uploaded as multipart) or an already-hosted `https://` URL
- * (kept verbatim on update). The list order is the gallery order; index 0 is
- * the cover.
- */
-export interface RecipeMediaUpload {
-  uri: string;
-  fileName: string;
-  mimeType: string;
-  type: MediaType;
-}
-
-export type RecipeSort =
-  | 'popular'
-  | 'rating'
-  | 'time'
-  | 'newest'
-  | 'mostLiked'
-  | 'alphabetical'
-  | 'mostCommented';
-
-export interface RecipeFilters {
-  search?: string;
-  // Opaque taxonomy keys (backend owns the full catalog); not narrowed to the
-  // local enums so newer backend cuisines/categories can be filtered on.
-  cuisines?: string[];
-  categories?: string[];
-  difficulties?: Difficulty[];
-  maxTime?: number;
-  sort?: RecipeSort;
-  sortOrder?: 'asc' | 'desc';
-}
-
-export interface CreateRecipeInput {
-  name: Record<string, string>;
-  // Opaque taxonomy key validated by the backend (the source of truth for the
-  // full catalog); not narrowed to the local `CuisineKey`/`RecipeCategory`
-  // enums, which only mirror a curated subset.
-  cuisine: string;
-  category: string;
-  difficulty: Difficulty;
-  ingredients: Record<string, string[]>;
-  instructions: Record<string, string[]>;
-  prepTimeMinutes: number;
-  cookTimeMinutes: number;
-  servings: number;
-  // Ordered gallery (cover first). At least one image is required.
-  media: RecipeMediaUpload[];
-  rating?: number;
-  tags?: Record<string, string[]>;
-  mealType?: Record<string, string[]>;
-  isPublished?: boolean;
-  locale?: string;
-}
-
-export interface UpdateRecipeInput {
-  name?: Record<string, string>;
-  cuisine?: string;
-  category?: string;
-  difficulty?: Difficulty;
-  ingredients?: Record<string, string[]>;
-  instructions?: Record<string, string[]>;
-  prepTimeMinutes?: number;
-  cookTimeMinutes?: number;
-  servings?: number;
-  // Full ordered gallery (cover first). Omit to leave media unchanged; when
-  // provided it replaces the recipe's media. Local URIs are uploaded first,
-  // remote `https://` URLs are kept as-is.
-  media?: RecipeMediaUpload[];
-  rating?: number;
-  tags?: Record<string, string[]>;
-  mealType?: Record<string, string[]>;
-  isPublished?: boolean;
-  locale?: string;
-}
-
-export type CreateRecipeProgressCallback = (loaded: number, total: number) => void;
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
+import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 
 export interface IRecipeRepository {
-  listActiveRecipes(filters?: RecipeFilters): Promise<Result<Recipe[], Failure>>;
+  listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>>;
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
-  listTrendingRecipes(limit?: number): Promise<Result<Recipe[], Failure>>;
-  listMyRecipes(): Promise<Result<Recipe[], Failure>>;
+  listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>>;
+  listMyRecipes(): Promise<Result<RecipeSummary[], Failure>>;
   getRecipe(id: string): Promise<Result<Recipe, Failure>>;
   createRecipe(
     input: CreateRecipeInput,

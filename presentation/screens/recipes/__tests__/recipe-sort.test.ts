@@ -8,7 +8,7 @@
  */
 
 import { SORT_TO_API, sortKeyLabels, type SortKey } from '@presentation/screens/recipes/recipe-sort';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 // ─── derive the exhaustive key list from the type itself ──────────────────────
 // If a new SortKey is added to the union but forgotten in SORT_TO_API or

@@ -18,7 +18,8 @@ jest.mock('@infrastructure/constants/storage', () => ({
   TIMERS_STORAGE_KEY: 'recipely.timers.v1',
 }));
 
-import { timerStore, type TimerEntry } from '@application/timers/timer-store';
+import { timerStore } from '@application/timers/timer-store';
+import type { TimerEntry } from '@application/timers/timer-entry';
 
 const makeEntry = (overrides: Partial<TimerEntry> = {}): TimerEntry => ({
   id: 'recipe1:step0:5min',

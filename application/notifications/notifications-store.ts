@@ -1,32 +1,7 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
 import { Notification } from '@domain/notifications/notification';
-import type { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
-import type { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
-
-export type NotificationsState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; items: Notification[]; total: number; unreadCount: number }
-  | { status: 'error'; failure: Failure };
-
-export interface NotificationsStoreState {
-  state: NotificationsState;
-  /**
-   * App-wide unread badge count, kept fresh independently of whether the full
-   * notifications list has been loaded. Polled by `refreshUnread` so the bell
-   * badge climbs as new notifications arrive, and cleared by `markAllRead`.
-   */
-  unreadCount: number;
-  load: () => Promise<void>;
-  refreshUnread: () => Promise<void>;
-  markAllRead: () => Promise<void>;
-}
-
-export interface NotificationsStoreDeps {
-  listNotifications: ListNotificationsUseCase;
-  markAllRead: MarkAllReadUseCase;
-}
+import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
+import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
 
 export type NotificationsStore = UseBoundStore<StoreApi<NotificationsStoreState>>;
 

@@ -1,36 +1,36 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
-import type { RecipeFilters } from '@domain/recipes/i-recipe-repository';
-import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
-
-export type RecipeListState =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'loaded'; recipes: Recipe[] }
-  | { status: 'error'; failure: Failure };
-
-export interface RecipeListStoreState {
-  state: RecipeListState;
-  load: (filters?: RecipeFilters) => Promise<void>;
-  replace: (recipe: Recipe) => void;
-  remove: (id: string) => void;
-}
-
-export interface RecipeListStoreDeps {
-  listRecipes: ListRecipesUseCase;
-}
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { RecipeListStoreState } from '@application/recipes/recipe-list-store-state';
+import type { RecipeListStoreDeps } from '@application/recipes/recipe-list-store-deps';
 
 export type RecipeListStore = UseBoundStore<StoreApi<RecipeListStoreState>>;
 
 export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListStore => {
-  return create<RecipeListStoreState>((set) => ({
+  return create<RecipeListStoreState>((set, get) => ({
     state: { status: 'idle' },
+    // WHY: a filter change while a list is already `loaded` re-fetches in
+    // place — the previous `recipes` stay on screen (with `isRefreshing:
+    // true`) instead of resetting to a data-less `loading` state, so the
+    // header/filter chips a screen renders only in the `loaded` branch
+    // don't get unmounted mid-refetch. The very first load from `idle`
+    // still transitions to plain `loading` (there's nothing to preserve).
+    // A failed refresh keeps showing the stale `recipes` and surfaces the
+    // error via `refreshFailure` rather than blanking the screen.
     load: async (filters?: RecipeFilters) => {
-      set({ state: { status: 'loading' } });
+      const current = get().state;
+      if (current.status === 'loaded') {
+        set({ state: { ...current, isRefreshing: true, refreshFailure: undefined } });
+      } else {
+        set({ state: { status: 'loading' } });
+      }
       const result = await deps.listRecipes.execute(filters);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        set((s) => ({
+          state:
+            s.state.status === 'loaded'
+              ? { ...s.state, isRefreshing: false, refreshFailure: result.failure }
+              : { status: 'error', failure: result.failure },
+        }));
         return;
       }
       set({ state: { status: 'loaded', recipes: result.value } });

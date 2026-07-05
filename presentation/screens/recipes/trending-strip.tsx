@@ -10,7 +10,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 /** Fixed width of a compact trending card. */
 const CARD_WIDTH = 230;
@@ -93,7 +93,7 @@ export const TrendingStrip = ({ onOpenRecipe }: TrendingStripProps): React.JSX.E
     return null;
   }
 
-  const renderItem = ({ item }: { item: Recipe }): React.JSX.Element => (
+  const renderItem = ({ item }: { item: RecipeSummary }): React.JSX.Element => (
     <Pressable
       onPress={() => onOpenRecipe(item.id)}
       accessibilityRole="button"

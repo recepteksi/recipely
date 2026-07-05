@@ -8,6 +8,8 @@ export const en = {
     cancel: 'Cancel',
     of: 'of',
     clear: 'Clear',
+    close: 'Close',
+    closeHint: 'Double tap or swipe down to close',
   },
   errors: {
     retry: 'Try again',
@@ -120,7 +122,7 @@ export const en = {
     maxTime: 'Max time',
     any: 'Any',
     results: 'recipes',
-    clearFilters: 'Clear',
+    clearFilters: 'Clear Filters',
     showResults: 'Show',
     like: 'Like',
     unlike: 'Unlike',
@@ -134,7 +136,6 @@ export const en = {
     closeFilter: 'Close filters',
     share: 'Share recipe',
     shareTitle: 'Share recipe',
-    shareDone: 'Done',
     shareChannelMessage: 'Message',
     shareChannelEmail: 'Email',
     shareChannelMore: 'More',
@@ -149,7 +150,6 @@ export const en = {
     aiPromoSubtitle: "Describe what you want — I'll handle the rest",
     aiStart: 'Start',
     viewRecipe: 'View recipe',
-    heroByAuthor: 'by {name}',
     heroTotalMin: '{n} min',
     filterByCuisine: 'Filter by a cuisine',
     cuisineAll: 'All',
@@ -162,7 +162,10 @@ export const en = {
     difficultyMedium: 'Medium',
     difficultyHard: 'Hard',
     webEmptyBody: 'Try different filters or search terms.',
+    refreshing: 'Refreshing…',
     backToRecipes: 'Back to recipes',
+    signInToLike: 'Sign in to like this recipe.',
+    signInToSave: 'Sign in to save this recipe.',
   },
   settings: {
     title: 'Settings',
@@ -325,6 +328,7 @@ export const en = {
     chipHealthier: 'Healthier',
     chipKid: 'Kid-friendly',
     assistant: 'AI assistant',
+    closeAssistant: 'Close AI assistant',
     refineHint: 'Ask for as many changes as you like',
     prep: 'Prep',
     cook: 'Cook',
@@ -418,6 +422,7 @@ export const en = {
     carbs: 'Carbs',
     fat: 'Fat',
     fiber: 'Fiber',
+    fiberValue: 'Fiber: {value}g',
     kcal: 'kcal',
     g: 'g',
   },
@@ -434,6 +439,12 @@ export const en = {
     total: 'comments',
     like: 'Like comment',
     unlike: 'Unlike comment',
+    signInToLikeComment: 'Sign in to like this comment.',
+  },
+  signInPrompt: {
+    title: 'Sign in required',
+    message: 'Sign in to like, save, and comment on recipes.',
+    cta: 'Sign In',
   },
   register: {
     title: 'Create account',
@@ -560,6 +571,7 @@ export const en = {
     activity: 'Activity',
     activityRecent: 'Recent',
     bio: 'Home kitchen, small steps. I keep Mediterranean and Turkish recipes uncomplicated.',
+    addBioPrompt: 'Add a short bio in Edit profile to tell others about your cooking.',
     today: 'Today',
     daysAgo: 'days ago',
     nothingYet: 'Nothing here yet.',
@@ -589,9 +601,3 @@ export const en = {
     saved: 'Profile updated.',
   },
 };
-
-type DeepStringify<T> = {
-  [K in keyof T]: T[K] extends object ? DeepStringify<T[K]> : string;
-};
-
-export type Translations = DeepStringify<typeof en>;

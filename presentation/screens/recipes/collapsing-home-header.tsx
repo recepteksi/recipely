@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
@@ -32,6 +33,13 @@ export interface CollapsingHomeHeaderProps {
  * (`headerTranslateY`), while the title shrinks and the eyebrow fades as the list
  * scrolls past `sizes.homeTitleShrink` (`scrollY`). With reduce-motion on it stays
  * fully shown at rest geometry.
+ *
+ * The band is absolutely positioned so it can float over the list and slide
+ * independently of it — which also means it falls outside the parent
+ * `SafeAreaView`'s flow and never receives its top padding (RN measures an
+ * absolutely-positioned child's `top: 0` from the parent's own edge, ignoring
+ * that parent's padding). It applies `useSafeAreaInsets().top` itself so the
+ * eyebrow/title never render under the status bar / notch.
  */
 export const CollapsingHomeHeader = ({
   scrollY,
@@ -43,6 +51,7 @@ export const CollapsingHomeHeader = ({
   onSearchChange,
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const insets = useSafeAreaInsets();
   const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
 
   const bandStyle = useAnimatedStyle(() => ({
@@ -80,7 +89,7 @@ export const CollapsingHomeHeader = ({
 
   return (
     <Animated.View
-      style={[styles.band, bandStyle, { backgroundColor: colors.background }]}
+      style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}
     >
       <View style={styles.titleRow}>
         <View style={styles.titles}>
@@ -131,8 +140,10 @@ export const CollapsingHomeHeader = ({
 
 const styles = StyleSheet.create({
   band: {
+    // `top` is applied inline as `insets.top` (see the component body) rather
+    // than a static 0 — absolutely-positioned children ignore their parent
+    // SafeAreaView's top padding, so this must be set explicitly per-render.
     position: 'absolute',
-    top: 0,
     left: 0,
     right: 0,
     height: sizes.homeHeaderMax,

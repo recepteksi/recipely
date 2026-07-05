@@ -1,4 +1,4 @@
-import type { Translations } from './en';
+import type { Translations } from './translations';
 
 export const tr: Translations = {
   common: {
@@ -10,6 +10,8 @@ export const tr: Translations = {
     cancel: 'İptal',
     of: '/',
     clear: 'Temizle',
+    close: 'Kapat',
+    closeHint: 'Kapatmak için iki kez dokunun veya aşağı kaydırın',
   },
   errors: {
     retry: 'Tekrar dene',
@@ -122,7 +124,7 @@ export const tr: Translations = {
     maxTime: 'En fazla süre',
     any: 'Hepsi',
     results: 'tarif',
-    clearFilters: 'Temizle',
+    clearFilters: 'Filtreleri Temizle',
     showResults: 'Göster',
     like: 'Beğen',
     unlike: 'Beğeniyi kaldır',
@@ -136,7 +138,6 @@ export const tr: Translations = {
     closeFilter: 'Filtreleri kapat',
     share: 'Tarifi paylaş',
     shareTitle: 'Tarifi paylaş',
-    shareDone: 'Kapat',
     shareChannelMessage: 'Mesaj',
     shareChannelEmail: 'E-posta',
     shareChannelMore: 'Diğer',
@@ -151,7 +152,6 @@ export const tr: Translations = {
     aiPromoSubtitle: 'Ne canın istiyorsa anlat — gerisini bana bırak',
     aiStart: 'Başla',
     viewRecipe: 'Tarifi gör',
-    heroByAuthor: '{name} tarafından',
     heroTotalMin: '{n} dk',
     filterByCuisine: 'Bir mutfağa göre filtrele',
     cuisineAll: 'Tümü',
@@ -164,7 +164,10 @@ export const tr: Translations = {
     difficultyMedium: 'Orta',
     difficultyHard: 'Zor',
     webEmptyBody: 'Farklı filtreler veya arama terimleri deneyin.',
+    refreshing: 'Yenileniyor…',
     backToRecipes: 'Tariflere dön',
+    signInToLike: 'Bu tarifi beğenmek için giriş yapın.',
+    signInToSave: 'Bu tarifi kaydetmek için giriş yapın.',
   },
   settings: {
     title: 'Ayarlar',
@@ -327,6 +330,7 @@ export const tr: Translations = {
     chipHealthier: 'Daha sağlıklı',
     chipKid: 'Çocuk dostu',
     assistant: 'AI asistan',
+    closeAssistant: 'AI asistanını kapat',
     refineHint: 'İstediğin kadar değişiklik isteyebilirsin',
     prep: 'Hazırlık',
     cook: 'Pişirme',
@@ -420,6 +424,7 @@ export const tr: Translations = {
     carbs: 'Karbonhidrat',
     fat: 'Yağ',
     fiber: 'Lif',
+    fiberValue: 'Lif: {value}g',
     kcal: 'kcal',
     g: 'g',
   },
@@ -436,6 +441,12 @@ export const tr: Translations = {
     total: 'yorum',
     like: 'Yorumu beğen',
     unlike: 'Beğeniyi geri al',
+    signInToLikeComment: 'Bu yorumu beğenmek için giriş yapın.',
+  },
+  signInPrompt: {
+    title: 'Giriş gerekli',
+    message: 'Tarifleri beğenmek, kaydetmek ve yorum yapmak için giriş yapın.',
+    cta: 'Giriş Yap',
   },
   register: {
     title: 'Hesap oluştur',
@@ -562,6 +573,7 @@ export const tr: Translations = {
     activity: 'Aktivite',
     activityRecent: 'Son hareketler',
     bio: 'Ev mutfağı, küçük adımlar. Akdeniz ve Türk tariflerini sade tutmaya çalışıyorum.',
+    addBioPrompt: 'Profilini düzenle kısmından "Hakkında" bölümüne mutfağınla ilgili kısa bir not ekle.',
     today: 'Bugün',
     daysAgo: 'gün önce',
     nothingYet: 'Henüz bir şey yok.',

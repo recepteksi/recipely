@@ -1,107 +1,14 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
-import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
-import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
-import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
-import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
-import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
-import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
-import type {
-  CreateRecipeInput,
-  CreateRecipeProgressCallback,
-  UpdateRecipeInput,
-} from '@domain/recipes/i-recipe-repository';
-import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-
-export type CreateRecipeState =
-  | { status: 'idle' }
-  | { status: 'creating' }
-  | { status: 'success'; recipe: Recipe }
-  | { status: 'error'; failure: Failure };
-
-export type GenerateRecipeState =
-  | { status: 'idle' }
-  | { status: 'generating' }
-  | { status: 'success'; recipe: Recipe }
-  | { status: 'error'; failure: Failure };
-
-export type UpdateRecipeState =
-  | { status: 'idle' }
-  | { status: 'updating' }
-  | { status: 'success'; recipe: Recipe }
-  | { status: 'error'; failure: Failure };
-
-export type DeleteRecipeState =
-  | { status: 'idle' }
-  | { status: 'deleting' }
-  | { status: 'success' }
-  | { status: 'error'; failure: Failure };
-
-export type RefineRecipeState =
-  | { status: 'idle' }
-  | { status: 'refining' }
-  | { status: 'success'; recipe: Recipe }
-  | { status: 'error'; failure: Failure };
-
-export interface CreatedRecipesStoreState {
-  recipes: readonly Recipe[];
-  createState: CreateRecipeState;
-  generateState: GenerateRecipeState;
-  // WHY: reuses GenerateRecipeState — the import flow has the identical
-  // idle/generating/success/error shape (it produces the same preview Recipe),
-  // so a near-duplicate state union would only drift over time.
-  importState: GenerateRecipeState;
-  updateState: UpdateRecipeState;
-  deleteState: DeleteRecipeState;
-  refineState: RefineRecipeState;
-  aiDraft: Recipe | null;
-  add: (recipe: Recipe) => void;
-  remove: (id: string) => void;
-  replace: (recipe: Recipe) => void;
-  findById: (id: string) => Recipe | undefined;
-  createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
-  loadMyRecipes: () => Promise<void>;
-  generateRecipe: (prompt: string, locale: string) => Promise<void>;
-  importInstagram: (url: string, locale: string) => Promise<void>;
-  refineRecipe: (
-    currentRecipe: DraftRecipeSnapshot,
-    instruction: string,
-  ) => Promise<Recipe | null>;
-  updateRecipe: (id: string, input: UpdateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
-  deleteRecipe: (id: string) => Promise<void>;
-  resetCreateState: () => void;
-  resetGenerateState: () => void;
-  resetImportState: () => void;
-  resetRefineState: () => void;
-  resetUpdateState: () => void;
-  resetDeleteState: () => void;
-  clearAiDraft: () => void;
-}
-
-export interface CreatedRecipesStoreDeps {
-  createRecipeUseCase: CreateRecipeUseCase;
-  listMyRecipesUseCase: ListMyRecipesUseCase;
-  generateRecipeUseCase: GenerateRecipeUseCase;
-  importInstagramRecipeUseCase: ImportInstagramRecipeUseCase;
-  refineRecipeUseCase: RefineRecipeUseCase;
-  updateRecipeUseCase: UpdateRecipeUseCase;
-  deleteRecipeUseCase: DeleteRecipeUseCase;
-  // WHY: owner-mutation flows must keep the public feed and detail cache in
-  // sync. Without this, the recipe list at /recipes and the detail page show
-  // stale data after an edit until the next full reload.
-  recipeListStore: RecipeListStore;
-  recipeDetailStore: RecipeDetailStore;
-}
+import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
+import type { CreatedRecipesStoreState } from '@application/recipes/created-recipes-store-state';
+import type { CreatedRecipesStoreDeps } from '@application/recipes/created-recipes-store-deps';
 
 export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreState>>;
 
 export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): CreatedRecipesStore => {
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
+    localRecipes: [],
     createState: { status: 'idle' },
     generateState: { status: 'idle' },
     importState: { status: 'idle' },
@@ -109,11 +16,36 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     deleteState: { status: 'idle' },
     refineState: { status: 'idle' },
     aiDraft: null,
-    add: (recipe) => set((s) => ({ recipes: [recipe, ...s.recipes] })),
-    remove: (id) => set((s) => ({ recipes: s.recipes.filter((r) => r.id !== id) })),
+    // WHY: localRecipes is the source of truth for `findById`; recipes (the
+    // lean "My Recipes" grid data) is kept in sync alongside it via
+    // `recipeToSummary` so a create/update/delete doesn't need a re-fetch to
+    // show up in both places. The conversion only fails on the
+    // practically-impossible case of an already-valid Recipe producing an
+    // invalid RecipeSummary — skip the lean-list update in that case.
+    add: (recipe) =>
+      set((s) => {
+        const summary = recipeToSummary(recipe);
+        return {
+          localRecipes: [recipe, ...s.localRecipes],
+          recipes: summary.ok ? [summary.value, ...s.recipes] : s.recipes,
+        };
+      }),
+    remove: (id) =>
+      set((s) => ({
+        localRecipes: s.localRecipes.filter((r) => r.id !== id),
+        recipes: s.recipes.filter((r) => r.id !== id),
+      })),
     replace: (recipe) =>
-      set((s) => ({ recipes: s.recipes.map((r) => (r.id === recipe.id ? recipe : r)) })),
-    findById: (id) => get().recipes.find((r) => r.id === id),
+      set((s) => {
+        const summary = recipeToSummary(recipe);
+        return {
+          localRecipes: s.localRecipes.map((r) => (r.id === recipe.id ? recipe : r)),
+          recipes: summary.ok
+            ? s.recipes.map((r) => (r.id === summary.value.id ? summary.value : r))
+            : s.recipes,
+        };
+      }),
+    findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: 'creating' } });
       const result = await deps.createRecipeUseCase.execute(input, onProgress);
@@ -122,10 +54,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         return;
       }
       const recipe = result.value;
-      set((s) => ({
-        createState: { status: 'success', recipe },
-        recipes: [recipe, ...s.recipes],
-      }));
+      get().add(recipe);
+      set({ createState: { status: 'success', recipe } });
     },
     loadMyRecipes: async () => {
       const result = await deps.listMyRecipesUseCase.execute();
@@ -195,7 +125,12 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       const recipe = result.value;
       get().replace(recipe);
       // Propagate the edit to sibling caches so every screen sees fresh data.
-      deps.recipeListStore.getState().replace(recipe);
+      // recipeListStore holds the lean RecipeSummary[] list cache, so the
+      // full Recipe is first converted down to a summary.
+      const summary = recipeToSummary(recipe);
+      if (summary.ok) {
+        deps.recipeListStore.getState().replace(summary.value);
+      }
       deps.recipeDetailStore.getState().replace(recipe);
       set({ updateState: { status: 'success', recipe } });
     },
