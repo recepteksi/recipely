@@ -569,6 +569,7 @@ export const en = {
     activity: 'Activity',
     activityRecent: 'Recent',
     bio: 'Home kitchen, small steps. I keep Mediterranean and Turkish recipes uncomplicated.',
+    addBioPrompt: 'Add a short bio in Edit profile to tell others about your cooking.',
     today: 'Today',
     daysAgo: 'days ago',
     nothingYet: 'Nothing here yet.',

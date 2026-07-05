@@ -49,6 +49,7 @@ export const ProfileScreen = (): React.JSX.Element => {
   const email = user?.email.value ?? '';
   const photoUri = user?.photoUrl ?? undefined;
   const handle = email.split('@')[0];
+  const bio = user?.bio?.trim() ?? '';
 
   useEffect(() => {
     if (userId !== undefined && profileState.status === 'idle') {
@@ -117,6 +118,22 @@ export const ProfileScreen = (): React.JSX.Element => {
                 @{handle}
               </ThemedText>
             ) : null}
+            {bio.length > 0 ? (
+              <ThemedText variant="body" style={styles.bioText}>
+                {bio}
+              </ThemedText>
+            ) : (
+              <Pressable
+                onPress={() => router.push('/edit-profile')}
+                style={styles.bioPrompt}
+                accessibilityRole="button"
+                accessibilityLabel={t().profile.addBioPrompt}
+              >
+                <ThemedText variant="caption" muted style={styles.bioPromptText}>
+                  {t().profile.addBioPrompt}
+                </ThemedText>
+              </Pressable>
+            )}
           </View>
 
           {isLoadingProfile ? (
@@ -253,6 +270,17 @@ const styles = StyleSheet.create({
   handle: {
     marginTop: 2,
     textAlign: 'center',
+  },
+  bioText: {
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  bioPrompt: {
+    marginTop: spacing.sm,
+  },
+  bioPromptText: {
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   statsLoading: {
     marginTop: spacing.lg,
