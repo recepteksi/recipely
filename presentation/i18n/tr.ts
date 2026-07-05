@@ -163,6 +163,7 @@ export const tr: Translations = {
     difficultyMedium: 'Orta',
     difficultyHard: 'Zor',
     webEmptyBody: 'Farklı filtreler veya arama terimleri deneyin.',
+    refreshing: 'Yenileniyor…',
     backToRecipes: 'Tariflere dön',
     signInToLike: 'Bu tarifi beğenmek için giriş yapın.',
     signInToSave: 'Bu tarifi kaydetmek için giriş yapın.',

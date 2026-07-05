@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
@@ -28,6 +28,13 @@ export interface WebRecipeGridProps {
    * sort/filter controls) and the surrounding page stay in place.
    */
   isLoading: boolean;
+  /**
+   * True while a filter/sort change is refetching an already-loaded list
+   * (`state.isRefreshing` in the store). Unlike `isLoading`, this never
+   * replaces the grid — it only shows a small inline spinner next to the
+   * section-head controls so the stale cards stay fully visible underneath.
+   */
+  isRefreshing: boolean;
   /** First applied cuisine key, or `null` — drives the section-head title. */
   activeCuisineLabel: string | null;
   sortBy: SortKey;
@@ -53,7 +60,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, isLoading, onOpenRecipe, isSaved, onToggleSave,
+  gridColumns, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -93,6 +100,14 @@ export const WebRecipeGrid = ({
 
   const right = (
     <View style={styles.controls}>
+      {isRefreshing ? (
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          testID="web-recipe-grid-refresh-indicator"
+          accessibilityLabel={t().recipes.refreshing}
+        />
+      ) : null}
       <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
         {segButton('ALL', t().recipes.difficultyAll, activeDifficulty === null, () => onDifficultyChange(null))}
         {DIFFICULTY_VALUES.map((d) =>
