@@ -95,13 +95,16 @@ Verified against the backend repo before starting — see notes per item.
 
 ## Phase 3 — State Lifecycle & Navigational Performance
 
-- [ ] **Cuisine/category filter change → partial state update.** Confirmed real:
-      no literal remount, but `recipe-list-store.ts`'s `load()` resets to a bare
-      `loading` state on every filter change, and `recipe-list-screen.tsx`
-      renders a full-viewport `LoadingSkeleton` for `idle`/`loading`, wiping the
-      header/cuisine-strip/filter-chips along with the list during a refetch.
-      In progress on `feat/recipe-list-partial-refresh` (ts-developer: store/state
-      shape; rn-developer to follow: screen render logic).
+- [x] **Cuisine/category filter change → partial state update.** Confirmed real:
+      no literal remount, but `recipe-list-store.ts`'s `load()` reset to a bare
+      `loading` state on every filter change, wiping the header/cuisine-strip/
+      filter-chips (mobile) and blanking to a full skeleton grid (web) during
+      a refetch. Fixed: `recipe-list-state.ts`'s `loaded` variant gained
+      `isRefreshing`/`refreshFailure`; the stale list now stays visible during
+      a refetch, with a native pull-to-refresh spinner (mobile) / small inline
+      indicator (web) and a one-shot toast on refresh failure. Branch
+      `feat/recipe-list-partial-refresh` (PR #129), code-reviewer approved
+      (zero findings), merged to `dev`. 91 suites / 991 tests passing.
 - [x] **Profile bio edit → cache/store invalidation — investigated, does NOT
       reproduce, N/A.** `bio` is only read/written in `edit-profile-screen.tsx`
       (via `authStore.updateProfile`, which correctly updates the session);
