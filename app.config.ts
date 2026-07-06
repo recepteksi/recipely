@@ -74,18 +74,10 @@ const getBuildNumber = (): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 };
 
-/** Latest git tag across the whole repo by semantic-version sort (leading `v`
- * stripped); falls back to app.json's version when untagged.
- *
- * Deliberately not `git describe --tags`, which walks commit ancestry: tags
- * are only ever created on `main` (by the `tag-release` CI job), and `dev`
- * never merges those tag commits back in, so an ancestry-based lookup on
- * `dev` stays frozen at whatever tag predated the dev/main split instead of
- * advancing with each release. */
+/** Latest git tag (leading `v` stripped); falls back to app.json's version when untagged. */
 const getVersion = (fallback: string): string => {
-  const tags = runGit("git tag --list 'v*' --sort=-v:refname");
-  const latest = tags?.split('\n')[0]?.trim();
-  return latest !== undefined && latest.length > 0 ? latest.replace(/^v/, '') : fallback;
+  const tag = runGit('git describe --tags --abbrev=0');
+  return tag !== null && tag.length > 0 ? tag.replace(/^v/, '') : fallback;
 };
 
 /** Swaps the google-signin plugin's iosUrlScheme for the active variant so

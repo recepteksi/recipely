@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://recipely.net/sitemap.xml
