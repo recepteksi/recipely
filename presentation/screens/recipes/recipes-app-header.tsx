@@ -1,6 +1,7 @@
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
@@ -22,9 +23,7 @@ export const RecipesAppHeader = ({
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.titles}>
-        <ThemedText variant="caption" muted style={styles.appName}>
-          Recipely
-        </ThemedText>
+        <RecipelyLogo size={sizes.iconMd} />
         <ThemedText variant="title" style={styles.screenTitle}>
           {t().recipes.title}
         </ThemedText>
@@ -65,9 +64,6 @@ const styles = StyleSheet.create({
   titles: {
     flex: 1,
     gap: spacing.xxs,
-  },
-  appName: {
-    fontSize: fontSizes.micro,
   },
   screenTitle: {
     fontWeight: '700',
