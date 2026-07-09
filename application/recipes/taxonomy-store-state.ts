@@ -13,4 +13,11 @@ export interface TaxonomyStoreState {
    * triggering duplicate fetches.
    */
   load: () => Promise<void>;
+  /**
+   * Re-fetches the catalogs even when already `ready`. Used when the app
+   * locale changes: the backend localizes names via `Accept-Language`, so the
+   * cached entries are in the previous language until re-fetched. Still a
+   * no-op while a fetch is in flight.
+   */
+  reload: () => Promise<void>;
 }

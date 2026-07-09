@@ -81,3 +81,52 @@ describe('taxonomy-store', () => {
     expect(store.getState().status).toBe('ready');
   });
 });
+
+describe('taxonomy-store reload', () => {
+  it('re-fetches the catalogs even when already ready', async () => {
+    const useCase = makeUseCase(ok(catalog));
+    const store = configureTaxonomyStore({ loadTaxonomyUseCase: useCase as unknown as LoadTaxonomyUseCase });
+
+    await store.getState().load();
+    await store.getState().reload();
+
+    expect(useCase.execute).toHaveBeenCalledTimes(2);
+    expect(store.getState().status).toBe('ready');
+  });
+
+  it('is a no-op while a fetch is already in flight', async () => {
+    let resolveFetch: (r: Result<TaxonomyCatalog, Failure>) => void = () => {};
+    const useCase = {
+      execute: jest.fn().mockReturnValue(
+        new Promise<Result<TaxonomyCatalog, Failure>>((resolve) => {
+          resolveFetch = resolve;
+        }),
+      ),
+    };
+    const store = configureTaxonomyStore({ loadTaxonomyUseCase: useCase as unknown as LoadTaxonomyUseCase });
+
+    const first = store.getState().load();
+    await store.getState().reload();
+    expect(useCase.execute).toHaveBeenCalledTimes(1);
+
+    resolveFetch(ok(catalog));
+    await first;
+    expect(store.getState().status).toBe('ready');
+  });
+
+  it('records the failure and becomes error when the re-fetch fails', async () => {
+    const useCase = {
+      execute: jest
+        .fn()
+        .mockResolvedValueOnce(ok(catalog))
+        .mockResolvedValueOnce(fail(new NetworkFailure('offline'))),
+    };
+    const store = configureTaxonomyStore({ loadTaxonomyUseCase: useCase as unknown as LoadTaxonomyUseCase });
+
+    await store.getState().load();
+    await store.getState().reload();
+
+    expect(store.getState().status).toBe('error');
+    expect(store.getState().failure).toBeInstanceOf(NetworkFailure);
+  });
+});

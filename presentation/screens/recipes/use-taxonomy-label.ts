@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { t } from '@presentation/i18n';
+import { useLocale } from '@presentation/i18n/use-locale';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
 import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
@@ -26,6 +27,11 @@ export const useTaxonomyLabel = (): UseTaxonomyLabelResult => {
   const { taxonomyStore } = useStores();
   const cuisines = taxonomyStore((s) => s.cuisines);
   const categories = taxonomyStore((s) => s.categories);
+  // Locale is a dependency of the memo below: the i18n fallback names come
+  // from t(), which is not reactive by itself — without this, a language
+  // switch would keep serving cached labels in the previous language until
+  // the store maps changed.
+  const locale = useLocale();
 
   const cuisineMap = useMemo(() => toMap(cuisines), [cuisines]);
   const categoryMap = useMemo(() => toMap(categories), [categories]);
@@ -54,5 +60,8 @@ export const useTaxonomyLabel = (): UseTaxonomyLabelResult => {
     };
 
     return { cuisineLabel, categoryLabel };
-  }, [cuisineMap, categoryMap]);
+    // `locale` forces the t() fallback names to recompute on a language
+    // switch (see the comment above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cuisineMap, categoryMap, locale]);
 };
