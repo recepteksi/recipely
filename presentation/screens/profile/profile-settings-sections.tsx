@@ -6,12 +6,14 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings-row';
+import { ConfirmSheet } from '@presentation/base/widgets/confirm-sheet';
 import { ThemeToggle } from '@presentation/base/widgets/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
+import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { FeedbackSheet } from '@presentation/screens/profile/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/screens/profile/web-feedback-modal';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
@@ -21,13 +23,32 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
   const { authStore } = useStores();
   const signOut = authStore((s) => s.signOut);
+  const deleteAccount = authStore((s) => s.deleteAccount);
 
   const language = useLocale() as 'en' | 'tr';
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
 
   const handleSignOut = async (): Promise<void> => {
     await signOut();
     router.replace('/login');
+  };
+
+  const handleDeleteAccount = async (): Promise<void> => {
+    setDeleteError(undefined);
+    setDeleting(true);
+    const failure = await deleteAccount();
+    setDeleting(false);
+    if (failure === null) {
+      setDeleteVisible(false);
+      router.replace('/login');
+      return;
+    }
+    // WHY: the session stays intact on failure, so keep the sheet open and show
+    // the error inline rather than navigating away.
+    setDeleteError(failureToastMessage(failure));
   };
 
   return (
@@ -61,6 +82,16 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
           label={t().settings.signOut}
           destructive
           onPress={() => void handleSignOut()}
+        />
+        <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
+        <SettingsRow
+          icon="trash-outline"
+          label={t().settings.deleteAccount}
+          destructive
+          onPress={() => {
+            setDeleteError(undefined);
+            setDeleteVisible(true);
+          }}
         />
       </View>
 
@@ -102,6 +133,17 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
       ) : (
         <FeedbackSheet visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       )}
+      <ConfirmSheet
+        visible={deleteVisible}
+        title={t().settings.deleteAccountConfirmTitle}
+        message={t().settings.deleteAccountConfirmMessage}
+        confirmLabel={t().settings.deleteAccount}
+        destructive
+        loading={deleting}
+        error={deleteError}
+        onConfirm={() => void handleDeleteAccount()}
+        onClose={() => setDeleteVisible(false)}
+      />
     </View>
   );
 };
