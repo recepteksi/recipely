@@ -15,6 +15,7 @@ import { RequestPasswordResetUseCase } from '@application/auth/request-password-
 import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
+import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
 import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
@@ -134,6 +135,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const resetPassword = new ResetPasswordUseCase(authRepo);
   const uploadAvatar = new UploadAvatarUseCase(authRepo);
   const updateProfile = new UpdateProfileUseCase(authRepo);
+  const deleteAccount = new DeleteAccountUseCase(authRepo);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
   const listTrendingRecipes = new ListTrendingRecipesUseCase(recipeRepo);
   const getRecipe = new GetRecipeUseCase(recipeRepo);
@@ -163,7 +165,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });

@@ -13,6 +13,7 @@ import {
   AUTH_SOCIAL_PATH,
   AVATAR_UPLOAD_URL,
   DEFAULT_CODE_TTL_SECONDS,
+  ME_PATH,
   ME_PROFILE_PATH,
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
@@ -228,6 +229,23 @@ export class AuthRepository implements IAuthRepository {
     const saveResult = await this.storage.saveSession(updatedResult.value);
     if (!saveResult.ok) return fail(saveResult.failure);
     return ok(updatedResult.value);
+  }
+
+  async deleteAccount(): Promise<Result<void, Failure>> {
+    const result = await this.http.request<void>({
+      method: 'DELETE',
+      url: ME_PATH,
+    });
+    // Keep the session on any HTTP/network failure so the user stays signed in
+    // and can retry — only clear local credentials once the server confirms.
+    if (!result.ok) {
+      return result;
+    }
+    const clearResult = await this.storage.clear();
+    if (!clearResult.ok) {
+      return fail(clearResult.failure);
+    }
+    return ok(undefined);
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

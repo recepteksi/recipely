@@ -10,6 +10,7 @@ import type { RequestPasswordResetUseCase } from '@application/auth/request-pass
 import type { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import type { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import type { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
+import type { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
@@ -28,4 +29,5 @@ export interface AuthStoreDeps {
   resetPassword: ResetPasswordUseCase;
   uploadAvatar: UploadAvatarUseCase;
   updateProfile: UpdateProfileUseCase;
+  deleteAccount: DeleteAccountUseCase;
 }

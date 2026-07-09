@@ -134,6 +134,7 @@ const makeAuthStore = (userId: string | null) =>
     resetPassword: jest.fn(),
     uploadAvatar: jest.fn(),
     updateProfile: jest.fn(),
+    deleteAccount: jest.fn(),
   }));
 
 interface HarnessOptions {

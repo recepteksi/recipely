@@ -70,13 +70,13 @@ describe('useAuthGuard', () => {
     expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fabc123%2Fedit');
   });
 
-  it('redirects a guest on the recipe list route (no trailing segment)', () => {
+  it('does not redirect a guest on the recipe list route (public, no trailing segment)', () => {
     mockPathname = '/recipes';
     mockStatus = 'unauthenticated';
 
     renderGuard();
 
-    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Frecipes');
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('redirects a guest on /my-recipes', () => {
@@ -86,6 +86,15 @@ describe('useAuthGuard', () => {
     renderGuard();
 
     expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Fmy-recipes');
+  });
+
+  it('redirects a guest on /settings', () => {
+    mockPathname = '/settings';
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Fsettings');
   });
 
   it('redirects a guest on an errored session for a gated route', () => {

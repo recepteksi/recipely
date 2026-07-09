@@ -48,4 +48,10 @@ export interface IAuthRepository {
    * and returns the refreshed, persisted session.
    */
   updateProfile(input: { displayName?: string; bio?: string }): Promise<Result<AuthSession, Failure>>;
+  /**
+   * Permanently deletes the signed-in user's account and all of its data on the
+   * server, then clears the local session on success. On failure the local
+   * session is left intact so the user stays signed in and can retry.
+   */
+  deleteAccount(): Promise<Result<void, Failure>>;
 }

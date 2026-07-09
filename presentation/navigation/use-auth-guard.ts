@@ -4,9 +4,16 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
- * by {@link useAuthGuard}; auth screens and the index splash live here. Exact
- * matches only — dynamic public routes (e.g. recipe detail) are matched
- * separately by {@link RECIPE_DETAIL_PATH}.
+ * by {@link useAuthGuard}; auth screens, the index splash, and the browsable
+ * recipe list live here. Exact matches only — dynamic public routes (e.g.
+ * recipe detail) are matched separately by {@link RECIPE_DETAIL_PATH}.
+ *
+ * `/recipes` (the list) is public so guests can browse without an account: the
+ * backend serves the read-only list, trending, taxonomy, and comment-listing
+ * endpoints with optional auth. Account-bound actions on the list/detail
+ * screens (favorite, like, comment, create, AI generate) still route the guest
+ * to login on tap; only the gated sub-routes — my-recipes, profile, create,
+ * settings, notifications, and the AI generator — remain guarded.
  */
 export const PUBLIC_PATHS = new Set<string>([
   '/',
@@ -15,14 +22,15 @@ export const PUBLIC_PATHS = new Set<string>([
   '/verify-code',
   '/forgot-password',
   '/reset-password',
+  '/recipes',
 ]);
 
 /**
  * The single-recipe detail route (`/recipes/:recipeId`) is public — the
  * backend serves `GET /recipes/:id` without auth so guests can view a shared
- * recipe. Deliberately excludes `/recipes` (the list, no trailing segment)
- * and every other `/recipes/*` sub-route: only exactly one path segment
- * after `/recipes` matches.
+ * recipe. Matches only exactly one path segment after `/recipes` — the list
+ * (`/recipes`, no trailing segment) is public via {@link PUBLIC_PATHS}, while
+ * every other `/recipes/*` sub-route stays gated.
  */
 const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
 

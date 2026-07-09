@@ -268,6 +268,17 @@ export const LoginScreen = (): React.JSX.Element => {
             </ThemedText>
           </Pressable>
         </View>
+
+        <Pressable
+          onPress={() => router.replace('/recipes')}
+          style={styles.guestRow}
+          accessibilityRole="button"
+          accessibilityLabel={t().login.continueAsGuest}
+        >
+          <ThemedText variant="caption" muted style={styles.guestLink}>
+            {t().login.continueAsGuest}
+          </ThemedText>
+        </Pressable>
       </>
     );
   }
@@ -387,6 +398,14 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontWeight: '600',
+  },
+  guestRow: {
+    alignSelf: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  guestLink: {
+    textDecorationLine: 'underline',
   },
   hint: {
     marginTop: spacing.lg,
