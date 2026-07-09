@@ -12,6 +12,7 @@
  * focused on the identity block this screen renders directly.
  */
 
+import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -40,6 +41,17 @@ jest.mock('@presentation/base/widgets/tab-bar', () => ({
 jest.mock('@presentation/screens/profile/profile-settings-sections', () => ({
   ProfileSettingsSections: () => null,
 }));
+
+// AppThemeProvider hydrates theme/preference from async storage on mount; let
+// those promises settle inside each test so the resulting re-render can't fire
+// after the Jest environment is torn down (it crashed isolated --findRelatedTests
+// runs with "import after teardown" even though all assertions passed).
+afterEach(async () => {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+});
 
 /** Unwraps a domain `Result`, throwing in-test if construction unexpectedly fails. */
 const unwrap = <T,>(result: { ok: boolean; value?: T }): T => {
