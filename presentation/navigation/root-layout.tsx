@@ -13,7 +13,7 @@ import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { AlarmScreen } from '@presentation/screens/alarm/alarm-screen';
-import { useAuthGuard, PUBLIC_PATHS } from '@presentation/navigation/use-auth-guard';
+import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { alarmStore } from '@application/timers/alarm-store';
 import { initLocale } from '@presentation/i18n';
 
@@ -32,6 +32,23 @@ const AlarmOverlay = (): React.JSX.Element | null => {
 };
 
 /**
+ * Screens that own their own split-pane chrome (the auth flow plus the index
+ * splash) and must NOT show the sticky WebHeader. Deliberately its own set —
+ * NOT the auth guard's PUBLIC_PATHS: "reachable without a session" and
+ * "renders without the header" are different concerns, and reusing the guard
+ * set made the header vanish from /recipes when guest browsing made that
+ * route public.
+ */
+const HEADERLESS_PATHS = new Set<string>([
+  '/',
+  '/login',
+  '/register',
+  '/verify-code',
+  '/forgot-password',
+  '/reset-password',
+]);
+
+/**
  * Decides whether the sticky WebHeader should render. Auth screens own their
  * own split-pane chrome and skip the header. Everything else uses it as soon
  * as the LayoutProvider switches into the web shell breakpoint.
@@ -40,7 +57,7 @@ const useShouldRenderWebHeader = (): boolean => {
   const { isWebShell } = useLayout();
   const pathname = usePathname();
   if (!isWebShell) return false;
-  return !PUBLIC_PATHS.has(pathname);
+  return !HEADERLESS_PATHS.has(pathname);
 };
 
 const WebShellChrome = (): React.JSX.Element | null => {
