@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from './themes';
 import { DEFAULT_THEME_ID, type ThemeId } from '@presentation/base/theme/theme-id';
@@ -37,6 +38,12 @@ const isThemePreference = (v: string): v is ThemePreference =>
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
   const hydrated = useIsHydrated();
+  // Locale is part of this provider on purpose: react-navigation blocks
+  // parent-driven re-renders of mounted screens, so a language switch would
+  // otherwise only show after something else (e.g. a theme change) re-rendered
+  // them. Every screen consumes this context, so rebuilding the value on a
+  // locale change re-renders each screen and re-evaluates its t() strings.
+  const locale = useLocale();
   const [themeId, setThemeIdState] = useState<ThemeId>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
@@ -81,7 +88,10 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const value = useMemo(
     () => ({ themeId, preference, scheme, colors, setThemeId, setPreference }),
-    [themeId, preference, scheme, colors, setThemeId, setPreference],
+    // `locale` is a deliberate extra dependency: a new value identity per
+    // locale re-renders every useTheme consumer (see comment above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [themeId, preference, scheme, colors, setThemeId, setPreference, locale],
   );
 
   return (

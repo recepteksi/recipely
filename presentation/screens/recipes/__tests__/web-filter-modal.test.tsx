@@ -49,6 +49,7 @@ const makeTaxonomyStore = () =>
     status: 'idle',
     failure: null,
     load: jest.fn(),
+    reload: jest.fn(),
   }));
 
 interface ModalHandlers {
