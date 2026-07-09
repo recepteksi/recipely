@@ -19,6 +19,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       await deps.signOut.execute();
       set({ state: { status: 'unauthenticated' } });
       deps.savedRecipesStore.getState().setSavedIds(new Set());
+      deps.commentsStore.getState().reset();
     },
 
     hydrate: async () => {
@@ -102,6 +103,8 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'unauthenticated' } });
+      deps.savedRecipesStore.getState().setSavedIds(new Set());
+      deps.commentsStore.getState().reset();
     },
 
     signInWithGoogle: async () => {
@@ -173,6 +176,9 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       }
       set({ state: { status: 'unauthenticated' } });
       deps.savedRecipesStore.getState().setSavedIds(new Set());
+      // The backend cascade just deleted this user's comments — drop the cached
+      // per-recipe lists so they can't reappear on screens visited earlier.
+      deps.commentsStore.getState().reset();
       return null;
     },
   }));

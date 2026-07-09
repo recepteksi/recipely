@@ -1,4 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
+import type { CommentsStore } from '@application/comments/comments-store';
 import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
@@ -41,8 +42,22 @@ const fakeLoadFavorites: LoadFavoritesUseCase = {
   execute: () => Promise.resolve(ok(new Set<string>())),
 } as unknown as LoadFavoritesUseCase;
 
+/** Minimal comments-store stand-in exposing the reset() the auth store calls. */
+const makeFakeCommentsStore = (): { store: CommentsStore; resetCalls: () => number } => {
+  let resets = 0;
+  const store = {
+    getState: () => ({
+      reset: () => {
+        resets += 1;
+      },
+    }),
+  } as unknown as CommentsStore;
+  return { store, resetCalls: () => resets };
+};
+
 const makeStore = (repo: FakeAuthRepository) => {
   const savedRecipesStore = configureSavedRecipesStore();
+  const commentsStore = makeFakeCommentsStore().store;
   return configureAuthStore({
     signIn: new SignInUseCase(repo),
     requestRegistration: new RequestRegistrationUseCase(repo),
@@ -52,6 +67,7 @@ const makeStore = (repo: FakeAuthRepository) => {
     getSession: new GetSessionUseCase(repo),
     loadFavorites: fakeLoadFavorites,
     savedRecipesStore,
+    commentsStore,
     signInWithGoogle: new SignInWithGoogleUseCase(repo),
     signInWithApple: new SignInWithAppleUseCase(repo),
     requestPasswordReset: new RequestPasswordResetUseCase(repo),
@@ -327,6 +343,7 @@ describe('auth-store', () => {
       });
       const signOutSpy = jest.spyOn(repo, 'signOut');
       const savedRecipesStore = configureSavedRecipesStore();
+      const commentsStore = makeFakeCommentsStore().store;
       const store = configureAuthStore({
         signIn: new SignInUseCase(repo),
         requestRegistration: new RequestRegistrationUseCase(repo),
@@ -336,6 +353,7 @@ describe('auth-store', () => {
         getSession: new GetSessionUseCase(repo),
         loadFavorites: fakeLoadFavorites,
         savedRecipesStore,
+        commentsStore,
         signInWithGoogle: new SignInWithGoogleUseCase(repo),
         signInWithApple: new SignInWithAppleUseCase(repo),
         requestPasswordReset: new RequestPasswordResetUseCase(repo),
@@ -427,6 +445,7 @@ describe('auth-store', () => {
         deleteAccountResult: ok(undefined),
       });
       const savedRecipesStore = configureSavedRecipesStore();
+      const commentsStore = makeFakeCommentsStore().store;
       const store = configureAuthStore({
         signIn: new SignInUseCase(repo),
         requestRegistration: new RequestRegistrationUseCase(repo),
@@ -436,6 +455,7 @@ describe('auth-store', () => {
         getSession: new GetSessionUseCase(repo),
         loadFavorites: fakeLoadFavorites,
         savedRecipesStore,
+        commentsStore,
         signInWithGoogle: new SignInWithGoogleUseCase(repo),
         signInWithApple: new SignInWithAppleUseCase(repo),
         requestPasswordReset: new RequestPasswordResetUseCase(repo),
@@ -453,6 +473,39 @@ describe('auth-store', () => {
       expect(result).toBeNull();
       expect(store.getState().state.status).toBe('unauthenticated');
       expect(savedRecipesStore.getState().savedIds.size).toBe(0);
+    });
+
+    it('resets the cached comment lists on success so cascade-deleted comments cannot linger', async () => {
+      const session = buildSession();
+      const repo = new FakeAuthRepository({
+        signInResult: ok(session),
+        deleteAccountResult: ok(undefined),
+      });
+      const savedRecipesStore = configureSavedRecipesStore();
+      const fakeComments = makeFakeCommentsStore();
+      const store = configureAuthStore({
+        signIn: new SignInUseCase(repo),
+        requestRegistration: new RequestRegistrationUseCase(repo),
+        verifyRegistration: new VerifyRegistrationUseCase(repo),
+        resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
+        signOut: new SignOutUseCase(repo),
+        getSession: new GetSessionUseCase(repo),
+        loadFavorites: fakeLoadFavorites,
+        savedRecipesStore,
+        commentsStore: fakeComments.store,
+        signInWithGoogle: new SignInWithGoogleUseCase(repo),
+        signInWithApple: new SignInWithAppleUseCase(repo),
+        requestPasswordReset: new RequestPasswordResetUseCase(repo),
+        resetPassword: new ResetPasswordUseCase(repo),
+        uploadAvatar: new UploadAvatarUseCase(repo),
+        updateProfile: new UpdateProfileUseCase(repo),
+        deleteAccount: new DeleteAccountUseCase(repo),
+      });
+      await store.getState().signIn('emilys', 'emilyspass');
+
+      await store.getState().deleteAccount();
+
+      expect(fakeComments.resetCalls()).toBe(1);
     });
 
     it('returns the Failure and leaves the user authenticated on failure', async () => {

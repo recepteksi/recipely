@@ -165,7 +165,14 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount });
+  const commentsStore = configureCommentsStore({
+    listComments: listCommentsUseCase,
+    addComment: addCommentUseCase,
+    deleteComment: deleteCommentUseCase,
+    likeComment: likeCommentUseCase,
+    unlikeComment: unlikeCommentUseCase,
+  });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, commentsStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
@@ -191,13 +198,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
     getDraftUseCase,
     upsertDraftUseCase,
     deleteDraftUseCase,
-  });
-  const commentsStore = configureCommentsStore({
-    listComments: listCommentsUseCase,
-    addComment: addCommentUseCase,
-    deleteComment: deleteCommentUseCase,
-    likeComment: likeCommentUseCase,
-    unlikeComment: unlikeCommentUseCase,
   });
   const likesStore = configureLikesStore({
     likeRecipe: likeRecipeUseCase,

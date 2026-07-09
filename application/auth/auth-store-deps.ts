@@ -12,6 +12,7 @@ import type { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-ca
 import type { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import type { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
+import type { CommentsStore } from '@application/comments/comments-store';
 import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
 
 export interface AuthStoreDeps {
@@ -23,6 +24,8 @@ export interface AuthStoreDeps {
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
   savedRecipesStore: SavedRecipesStore;
+  /** Reset on session end so cached comment lists can't outlive the account/session. */
+  commentsStore: CommentsStore;
   signInWithGoogle: SignInWithGoogleUseCase;
   signInWithApple: SignInWithAppleUseCase;
   requestPasswordReset: RequestPasswordResetUseCase;

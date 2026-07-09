@@ -292,5 +292,9 @@ export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): Com
 
       return result;
     },
+
+    reset: () => {
+      set({ byRecipe: {} });
+    },
   }));
 };

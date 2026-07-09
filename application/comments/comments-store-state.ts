@@ -14,4 +14,11 @@ export interface CommentsStoreState {
    * toggle is rejected — the optimistic rollback alone is easy to miss.
    */
   toggleLike(recipeId: string, commentId: string): Promise<Result<void, Failure>>;
+  /**
+   * Drops every cached per-recipe comment list. Called when the session ends
+   * (sign-out, expiry, account deletion) so personal content — e.g. comments the
+   * backend just cascade-deleted with the account — cannot linger on screens
+   * rendered later in the same app session.
+   */
+  reset(): void;
 }
