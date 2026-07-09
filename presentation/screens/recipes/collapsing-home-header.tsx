@@ -8,6 +8,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { SearchBar } from '@presentation/base/widgets/search-bar';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
@@ -94,9 +95,7 @@ export const CollapsingHomeHeader = ({
       <View style={styles.titleRow}>
         <View style={styles.titles}>
           <Animated.View style={eyebrowStyle}>
-            <ThemedText variant="caption" muted style={styles.appName}>
-              Recipely
-            </ThemedText>
+            <RecipelyLogo size={sizes.iconMd} />
           </Animated.View>
           <Animated.View style={[styles.titleScaleAnchor, titleStyle]}>
             <ThemedText variant="title" style={styles.screenTitle}>
@@ -163,9 +162,6 @@ const styles = StyleSheet.create({
   titleScaleAnchor: {
     alignSelf: 'flex-start',
     transformOrigin: 'left',
-  },
-  appName: {
-    fontSize: fontSizes.micro,
   },
   screenTitle: {
     fontWeight: '700',

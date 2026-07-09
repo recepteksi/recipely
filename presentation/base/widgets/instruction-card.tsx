@@ -108,22 +108,28 @@ export const InstructionCard = ({
             },
           ]}
         >
-          {parts.map((part, i) => {
-            if (part.kind === 'timer' && part.minutes !== undefined) {
-              return (
-                <Fragment key={i}>
-                  <InlineTimer
-                    timerId={`${recipeId}:step${String(index)}:${String(Math.round(part.minutes))}min`}
-                    recipeId={recipeId}
-                    recipeName={recipeName}
-                    minutes={part.minutes}
-                  />
-                </Fragment>
-              );
-            }
-            return <Fragment key={i}>{part.value}</Fragment>;
-          })}
+          {/* The full step renders as plain text — embedding the timer chip
+              (a View) inside Text baseline-misaligns it on native, which is
+              exactly the "crooked 10dk badge" bug. Chips live below instead. */}
+          {parts.map((part, i) => (
+            <Fragment key={i}>{part.value}</Fragment>
+          ))}
         </ThemedText>
+        {parts.some((part) => part.kind === 'timer') ? (
+          <View style={styles.timerRow}>
+            {parts.map((part, i) =>
+              part.kind === 'timer' && part.minutes !== undefined ? (
+                <InlineTimer
+                  key={i}
+                  timerId={`${recipeId}:step${String(index)}:${String(Math.round(part.minutes))}min`}
+                  recipeId={recipeId}
+                  recipeName={recipeName}
+                  minutes={part.minutes}
+                />
+              ) : null,
+            )}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -155,5 +161,11 @@ const styles = StyleSheet.create({
   },
   stepText: {
     lineHeight: 22,
+  },
+  timerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
   },
 });

@@ -633,6 +633,15 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           />
         </View>
 
+        {chatExpanded ? (
+          // Dim the editor behind the expanded assistant transcript so the
+          // conversation reads against a solid backdrop; tapping it collapses
+          // the assistant (same pattern as the sheet backdrops).
+          <Pressable
+            style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]}
+            onPress={() => setChatExpanded(false)}
+          />
+        ) : null}
         <RefineDock
           chatHistory={chatHistory}
           chatInput={chatInput}

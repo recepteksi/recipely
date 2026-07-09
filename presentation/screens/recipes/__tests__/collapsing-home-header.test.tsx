@@ -9,6 +9,7 @@ import {
   type RenderResult,
 } from '@presentation/base/test-support/render-component';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
 import { CollapsingHomeHeader } from '@presentation/screens/recipes/collapsing-home-header';
 import { t } from '@presentation/i18n';
 
@@ -126,10 +127,11 @@ describe('CollapsingHomeHeader', () => {
     expect(textContent(root)).toContain(t().recipes.title);
   });
 
-  it('renders the "Recipely" eyebrow', () => {
+  it('renders the logo eyebrow instead of the "Recipely" text', () => {
     const { root } = renderHeader();
 
-    expect(textContent(root)).toContain('Recipely');
+    expect(textContent(root)).not.toContain('Recipely');
+    expect(root.findAllByType(RecipelyLogo).length).toBeGreaterThan(0);
   });
 
   it('renders a SearchBar wired to the search value and change handler', () => {
