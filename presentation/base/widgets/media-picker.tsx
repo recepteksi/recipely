@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
@@ -27,6 +27,20 @@ const pickImages = async (): Promise<MediaItem[]> => {
   return result.assets.map((a) => ({ type: 'image', url: a.uri }));
 };
 
+const captureImage = async (): Promise<MediaItem[]> => {
+  const perm = await ImagePicker.requestCameraPermissionsAsync();
+  if (!perm.granted) return [];
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: 'images',
+    quality: 0.85,
+  });
+  if (result.canceled) return [];
+  return result.assets.map((a) => ({ type: 'image', url: a.uri }));
+};
+
+// expo-image-picker cannot open a native camera on web — hide the affordance.
+const cameraAvailable = Platform.OS !== 'web';
+
 export const MediaPicker = ({
   media,
   onAdd,
@@ -40,27 +54,50 @@ export const MediaPicker = ({
     if (items.length > 0) onAdd(items);
   }, [onAdd]);
 
+  const takePhoto = useCallback(async () => {
+    const items = await captureImage();
+    if (items.length > 0) onAdd(items);
+  }, [onAdd]);
+
   if (media.length === 0) {
     return (
-      <Pressable
-        onPress={addPhotos}
-        accessibilityRole="button"
-        accessibilityLabel={t().mediaPicker.add}
-        style={[
-          styles.dropZone,
-          { backgroundColor: colors.surface, borderColor: colors.inputBorder },
-        ]}
-      >
-        <View style={[styles.dropIconWrap, { backgroundColor: colors.chipBackground }]}>
-          <Ionicons name="camera-outline" size={24} color={colors.primary} />
-        </View>
-        <ThemedText variant="body" style={styles.dropTitle}>
-          {t().mediaPicker.add}
-        </ThemedText>
-        <ThemedText variant="caption" muted style={styles.dropHint}>
-          {t().mediaPicker.hint}
-        </ThemedText>
-      </Pressable>
+      <View style={styles.emptyStack}>
+        <Pressable
+          onPress={addPhotos}
+          accessibilityRole="button"
+          accessibilityLabel={t().mediaPicker.add}
+          style={[
+            styles.dropZone,
+            { backgroundColor: colors.surface, borderColor: colors.inputBorder },
+          ]}
+        >
+          <View style={[styles.dropIconWrap, { backgroundColor: colors.chipBackground }]}>
+            <Ionicons name="images-outline" size={24} color={colors.primary} />
+          </View>
+          <ThemedText variant="body" style={styles.dropTitle}>
+            {t().mediaPicker.add}
+          </ThemedText>
+          <ThemedText variant="caption" muted style={styles.dropHint}>
+            {t().mediaPicker.hint}
+          </ThemedText>
+        </Pressable>
+        {cameraAvailable ? (
+          <Pressable
+            onPress={takePhoto}
+            accessibilityRole="button"
+            accessibilityLabel={t().mediaPicker.takePhoto}
+            style={[
+              styles.cameraRow,
+              { backgroundColor: colors.surface, borderColor: colors.inputBorder },
+            ]}
+          >
+            <Ionicons name="camera-outline" size={18} color={colors.primary} />
+            <ThemedText variant="body" style={[styles.cameraLabel, { color: colors.primary }]}>
+              {t().mediaPicker.takePhoto}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
     );
   }
 
@@ -129,11 +166,43 @@ export const MediaPicker = ({
           {t().mediaPicker.more}
         </ThemedText>
       </Pressable>
+      {cameraAvailable ? (
+        <Pressable
+          onPress={takePhoto}
+          accessibilityRole="button"
+          accessibilityLabel={t().mediaPicker.takePhoto}
+          style={[
+            styles.tile,
+            styles.addTile,
+            { borderColor: colors.inputBorder },
+          ]}
+        >
+          <Ionicons name="camera-outline" size={24} color={colors.textMuted} />
+          <ThemedText variant="caption" muted style={styles.addLabel}>
+            {t().mediaPicker.takePhoto}
+          </ThemedText>
+        </Pressable>
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  emptyStack: {
+    gap: spacing.sm,
+  },
+  cameraRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs2,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    paddingVertical: spacing.sm,
+  },
+  cameraLabel: {
+    fontWeight: '600',
+  },
   dropZone: {
     borderRadius: radii.lg,
     borderWidth: 2,

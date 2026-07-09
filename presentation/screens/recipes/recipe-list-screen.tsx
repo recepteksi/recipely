@@ -14,7 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { type Href, usePathname, useRouter } from 'expo-router';
+import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
@@ -230,6 +230,22 @@ export const RecipeListScreen = (): React.JSX.Element => {
     }
     void load(buildApiFilters(filtersRef.current, sortByRef.current));
   }, [language, load, buildApiFilters]);
+
+  // Re-fetch quietly whenever the screen regains focus (e.g. returning from
+  // create-recipe or a detail page) so new/edited recipes appear without a
+  // manual pull-to-refresh. The store refreshes in place (`isRefreshing`), so
+  // the visible list never blanks. The first focus fires on mount, where the
+  // initial load is already underway — skip it to avoid a duplicate fetch.
+  const didFocusRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!didFocusRef.current) {
+        didFocusRef.current = true;
+        return;
+      }
+      void load(buildApiFilters(filtersRef.current, sortByRef.current));
+    }, [load, buildApiFilters]),
+  );
 
   // Surfaces a failed filter/sort refetch as a toast (the stale list stays on
   // screen per the store's design) — see `useRefreshFailureToast` for the

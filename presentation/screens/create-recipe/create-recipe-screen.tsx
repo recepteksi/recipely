@@ -29,6 +29,8 @@ import {
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/recipe-mapping';
 import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
+import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { ConfirmSheet } from '@presentation/base/widgets/confirm-sheet';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
 import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
@@ -285,13 +287,19 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // "Check the highlighted fields" pointed at nothing. This binds each entry to
   // its matching input (red border + inline message) in addition to the toast;
   // entries this screen has no input for still reach the user via a toast
-  // instead of being silently dropped.
-  const surfaceSaveFailure = useCallback((failure: Failure): void => {
-    showErrorToast(failure);
+  // instead of being silently dropped. Non-validation failures (network /
+  // server) get a blocking dialog with a retry action instead of a transient
+  // toast, so a failed save can never go unnoticed.
+  const [saveError, setSaveError] = useState<{ message: string; mode: 'publish' | 'update' } | null>(
+    null,
+  );
+  const surfaceSaveFailure = useCallback((failure: Failure, mode: 'publish' | 'update'): void => {
     if (!(failure instanceof ValidationFailure)) {
       setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
+      setSaveError({ message: failureToastMessage(failure), mode });
       return;
     }
+    showErrorToast(failure);
     const parsed = mapFieldErrorsToInputs(failure.fieldErrors);
     setFieldErrors(parsed);
     if (parsed.unmatched.length > 0) {
@@ -419,7 +427,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     // trace was a console 4xx. Surface it as a toast so the user always gets a
     // reaction, then reset so the button is tappable again.
     if (state.status === 'error') {
-      surfaceSaveFailure(state.failure);
+      surfaceSaveFailure(state.failure, 'publish');
       createdRecipesStore.getState().resetCreateState();
     }
   }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router, surfaceSaveFailure]);
@@ -460,7 +468,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       return;
     }
     if (state.status === 'error') {
-      surfaceSaveFailure(state.failure);
+      surfaceSaveFailure(state.failure, 'update');
       createdRecipesStore.getState().resetUpdateState();
     }
   }, [recipe, recipeId, createdRecipesStore, router, surfaceSaveFailure]);
@@ -661,6 +669,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onSaveDraft={() => void onSaveDraftAndExit()}
         onDiscard={() => void onDiscardAndExit()}
         onKeepEditing={() => setExitOpen(false)}
+      />
+      <ConfirmSheet
+        visible={saveError !== null}
+        title={t().createRecipe.saveErrorTitle}
+        message={saveError?.message ?? ''}
+        confirmLabel={t().common.retry}
+        onConfirm={() => {
+          const mode = saveError?.mode;
+          setSaveError(null);
+          void (mode === 'update' ? handleUpdate() : handlePublish());
+        }}
+        onClose={() => setSaveError(null)}
       />
     </KeyboardAvoider>
   );

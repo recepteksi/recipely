@@ -254,6 +254,7 @@ export const tr: Translations = {
     save: 'Kaydet',
     cancel: 'Vazgeç',
     missing: 'Lütfen ad ve en az bir malzeme ekle.',
+    saveErrorTitle: 'Tarif kaydedilemedi',
     editTitle: 'Tarifi Düzenle',
     updateSave: 'Güncelle',
     updating: 'Güncelleniyor…',
@@ -408,6 +409,7 @@ export const tr: Translations = {
     setCover: 'Kapak yap',
     remove: 'Fotoğrafı kaldır',
     more: 'Ekle',
+    takePhoto: 'Fotoğraf çek',
   },
   timer: {
     done: 'Bitti',

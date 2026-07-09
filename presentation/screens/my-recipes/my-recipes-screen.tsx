@@ -112,24 +112,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
             <View style={styles.headerActions}>
               <Pressable
-                onPress={() => router.push('/create-recipe')}
-                accessibilityRole="button"
-                accessibilityLabel={t().ai.title}
-                style={({ pressed }) => [
-                  styles.aiButton,
-                  shadows.sm,
-                  { borderColor: colors.primary, opacity: pressed ? 0.85 : 1, backgroundColor: colors.chipBackground },
-                ]}
-              >
-                <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
-                <ThemedText
-                  variant="caption"
-                  style={[styles.aiLabel, { color: colors.primary }]}
-                >
-                  {t().ai.title}
-                </ThemedText>
-              </Pressable>
-              <Pressable
                 onPress={openCreate}
                 accessibilityRole="button"
                 style={({ pressed }) => [
@@ -334,18 +316,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  aiButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs2,
-    height: sizes.floatingBtn,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.round,
-    borderWidth: 1.5,
-  },
-  aiLabel: {
-    fontWeight: '600',
   },
   createButton: {
     flexDirection: 'row',
