@@ -252,6 +252,7 @@ export const en = {
     save: 'Save',
     cancel: 'Cancel',
     missing: 'Please add a name and at least one ingredient.',
+    saveErrorTitle: 'Couldn\'t save recipe',
     editTitle: 'Edit Recipe',
     updateSave: 'Update',
     updating: 'Updating…',
@@ -406,6 +407,7 @@ export const en = {
     setCover: 'Set cover',
     remove: 'Remove photo',
     more: 'Add more',
+    takePhoto: 'Take a photo',
   },
   timer: {
     done: 'Done',
