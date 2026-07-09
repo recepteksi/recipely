@@ -87,4 +87,8 @@ export class FakeAuthRepository implements IAuthRepository {
       this.config.updateProfileResult ?? fail(new UnknownFailure('not configured')),
     );
   }
+
+  deleteAccount(): Promise<Result<void, Failure>> {
+    return Promise.resolve(this.config.deleteAccountResult ?? ok(undefined));
+  }
 }

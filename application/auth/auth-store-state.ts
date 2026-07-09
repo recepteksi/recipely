@@ -40,4 +40,11 @@ export interface AuthStoreState {
   uploadAvatar: (fileUri: string, fileName: string, mimeType: string) => Promise<Failure | null>;
   /** Updates the display name / bio; on success updates the session. Returns null on success or the Failure for the screen to toast. */
   updateProfile: (input: { displayName?: string; bio?: string }) => Promise<Failure | null>;
+  /**
+   * Permanently deletes the signed-in user's account and all its data. On
+   * success flips the store to `unauthenticated` and clears saved recipes,
+   * returning null. On failure the session is left intact (the screen shows the
+   * returned Failure) so the user can retry.
+   */
+  deleteAccount: () => Promise<Failure | null>;
 }

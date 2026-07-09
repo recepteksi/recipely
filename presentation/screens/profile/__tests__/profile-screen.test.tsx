@@ -80,6 +80,7 @@ const makeAuthStore = (bio: string | undefined) =>
     resetPassword: jest.fn(),
     uploadAvatar: jest.fn(),
     updateProfile: jest.fn(),
+    deleteAccount: jest.fn(),
   }));
 
 const makeUserProfileStore = () =>

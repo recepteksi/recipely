@@ -163,5 +163,17 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       set({ state: { status: 'authenticated', session: result.value } });
       return null;
     },
+
+    deleteAccount: async () => {
+      const result = await deps.deleteAccount.execute();
+      if (!result.ok) {
+        // The account was not deleted — keep the user signed in and surface the
+        // failure to the screen without clobbering the session state.
+        return result.failure;
+      }
+      set({ state: { status: 'unauthenticated' } });
+      deps.savedRecipesStore.getState().setSavedIds(new Set());
+      return null;
+    },
   }));
 };

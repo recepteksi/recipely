@@ -14,4 +14,5 @@ export interface FakeAuthRepositoryConfig {
   signInWithAppleResult?: Result<AuthSession, Failure>;
   uploadAvatarResult?: Result<AuthSession, Failure>;
   updateProfileResult?: Result<AuthSession, Failure>;
+  deleteAccountResult?: Result<void, Failure>;
 }

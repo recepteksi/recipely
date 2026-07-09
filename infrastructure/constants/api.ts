@@ -78,6 +78,9 @@ export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
 // Signed-in user's editable profile (display name, bio). Inside /api/v1, so
 // the path is relative — the HTTP client prepends API_BASE_URL.
 export const ME_PROFILE_PATH = "/me/profile";
+// Signed-in user's own account resource. `DELETE /me` permanently deletes the
+// account and all its data. Inside /api/v1, so the path is relative.
+export const ME_PATH = "/me";
 
 /** Public profile of any user by id. Inside /api/v1 — path is relative. */
 export const userProfilePath = (userId: string): string =>

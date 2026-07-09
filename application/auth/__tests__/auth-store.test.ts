@@ -12,6 +12,7 @@ import { RequestPasswordResetUseCase } from '@application/auth/request-password-
 import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
 import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
+import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
@@ -57,6 +58,7 @@ const makeStore = (repo: FakeAuthRepository) => {
     resetPassword: new ResetPasswordUseCase(repo),
     uploadAvatar: new UploadAvatarUseCase(repo),
     updateProfile: new UpdateProfileUseCase(repo),
+    deleteAccount: new DeleteAccountUseCase(repo),
   });
 };
 
@@ -340,6 +342,7 @@ describe('auth-store', () => {
         resetPassword: new ResetPasswordUseCase(repo),
         uploadAvatar: new UploadAvatarUseCase(repo),
         updateProfile: new UpdateProfileUseCase(repo),
+        deleteAccount: new DeleteAccountUseCase(repo),
       });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
@@ -408,6 +411,65 @@ describe('auth-store', () => {
       await store.getState().signIn('emilys', 'emilyspass');
 
       const result = await store.getState().updateProfile({ displayName: 'Updated Name' });
+
+      expect(result).toBe(failure);
+      const s = store.getState().state;
+      expect(s.status).toBe('authenticated');
+      if (s.status === 'authenticated') expect(s.session).toBe(session);
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('returns null, flips to unauthenticated, and clears savedIds on success', async () => {
+      const session = buildSession();
+      const repo = new FakeAuthRepository({
+        signInResult: ok(session),
+        deleteAccountResult: ok(undefined),
+      });
+      const savedRecipesStore = configureSavedRecipesStore();
+      const store = configureAuthStore({
+        signIn: new SignInUseCase(repo),
+        requestRegistration: new RequestRegistrationUseCase(repo),
+        verifyRegistration: new VerifyRegistrationUseCase(repo),
+        resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
+        signOut: new SignOutUseCase(repo),
+        getSession: new GetSessionUseCase(repo),
+        loadFavorites: fakeLoadFavorites,
+        savedRecipesStore,
+        signInWithGoogle: new SignInWithGoogleUseCase(repo),
+        signInWithApple: new SignInWithAppleUseCase(repo),
+        requestPasswordReset: new RequestPasswordResetUseCase(repo),
+        resetPassword: new ResetPasswordUseCase(repo),
+        uploadAvatar: new UploadAvatarUseCase(repo),
+        updateProfile: new UpdateProfileUseCase(repo),
+        deleteAccount: new DeleteAccountUseCase(repo),
+      });
+      await store.getState().signIn('emilys', 'emilyspass');
+      expect(store.getState().state.status).toBe('authenticated');
+      savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));
+
+      const result = await store.getState().deleteAccount();
+
+      expect(result).toBeNull();
+      expect(store.getState().state.status).toBe('unauthenticated');
+      expect(savedRecipesStore.getState().savedIds.size).toBe(0);
+    });
+
+    it('returns the Failure and leaves the user authenticated on failure', async () => {
+      const session = buildSession();
+      const failure = new NetworkFailure('delete failed');
+      const repo = new (class extends FakeAuthRepository {
+        override signIn() {
+          return Promise.resolve(ok(session));
+        }
+        override deleteAccount() {
+          return Promise.resolve(fail(failure));
+        }
+      })();
+      const store = makeStore(repo);
+      await store.getState().signIn('emilys', 'emilyspass');
+
+      const result = await store.getState().deleteAccount();
 
       expect(result).toBe(failure);
       const s = store.getState().state;

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +8,8 @@ import { ThemedText } from '@presentation/base/widgets/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/avatar-image';
 import { SectionHeader } from '@presentation/base/widgets/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings-row';
+import { ConfirmSheet } from '@presentation/base/widgets/confirm-sheet';
+import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { ThemeToggle } from '@presentation/base/widgets/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/language-selector';
@@ -24,12 +27,32 @@ export const SettingsScreen = (): React.JSX.Element => {
   const { authStore } = useStores();
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
+  const deleteAccount = authStore((s) => s.deleteAccount);
 
   const language = useLocale() as 'en' | 'tr';
+
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
 
   const handleSignOut = async () => {
     await signOut();
     router.replace('/login');
+  };
+
+  const handleDeleteAccount = async (): Promise<void> => {
+    setDeleteError(undefined);
+    setDeleting(true);
+    const failure = await deleteAccount();
+    setDeleting(false);
+    if (failure === null) {
+      setDeleteVisible(false);
+      router.replace('/login');
+      return;
+    }
+    // WHY: the session stays intact on failure, so keep the sheet open and show
+    // the error inline rather than navigating away.
+    setDeleteError(failureToastMessage(failure));
   };
 
   const onTabChange = (key: TabBarKey): void => {
@@ -105,6 +128,16 @@ export const SettingsScreen = (): React.JSX.Element => {
             destructive
             onPress={() => void handleSignOut()}
           />
+          <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
+          <SettingsRow
+            icon="trash-outline"
+            label={t().settings.deleteAccount}
+            destructive
+            onPress={() => {
+              setDeleteError(undefined);
+              setDeleteVisible(true);
+            }}
+          />
         </View>
 
         <SectionHeader title={t().settings.about} />
@@ -134,6 +167,17 @@ export const SettingsScreen = (): React.JSX.Element => {
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
       </ResponsiveContainer>
+      <ConfirmSheet
+        visible={deleteVisible}
+        title={t().settings.deleteAccountConfirmTitle}
+        message={t().settings.deleteAccountConfirmMessage}
+        confirmLabel={t().settings.deleteAccount}
+        destructive
+        loading={deleting}
+        error={deleteError}
+        onConfirm={() => void handleDeleteAccount()}
+        onClose={() => setDeleteVisible(false)}
+      />
       <TabBar active="profile" onChange={onTabChange} />
     </View>
   );

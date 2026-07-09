@@ -14,7 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { type Href, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { ThemedText } from '@presentation/base/widgets/themed-text';
@@ -46,6 +46,8 @@ import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refr
 import { TabBar } from '@presentation/base/widgets/tab-bar';
 import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
+import { SignInPromptSheet } from '@presentation/base/widgets/sign-in-prompt-sheet';
+import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';
 import { SelectChip } from '@presentation/base/widgets/select-chip';
@@ -89,9 +91,23 @@ const LoadingSkeleton = (): React.JSX.Element => (
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const pathname = usePathname();
   const colors = useTheme().colors;
-  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase } = useStores();
+  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
+  const userId = authStore((s) => (s.state.status === 'authenticated' ? s.state.session.user.id : null));
+  const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
+  const goToSignIn = useCallback(() => {
+    closePrompt();
+    router.push(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+  }, [closePrompt, pathname, router]);
+  // Guest-gated navigations: the create-recipe / AI-generate routes are auth-only,
+  // so intercept the tap and surface the sign-in prompt instead of letting the
+  // auth guard bounce the guest to a bare login screen.
+  const openCreateRecipe = useCallback(
+    () => requestGate(() => router.push('/create-recipe')),
+    [requestGate, router],
+  );
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
   const unreadCount = notificationsStore((s) => s.unreadCount);
@@ -436,7 +452,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   // recipe rows below keep that padding. The count row re-adds its own inset.
   const mobileListHeader = (
     <View style={styles.mobileHeaderBleed}>
-      <AiBannerCard onPress={() => router.push('/create-recipe')} />
+      <AiBannerCard onPress={openCreateRecipe} />
       <CuisineStrip selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
       <View style={styles.countRow}>
         <ThemedText variant="caption" muted>
@@ -490,9 +506,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
             <WebHeroSection
               onOpenRecipe={openRecipe}
               isSaved={isSaved}
-              onToggleSave={(id) => void toggleSave(id)}
+              onToggleSave={(id) => requestGate(() => void toggleSave(id), t().recipes.signInToSave)}
             />
-            <WebAiBanner onPress={() => router.push('/create-recipe')} />
+            <WebAiBanner onPress={openCreateRecipe} />
             <WebCuisineGrid selectedCuisines={filters.cuisines} onToggle={toggleCuisineQuick} />
           </>
         )}
@@ -516,7 +532,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
           gridColumns={gridColumns}
           onOpenRecipe={openRecipe}
           isSaved={isSaved}
-          onToggleSave={(id) => void toggleSave(id)}
+          onToggleSave={(id) => requestGate(() => void toggleSave(id), t().recipes.signInToSave)}
         />
       </ScrollView>
     );
@@ -727,6 +743,13 @@ export const RecipeListScreen = (): React.JSX.Element => {
         onApply={applyFilters}
         onReset={resetFilters}
         onClose={() => setSheetOpen(null)}
+      />
+
+      <SignInPromptSheet
+        visible={promptVisible}
+        onClose={closePrompt}
+        onSignIn={goToSignIn}
+        message={promptMessage}
       />
 
       <TabBar active="recipes" onChange={onTabChange} />

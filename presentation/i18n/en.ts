@@ -88,6 +88,7 @@ export const en = {
     signInWithApple: 'Continue with Apple',
     forgot: 'Forgot password?',
     forgotPassword: 'Forgot password',
+    continueAsGuest: 'Continue without an account',
   },
   recipes: {
     title: 'Recipes',
@@ -181,6 +182,10 @@ export const en = {
     account: 'Account',
     signOut: 'Sign out',
     signOutConfirm: 'Are you sure you want to sign out?',
+    deleteAccount: 'Delete account',
+    deleteAccountConfirmTitle: 'Delete account?',
+    deleteAccountConfirmMessage:
+      'This permanently deletes your account, recipes and data. This cannot be undone.',
     about: 'About',
     version: 'Version',
     privacyPolicy: 'Privacy Policy',

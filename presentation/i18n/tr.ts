@@ -90,6 +90,7 @@ export const tr: Translations = {
     signInWithApple: 'Apple ile devam et',
     forgot: 'Şifrenizi mi unuttunuz?',
     forgotPassword: 'Şifre sıfırla',
+    continueAsGuest: 'Üye olmadan devam et',
   },
   recipes: {
     title: 'Tarifler',
@@ -183,6 +184,10 @@ export const tr: Translations = {
     account: 'Hesap',
     signOut: 'Çıkış yap',
     signOutConfirm: 'Çıkış yapmak istediğinize emin misiniz?',
+    deleteAccount: 'Hesabı sil',
+    deleteAccountConfirmTitle: 'Hesap silinsin mi?',
+    deleteAccountConfirmMessage:
+      'Bu işlem hesabınızı, tariflerinizi ve tüm verilerinizi kalıcı olarak siler. Bu işlem geri alınamaz.',
     about: 'Hakkında',
     version: 'Sürüm',
     privacyPolicy: 'Gizlilik Politikası',
