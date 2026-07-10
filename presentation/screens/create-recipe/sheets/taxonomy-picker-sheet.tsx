@@ -10,10 +10,10 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/recipe-category';
-import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
-import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
-import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
-import type { Catalog } from '@presentation/screens/create-recipe/catalog';
+import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/model/cuisine-emoji';
+import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/model/category-emoji';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/model/taxonomy-placeholder';
+import type { Catalog } from '@presentation/screens/create-recipe/model/catalog';
 
 /**
  * `kind` selects which catalog (cuisine vs category) is shown. The emitted

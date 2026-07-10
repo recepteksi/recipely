@@ -14,7 +14,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import { useKeyboardVisible } from '@presentation/screens/create-recipe/use-keyboard-visible';
+import { useKeyboardVisible } from '@presentation/screens/create-recipe/hooks/use-keyboard-visible';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];

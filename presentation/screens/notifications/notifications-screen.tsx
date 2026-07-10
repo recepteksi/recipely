@@ -17,10 +17,10 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Notification } from '@domain/notifications/notification';
-import type { NotifKind } from '@presentation/screens/notifications/notif-kind';
-import type { NotifItem } from '@presentation/screens/notifications/notif-item';
-import type { SectionData } from '@presentation/screens/notifications/section-data';
-import { NotifRow } from '@presentation/screens/notifications/notif-row';
+import type { NotifKind } from '@presentation/screens/notifications/model/notif-kind';
+import type { NotifItem } from '@presentation/screens/notifications/model/notif-item';
+import type { SectionData } from '@presentation/screens/notifications/model/section-data';
+import { NotifRow } from '@presentation/screens/notifications/items/notif-row';
 
 const KNOWN_KINDS = new Set<NotifKind>([
   'comment',

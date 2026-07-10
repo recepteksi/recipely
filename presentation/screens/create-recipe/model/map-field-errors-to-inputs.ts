@@ -1,6 +1,6 @@
 import type { ValidationFieldError } from '@core/failure';
-import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/create-recipe-field-key';
-import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';
+import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/model/create-recipe-field-key';
+import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/model/create-recipe-field-errors';
 
 const KNOWN_FIELDS: ReadonlySet<string> = new Set<CreateRecipeFieldKey>([
   'name',

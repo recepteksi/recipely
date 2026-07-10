@@ -4,8 +4,8 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { NotifItem } from '@presentation/screens/notifications/notif-item';
-import { useKindMeta } from '@presentation/screens/notifications/use-kind-meta';
+import type { NotifItem } from '@presentation/screens/notifications/model/notif-item';
+import { useKindMeta } from '@presentation/screens/notifications/hooks/use-kind-meta';
 
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;

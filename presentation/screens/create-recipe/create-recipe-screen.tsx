@@ -20,33 +20,33 @@ import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 import {
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
   recipeToEditable,
   snapshotToEditable,
-} from '@presentation/screens/create-recipe/recipe-mapping';
+} from '@presentation/screens/create-recipe/model/recipe-mapping';
 import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
-import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
-import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
-import { RecipePreviewEditor } from '@presentation/screens/create-recipe/recipe-preview-editor';
-import { RefineDock } from '@presentation/screens/create-recipe/refine-dock';
-import { PhotosSheet } from '@presentation/screens/create-recipe/photos-sheet';
-import { ExitSheet } from '@presentation/screens/create-recipe/exit-sheet';
+import { useDraftAutosave } from '@presentation/screens/create-recipe/hooks/use-draft-autosave';
+import { PromptPhase } from '@presentation/screens/create-recipe/body/prompt-phase';
+import { GeneratingView } from '@presentation/screens/create-recipe/body/generating-view';
+import { RecipePreviewEditor } from '@presentation/screens/create-recipe/body/recipe-preview-editor';
+import { RefineDock } from '@presentation/screens/create-recipe/body/refine-dock';
+import { PhotosSheet } from '@presentation/screens/create-recipe/sheets/photos-sheet';
+import { ExitSheet } from '@presentation/screens/create-recipe/sheets/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { Phase } from '@presentation/screens/create-recipe/phase';
+import type { Phase } from '@presentation/screens/create-recipe/model/phase';
 import { ValidationFailure, type Failure } from '@core/failure';
 import {
   mapFieldErrorsToInputs,
   NO_CREATE_RECIPE_FIELD_ERRORS,
-} from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
-import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';
-import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/create-recipe-field-key';
+} from '@presentation/screens/create-recipe/model/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/model/create-recipe-field-errors';
+import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/model/create-recipe-field-key';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;

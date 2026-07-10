@@ -1,7 +1,7 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { MediaPicker } from '@presentation/base/widgets/media-picker';
+import { MediaPicker } from '@presentation/screens/create-recipe/items/media-picker';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

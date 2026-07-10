@@ -16,7 +16,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { GeneratingVariant } from '@presentation/screens/create-recipe/generating-variant';
+import type { GeneratingVariant } from '@presentation/screens/create-recipe/model/generating-variant';
 
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */

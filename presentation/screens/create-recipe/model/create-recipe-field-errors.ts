@@ -1,4 +1,4 @@
-import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/create-recipe-field-key';
+import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/model/create-recipe-field-key';
 
 /** Result of matching a `ValidationFailure.fieldErrors` breakdown onto this screen's inputs. */
 export interface CreateRecipeFieldErrors {

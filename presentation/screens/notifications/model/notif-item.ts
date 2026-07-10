@@ -1,4 +1,4 @@
-import type { NotifKind } from '@presentation/screens/notifications/notif-kind';
+import type { NotifKind } from '@presentation/screens/notifications/model/notif-kind';
 
 export interface NotifItem {
   id: string;

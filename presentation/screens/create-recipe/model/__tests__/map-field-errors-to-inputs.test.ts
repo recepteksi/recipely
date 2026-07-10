@@ -1,4 +1,4 @@
-import { mapFieldErrorsToInputs } from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
+import { mapFieldErrorsToInputs } from '@presentation/screens/create-recipe/model/map-field-errors-to-inputs';
 
 describe('mapFieldErrorsToInputs', () => {
   it('maps a single known field to its input', () => {

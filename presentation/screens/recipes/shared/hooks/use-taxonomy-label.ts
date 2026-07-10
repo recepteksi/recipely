@@ -3,9 +3,9 @@ import { useStores } from '@presentation/bootstrap/stores-context';
 import { t } from '@presentation/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
-import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/cuisine-emoji';
-import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/category-emoji';
-import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
+import { CUISINE_EMOJI } from '@presentation/screens/create-recipe/model/cuisine-emoji';
+import { CATEGORY_EMOJI } from '@presentation/screens/create-recipe/model/category-emoji';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/model/taxonomy-placeholder';
 import type { TaxonomyLabel } from '@presentation/screens/recipes/shared/model/taxonomy-label';
 import type { UseTaxonomyLabelResult } from '@presentation/screens/recipes/shared/model/use-taxonomy-label-result';
 

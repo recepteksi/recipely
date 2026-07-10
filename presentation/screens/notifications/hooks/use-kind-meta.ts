@@ -1,6 +1,6 @@
 import { useTheme } from '@presentation/base/theme/theme-context';
-import type { NotifKind } from '@presentation/screens/notifications/notif-kind';
-import type { KindMeta } from '@presentation/screens/notifications/kind-meta';
+import type { NotifKind } from '@presentation/screens/notifications/model/notif-kind';
+import type { KindMeta } from '@presentation/screens/notifications/model/kind-meta';
 
 export const useKindMeta = (kind: NotifKind): KindMeta => {
   const colors = useTheme().colors;

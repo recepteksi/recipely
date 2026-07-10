@@ -3,7 +3,7 @@ import type { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 
 const DEFAULT_PREP = 15;
 const DEFAULT_COOK = 20;

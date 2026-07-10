@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 import {
   editableHasContent,
   editableToSnapshot,
-} from '@presentation/screens/create-recipe/recipe-mapping';
+} from '@presentation/screens/create-recipe/model/recipe-mapping';
 
 const DEBOUNCE_MS = 500;
 

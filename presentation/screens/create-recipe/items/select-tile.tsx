@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { FieldErrorText } from '@presentation/screens/create-recipe/field-error-text';
+import { FieldErrorText } from '@presentation/screens/create-recipe/items/field-error-text';
 
 export interface SelectTileProps {
   label: string;

@@ -1,4 +1,4 @@
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 
 /**
  * Every `EditableRecipe` field this screen renders as its own input (and can

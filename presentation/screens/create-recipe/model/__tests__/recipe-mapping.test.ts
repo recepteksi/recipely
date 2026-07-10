@@ -4,14 +4,14 @@ import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { Recipe } from '@domain/recipes/recipe';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 import {
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
   recipeToEditable,
   snapshotToEditable,
-} from '@presentation/screens/create-recipe/recipe-mapping';
+} from '@presentation/screens/create-recipe/model/recipe-mapping';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
   const result = Recipe.create({
