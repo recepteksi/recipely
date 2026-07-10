@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { configureAuthStore } from '@application/auth/auth-store';
+import { configureAuthStore } from '@application/auth/configure-auth-store';
 import { GetSessionUseCase } from '@application/auth/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
@@ -14,7 +14,7 @@ import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
 import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { configureSavedRecipesStore } from '@application/recipes/saved-recipes-store';
+import { configureSavedRecipesStore } from '@application/recipes/configure-saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result';
 import { AuthSession } from '@domain/auth/auth-session';

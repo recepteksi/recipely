@@ -1,4 +1,4 @@
-import { configureTaxonomyStore } from '@application/recipes/taxonomy-store';
+import { configureTaxonomyStore } from '@application/recipes/configure-taxonomy-store';
 import type { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
 import type { TaxonomyCatalog } from '@application/recipes/taxonomy-catalog';
 import { NetworkFailure } from '@core/failure';

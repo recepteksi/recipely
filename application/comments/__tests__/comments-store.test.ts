@@ -1,4 +1,4 @@
-import { configureCommentsStore } from '@application/comments/comments-store';
+import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
 import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';

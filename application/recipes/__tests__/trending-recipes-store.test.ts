@@ -1,4 +1,4 @@
-import { configureTrendingRecipesStore } from '@application/recipes/trending-recipes-store';
+import { configureTrendingRecipesStore } from '@application/recipes/configure-trending-recipes-store';
 import type { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok, type Result } from '@core/result/result';

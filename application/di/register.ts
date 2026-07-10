@@ -29,77 +29,52 @@ import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-
 import { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
 import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
 import { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
-import {
-  configureDraftsStore,
-  type DraftsStore,
-} from '@application/drafts/drafts-store';
+import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
+import type { DraftsStore } from '@application/drafts/drafts-store';
 import { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { configureAuthStore, type AuthStore } from '@application/auth/auth-store';
-import {
-  configureRecipeListStore,
-  type RecipeListStore,
-} from '@application/recipes/recipe-list-store';
-import {
-  configureTrendingRecipesStore,
-  type TrendingRecipesStore,
-} from '@application/recipes/trending-recipes-store';
-import {
-  configureRecipeDetailStore,
-  type RecipeDetailStore,
-} from '@application/recipes/recipe-detail-store';
-import {
-  configureSavedRecipesStore,
-  type SavedRecipesStore,
-} from '@application/recipes/saved-recipes-store';
-import {
-  configureCreatedRecipesStore,
-  type CreatedRecipesStore,
-} from '@application/recipes/created-recipes-store';
+import { configureAuthStore } from '@application/auth/configure-auth-store';
+import type { AuthStore } from '@application/auth/auth-store';
+import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
+import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import { configureTrendingRecipesStore } from '@application/recipes/configure-trending-recipes-store';
+import type { TrendingRecipesStore } from '@application/recipes/trending-recipes-store';
+import { configureRecipeDetailStore } from '@application/recipes/configure-recipe-detail-store';
+import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
+import { configureSavedRecipesStore } from '@application/recipes/configure-saved-recipes-store';
+import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
+import { configureCreatedRecipesStore } from '@application/recipes/configure-created-recipes-store';
+import type { CreatedRecipesStore } from '@application/recipes/created-recipes-store';
 import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
-import {
-  configureTaxonomyStore,
-  type TaxonomyStore,
-} from '@application/recipes/taxonomy-store';
-import {
-  configureFavoritesStore,
-  type FavoritesStore,
-} from '@application/favorites/favorites-store';
+import { configureTaxonomyStore } from '@application/recipes/configure-taxonomy-store';
+import type { TaxonomyStore } from '@application/recipes/taxonomy-store';
+import { configureFavoritesStore } from '@application/favorites/configure-favorites-store';
+import type { FavoritesStore } from '@application/favorites/favorites-store';
 import { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
 import { AddCommentUseCase } from '@application/comments/add-comment-use-case';
 import { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
 import { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
 import { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
-import {
-  configureCommentsStore,
-  type CommentsStore,
-} from '@application/comments/comments-store';
+import { configureCommentsStore } from '@application/comments/configure-comments-store';
+import type { CommentsStore } from '@application/comments/comments-store';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
-import {
-  configureLikesStore,
-  type LikesStore,
-} from '@application/likes/likes-store';
+import { configureLikesStore } from '@application/likes/configure-likes-store';
+import type { LikesStore } from '@application/likes/likes-store';
 import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
-import {
-  configureNotificationsStore,
-  type NotificationsStore,
-} from '@application/notifications/notifications-store';
+import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
+import type { NotificationsStore } from '@application/notifications/notifications-store';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
-import {
-  configureUserProfileStore,
-  type UserProfileStore,
-} from '@application/user-profile/user-profile-store';
+import { configureUserProfileStore } from '@application/user-profile/configure-user-profile-store';
+import type { UserProfileStore } from '@application/user-profile/user-profile-store';
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
-import {
-  configureFeedbackStore,
-  type FeedbackStore,
-} from '@application/feedback/feedback-store';
+import { configureFeedbackStore } from '@application/feedback/configure-feedback-store';
+import type { FeedbackStore } from '@application/feedback/feedback-store';
 
 export interface ApplicationStores {
   authStore: AuthStore;
