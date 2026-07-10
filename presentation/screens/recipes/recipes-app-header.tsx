@@ -1,7 +1,7 @@
 import { StyleSheet, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';

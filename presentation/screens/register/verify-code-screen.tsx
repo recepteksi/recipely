@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { FormBanner } from '@presentation/base/widgets/form-banner';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';

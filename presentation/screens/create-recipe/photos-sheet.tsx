@@ -1,6 +1,6 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { MediaPicker } from '@presentation/base/widgets/media-picker';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii } from '@presentation/base/theme';

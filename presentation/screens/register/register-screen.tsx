@@ -8,14 +8,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { RecipelyLogo } from '@presentation/base/widgets/recipely-logo';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { FormBanner } from '@presentation/base/widgets/form-banner';
+import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';

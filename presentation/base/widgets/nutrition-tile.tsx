@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
 
 export interface TileProps {

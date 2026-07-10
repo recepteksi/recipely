@@ -2,7 +2,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import type { EdgeInsets } from 'react-native-safe-area-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';

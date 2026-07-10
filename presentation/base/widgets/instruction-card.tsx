@@ -1,11 +1,11 @@
 import { Fragment } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { InlineTimer } from '@presentation/base/widgets/inline-timer';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import type { TextPart } from '@presentation/base/widgets/text-part';
+import type { TextPart } from '@presentation/base/widgets/text/text-part';
 
 export interface InstructionCardProps {
   index: number;

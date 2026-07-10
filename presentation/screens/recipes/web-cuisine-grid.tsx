@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebSectionHead } from '@presentation/screens/recipes/web-section-head';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';

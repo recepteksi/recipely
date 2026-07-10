@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { InputView } from '@presentation/screens/login/forgot-password-input-view';
 import { SuccessView } from '@presentation/screens/login/forgot-password-success-view';
 import { useLayout } from '@presentation/base/responsive/layout-context';

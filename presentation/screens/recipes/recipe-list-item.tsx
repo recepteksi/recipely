@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { RecipeCard } from '@presentation/base/widgets/recipe-card';
+import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';

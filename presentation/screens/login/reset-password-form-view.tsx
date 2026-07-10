@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { FormBanner } from '@presentation/base/widgets/form-banner';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

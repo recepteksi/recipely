@@ -34,7 +34,7 @@ jest.mock('@presentation/screens/profile/use-avatar-upload', () => ({
   useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false })),
 }));
 
-jest.mock('@presentation/base/widgets/tab-bar', () => ({
+jest.mock('@presentation/base/widgets/navigation/tab-bar', () => ({
   TabBar: () => null,
 }));
 

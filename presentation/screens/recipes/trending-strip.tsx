@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeImage } from '@presentation/base/widgets/recipe-image';
-import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
+import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/theme-context';

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import type { Ionicons } from '@expo/vector-icons';
 import { UnknownFailure } from '@core/failure';
-import { ErrorState } from '@presentation/base/widgets/error-state';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
   failureContent,
   failureIcon,

@@ -17,7 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
 import { RecipeSearchOverlay } from '@presentation/screens/recipes/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/screens/recipes/recipes-app-header';
@@ -33,9 +33,9 @@ import { useSaveRecipe } from '@presentation/screens/recipes/use-save-recipe';
 import { type SortKey, SORT_TO_API, sortKeyLabels } from '@presentation/screens/recipes/recipe-sort';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/use-taxonomy-options';
-import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
-import { PrimaryButton } from '@presentation/base/widgets/primary-button';
-import { ErrorState } from '@presentation/base/widgets/error-state';
+import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { useRefreshFailureToast } from '@presentation/screens/recipes/use-refresh-failure-toast';
 import {
   failureContent,
@@ -43,10 +43,10 @@ import {
   failureSeverity,
 } from '@presentation/base/errors/failure-content';
 import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
-import { TabBar } from '@presentation/base/widgets/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
-import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
-import { SignInPromptSheet } from '@presentation/base/widgets/sign-in-prompt-sheet';
+import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
+import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { WebFilterModal } from '@presentation/screens/recipes/web-filter-modal';
 import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/ui-filters';

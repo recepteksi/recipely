@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { FormView } from '@presentation/screens/login/reset-password-form-view';
 import { SuccessView } from '@presentation/screens/login/reset-password-success-view';

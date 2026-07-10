@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, Platform } from 'react-native';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

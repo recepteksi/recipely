@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, View } from 'react-native';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { fontSizes, radii, sizes, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

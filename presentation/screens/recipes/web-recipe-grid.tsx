@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebRecipeCard } from '@presentation/screens/recipes/web-recipe-card';
 import { WebSectionHead } from '@presentation/screens/recipes/web-section-head';
 import { WebSortMenu } from '@presentation/screens/recipes/web-sort-menu';
-import { SkeletonCard } from '@presentation/base/widgets/skeleton-card';
+import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
 import type { SortKey } from '@presentation/screens/recipes/recipe-sort';
 import { useTheme } from '@presentation/base/theme/theme-context';

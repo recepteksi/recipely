@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeImage } from '@presentation/base/widgets/recipe-image';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { InstructionCard } from '@presentation/base/widgets/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/screens/recipes/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/screens/recipes/web-recipe-detail-sidebar';

@@ -11,7 +11,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { MediaSlide } from '@presentation/base/widgets/media-slide';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';

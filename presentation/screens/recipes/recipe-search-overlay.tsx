@@ -1,8 +1,8 @@
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/recipe-list-item';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing } from '@presentation/base/theme';

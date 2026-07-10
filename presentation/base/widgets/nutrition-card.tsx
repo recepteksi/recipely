@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/theme-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';

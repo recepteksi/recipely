@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SkeletonLoader } from '@presentation/base/widgets/skeleton-loader';
+import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { WebHeroFeaturedCard } from '@presentation/screens/recipes/web-hero-featured-card';
 import { WebHeroMiniCard } from '@presentation/screens/recipes/web-hero-mini-card';
 import { useStores } from '@presentation/bootstrap/stores-context';

@@ -34,9 +34,9 @@ jest.mock('@presentation/bootstrap/stores-context', () => ({
     authStore: jest.fn(() => ({ state: { status: 'idle' }, signIn: jest.fn(), signInWithGoogle: jest.fn(), signInWithApple: jest.fn() })),
   })),
 }));
-jest.mock('@presentation/base/widgets/recipely-logo', () => ({ RecipelyLogo: 'RecipelyLogo' }));
-jest.mock('@presentation/base/widgets/themed-text', () => ({ ThemedText: 'ThemedText' }));
-jest.mock('@presentation/base/widgets/form-banner', () => ({ FormBanner: 'FormBanner' }));
+jest.mock('@presentation/base/widgets/brand/recipely-logo', () => ({ RecipelyLogo: 'RecipelyLogo' }));
+jest.mock('@presentation/base/widgets/text/themed-text', () => ({ ThemedText: 'ThemedText' }));
+jest.mock('@presentation/base/widgets/feedback/form-banner', () => ({ FormBanner: 'FormBanner' }));
 jest.mock('@presentation/base/errors/auth-form-message', () => ({ authFormMessage: jest.fn(() => undefined) }));
 jest.mock('@presentation/base/responsive/layout-context', () => ({
   useLayout: jest.fn(() => ({ isWebShell: false, orientation: 'portrait' })),

@@ -4,9 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
-import { ErrorState } from '@presentation/base/widgets/error-state';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
   failureContent,
   failureIcon,

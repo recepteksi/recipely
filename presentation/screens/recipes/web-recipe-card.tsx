@@ -1,8 +1,8 @@
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { RecipeImage } from '@presentation/base/widgets/recipe-image';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/theme-context';

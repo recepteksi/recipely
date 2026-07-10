@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { alarmStore } from '@application/timers/alarm-store';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
 import { startAlarmAudio, stopAlarmAudio } from '@infrastructure/audio/alarm-audio-service';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

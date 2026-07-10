@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -30,7 +30,7 @@ import {
 } from '@presentation/screens/create-recipe/recipe-mapping';
 import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
-import { ConfirmSheet } from '@presentation/base/widgets/confirm-sheet';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
 import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';

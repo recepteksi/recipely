@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { AvatarImage } from '@presentation/base/widgets/avatar-image';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';

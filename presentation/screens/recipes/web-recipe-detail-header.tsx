@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { AvatarImage } from '@presentation/base/widgets/avatar-image';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { difficultyLabel } from '@presentation/screens/recipes/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
 import type { RecipeAuthorState } from '@presentation/screens/recipes/recipe-author-state';

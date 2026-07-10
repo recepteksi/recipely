@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ControlButton } from '@presentation/base/widgets/control-button';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';

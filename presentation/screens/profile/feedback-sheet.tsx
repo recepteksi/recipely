@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomSheet } from '@presentation/base/widgets/bottom-sheet';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { fontSizes, radii, sizes, spacing } from '@presentation/base/theme';
