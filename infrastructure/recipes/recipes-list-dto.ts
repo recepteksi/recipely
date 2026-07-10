@@ -1,4 +1,4 @@
-import type { RecipeListItemDto } from './recipe-list-item-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
 
 // Recipely paged envelope. Replaces DummyJSON's { recipes, total, skip, limit }.
 // Used only by the list/my-recipes/trending endpoints, which return the lean

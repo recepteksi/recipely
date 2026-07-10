@@ -5,7 +5,7 @@ import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { NutritionTile } from '@presentation/screens/recipes/detail/items/nutrition-tile';
-import type { TileProps } from '@presentation/screens/recipes/detail/items/nutrition-tile';
+import type { NutritionTileProps } from '@presentation/screens/recipes/detail/items/nutrition-tile';
 
 export interface NutritionCardProps {
   caloriesPerServing: number;
@@ -27,7 +27,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
 
   if (!hasData) return null;
 
-  const tiles: TileProps[] = [
+  const tiles: NutritionTileProps[] = [
     {
       label: strings.calories,
       value: caloriesPerServing,

@@ -1,4 +1,4 @@
-import { Failure } from './failure';
+import { Failure } from '@core/failure/failure';
 
 /**
  * Failure produced when a network request cannot be completed due to

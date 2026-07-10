@@ -1,11 +1,4 @@
-import type { Result } from '@core/result/result';
-import type { Failure } from '@core/failure';
-import type { DevicePlatform } from '@application/notifications/device-platform';
-
-export type RegisterTokenFn = (
-  token: string,
-  platform: DevicePlatform,
-) => Promise<Result<void, Failure>>;
+import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 
 /**
  * Native default: a no-op. Receiving FCM pushes on iOS/Android requires the

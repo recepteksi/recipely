@@ -1,12 +1,6 @@
 import { fail, ok, type Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-
-export interface JwtClaims {
-  sub?: string;
-  email?: string;
-  exp?: number; // seconds since epoch
-  iat?: number;
-}
+import type { JwtClaims } from '@infrastructure/network/jwt-claims';
 
 // WHY: avoid pulling in a dep (jwt-decode) just to split and base64-parse the payload.
 // We never verify signature on-device — the backend does that on every authed request.

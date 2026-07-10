@@ -75,24 +75,8 @@ import type { UserProfileStore } from '@application/user-profile/user-profile-st
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { configureFeedbackStore } from '@application/feedback/configure-feedback-store';
 import type { FeedbackStore } from '@application/feedback/feedback-store';
+import type { ApplicationStores } from '@application/di/application-stores';
 
-export interface ApplicationStores {
-  authStore: AuthStore;
-  recipeListStore: RecipeListStore;
-  trendingRecipesStore: TrendingRecipesStore;
-  recipeDetailStore: RecipeDetailStore;
-  savedRecipesStore: SavedRecipesStore;
-  createdRecipesStore: CreatedRecipesStore;
-  draftsStore: DraftsStore;
-  favoritesStore: FavoritesStore;
-  commentsStore: CommentsStore;
-  likesStore: LikesStore;
-  notificationsStore: NotificationsStore;
-  userProfileStore: UserProfileStore;
-  taxonomyStore: TaxonomyStore;
-  feedbackStore: FeedbackStore;
-  loadFavoritesUseCase: LoadFavoritesUseCase;
-}
 
 export const registerApplication = (container: Container): ApplicationStores => {
   const authRepo = container.resolve<IAuthRepository>(TOKENS.AuthRepository);

@@ -1,4 +1,4 @@
-import { Failure } from './failure';
+import { Failure } from '@core/failure/failure';
 
 /**
  * Failure produced when the request conflicts with the current server state

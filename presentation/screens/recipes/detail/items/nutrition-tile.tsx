@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
 
-export interface TileProps {
+export interface NutritionTileProps {
   label: string;
   value: number;
   unit: string;
@@ -11,7 +11,7 @@ export interface TileProps {
   labelColor: string;
 }
 
-export const NutritionTile = ({ label, value, unit, tileColor, valueColor, labelColor }: TileProps): React.JSX.Element => (
+export const NutritionTile = ({ label, value, unit, tileColor, valueColor, labelColor }: NutritionTileProps): React.JSX.Element => (
   <View style={[styles.tile, { backgroundColor: tileColor }]}>
     <View style={styles.tileValueRow}>
       <ThemedText style={[styles.tileValue, { color: valueColor }]}>{String(value)}</ThemedText>
