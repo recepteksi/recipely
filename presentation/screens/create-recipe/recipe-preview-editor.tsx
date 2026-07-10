@@ -16,7 +16,7 @@ import { StepRow } from '@presentation/screens/create-recipe/step-row';
 import { SelectTile } from '@presentation/screens/create-recipe/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/screens/create-recipe/taxonomy-picker-sheet';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/screens/create-recipe/taxonomy-placeholder';
-import { useTaxonomyLabel } from '@presentation/screens/recipes/use-taxonomy-label';
+import { useTaxonomyLabel } from '@presentation/screens/recipes/shared/hooks/use-taxonomy-label';
 import { FieldErrorText } from '@presentation/screens/create-recipe/field-error-text';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';

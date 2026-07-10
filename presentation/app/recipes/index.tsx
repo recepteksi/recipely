@@ -1,1 +1,1 @@
-export { RecipeListScreen as default } from '@presentation/screens/recipes/recipe-list-screen';
+export { RecipeListScreen as default } from '@presentation/screens/recipes/list/recipe-list-screen';
