@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { GoogleLogo } from '@presentation/base/widgets/google-logo';
-import { AppleLogo } from '@presentation/base/widgets/apple-logo';
+import { GoogleLogo } from '@presentation/screens/login/items/google-logo';
+import { AppleLogo } from '@presentation/screens/login/items/apple-logo';
 import { radii, sizes, fontSizes, spacing } from '@presentation/base/theme';
 
 const GOOGLE_BACKGROUND = '#FFFFFF';

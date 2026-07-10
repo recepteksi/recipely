@@ -4,8 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { showSuccessToast, showToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
-import type { AvatarUpload } from '@presentation/screens/profile/avatar-upload';
-import type { PickSource } from '@presentation/screens/profile/pick-source';
+import type { AvatarUpload } from '@presentation/screens/profile/model/avatar-upload';
+import type { PickSource } from '@presentation/screens/profile/model/pick-source';
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: 'image/jpeg',

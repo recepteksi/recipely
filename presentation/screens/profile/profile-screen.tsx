@@ -20,8 +20,8 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
-import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
-import { ProfileSettingsSections } from '@presentation/screens/profile/profile-settings-sections';
+import { useAvatarUpload } from '@presentation/screens/profile/hooks/use-avatar-upload';
+import { ProfileSettingsSections } from '@presentation/screens/profile/body/profile-settings-sections';
 import { t } from '@presentation/i18n';
 
 const formatStat = (n: number): string => {

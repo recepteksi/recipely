@@ -20,7 +20,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { showSuccessToast, showToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
-import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
+import { useAvatarUpload } from '@presentation/screens/profile/hooks/use-avatar-upload';
 import { t } from '@presentation/i18n';
 
 const AVATAR_FRAME = 110;

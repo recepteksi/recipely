@@ -15,7 +15,7 @@ import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/stores-context';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { SocialSignInButton } from '@presentation/base/widgets/social-sign-in-button';
+import { SocialSignInButton } from '@presentation/screens/login/items/social-sign-in-button';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { useLayout } from '@presentation/base/responsive/layout-context';
@@ -23,7 +23,7 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { resolveRedirect } from '@presentation/screens/login/resolve-redirect';
+import { resolveRedirect } from '@presentation/screens/login/model/resolve-redirect';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 
