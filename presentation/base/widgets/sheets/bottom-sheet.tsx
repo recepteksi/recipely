@@ -3,7 +3,7 @@ import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { useDragToDismiss } from '@presentation/base/hooks/use-drag-to-dismiss';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

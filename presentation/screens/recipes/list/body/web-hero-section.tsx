@@ -3,8 +3,8 @@ import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { WebHeroFeaturedCard } from '@presentation/screens/recipes/list/items/web-hero-featured-card';
 import { WebHeroMiniCard } from '@presentation/screens/recipes/list/items/web-hero-mini-card';
-import { useStores } from '@presentation/bootstrap/stores-context';
-import { useLayout } from '@presentation/base/responsive/layout-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { useLocale } from '@presentation/i18n';
 

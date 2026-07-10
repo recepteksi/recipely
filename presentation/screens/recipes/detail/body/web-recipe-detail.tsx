@@ -8,8 +8,8 @@ import { WebRecipeDetailHeader } from '@presentation/screens/recipes/detail/body
 import { WebRecipeDetailSidebar } from '@presentation/screens/recipes/detail/body/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/screens/recipes/detail/body/web-recipe-detail-comments';
 import type { RecipeAuthorState } from '@presentation/screens/recipes/detail/model/recipe-author-state';
-import { useLayout } from '@presentation/base/responsive/layout-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';

@@ -4,7 +4,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { MediaGallery } from '@presentation/screens/recipes/detail/items/media-gallery';
@@ -27,8 +27,8 @@ import { RecipeShareSheet } from '@presentation/screens/recipes/detail/sheets/re
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useLayout } from '@presentation/base/responsive/layout-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';

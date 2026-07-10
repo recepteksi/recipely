@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ChannelTile } from '@presentation/screens/recipes/detail/sheets/channel-tile';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 

@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { TimeCard } from '@presentation/screens/recipes/detail/items/time-card';
 import { InfoStat } from '@presentation/screens/recipes/detail/items/info-stat';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';

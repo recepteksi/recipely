@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebFeedbackForm } from '@presentation/screens/profile/sheets/web-feedback-form';
 import { WebFeedbackSuccess } from '@presentation/screens/profile/sheets/web-feedback-success';
-import { useStores } from '@presentation/bootstrap/stores-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { radii, shadows, sizes, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 

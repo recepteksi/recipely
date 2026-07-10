@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CommentCard } from '@presentation/screens/recipes/detail/items/comment-card';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';

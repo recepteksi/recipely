@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/recipe-category';
 import type { TaxonomyOptions } from '@presentation/screens/recipes/list/model/taxonomy-options';

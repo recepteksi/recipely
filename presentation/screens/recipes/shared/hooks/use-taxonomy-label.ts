@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';

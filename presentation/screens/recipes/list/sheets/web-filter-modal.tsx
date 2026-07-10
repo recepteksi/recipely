@@ -8,7 +8,7 @@ import { useTaxonomyOptions } from '@presentation/screens/recipes/list/hooks/use
 import { difficultyLabel } from '@presentation/screens/recipes/shared/model/difficulty-label';
 import type { UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
 import { TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filter-defaults';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { fontSizes, radii, shadows, sizes, spacing } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';

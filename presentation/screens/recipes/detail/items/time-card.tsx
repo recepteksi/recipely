@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ControlButton } from '@presentation/screens/recipes/detail/items/control-button';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';

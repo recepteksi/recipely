@@ -8,7 +8,7 @@ import { WebSortMenu } from '@presentation/screens/recipes/list/items/web-sort-m
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { difficultyLabel } from '@presentation/screens/recipes/shared/model/difficulty-label';
 import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

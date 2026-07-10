@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
 import {
   toastBackground,

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ActionSheetIOS, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast, showToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 import type { AvatarUpload } from '@presentation/screens/profile/model/avatar-upload';

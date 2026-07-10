@@ -16,7 +16,7 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/screens/recipes/list/items/recipe-list-item';
 import { RecipeSearchOverlay } from '@presentation/screens/recipes/list/sheets/recipe-search-overlay';
@@ -53,9 +53,9 @@ import { WebFilterModal } from '@presentation/screens/recipes/list/sheets/web-fi
 import type { UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
 import { emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filter-defaults';
 import { SelectChip } from '@presentation/screens/recipes/list/items/select-chip';
-import { useLayout } from '@presentation/base/responsive/layout-context';
-import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useWebShellState } from '@presentation/base/responsive/use-web-shell-state';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import type { UseSaveRecipeResult } from '@presentation/screens/recipes/shared/model/use-save-recipe-result';
 

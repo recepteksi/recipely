@@ -4,12 +4,12 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { InputView } from '@presentation/screens/forgot-password/body/forgot-password-input-view';
 import { SuccessView } from '@presentation/screens/forgot-password/body/forgot-password-success-view';
-import { useLayout } from '@presentation/base/responsive/layout-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

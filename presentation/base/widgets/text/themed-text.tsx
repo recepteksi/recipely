@@ -1,5 +1,5 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { fontSizes } from '@presentation/base/theme';
 import type { ThemedTextVariant } from '@presentation/base/widgets/text/themed-text-variant';
 

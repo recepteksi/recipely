@@ -29,7 +29,7 @@ jest.mock('expo-apple-authentication', () => ({
   AppleAuthenticationButtonType: { SIGN_IN: 'SIGN_IN' },
   AppleAuthenticationButtonStyle: { BLACK: 'BLACK' },
 }));
-jest.mock('@presentation/bootstrap/stores-context', () => ({
+jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
     authStore: jest.fn(() => ({ state: { status: 'idle' }, signIn: jest.fn(), signInWithGoogle: jest.fn(), signInWithApple: jest.fn() })),
   })),
@@ -41,7 +41,7 @@ jest.mock('@presentation/base/errors/auth-form-message', () => ({ authFormMessag
 jest.mock('@presentation/base/responsive/layout-context', () => ({
   useLayout: jest.fn(() => ({ isWebShell: false, orientation: 'portrait' })),
 }));
-jest.mock('@presentation/base/theme/theme-context', () => ({
+jest.mock('@presentation/base/theme/use-theme', () => ({
   useTheme: jest.fn(() => ({ colors: {} })),
 }));
 jest.mock('@presentation/base/theme/shadows', () => ({ shadows: { lg: {} } }));

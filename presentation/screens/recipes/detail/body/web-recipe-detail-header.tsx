@@ -5,7 +5,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { difficultyLabel } from '@presentation/screens/recipes/shared/model/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/shared/hooks/use-taxonomy-label';
 import type { RecipeAuthorState } from '@presentation/screens/recipes/detail/model/recipe-author-state';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';

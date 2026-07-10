@@ -3,8 +3,8 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebSectionHead } from '@presentation/screens/recipes/list/items/web-section-head';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/shared/hooks/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/list/hooks/use-taxonomy-options';
-import { useLayout } from '@presentation/base/responsive/layout-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 

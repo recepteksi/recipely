@@ -19,7 +19,8 @@ jest.mock('@infrastructure/storage/kv-store', () => ({
 
 import { act, create } from 'react-test-renderer';
 import { Text } from 'react-native';
-import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
+import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { t, setLocale } from '@presentation/i18n';
 
 const flushMicrotasks = async (): Promise<void> => {

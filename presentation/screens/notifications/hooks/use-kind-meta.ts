@@ -1,4 +1,4 @@
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import type { NotifKind } from '@presentation/screens/notifications/model/notif-kind';
 import type { KindMeta } from '@presentation/screens/notifications/model/kind-meta';
 

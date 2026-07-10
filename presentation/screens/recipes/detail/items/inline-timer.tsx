@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 

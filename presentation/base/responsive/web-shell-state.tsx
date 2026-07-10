@@ -1,7 +1,7 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useMemo, useState, type ReactNode } from 'react';
 import type { WebShellStateValue } from '@presentation/base/responsive/web-shell-state-value';
 
-const WebShellStateContext = createContext<WebShellStateValue>({
+export const WebShellStateContext = createContext<WebShellStateValue>({
   searchQuery: '',
   setSearchQuery: () => {},
 });
@@ -25,5 +25,3 @@ export const WebShellStateProvider = ({
   );
   return <WebShellStateContext.Provider value={value}>{children}</WebShellStateContext.Provider>;
 };
-
-export const useWebShellState = (): WebShellStateValue => useContext(WebShellStateContext);
