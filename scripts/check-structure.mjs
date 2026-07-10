@@ -140,6 +140,11 @@ for (const file of files) {
     const base = path.basename(rel).replace(/\.(ts|tsx)$/, '');
     const isRouteFile = /^(index|_layout|\+[\w-]+|\[[^/\]]+\])(\.(android|ios|native|web))?$/.test(base) && rel.endsWith('.tsx');
     const inConventionFolder = /(^|\/)(body|items|sheets|hooks|model|shared|__tests__)\//.test(rel);
+    // An index/_layout file INSIDE a convention folder would still match the
+    // route-context regex and silently register as a route — never allow it.
+    if (inConventionFolder && /^(index|_layout|\+|\[)/.test(base)) {
+      errors.push(`${file}: route-shaped filename inside a co-location folder would register as a route — rename it`);
+    }
     if (!isRouteFile && !inConventionFolder) {
       errors.push(
         rel.includes('/')

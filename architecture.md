@@ -9,11 +9,10 @@ _Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
 
 ```
 presentation/
-  app/                Thin re-exports only (expo-router file-based routing)
-  screens/            Screen components
-  navigation/         Root layout
+  app/                Pages (expo-router root): app/<segment>/index.tsx + co-located body/items/sheets/hooks/model
+  navigation/         Shell: route-context.js, auth guard, share-import hook, alarm overlay
   i18n/               Internationalization
-  base/               Widgets, theme, utils
+  base/               Widgets (categorized), theme, utils
   bootstrap/          DI init, stores context
   |
 application/          Use cases, state stores, DI registration
