@@ -3,7 +3,8 @@ import type { ListNotificationsUseCase } from '@application/notifications/list-n
 import type { ListNotificationsResult } from '@application/notifications/list-notifications-result';
 import type { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { Notification } from '@domain/notifications/notification';
 
 const makeNotification = (id: string, read: boolean): Notification => {

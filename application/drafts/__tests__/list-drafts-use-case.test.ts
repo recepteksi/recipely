@@ -1,7 +1,7 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
 import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
 import { UnknownFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 
 const emptyPage: PagedDrafts = { items: [], total: 0, page: 1, pageSize: 20 };

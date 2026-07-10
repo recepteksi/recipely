@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { ok, type Result } from '@core/result/result';
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import type { Comment } from '@domain/comments/comment';
 import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';

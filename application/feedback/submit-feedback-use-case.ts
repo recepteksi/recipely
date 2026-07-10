@@ -1,4 +1,5 @@
-import { fail, type Result } from '@core/result/result';
+import { fail } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { ValidationFailure, type Failure } from '@core/failure';
 import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';

@@ -1,6 +1,7 @@
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { ValidationFailure, NetworkFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';

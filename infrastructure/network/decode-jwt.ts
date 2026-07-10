@@ -1,4 +1,5 @@
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { JwtClaims } from '@infrastructure/network/jwt-claims';
 

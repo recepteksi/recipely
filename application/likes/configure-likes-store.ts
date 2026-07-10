@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ok } from '@core/result/result';
+import { ok } from '@core/result/result-helpers';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikesStoreDeps } from '@application/likes/likes-store-deps';

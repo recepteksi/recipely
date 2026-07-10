@@ -1,7 +1,7 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';

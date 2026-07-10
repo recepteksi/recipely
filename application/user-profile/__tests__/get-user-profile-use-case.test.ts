@@ -1,6 +1,7 @@
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { UserProfile } from '@domain/user-profile/user-profile';
 import type { IUserProfileRepository } from '@domain/user-profile/i-user-profile-repository';
 

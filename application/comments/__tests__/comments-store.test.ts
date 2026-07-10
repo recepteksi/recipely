@@ -5,7 +5,8 @@ import type { DeleteCommentUseCase } from '@application/comments/delete-comment-
 import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { Comment, type CommentProps } from '@domain/comments/comment';
 import type { CommentPage } from '@domain/comments/comment-page';
 

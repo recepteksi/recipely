@@ -1,5 +1,5 @@
 import { act } from 'react-test-renderer';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
 import { container } from '@core/di/container-instance';
 import { TOKENS } from '@core/di/tokens';

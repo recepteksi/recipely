@@ -1,4 +1,5 @@
-import { fail, type Result } from '@core/result/result';
+import { fail } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Email } from '@domain/common/email';
 import { User } from '@domain/auth/user';

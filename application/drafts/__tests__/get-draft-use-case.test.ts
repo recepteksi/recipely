@@ -1,7 +1,7 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
 import { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
 import { NotFoundFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
 const makeDraft = (): RecipeDraft => ({

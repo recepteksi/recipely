@@ -11,7 +11,7 @@ import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import { UnknownFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';

@@ -1,7 +1,7 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
 import { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 
 describe('DeleteDraftUseCase.execute', () => {
   it('forwards the id to the repository and returns ok', async () => {

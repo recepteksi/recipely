@@ -1,7 +1,8 @@
 import { configureTrendingRecipesStore } from '@application/recipes/configure-trending-recipes-store';
 import type { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';

@@ -1,4 +1,4 @@
-import { type Result } from '@core/result/result';
+import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { UserProfile } from '@domain/user-profile/user-profile';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';

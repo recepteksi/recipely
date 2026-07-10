@@ -1,4 +1,5 @@
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { ITaxonomyRepository } from '@domain/recipes/i-taxonomy-repository';
 import type { TaxonomyCatalog } from '@application/recipes/taxonomy-catalog';

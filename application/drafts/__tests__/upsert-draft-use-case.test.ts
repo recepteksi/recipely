@@ -1,7 +1,7 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
 import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
 import { ValidationFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 

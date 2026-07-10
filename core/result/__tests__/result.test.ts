@@ -1,4 +1,4 @@
-import { fail, flatMapResult, isFail, isOk, mapResult, ok } from '@core/result/result';
+import { fail, flatMapResult, isFail, isOk, mapResult, ok } from '@core/result/result-helpers';
 
 describe('Result', () => {
   it('wraps a value in ok', () => {

@@ -2,7 +2,8 @@ import { configureTaxonomyStore } from '@application/recipes/configure-taxonomy-
 import type { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
 import type { TaxonomyCatalog } from '@application/recipes/taxonomy-catalog';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 
 const catalog: TaxonomyCatalog = {

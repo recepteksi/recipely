@@ -1,5 +1,6 @@
 import { Entity } from '@core/entity/entity';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
