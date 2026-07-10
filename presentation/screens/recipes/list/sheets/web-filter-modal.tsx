@@ -6,7 +6,8 @@ import { WebFilterChip } from '@presentation/screens/recipes/list/items/web-filt
 import { useTaxonomyLabel } from '@presentation/screens/recipes/shared/hooks/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/list/hooks/use-taxonomy-options';
 import { difficultyLabel } from '@presentation/screens/recipes/shared/model/difficulty-label';
-import { type UiFilters, TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filters';
+import type { UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
+import { TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filter-defaults';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { t } from '@presentation/i18n';
 import { fontSizes, radii, shadows, sizes, spacing } from '@presentation/base/theme';

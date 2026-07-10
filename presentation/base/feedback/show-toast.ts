@@ -2,16 +2,11 @@ import type { Failure } from '@presentation/base/types';
 import {
   failureSeverity,
   failureToastMessage,
-} from '@presentation/base/errors/failure-content';
+} from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import type { ToastInput } from '@presentation/base/feedback/toast-input';
-
-/** Optional retry affordance attached to an error toast. */
-export interface ToastRetry {
-  onRetry: () => void;
-  label?: string;
-}
+import type { ToastRetry } from '@presentation/base/feedback/toast-retry';
 
 /** Low-level escape hatch — prefer the typed helpers below. */
 export const showToast = (input: ToastInput): string => toastStore.getState().show(input);

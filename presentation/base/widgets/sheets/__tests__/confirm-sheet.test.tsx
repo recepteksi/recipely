@@ -8,8 +8,8 @@ import { act } from 'react-test-renderer';
 import {
   renderComponent,
   textContent,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { t } from '@presentation/i18n';
 

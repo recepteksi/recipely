@@ -2,8 +2,8 @@ import {
   byRole,
   renderComponent,
   textContent,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { RecipeAuthorCard } from '@presentation/screens/recipes/detail/items/recipe-author-card';
 import type { RecipeAuthorCardProps } from '@presentation/screens/recipes/detail/items/recipe-author-card';
 import { t } from '@presentation/i18n';

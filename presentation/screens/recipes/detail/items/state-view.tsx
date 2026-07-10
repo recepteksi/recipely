@@ -7,7 +7,7 @@ import {
   failureContent,
   failureIcon,
   failureSeverity,
-} from '@presentation/base/errors/failure-content';
+} from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import type { StateViewStatus } from '@presentation/screens/recipes/detail/model/state-view-status';

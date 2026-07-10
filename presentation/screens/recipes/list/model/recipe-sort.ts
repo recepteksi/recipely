@@ -1,11 +1,9 @@
 import { t } from '@presentation/i18n';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-
-/** Sort options offered in the recipe list UI. */
-export type SortKey = 'popular' | 'rating' | 'time' | 'newest' | 'mostLiked';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 
 /** Maps a UI sort key to the repository's `sort` filter value. */
-export const SORT_TO_API: Record<SortKey, RecipeFilters['sort']> = {
+export const SORT_TO_FILTER: Record<SortKey, RecipeFilters['sort']> = {
   popular: 'popular',
   rating: 'rating',
   time: 'time',

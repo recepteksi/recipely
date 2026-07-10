@@ -5,7 +5,7 @@
  * set."). A single duration must still badge correctly.
  */
 
-import { splitStepWithTimers } from '@presentation/screens/recipes/detail/items/instruction-card';
+import { splitStepWithTimers } from '@presentation/screens/recipes/detail/model/split-step-with-timers';
 
 describe('splitStepWithTimers — duration range', () => {
   it('keeps a "45-50 minutes" range as plain text instead of badge-ifying the trailing number', () => {

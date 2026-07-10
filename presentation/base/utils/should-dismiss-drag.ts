@@ -1,18 +1,11 @@
+import type { DragReleaseGesture } from '@presentation/base/utils/drag-release-gesture';
+
 // Gesture-behavior thresholds (not layout metrics, so kept local rather than
 // in `theme/spacing.ts` — same convention as e.g. `COPIED_RESET_MS` in
 // `recipe-share-sheet.tsx`).
 const TAP_SLOP = 4;
 const DISMISS_DISTANCE = 90;
 const DISMISS_VELOCITY = 0.8;
-
-export interface DragReleaseGesture {
-  /** Accumulated horizontal distance (px) since the touch started. */
-  dx: number;
-  /** Accumulated vertical distance (px) since the touch started; positive is downward. */
-  dy: number;
-  /** Current vertical velocity (px/ms); positive is downward. */
-  vy: number;
-}
 
 /**
  * Decides whether a released drag on the bottom-sheet grabber should dismiss

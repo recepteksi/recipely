@@ -1,0 +1,12 @@
+import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
+
+export interface UseDraftAutosaveArgs {
+  enabled: boolean;
+  draftId: string;
+  prompt: string;
+  recipe: EditableRecipe;
+  chatHistory: ChatMessage[];
+  upsertDraft: (input: UpsertDraftStoreInput) => Promise<unknown>;
+}

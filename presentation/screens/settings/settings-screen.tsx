@@ -9,7 +9,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';

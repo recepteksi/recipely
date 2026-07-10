@@ -31,8 +31,22 @@ Each layer may only depend on layers **below** it. Never import upward:
 
 - `domain/` — never imports from `application/`, `infrastructure/`, or `presentation/`.
 - `application/` — never imports from `infrastructure/` or `presentation/`.
-- `infrastructure/` — never imports from `presentation/`.
+- `infrastructure/` — never imports from `presentation/` or `application/`.
+- `presentation/` — may import `application/`, `domain/` (types/entities as read models), and `core/`;
+  never `infrastructure/`.
 - `core/` — imports nothing else from the project.
+
+**Sanctioned exceptions** (the only ones):
+
+- `infrastructure/constants/*` may be imported from anywhere — Coding Standard 5 deliberately homes
+  API URLs / limits / storage keys there.
+- `presentation/bootstrap/` and the `*/di/` wiring modules are the **composition root**: they may
+  import across layers to assemble the object graph. Nothing else may.
+- Anything beyond that lives in the `KNOWN_DEBT` list inside `scripts/check-structure.mjs`. That list
+  only shrinks — adding an entry requires explicit user approval in review.
+
+The dependency rule and the exceptions above are enforced mechanically by `npm run check:structure`
+(see Pre-Commit Quality Gate).
 
 `presentation/app/` exists solely for expo-router's file-based routing (`"root": "presentation/app"` in
 `app.json`). Every file inside must be a **single-line re-export** from `presentation/screens/` or
@@ -131,8 +145,28 @@ Each file contains exactly **one** top-level declaration: one class, one interfa
 React component, or one enum. The only exceptions are:
 
 - Barrel `index.ts` files that only re-export.
-- A `ComponentNameProps` interface that lives in the same file as its component.
-- A simple helper type that is only meaningful alongside the class in the same file.
+- A `ComponentNameProps` interface that lives in the same file as its component (it must be named
+  exactly `<ComponentName>Props` — see Standard 7).
+- A simple helper type that is only meaningful alongside the **class** in the same file (this exception
+  is for classes only — it does not cover hooks, stores, or plain functions).
+- The merged-enum idiom: a `const X` object plus a same-named `type X` union (and `X_VALUES` arrays),
+  or a union type derived via `typeof` from a const in the same file. One concept = one file.
+- Constants-only files (`infrastructure/constants/api.ts`, `theme/spacing.ts`, …) and pure-function
+  collections with **no** type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
+
+Frequent violations to watch for — all of these must be split:
+
+- A hook's args/result `interface` in the same file as the hook
+  (`use-x.ts` keeps the hook; the type moves to its own file — see Placement below).
+- A Zustand store type next to its factory: `x-store.ts` holds only `type XStore`;
+  the factory lives in `configure-x-store.ts`.
+- A provider component and its `use*` hook in one `*-context.tsx` file — the hook gets its own
+  `use-x.ts` file (Standard 8).
+- Logic helpers embedded in a component file — move them to the page's `model/` folder.
+
+**Placement of extracted declarations:** inside a page folder, pure types go to that page's `model/`;
+inside `base/*`, the type becomes a sibling file in the same folder. File name = kebab-case of the
+declaration it contains.
 
 ```ts
 // ✅ recipe.ts — one entity class
@@ -288,9 +322,13 @@ export const RecipeCard = ({ recipe, onPress }: RecipeCardProps): React.JSX.Elem
 ### 8. React Native — Custom Hooks
 
 - Custom hooks must be named with the `use` prefix (`useRecipeList`, `useTheme`).
-- A custom hook file must export exactly one hook function.
+- A custom hook file must export exactly one hook function — and nothing else that is a component,
+  class, interface, or type alias. In particular a context's provider component and its consumer hook
+  live in **separate** files (`theme-context.tsx` + `use-theme.ts`).
 - Hooks that depend on a store must accept no arguments and read the store internally; they must not
   accept store state as props.
+- Hooks are thin adapters over application stores / use cases: view-facing glue only, no business
+  rules (those belong in `domain/`, orchestration in `application/`).
 
 ---
 
@@ -355,6 +393,15 @@ A pre-commit hook (Husky + lint-staged) runs automatically on every `git commit`
 1. **lint-staged** — runs `eslint --fix` on every staged `.ts` / `.tsx` file. Commit is blocked if any
    ESLint error remains after auto-fix.
 2. **TypeScript** — runs `tsc --noEmit` against the full project. Commit is blocked on any type error.
+3. **Structure** — runs `npm run check:structure` (`scripts/check-structure.mjs`). Commit is blocked on:
+   - one-declaration-per-file / one-hook-per-file violations (Standards 1 and 8),
+   - layer-dependency violations (Dependency Rule) beyond the sanctioned exceptions and the shrinking
+     `KNOWN_DEBT` list,
+   - relative imports (`./`, `../`) outside barrel `index.ts` files — use the `@layer/...` alias,
+   - loose files at the `presentation/base/widgets/` root (category folders only).
+
+No task is "done" until `npm run lint`, `npx tsc --noEmit`, `npx jest`, **and** `npm run check:structure`
+are all green.
 
 To bypass in an emergency: `git commit --no-verify` (use sparingly; document why in the commit message).
 

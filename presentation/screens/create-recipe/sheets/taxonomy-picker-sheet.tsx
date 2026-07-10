@@ -20,13 +20,13 @@ import type { Catalog } from '@presentation/screens/create-recipe/model/catalog'
  * value is the opaque taxonomy `key` (a `string`) — the backend catalog is
  * broader than the local enums, so the value is intentionally not narrowed.
  */
-export type TaxonomyPickerSheetProps = {
+export interface TaxonomyPickerSheetProps {
   visible: boolean;
   onClose: () => void;
   kind: 'cuisine' | 'category';
   selected: string | null;
   onSelect: (value: string) => void;
-};
+}
 
 const GRID_COLUMNS = 3;
 

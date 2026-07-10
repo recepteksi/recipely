@@ -11,7 +11,7 @@ import {
   failureContent,
   failureIcon,
   failureSeverity,
-} from '@presentation/base/errors/failure-content';
+} from '@presentation/base/errors/failure-lookups';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';

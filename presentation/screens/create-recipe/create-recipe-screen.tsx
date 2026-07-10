@@ -29,7 +29,7 @@ import {
   snapshotToEditable,
 } from '@presentation/screens/create-recipe/model/recipe-mapping';
 import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
-import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { useDraftAutosave } from '@presentation/screens/create-recipe/hooks/use-draft-autosave';
 import { PromptPhase } from '@presentation/screens/create-recipe/body/prompt-phase';

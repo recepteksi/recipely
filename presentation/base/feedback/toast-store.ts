@@ -1,21 +1,12 @@
 import { create } from 'zustand';
 import { MAX_VISIBLE_TOASTS } from '@presentation/base/feedback/toast-model';
-import type { ToastInput } from '@presentation/base/feedback/toast-input';
-import type { ToastItem } from '@presentation/base/feedback/toast-item';
+import type { ToastStoreState } from '@presentation/base/feedback/toast-store-state';
 
 let counter = 0;
 const nextId = (): string => {
   counter += 1;
   return `toast-${Date.now()}-${counter}`;
 };
-
-export interface ToastStoreState {
-  toasts: ToastItem[];
-  /** Enqueue a toast and return its id (so the caller can dismiss it early). */
-  show: (input: ToastInput) => string;
-  dismiss: (id: string) => void;
-  clear: () => void;
-}
 
 /**
  * Global, app-wide toast queue. A singleton module store (mirrors `alarmStore`)

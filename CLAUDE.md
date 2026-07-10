@@ -35,12 +35,12 @@ full-capability agents for implementation. Run agents in parallel when their fil
 
 The user has authorized the full flow below **in this file**. Do not ask before branching,
 committing, pushing, opening a PR, or merging **to `dev`** — just execute and report. The
-only stops are explicit failures (lint / tsc / jest red, `code-reviewer` requests changes,
-a merge conflict you can't safely resolve) and the Exceptions below.
+only stops are explicit failures (lint / tsc / jest / check:structure red, `code-reviewer` requests
+changes, a merge conflict you can't safely resolve) and the Exceptions below.
 
 1. **Branch from `dev`**: `git checkout dev && git pull && git checkout -b <feat|fix|refactor|chore>/<name>`. Never edit `dev` or `main` directly.
 2. **Implement** via the agent pipeline above. Clear, atomic, conventional-commit messages (`feat(scope):`, `fix(scope):`, …).
-3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest` (at minimum the touched layer).
+3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest` (at minimum the touched layer), `npm run check:structure`. Work is never "done" with a red gate.
 4. **`code-reviewer` must approve** before merge. If it requests changes, loop back to the developer agent; never merge over a blocked review.
 5. **Push and open a PR → `dev`**: `git push -u origin <branch>` then `gh pr create --base dev …`.
 6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull`.
@@ -117,6 +117,19 @@ blocking.
 12. **Error handling** — `Result<T, Failure>` everywhere; no thrown exceptions in domain / application code.
 
 13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g., `kv-store`).
+    Shared types between the pair live in one separate file — never declared twice.
+
+14. **File placement** — each routed page owns `presentation/screens/<page>/` with `body/` / `items/` /
+    `sheets/` / `hooks/` / `model/` subfolders; shared widgets live in a `presentation/base/widgets/<category>/`
+    folder (never loose at the widgets root); a widget used by only one page lives in that page's folder.
+    Types extracted from a page file go to that page's `model/`; in `base/*` they become a sibling file.
+
+15. **Imports** — always the `@layer/...` alias (`@presentation/...`, `@domain/...`, …). Relative `./`
+    imports are allowed only inside barrel `index.ts` files. Layer line: presentation → application/domain/core,
+    never infrastructure (exceptions: `infrastructure/constants/*`, `presentation/bootstrap/`, `*/di/` wiring).
+
+16. **Structure gate** — `npm run check:structure` enforces rules 1, 8, 14, 15 mechanically and must be
+    green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user approval.
 
 ### Pre-commit quality gate
 
@@ -124,6 +137,8 @@ Husky runs on every `git commit`:
 
 - **lint-staged** → `eslint --fix` on staged `.ts` / `.tsx` files (blocks on unfixed ESLint errors).
 - **tsc --noEmit** → full project type check (blocks on type errors).
+- **check:structure** → `scripts/check-structure.mjs` (blocks on declaration-per-file, layer, import-style,
+  and widget-placement violations — see `architecture.md` §Pre-Commit Quality Gate).
 
 Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
 

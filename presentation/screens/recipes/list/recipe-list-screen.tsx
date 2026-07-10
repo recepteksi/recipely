@@ -30,7 +30,8 @@ import { WebAiBanner } from '@presentation/screens/recipes/list/items/web-ai-ban
 import { WebCuisineGrid } from '@presentation/screens/recipes/list/body/web-cuisine-grid';
 import { WebRecipeGrid } from '@presentation/screens/recipes/list/body/web-recipe-grid';
 import { useSaveRecipe } from '@presentation/screens/recipes/shared/hooks/use-save-recipe';
-import { type SortKey, SORT_TO_API, sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/screens/recipes/shared/hooks/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/screens/recipes/list/hooks/use-taxonomy-options';
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
@@ -41,7 +42,7 @@ import {
   failureContent,
   failureIcon,
   failureSeverity,
-} from '@presentation/base/errors/failure-content';
+} from '@presentation/base/errors/failure-lookups';
 import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
 import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
@@ -49,7 +50,8 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { WebFilterModal } from '@presentation/screens/recipes/list/sheets/web-filter-modal';
-import { type UiFilters, emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filters';
+import type { UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
+import { emptyFilters, TIME_OPTIONS } from '@presentation/screens/recipes/list/model/ui-filter-defaults';
 import { SelectChip } from '@presentation/screens/recipes/list/items/select-chip';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
@@ -205,7 +207,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       ...(f.categories.length > 0 ? { categories: f.categories } : {}),
       ...(f.difficulties.length > 0 ? { difficulties: f.difficulties } : {}),
       ...(f.maxTime > 0 ? { maxTime: f.maxTime } : {}),
-      sort: SORT_TO_API[sort],
+      sort: SORT_TO_FILTER[sort],
     }),
     [],
   );

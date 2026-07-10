@@ -15,8 +15,8 @@ import {
   renderComponent,
   textContent,
   allByTestId,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { WebRecipeGrid } from '@presentation/screens/recipes/list/body/web-recipe-grid';
 import type { WebRecipeGridProps } from '@presentation/screens/recipes/list/body/web-recipe-grid';
 import { t } from '@presentation/i18n';

@@ -4,8 +4,8 @@ import {
   byRole,
   renderComponent,
   textContent,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { FilterSortFab } from '@presentation/screens/recipes/list/items/filter-sort-fab';
 import { t } from '@presentation/i18n';
 

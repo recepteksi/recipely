@@ -18,12 +18,13 @@ import { create } from 'zustand';
 import {
   renderComponent,
   textContent,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { WebFilterModal } from '@presentation/screens/recipes/list/sheets/web-filter-modal';
-import { emptyFilters, type UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
+import type { UiFilters } from '@presentation/screens/recipes/list/model/ui-filters';
+import { emptyFilters } from '@presentation/screens/recipes/list/model/ui-filter-defaults';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy-store-state';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/cuisine-key';
 import { DIFFICULTY_VALUES } from '@domain/recipes/difficulty';

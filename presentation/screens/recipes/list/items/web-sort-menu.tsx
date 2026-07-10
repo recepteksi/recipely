@@ -6,7 +6,8 @@ import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { type SortKey, sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import { sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 
 /** DOM id of the anchor wrapper, used to scope the web outside-press check. */
 const ANCHOR_ID = 'web-sort-menu-anchor';

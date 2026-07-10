@@ -18,13 +18,14 @@ import { NetworkFailure } from '@core/failure';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import type { ConfirmSheetProps } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { renderComponent, textContent, type RenderResult } from '@presentation/base/test-support/render-component';
+import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { SettingsScreen } from '@presentation/screens/settings/settings-screen';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';
-import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 
 const mockReplace = jest.fn();

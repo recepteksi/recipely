@@ -14,10 +14,11 @@ import { act } from 'react-test-renderer';
 import {
   renderComponent,
   textContent,
-  type RenderResult,
 } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { WebSortMenu } from '@presentation/screens/recipes/list/items/web-sort-menu';
-import { sortKeyLabels, type SortKey } from '@presentation/screens/recipes/list/model/recipe-sort';
+import { sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 
 // Render the icon as plain text so query helpers never trip over the native mock.
 jest.mock('@expo/vector-icons', () => {

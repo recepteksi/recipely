@@ -16,6 +16,7 @@
     "lint": "expo lint",
     "test": "jest",
     "typecheck": "tsc --noEmit",
+    "check:structure": "node scripts/check-structure.mjs",
     "prepare": "husky",
     "release:patch": "npm version patch -m 'chore(release): v%s' && git push --follow-tags",
     "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",

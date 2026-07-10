@@ -23,10 +23,8 @@
 import { act } from 'react-test-renderer';
 import type { GestureResponderEvent } from 'react-native';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import {
-  useDragToDismiss,
-  type UseDragToDismissResult,
-} from '@presentation/base/hooks/use-drag-to-dismiss';
+import { useDragToDismiss } from '@presentation/base/hooks/use-drag-to-dismiss';
+import type { UseDragToDismissResult } from '@presentation/base/hooks/use-drag-to-dismiss-result';
 
 const NOOP_EVENT = {} as GestureResponderEvent;
 

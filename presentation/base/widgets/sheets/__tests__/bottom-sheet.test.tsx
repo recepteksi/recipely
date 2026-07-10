@@ -6,7 +6,8 @@
  */
 
 import { act } from 'react-test-renderer';
-import { renderComponent, textContent, type RenderResult } from '@presentation/base/test-support/render-component';
+import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { t } from '@presentation/i18n';

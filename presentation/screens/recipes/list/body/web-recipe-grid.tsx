@@ -7,7 +7,7 @@ import { WebSectionHead } from '@presentation/screens/recipes/list/items/web-sec
 import { WebSortMenu } from '@presentation/screens/recipes/list/items/web-sort-menu';
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { difficultyLabel } from '@presentation/screens/recipes/shared/model/difficulty-label';
-import type { SortKey } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';

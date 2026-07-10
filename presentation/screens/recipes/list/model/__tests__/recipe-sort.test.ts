@@ -7,11 +7,12 @@
  * `currentLang` to 'en').
  */
 
-import { SORT_TO_API, sortKeyLabels, type SortKey } from '@presentation/screens/recipes/list/model/recipe-sort';
+import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { SortKey } from '@presentation/screens/recipes/list/model/sort-key';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 // ─── derive the exhaustive key list from the type itself ──────────────────────
-// If a new SortKey is added to the union but forgotten in SORT_TO_API or
+// If a new SortKey is added to the union but forgotten in SORT_TO_FILTER or
 // sortKeyLabels(), the tests below will fail at the assertion level.
 const ALL_SORT_KEYS: SortKey[] = [
   'popular',
@@ -32,9 +33,9 @@ const VALID_API_SORT_VALUES: RecipeFilters['sort'][] = [
   'mostCommented',
 ];
 
-describe('SORT_TO_API', () => {
+describe('SORT_TO_FILTER', () => {
   it('has an entry for every SortKey', () => {
-    const mappedKeys = Object.keys(SORT_TO_API) as SortKey[];
+    const mappedKeys = Object.keys(SORT_TO_FILTER) as SortKey[];
 
     const missingKeys = ALL_SORT_KEYS.filter((k) => !mappedKeys.includes(k));
 
@@ -42,37 +43,37 @@ describe('SORT_TO_API', () => {
   });
 
   it('does not contain entries for keys outside the SortKey union', () => {
-    const mappedKeys = Object.keys(SORT_TO_API) as SortKey[];
+    const mappedKeys = Object.keys(SORT_TO_FILTER) as SortKey[];
     const extraKeys = mappedKeys.filter((k) => !ALL_SORT_KEYS.includes(k));
 
     expect(extraKeys).toEqual([]);
   });
 
-  it("maps 'popular' to the 'popular' API sort value", () => {
-    expect(SORT_TO_API['popular']).toBe('popular');
+  it("maps 'popular' to the 'popular' filter sort value", () => {
+    expect(SORT_TO_FILTER['popular']).toBe('popular');
   });
 
-  it("maps 'rating' to the 'rating' API sort value", () => {
-    expect(SORT_TO_API['rating']).toBe('rating');
+  it("maps 'rating' to the 'rating' filter sort value", () => {
+    expect(SORT_TO_FILTER['rating']).toBe('rating');
   });
 
-  it("maps 'time' to the 'time' API sort value", () => {
-    expect(SORT_TO_API['time']).toBe('time');
+  it("maps 'time' to the 'time' filter sort value", () => {
+    expect(SORT_TO_FILTER['time']).toBe('time');
   });
 
-  it("maps 'newest' to the 'newest' API sort value", () => {
-    expect(SORT_TO_API['newest']).toBe('newest');
+  it("maps 'newest' to the 'newest' filter sort value", () => {
+    expect(SORT_TO_FILTER['newest']).toBe('newest');
   });
 
-  it("maps 'mostLiked' to the 'mostLiked' API sort value", () => {
-    expect(SORT_TO_API['mostLiked']).toBe('mostLiked');
+  it("maps 'mostLiked' to the 'mostLiked' filter sort value", () => {
+    expect(SORT_TO_FILTER['mostLiked']).toBe('mostLiked');
   });
 
   it('maps every key to a valid RecipeFilters sort value', () => {
     for (const key of ALL_SORT_KEYS) {
-      const apiValue = SORT_TO_API[key];
+      const filterValue = SORT_TO_FILTER[key];
 
-      expect(VALID_API_SORT_VALUES).toContain(apiValue);
+      expect(VALID_API_SORT_VALUES).toContain(filterValue);
     }
   });
 });

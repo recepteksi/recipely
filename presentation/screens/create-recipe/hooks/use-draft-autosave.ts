@@ -1,22 +1,11 @@
 import { useEffect, useRef } from 'react';
-import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 import {
   editableHasContent,
   editableToSnapshot,
 } from '@presentation/screens/create-recipe/model/recipe-mapping';
+import type { UseDraftAutosaveArgs } from '@presentation/screens/create-recipe/model/use-draft-autosave-args';
 
 const DEBOUNCE_MS = 500;
-
-export interface UseDraftAutosaveArgs {
-  enabled: boolean;
-  draftId: string;
-  prompt: string;
-  recipe: EditableRecipe;
-  chatHistory: ChatMessage[];
-  upsertDraft: (input: UpsertDraftStoreInput) => Promise<unknown>;
-}
 
 /**
  * Debounced draft persistence: whenever the editable model or chat changes in

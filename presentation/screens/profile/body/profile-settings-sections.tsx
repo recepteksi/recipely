@@ -13,7 +13,7 @@ import { LanguageSelector } from '@presentation/base/widgets/settings/language-s
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
-import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FeedbackSheet } from '@presentation/screens/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/screens/profile/sheets/web-feedback-modal';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
