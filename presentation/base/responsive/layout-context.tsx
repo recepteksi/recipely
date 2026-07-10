@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
-import { BREAKPOINTS } from './breakpoints';
-import { useIsHydrated } from './use-is-hydrated';
+import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
+import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import type { Breakpoint } from '@presentation/base/responsive/breakpoint';
 import type { Orientation } from '@presentation/base/responsive/orientation';
 import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';

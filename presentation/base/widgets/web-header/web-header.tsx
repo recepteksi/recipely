@@ -6,11 +6,11 @@ import { useWebShellState } from '@presentation/base/responsive/web-shell-state'
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
-import { WebHeaderLogo } from './web-header-logo';
-import { WebHeaderTabs } from './web-header-tabs';
+import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
+import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
-import { WebHeaderSearch } from './web-header-search';
-import { WebHeaderActions } from './web-header-actions';
+import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
+import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 
 const HEADER_HEIGHT = 68;
 

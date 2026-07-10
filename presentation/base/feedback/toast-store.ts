@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { MAX_VISIBLE_TOASTS } from './toast-model';
+import { MAX_VISIBLE_TOASTS } from '@presentation/base/feedback/toast-model';
 import type { ToastInput } from '@presentation/base/feedback/toast-input';
 import type { ToastItem } from '@presentation/base/feedback/toast-item';
 

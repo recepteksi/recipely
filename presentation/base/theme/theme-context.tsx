@@ -3,7 +3,7 @@ import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
-import { ALL_THEMES, getThemeColors } from './themes';
+import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/themes';
 import { DEFAULT_THEME_ID, type ThemeId } from '@presentation/base/theme/theme-id';
 import type { ThemeColors } from '@presentation/base/theme/theme-colors';
 import type { ThemePreference } from '@presentation/base/theme/theme-preference';
