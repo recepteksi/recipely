@@ -15,9 +15,17 @@
  *
  * The regex mirrors the stock `expo-router/_ctx` exclusions for `+api`,
  * `+middleware`, root `+html` / `+native-intent`, and platform suffixes.
+ *
+ * The app-dir argument MUST stay a hard-coded relative path, NOT
+ * `process.env.EXPO_ROUTER_APP_ROOT`: @expo/cli resets the `routerRoot`
+ * transform option to its default `'app'` for every file outside
+ * `expo-router/_ctx*` / `expo-router/build/` (pruneCustomTransformOptions in
+ * instantiateMetro.js, a cache-key optimisation), so in THIS file babel would
+ * inline a path to the non-existent `<project>/app` folder — the context then
+ * matches zero files and the router throws "No routes found" at runtime.
  */
 export const ctx = require.context(
-  process.env.EXPO_ROUTER_APP_ROOT,
+  '../app',
   true,
   /^\.\/(?!(?:.*\+api|\+middleware|\+(?:html|native-intent))\.[tj]sx?$)(?:.*\/)?(?:index|_layout|\+[\w-]+|\[[^/\]]+\])(?:\.(?:android|ios|native|web))?\.[tj]sx?$/,
   process.env.EXPO_ROUTER_IMPORT_MODE

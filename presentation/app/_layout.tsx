@@ -87,21 +87,25 @@ const RootStack = (): React.JSX.Element => {
           headerShadowVisible: false,
         }}
       >
+        {/* Folder pages register on the parent navigator under their full
+            relative name (`<segment>/index`) — a bare `<segment>` here would
+            not match any route, so its options (headerShown:false) would be
+            silently dropped and the default stack header would appear. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="verify-code" options={{ headerShown: false }} />
+        <Stack.Screen name="login/index" options={{ headerShown: false }} />
+        <Stack.Screen name="register/index" options={{ headerShown: false }} />
+        <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
-        <Stack.Screen name="my-recipes" options={{ headerShown: false }} />
-        <Stack.Screen name="create-recipe" options={{ headerShown: false }} />
-        <Stack.Screen name="settings" options={{ headerShown: false }} />
-        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
-        <Stack.Screen name="ai-generate" options={{ headerShown: false }} />
-        <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="profile" options={{ headerShown: false }} />
-        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+        <Stack.Screen name="my-recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="create-recipe/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
+        <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
+        <Stack.Screen name="ai-generate/index" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/index" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
       <ActiveTimersBar />
       <ToastHost />
