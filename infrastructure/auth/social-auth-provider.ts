@@ -1,4 +1,5 @@
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/api';
 import { generateNonce, hashNonce } from '@infrastructure/auth/nonce-generator';

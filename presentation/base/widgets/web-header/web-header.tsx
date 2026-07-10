@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { useStores } from '@presentation/bootstrap/stores-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
-import { useWebShellState } from '@presentation/base/responsive/web-shell-state';
+import { useStores } from '@presentation/bootstrap/use-stores';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { useWebShellState } from '@presentation/base/responsive/use-web-shell-state';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';

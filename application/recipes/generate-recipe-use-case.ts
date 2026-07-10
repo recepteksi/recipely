@@ -1,4 +1,5 @@
-import { fail, type Result } from '@core/result/result';
+import { fail } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { type Failure, ValidationFailure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';

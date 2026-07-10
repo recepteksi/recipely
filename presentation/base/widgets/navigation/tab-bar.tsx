@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/theme-context';
-import { useLayout } from '@presentation/base/responsive/layout-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import { sizes, spacing, fontSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';

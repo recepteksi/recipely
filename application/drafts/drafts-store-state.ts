@@ -1,4 +1,4 @@
-import { type Result } from '@core/result/result';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { DraftsListState } from '@application/drafts/drafts-list-state';

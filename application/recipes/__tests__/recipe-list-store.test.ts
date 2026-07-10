@@ -1,7 +1,8 @@
-import { configureRecipeListStore } from '@application/recipes/recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
 import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';

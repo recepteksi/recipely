@@ -1,7 +1,7 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
 import { UnknownFailure, ValidationFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';

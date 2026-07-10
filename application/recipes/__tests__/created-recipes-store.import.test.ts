@@ -1,4 +1,4 @@
-import { configureCreatedRecipesStore } from '@application/recipes/created-recipes-store';
+import { configureCreatedRecipesStore } from '@application/recipes/configure-created-recipes-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
@@ -10,7 +10,8 @@ import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use
 import type { RecipeListStore } from '@application/recipes/recipe-list-store';
 import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
 import { UnknownFailure, type Failure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';

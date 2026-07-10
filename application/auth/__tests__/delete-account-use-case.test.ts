@@ -1,7 +1,7 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 
 describe('DeleteAccountUseCase', () => {
   it('propagates success from the repository', async () => {

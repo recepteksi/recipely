@@ -1,5 +1,5 @@
 import type { ViewStyle } from 'react-native';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { radii } from '@presentation/base/theme';
 
 export interface SkeletonLoaderProps {

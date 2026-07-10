@@ -26,5 +26,3 @@ export const WEB_CONTENT_MAX_WIDTH = {
   settings: 720,
   forms: 480,
 } as const;
-
-export type WebContentRoute = keyof typeof WEB_CONTENT_MAX_WIDTH;

@@ -1,9 +1,6 @@
 import type { ThemeColors } from '@presentation/base/theme/theme-colors';
 import type { ThemeVariant } from '@presentation/base/theme/theme-variant';
-import type { Severity } from '@presentation/base/theme/severity';
-import type { SeveritySurface } from '@presentation/base/theme/severity-surface';
-
-export type SeveritySurfaces = Record<Severity, SeveritySurface>;
+import type { SeveritySurfaces } from '@presentation/base/theme/severity-surfaces';
 
 // WHY: these hexes are intentionally fixed per light/dark variant rather than
 // derived from the 20 brand palettes — danger must read as "red" and warning as

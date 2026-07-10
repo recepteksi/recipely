@@ -1,5 +1,6 @@
 import { NetworkFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { Comment } from '@domain/comments/comment';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { CommentDto } from '@infrastructure/comments/comment-dto';

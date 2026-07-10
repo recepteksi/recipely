@@ -1,7 +1,7 @@
-import { configureFeedbackStore } from '@application/feedback/feedback-store';
+import { configureFeedbackStore } from '@application/feedback/configure-feedback-store';
 import type { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 
 const INPUT = { subject: 'Bug report', message: 'Something is broken' };
 

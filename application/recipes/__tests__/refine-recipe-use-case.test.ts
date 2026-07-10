@@ -1,7 +1,7 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
 import { UnknownFailure, ValidationFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/cuisine-key';

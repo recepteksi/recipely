@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { TimerChip } from '@presentation/base/widgets/timers/timer-chip';
 import { timerStore } from '@application/timers/timer-store';
 import { spacing, radii, sizes } from '@presentation/base/theme';

@@ -1,4 +1,4 @@
-import { Failure } from './failure';
+import { Failure } from '@core/failure/failure';
 
 /**
  * Failure produced when a requested resource does not exist on the server

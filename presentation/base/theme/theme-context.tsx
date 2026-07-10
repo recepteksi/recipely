@@ -1,16 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/themes';
-import { DEFAULT_THEME_ID, type ThemeId } from '@presentation/base/theme/theme-id';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
+import { DEFAULT_THEME_ID } from '@presentation/base/theme/theme-defaults';
 import type { ThemeColors } from '@presentation/base/theme/theme-colors';
 import type { ThemePreference } from '@presentation/base/theme/theme-preference';
 import type { EffectiveScheme } from '@presentation/base/theme/effective-scheme';
 import type { ThemeContextValue } from '@presentation/base/theme/theme-context-value';
 
-const ThemeContext = createContext<ThemeContextValue>({
+export const ThemeContext = createContext<ThemeContextValue>({
   themeId: DEFAULT_THEME_ID,
   preference: 'system',
   scheme: 'light',
@@ -100,5 +101,3 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = (): ThemeContextValue => useContext(ThemeContext);

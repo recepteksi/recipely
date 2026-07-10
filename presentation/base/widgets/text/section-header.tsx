@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 

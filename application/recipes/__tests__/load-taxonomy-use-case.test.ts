@@ -1,6 +1,6 @@
 import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
 import { NetworkFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
 import type { ITaxonomyRepository } from '@domain/recipes/i-taxonomy-repository';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
 

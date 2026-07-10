@@ -1,13 +1,6 @@
+import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init.web';
-import type { Result } from '@core/result/result';
-import type { Failure } from '@core/failure';
-import type { DevicePlatform } from '@application/notifications/device-platform';
-
-export type RegisterTokenFn = (
-  token: string,
-  platform: DevicePlatform,
-) => Promise<Result<void, Failure>>;
 
 // Web push needs a VAPID key (Firebase Console → Cloud Messaging → Web Push
 // certificates) and a `firebase-messaging-sw.js` service worker served from the

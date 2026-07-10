@@ -1,5 +1,5 @@
 import type { Failure } from '@presentation/base/types';
-import { failureToastMessage } from '@presentation/base/errors/failure-content';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 
 /**
  * Resolves the message for an auth form banner. The same failure class means

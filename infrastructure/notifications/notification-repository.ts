@@ -1,4 +1,5 @@
-import { ok, type Result } from '@core/result/result';
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { Notification } from '@domain/notifications/notification';
 import type { INotificationRepository } from '@domain/notifications/i-notification-repository';

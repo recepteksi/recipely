@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useMemo, type ReactNode } from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
@@ -16,7 +16,7 @@ const DEFAULT_VALUE: LayoutContextValue = {
   isCompact: true,
 };
 
-const LayoutContext = createContext<LayoutContextValue>(DEFAULT_VALUE);
+export const LayoutContext = createContext<LayoutContextValue>(DEFAULT_VALUE);
 
 export interface LayoutProviderProps {
   children: ReactNode;
@@ -57,5 +57,3 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
 
   return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 };
-
-export const useLayout = (): LayoutContextValue => useContext(LayoutContext);

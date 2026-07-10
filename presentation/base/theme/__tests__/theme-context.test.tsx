@@ -22,8 +22,10 @@ jest.mock('@infrastructure/storage/kv-store', () => ({
 }));
 
 import { act, create } from 'react-test-renderer';
-import { AppThemeProvider, useTheme } from '@presentation/base/theme/theme-context';
-import { DEFAULT_THEME_ID, type ThemeId } from '@presentation/base/theme/theme-id';
+import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import type { ThemeId } from '@presentation/base/theme/theme-id';
+import { DEFAULT_THEME_ID } from '@presentation/base/theme/theme-defaults';
 
 const flushMicrotasks = async (): Promise<void> => {
   await act(async () => {

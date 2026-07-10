@@ -2,19 +2,13 @@ import type { ReactElement } from 'react';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import type { RenderResult } from '@presentation/base/test-support/render-result';
 
 /** Fixed safe-area metrics so layout-dependent components render deterministically. */
 const SAFE_AREA_METRICS = {
   frame: { x: 0, y: 0, width: 320, height: 640 },
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 } as const;
-
-export interface RenderResult {
-  /** Root instance for role / type / prop queries. */
-  root: ReactTestInstance;
-  /** Underlying renderer, for `unmount` / `toJSON` when a test needs them. */
-  renderer: ReactTestRenderer;
-}
 
 /**
  * Renders a presentation component inside the providers it depends on (theme +

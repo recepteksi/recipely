@@ -1,10 +1,8 @@
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
-import {
-  WEB_CONTENT_MAX_WIDTH,
-  type WebContentRoute,
-} from '@presentation/base/responsive/breakpoints';
-import { useLayout } from '@presentation/base/responsive/layout-context';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
+import type { WebContentRoute } from '@presentation/base/responsive/web-content-route';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing } from '@presentation/base/theme';
 
 export interface ResponsiveContainerProps {

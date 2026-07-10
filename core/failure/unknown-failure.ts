@@ -1,4 +1,4 @@
-import { Failure } from './failure';
+import { Failure } from '@core/failure/failure';
 
 /**
  * Catch-all failure for unexpected errors that do not map to a more specific

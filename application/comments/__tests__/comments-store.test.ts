@@ -1,11 +1,12 @@
-import { configureCommentsStore } from '@application/comments/comments-store';
+import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
 import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
 import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { Comment, type CommentProps } from '@domain/comments/comment';
 import type { CommentPage } from '@domain/comments/comment-page';
 

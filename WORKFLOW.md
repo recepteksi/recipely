@@ -5,7 +5,7 @@
 > `ui-designer`, `code-reviewer`) — the user should never have to say "use the agents."
 > The user has authorized this whole flow **in these files**: branch → implement via agents →
 > gate → `code-reviewer` approval → push → PR to `dev` → merge to `dev`, all **without asking**.
-> Stop only on failures (lint/tsc/jest red, review requests changes, unresolvable conflict) or
+> Stop only on failures (lint/tsc/jest/check:structure red, review requests changes, unresolvable conflict) or
 > the release-only steps (promoting `dev → main`, production Firebase Hosting deploy), which are
 > **stop-and-ask**. The authoritative summary lives in root `CLAUDE.md` → "Agent workflow (use
 > by default)"; this file is the step-by-step.
@@ -59,6 +59,7 @@ Code-reviewer will check:
 - DDD / Clean Architecture rules
 - TypeScript strictness
 - Cross-layer imports (dependency rule)
+- Structure gate: `npm run check:structure` (one-declaration-per-file, placement, import style) — any failure is blocking
 - Missing error handling
 - Duplicate code
 - Test coverage
@@ -103,6 +104,7 @@ git branch -D <branch-name>
 - **Tests**: For domain/infrastructure changes, write tests with `test-developer`
 - **Build**: After work is done, run local build (`npx expo export --platform web`)
 - **Lint**: `npm run lint` and `npx tsc --noEmit` must pass with no errors
+- **Structure**: `npm run check:structure` must pass — file/declaration layout, layer line, import style (see `architecture.md`). Work is not "done" while any gate is red.
 
 ## Communication
 

@@ -11,7 +11,7 @@ import {
   failureIcon,
   failureSeverity,
   failureToastMessage,
-} from '@presentation/base/errors/failure-content';
+} from '@presentation/base/errors/failure-lookups';
 import { en } from '@presentation/i18n/en';
 
 describe('failure-content resolver', () => {

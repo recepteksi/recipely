@@ -1,5 +1,6 @@
 import { type Failure, UnknownFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';

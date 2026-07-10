@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 
 export const SkeletonCard = (): React.JSX.Element => {

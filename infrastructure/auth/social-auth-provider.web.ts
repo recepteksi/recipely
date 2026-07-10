@@ -4,7 +4,8 @@ import {
   getAuth,
   signInWithPopup,
 } from 'firebase/auth';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init';
 

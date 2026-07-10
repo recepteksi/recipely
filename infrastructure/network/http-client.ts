@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, AxiosHeaders } from 'axios';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import {
   type Failure,
   NetworkFailure,

@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/theme-context';
+import { useTheme } from '@presentation/base/theme/use-theme';
 import { fontSizes, spacing } from '@presentation/base/theme';
 
 const WASH_OPACITY = 0.16;

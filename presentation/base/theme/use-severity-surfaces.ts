@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
-import { useTheme } from '@presentation/base/theme/theme-context';
-import {
-  errorSurfaces,
-  type SeveritySurfaces,
-} from '@presentation/base/theme/error-surfaces';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { errorSurfaces } from '@presentation/base/theme/error-surfaces';
+import type { SeveritySurfaces } from '@presentation/base/theme/severity-surfaces';
 
 /**
  * Resolves the severity surface palette (danger / warning / success / neutral)

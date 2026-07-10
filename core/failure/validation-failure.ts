@@ -1,5 +1,5 @@
-import { Failure } from './failure';
-import type { ValidationFieldError } from './validation-field-error';
+import { Failure } from '@core/failure/failure';
+import type { ValidationFieldError } from '@core/failure/validation-field-error';
 
 /**
  * Failure produced when user-supplied input does not pass domain or API

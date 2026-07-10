@@ -1,5 +1,6 @@
 import { NetworkFailure, UnauthorizedFailure, UnknownFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';

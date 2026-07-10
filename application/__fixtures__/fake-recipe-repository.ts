@@ -1,5 +1,6 @@
 import { type Failure, UnknownFailure } from '@core/failure';
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';

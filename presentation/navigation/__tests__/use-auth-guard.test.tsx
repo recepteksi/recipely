@@ -21,7 +21,7 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ replace: mockReplace })),
 }));
 
-jest.mock('@presentation/bootstrap/stores-context', () => ({
+jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
     authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
       selector({ state: { status: mockStatus } }),

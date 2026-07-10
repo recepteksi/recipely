@@ -1,10 +1,11 @@
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { type Failure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';
 import type { SerializedSession } from '@infrastructure/storage/serialized-session';
-import { kvStore } from './kv-store';
+import { kvStore } from '@infrastructure/storage/kv-store';
 
 const STORAGE_KEY = 'layerly.session.v1';
 

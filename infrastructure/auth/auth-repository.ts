@@ -1,4 +1,5 @@
-import { fail, ok, type Result } from '@core/result/result';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';

@@ -27,16 +27,8 @@ import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
+import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
 
-export interface InfrastructureOptions {
-  localeProvider?: () => string;
-  /**
-   * Invoked on every backend 401. Wired into the HTTP client so the app can
-   * clear the session and route to login; the auth store gates the actual
-   * logout (a 401 outside an authenticated session is a no-op).
-   */
-  onUnauthorized?: () => void;
-}
 
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();

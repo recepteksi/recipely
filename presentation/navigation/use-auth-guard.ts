@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
-import { useStores } from '@presentation/bootstrap/stores-context';
+import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
