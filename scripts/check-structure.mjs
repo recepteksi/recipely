@@ -25,7 +25,7 @@ const KNOWN_DEBT = new Set([
   'presentation/i18n/i18n.ts -> @infrastructure/storage/kv-store',
   'presentation/base/timers/timer-controls.ts -> @infrastructure/notifications/notification-service',
   'presentation/base/hooks/use-timer-notification-sync.ts -> @infrastructure/notifications/notification-service',
-  'presentation/screens/alarm/alarm-screen.tsx -> @infrastructure/audio/alarm-audio-service',
+  'presentation/navigation/alarm-screen.tsx -> @infrastructure/audio/alarm-audio-service',
   'application/timers/timer-store.ts -> @infrastructure/storage/kv-store',
 ]);
 
@@ -86,7 +86,14 @@ for (const file of files) {
   const names = new Set(decls.map((d) => d.name));
   const classes = decls.filter((d) => d.kind === 'class');
   const comps = file.endsWith('.tsx')
-    ? decls.filter((d) => (d.kind === 'const' || d.kind === 'function') && /^[A-Z]/.test(d.name) && !/^[A-Z0-9_]+$/.test(d.name))
+    ? decls.filter(
+        (d) =>
+          (d.kind === 'const' || d.kind === 'function') &&
+          /^[A-Z]/.test(d.name) &&
+          !/^[A-Z0-9_]+$/.test(d.name) &&
+          // React context objects (`const XContext = createContext(...)`) are not components.
+          !new RegExp(`const\\s+${d.name}\\s*(:[^=]+)?=\\s*createContext`).test(src),
+      )
     : [];
   const hooks = decls.filter((d) => (d.kind === 'const' || d.kind === 'function') && /^use[A-Z]/.test(d.name));
 
@@ -121,6 +128,25 @@ for (const file of files) {
   // --- D: widgets root must stay categorized --------------------------------
   if (/^presentation\/base\/widgets\/[^/]+\.(ts|tsx)$/.test(file)) {
     errors.push(`${file}: loose file at base/widgets root — place it in a category folder`);
+  }
+
+  // --- E: app/ co-location convention ----------------------------------------
+  // The custom route context (presentation/navigation/route-context.js) only
+  // registers index/_layout/+special/[param] files, so a flat app/<page>.tsx
+  // would silently NOT become a route. Co-located page code must live in the
+  // convention subfolders so tooling (web-export prune) can recognize it.
+  if (file.startsWith('presentation/app/')) {
+    const rel = file.slice('presentation/app/'.length);
+    const base = path.basename(rel).replace(/\.(ts|tsx)$/, '');
+    const isRouteFile = /^(index|_layout|\+[\w-]+|\[[^/\]]+\])(\.(android|ios|native|web))?$/.test(base) && rel.endsWith('.tsx');
+    const inConventionFolder = /(^|\/)(body|items|sheets|hooks|model|shared|__tests__)\//.test(rel);
+    if (!isRouteFile && !inConventionFolder) {
+      errors.push(
+        rel.includes('/')
+          ? `${file}: co-located page code must live in body/, items/, sheets/, hooks/, model/, shared/, or __tests__/`
+          : `${file}: flat file at the app root will not register as a route — use app/<segment>/index.tsx`,
+      );
+    }
   }
 }
 

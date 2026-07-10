@@ -48,9 +48,11 @@ Each layer may only depend on layers **below** it. Never import upward:
 The dependency rule and the exceptions above are enforced mechanically by `npm run check:structure`
 (see Pre-Commit Quality Gate).
 
-`presentation/app/` exists solely for expo-router's file-based routing (`"root": "presentation/app"` in
-`app.json`). Every file inside must be a **single-line re-export** from `presentation/screens/` or
-`presentation/navigation/`. No logic, no styling, no extra imports.
+`presentation/app/` is the expo-router root (`"root": "presentation/app"` in `app.json`) **and** where
+page implementations live. Only `index.tsx`, `_layout.tsx`, `+special` and `[param]` files register as
+routes; everything else in a page folder is co-located page code, hidden from the router by the custom
+route context (`presentation/navigation/route-context.js`, wired via `metro.config.js`) and stripped from
+static web exports by `scripts/prune-web-export.mjs`.
 
 ---
 
@@ -108,9 +110,8 @@ Implements domain interfaces with concrete I/O.
 
 All UI and user-facing logic.
 
-- **Screens** — One routed page per folder in `presentation/screens/{page}/`, matching the routes in
-  `presentation/app/`. The page component (`{page}-screen.tsx`) sits at the folder root, and its parts are
-  split into a fixed set of subfolders:
+- **Pages** — One routed page per folder in `presentation/app/{segment}/`. The route component lives in
+  `index.tsx` (named export + `export default`), and its parts are co-located in a fixed set of subfolders:
   - `body/` — large view sections or phase views of the screen.
   - `items/` — row / tile / chip / card components rendered in lists or grids.
   - `sheets/` — bottom sheets, modals, and overlays.
@@ -118,10 +119,22 @@ All UI and user-facing logic.
   - `model/` — pure TypeScript: types, mappers, constants, and label helpers.
   - `__tests__/` — inside the subfolder that owns the file under test.
 
-  A multi-page feature keeps one folder per routed page plus a `shared/` folder for parts used by both
-  pages — e.g. `screens/recipes/` holds `list/`, `detail/`, and `shared/`. Small pages (settings, alarm,
-  index, register, verify-code, login) stay flat.
-- **Navigation** — `presentation/navigation/root-layout.tsx` — root layout with Stack navigator.
+  Co-located files MUST live in one of those subfolders (`check:structure` rule E). A dynamic-route
+  feature nests its detail page — e.g. `app/recipes/` holds the list page plus `[recipeId]/` (detail
+  page) and `shared/` for parts used by both. Root shell files sit at the app root: `_layout.tsx`
+  (root layout), `+html.tsx`, `index.tsx` (entry redirect).
+
+  **Route registration** — only `index.tsx`, `_layout.tsx`, `+special` and `[param]` files become routes.
+  `metro.config.js` swaps expo-router's catch-all route context for
+  `presentation/navigation/route-context.js`, whose regex admits only those files; a new page is therefore
+  always `app/<segment>/index.tsx` — a flat `app/<segment>.tsx` will NOT register. Static web exports
+  still emit stray pages for co-located files (the CLI scans the file system directly), so
+  `npm run build:web` runs `scripts/prune-web-export.mjs` afterwards; real pages always export as
+  `<segment>/index.html`. Typed-routes generation sees co-located files too, which only loosens the
+  generated `Href` union — harmless. Revisit `route-context.js` on every Expo SDK / expo-router upgrade.
+- **Navigation (shell)** — `presentation/navigation/`: `route-context.js` (router file filter),
+  `use-auth-guard.ts`, `use-instagram-share-import.ts`, `alarm-screen.tsx` (global overlay rendered by the
+  root layout).
 - **Bootstrap** — `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
 - **Widgets** — Shared UI components in `presentation/base/widgets/`, grouped by category folder: `text/`,
   `buttons/`, `cards/`, `sheets/`, `layout/`, `media/`, `feedback/`, `loading/`, `settings/`, `navigation/`,
