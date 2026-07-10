@@ -17,7 +17,7 @@ import type { Failure } from '@core/failure';
 import { NetworkFailure } from '@core/failure';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
-import type { ConfirmSheetProps } from '@presentation/base/widgets/confirm-sheet';
+import type { ConfirmSheetProps } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { renderComponent, textContent, type RenderResult } from '@presentation/base/test-support/render-component';
 import { SettingsScreen } from '@presentation/screens/settings/settings-screen';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
@@ -33,13 +33,13 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ replace: mockReplace, back: jest.fn() })),
 }));
 
-jest.mock('@presentation/base/widgets/tab-bar', () => ({
+jest.mock('@presentation/base/widgets/navigation/tab-bar', () => ({
   TabBar: () => null,
 }));
 
 let confirmSheetProps: ConfirmSheetProps | null = null;
 
-jest.mock('@presentation/base/widgets/confirm-sheet', () => ({
+jest.mock('@presentation/base/widgets/sheets/confirm-sheet', () => ({
   ConfirmSheet: (props: ConfirmSheetProps) => {
     confirmSheetProps = props;
     return null;

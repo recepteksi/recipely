@@ -30,15 +30,15 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
 }));
 
-jest.mock('@presentation/screens/profile/use-avatar-upload', () => ({
+jest.mock('@presentation/screens/profile/hooks/use-avatar-upload', () => ({
   useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false })),
 }));
 
-jest.mock('@presentation/base/widgets/tab-bar', () => ({
+jest.mock('@presentation/base/widgets/navigation/tab-bar', () => ({
   TabBar: () => null,
 }));
 
-jest.mock('@presentation/screens/profile/profile-settings-sections', () => ({
+jest.mock('@presentation/screens/profile/body/profile-settings-sections', () => ({
   ProfileSettingsSections: () => null,
 }));
 

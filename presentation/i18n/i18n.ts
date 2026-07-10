@@ -1,6 +1,6 @@
-import { en } from './en';
-import type { Translations } from './translations';
-import { tr } from './tr';
+import { en } from '@presentation/i18n/en';
+import type { Translations } from '@presentation/i18n/translations';
+import { tr } from '@presentation/i18n/tr';
 import { getLocales } from 'expo-localization';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';

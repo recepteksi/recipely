@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { spacing, fontSizes, radii } from '@presentation/base/theme';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
-import type { TabConfig } from '@presentation/base/widgets/web-header/tab-config';
+import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
 
 export interface WebHeaderTabsProps {
   active: WebHeaderTabKey | null;
-  tabs: TabConfig[];
+  tabs: TabConfig<WebHeaderTabKey>[];
   onPress: (key: WebHeaderTabKey) => void;
 }
 

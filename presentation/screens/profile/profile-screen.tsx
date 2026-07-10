@@ -10,18 +10,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { AvatarImage } from '@presentation/base/widgets/avatar-image';
-import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { TabBar } from '@presentation/base/widgets/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/tab-bar-key';
+import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
+import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
-import { useAvatarUpload } from '@presentation/screens/profile/use-avatar-upload';
-import { ProfileSettingsSections } from '@presentation/screens/profile/profile-settings-sections';
+import { useAvatarUpload } from '@presentation/screens/profile/hooks/use-avatar-upload';
+import { ProfileSettingsSections } from '@presentation/screens/profile/body/profile-settings-sections';
 import { t } from '@presentation/i18n';
 
 const formatStat = (n: number): string => {

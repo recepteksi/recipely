@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { subscribeLocale, getLocaleSnapshot } from './i18n';
+import { subscribeLocale, getLocaleSnapshot } from '@presentation/i18n/i18n';
 
 /**
  * Subscribes the calling component to locale changes so its `t()` strings (and

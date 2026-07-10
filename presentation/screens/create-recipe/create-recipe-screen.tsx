@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { KeyboardAvoider } from '@presentation/base/widgets/keyboard-avoider';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/stores-context';
-import { ThemedText } from '@presentation/base/widgets/themed-text';
-import { ResponsiveContainer } from '@presentation/base/widgets/responsive-container';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/layout-context';
 import { useTheme } from '@presentation/base/theme/theme-context';
 import { shadows } from '@presentation/base/theme/shadows';
@@ -20,33 +20,33 @@ import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
-import type { EditableRecipe } from '@presentation/screens/create-recipe/editable-recipe';
+import type { EditableRecipe } from '@presentation/screens/create-recipe/model/editable-recipe';
 import {
   editableHasContent,
   editableToSnapshot,
   emptyEditable,
   recipeToEditable,
   snapshotToEditable,
-} from '@presentation/screens/create-recipe/recipe-mapping';
+} from '@presentation/screens/create-recipe/model/recipe-mapping';
 import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-content';
-import { ConfirmSheet } from '@presentation/base/widgets/confirm-sheet';
-import { useDraftAutosave } from '@presentation/screens/create-recipe/use-draft-autosave';
-import { PromptPhase } from '@presentation/screens/create-recipe/prompt-phase';
-import { GeneratingView } from '@presentation/screens/create-recipe/generating-view';
-import { RecipePreviewEditor } from '@presentation/screens/create-recipe/recipe-preview-editor';
-import { RefineDock } from '@presentation/screens/create-recipe/refine-dock';
-import { PhotosSheet } from '@presentation/screens/create-recipe/photos-sheet';
-import { ExitSheet } from '@presentation/screens/create-recipe/exit-sheet';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
+import { useDraftAutosave } from '@presentation/screens/create-recipe/hooks/use-draft-autosave';
+import { PromptPhase } from '@presentation/screens/create-recipe/body/prompt-phase';
+import { GeneratingView } from '@presentation/screens/create-recipe/body/generating-view';
+import { RecipePreviewEditor } from '@presentation/screens/create-recipe/body/recipe-preview-editor';
+import { RefineDock } from '@presentation/screens/create-recipe/body/refine-dock';
+import { PhotosSheet } from '@presentation/screens/create-recipe/sheets/photos-sheet';
+import { ExitSheet } from '@presentation/screens/create-recipe/sheets/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { Phase } from '@presentation/screens/create-recipe/phase';
+import type { Phase } from '@presentation/screens/create-recipe/model/phase';
 import { ValidationFailure, type Failure } from '@core/failure';
 import {
   mapFieldErrorsToInputs,
   NO_CREATE_RECIPE_FIELD_ERRORS,
-} from '@presentation/screens/create-recipe/map-field-errors-to-inputs';
-import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/create-recipe-field-errors';
-import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/create-recipe-field-key';
+} from '@presentation/screens/create-recipe/model/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/screens/create-recipe/model/create-recipe-field-errors';
+import type { CreateRecipeFieldKey } from '@presentation/screens/create-recipe/model/create-recipe-field-key';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;

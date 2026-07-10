@@ -1,1 +1,1 @@
-export { ResetPasswordScreen as default } from '@presentation/screens/login/reset-password-screen';
+export { ResetPasswordScreen as default } from '@presentation/screens/reset-password/reset-password-screen';

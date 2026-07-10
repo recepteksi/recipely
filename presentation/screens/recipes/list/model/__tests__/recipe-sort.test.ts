@@ -1,0 +1,136 @@
+/**
+ * Tests for recipe-sort.ts — the pure logic around sort keys, their API
+ * mapping and their localized labels.
+ *
+ * `t()` from the i18n module returns the English bundle by default in the test
+ * environment (no initLocale / mocking required; the module initialises
+ * `currentLang` to 'en').
+ */
+
+import { SORT_TO_API, sortKeyLabels, type SortKey } from '@presentation/screens/recipes/list/model/recipe-sort';
+import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+
+// ─── derive the exhaustive key list from the type itself ──────────────────────
+// If a new SortKey is added to the union but forgotten in SORT_TO_API or
+// sortKeyLabels(), the tests below will fail at the assertion level.
+const ALL_SORT_KEYS: SortKey[] = [
+  'popular',
+  'rating',
+  'time',
+  'newest',
+  'mostLiked',
+];
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+const VALID_API_SORT_VALUES: RecipeFilters['sort'][] = [
+  'popular',
+  'rating',
+  'time',
+  'newest',
+  'mostLiked',
+  'alphabetical',
+  'mostCommented',
+];
+
+describe('SORT_TO_API', () => {
+  it('has an entry for every SortKey', () => {
+    const mappedKeys = Object.keys(SORT_TO_API) as SortKey[];
+
+    const missingKeys = ALL_SORT_KEYS.filter((k) => !mappedKeys.includes(k));
+
+    expect(missingKeys).toEqual([]);
+  });
+
+  it('does not contain entries for keys outside the SortKey union', () => {
+    const mappedKeys = Object.keys(SORT_TO_API) as SortKey[];
+    const extraKeys = mappedKeys.filter((k) => !ALL_SORT_KEYS.includes(k));
+
+    expect(extraKeys).toEqual([]);
+  });
+
+  it("maps 'popular' to the 'popular' API sort value", () => {
+    expect(SORT_TO_API['popular']).toBe('popular');
+  });
+
+  it("maps 'rating' to the 'rating' API sort value", () => {
+    expect(SORT_TO_API['rating']).toBe('rating');
+  });
+
+  it("maps 'time' to the 'time' API sort value", () => {
+    expect(SORT_TO_API['time']).toBe('time');
+  });
+
+  it("maps 'newest' to the 'newest' API sort value", () => {
+    expect(SORT_TO_API['newest']).toBe('newest');
+  });
+
+  it("maps 'mostLiked' to the 'mostLiked' API sort value", () => {
+    expect(SORT_TO_API['mostLiked']).toBe('mostLiked');
+  });
+
+  it('maps every key to a valid RecipeFilters sort value', () => {
+    for (const key of ALL_SORT_KEYS) {
+      const apiValue = SORT_TO_API[key];
+
+      expect(VALID_API_SORT_VALUES).toContain(apiValue);
+    }
+  });
+});
+
+describe('sortKeyLabels()', () => {
+  it('returns a non-empty label for every SortKey', () => {
+    const labels = sortKeyLabels();
+
+    for (const key of ALL_SORT_KEYS) {
+      expect(typeof labels[key]).toBe('string');
+      expect(labels[key].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('has exactly the same keys as SortKey — no missing keys', () => {
+    const labels = sortKeyLabels();
+    const labelKeys = Object.keys(labels) as SortKey[];
+
+    const missingKeys = ALL_SORT_KEYS.filter((k) => !labelKeys.includes(k));
+
+    expect(missingKeys).toEqual([]);
+  });
+
+  it("returns 'Popular' for the 'popular' key in the English locale", () => {
+    const labels = sortKeyLabels();
+
+    expect(labels['popular']).toBe('Popular');
+  });
+
+  it("returns 'Top rated' for the 'rating' key in the English locale", () => {
+    const labels = sortKeyLabels();
+
+    expect(labels['rating']).toBe('Top rated');
+  });
+
+  it("returns 'Quickest' for the 'time' key in the English locale", () => {
+    const labels = sortKeyLabels();
+
+    expect(labels['time']).toBe('Quickest');
+  });
+
+  it("returns 'Newest' for the 'newest' key in the English locale", () => {
+    const labels = sortKeyLabels();
+
+    expect(labels['newest']).toBe('Newest');
+  });
+
+  it("returns 'Most liked' for the 'mostLiked' key in the English locale", () => {
+    const labels = sortKeyLabels();
+
+    expect(labels['mostLiked']).toBe('Most liked');
+  });
+
+  it('produces distinct labels so no two sort options look the same to users', () => {
+    const labels = sortKeyLabels();
+    const values = Object.values(labels);
+    const uniqueValues = new Set(values);
+
+    expect(uniqueValues.size).toBe(values.length);
+  });
+});

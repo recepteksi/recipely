@@ -1,1 +1,1 @@
-export { VerifyCodeScreen as default } from '@presentation/screens/register/verify-code-screen';
+export { VerifyCodeScreen as default } from '@presentation/screens/verify-code/verify-code-screen';

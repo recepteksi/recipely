@@ -94,11 +94,24 @@ Implements domain interfaces with concrete I/O.
 
 All UI and user-facing logic.
 
-- **Screens** — One component per file in `presentation/screens/{feature}/`. Complex screens are split into
-  sub-components kept in the same feature folder.
+- **Screens** — One routed page per folder in `presentation/screens/{page}/`, matching the routes in
+  `presentation/app/`. The page component (`{page}-screen.tsx`) sits at the folder root, and its parts are
+  split into a fixed set of subfolders:
+  - `body/` — large view sections or phase views of the screen.
+  - `items/` — row / tile / chip / card components rendered in lists or grids.
+  - `sheets/` — bottom sheets, modals, and overlays.
+  - `hooks/` — the page's `use-*` hooks (one hook per file).
+  - `model/` — pure TypeScript: types, mappers, constants, and label helpers.
+  - `__tests__/` — inside the subfolder that owns the file under test.
+
+  A multi-page feature keeps one folder per routed page plus a `shared/` folder for parts used by both
+  pages — e.g. `screens/recipes/` holds `list/`, `detail/`, and `shared/`. Small pages (settings, alarm,
+  index, register, verify-code, login) stay flat.
 - **Navigation** — `presentation/navigation/root-layout.tsx` — root layout with Stack navigator.
 - **Bootstrap** — `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
-- **Widgets** — Reusable UI components in `presentation/base/widgets/`.
+- **Widgets** — Shared UI components in `presentation/base/widgets/`, grouped by category folder: `text/`,
+  `buttons/`, `cards/`, `sheets/`, `layout/`, `media/`, `feedback/`, `loading/`, `settings/`, `navigation/`,
+  `timers/`, `brand/`, and `web-header/`. A widget used by only one page lives in that page's folder, not here.
 - **Theme** — `presentation/base/theme/colors.ts` (palettes), `spacing.ts` (sizes), `shadows.ts`, `themes.ts`.
 - **i18n** — `presentation/i18n/en.ts`, `presentation/i18n/tr.ts`, `presentation/i18n/i18n.ts`.
 - **Utils** — `presentation/base/utils/`.
