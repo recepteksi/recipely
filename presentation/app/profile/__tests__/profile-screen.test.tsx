@@ -7,7 +7,7 @@
  * an inviting empty-state prompt (linking back to Edit profile) renders when
  * the bio is absent/blank — never an empty box.
  *
- * Heavy sibling widgets (`TabBar`, `ProfileSettingsSections`) and native-only
+ * The heavy sibling widget (`ProfileSettingsSections`) and native-only
  * hooks (`useAvatarUpload`, `expo-router`) are stubbed so the test stays
  * focused on the identity block this screen renders directly.
  */
@@ -32,10 +32,6 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@presentation/app/profile/hooks/use-avatar-upload', () => ({
   useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false })),
-}));
-
-jest.mock('@presentation/base/widgets/navigation/tab-bar', () => ({
-  TabBar: () => null,
 }));
 
 jest.mock('@presentation/app/profile/body/profile-settings-sections', () => ({

@@ -14,8 +14,10 @@ import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
+import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
+import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
 import { initLocale } from '@presentation/i18n';
 
@@ -68,6 +70,18 @@ const WebShellChrome = (): React.JSX.Element | null => {
   return <WebHeader />;
 };
 
+/**
+ * The one and only mobile TabBar, hosted below the Stack so screen
+ * transitions animate the content area while the bar itself never moves.
+ * Visibility and the active tab are pathname-driven; the TabBar widget
+ * additionally hides itself on the web-shell breakpoint.
+ */
+const RootTabBar = (): React.JSX.Element | null => {
+  const state = useTabBarState();
+  if (state === null) return null;
+  return <TabBar active={state.active} onChange={state.onChange} />;
+};
+
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
@@ -87,22 +101,27 @@ const RootStack = (): React.JSX.Element => {
           headerShadowVisible: false,
         }}
       >
+        {/* Folder pages register on the parent navigator under their full
+            relative name (`<segment>/index`) — a bare `<segment>` here would
+            not match any route, so its options (headerShown:false) would be
+            silently dropped and the default stack header would appear. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} />
-        <Stack.Screen name="verify-code" options={{ headerShown: false }} />
+        <Stack.Screen name="login/index" options={{ headerShown: false }} />
+        <Stack.Screen name="register/index" options={{ headerShown: false }} />
+        <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
-        <Stack.Screen name="my-recipes" options={{ headerShown: false }} />
-        <Stack.Screen name="create-recipe" options={{ headerShown: false }} />
-        <Stack.Screen name="settings" options={{ headerShown: false }} />
-        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
-        <Stack.Screen name="ai-generate" options={{ headerShown: false }} />
-        <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="profile" options={{ headerShown: false }} />
-        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+        <Stack.Screen name="my-recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="create-recipe/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/index" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
+        <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
+        <Stack.Screen name="ai-generate/index" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/index" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
+      <RootTabBar />
       <ActiveTimersBar />
       <ToastHost />
       <AlarmOverlay />

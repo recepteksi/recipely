@@ -34,10 +34,6 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ replace: mockReplace, back: jest.fn() })),
 }));
 
-jest.mock('@presentation/base/widgets/navigation/tab-bar', () => ({
-  TabBar: () => null,
-}));
-
 let confirmSheetProps: ConfirmSheetProps | null = null;
 
 jest.mock('@presentation/base/widgets/sheets/confirm-sheet', () => ({
