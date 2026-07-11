@@ -17,8 +17,6 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-upload';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
@@ -63,17 +61,14 @@ export const ProfileScreen = (): React.JSX.Element => {
   const profileError =
     profileState.status === 'error' ? failureToastMessage(profileState.failure) : null;
 
-  const onTabChange = (key: TabBarKey): void => {
-    if (key === 'recipes') router.replace('/recipes');
-    else if (key === 'myRecipes') router.replace('/my-recipes');
-  };
-
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={{
           paddingTop: isWebShell ? 0 : insets.top + spacing.sm,
-          paddingBottom: insets.bottom + sizes.tabBarHeight + spacing.xxl,
+          // Mobile: the root TabBar (hosted in _layout) sits below the page,
+          // so only breathing room is needed; web keeps its former whitespace.
+          paddingBottom: isWebShell ? sizes.tabBarHeight + spacing.xxl : spacing.xxl,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -213,7 +208,6 @@ export const ProfileScreen = (): React.JSX.Element => {
           </View>
         </ResponsiveContainer>
       </ScrollView>
-      <TabBar active="profile" onChange={onTabChange} />
     </View>
   );
 };

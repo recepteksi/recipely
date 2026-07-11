@@ -7,7 +7,6 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
@@ -41,7 +40,6 @@ export const FilterSortFab = ({
   onPress,
 }: FilterSortFabProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const insets = useSafeAreaInsets();
   // Natural extended width, measured once so the morph interpolates to the real
   // localized label width rather than a guessed constant.
   const [extendedWidth, setExtendedWidth] = useState(0);
@@ -101,7 +99,9 @@ export const FilterSortFab = ({
         styles.container,
         containerStyle,
         {
-          bottom: sizes.tabBarHeight + insets.bottom + spacing.lg,
+          // The page ends where the root TabBar begins (hosted in _layout,
+          // outside the Stack), so the FAB only needs its own breathing room.
+          bottom: spacing.lg,
           backgroundColor: colors.primary,
           borderColor: colors.gradientBorder,
           ...shadows.lg,

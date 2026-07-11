@@ -13,8 +13,6 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
@@ -53,12 +51,6 @@ export const SettingsScreen = (): React.JSX.Element => {
     // WHY: the session stays intact on failure, so keep the sheet open and show
     // the error inline rather than navigating away.
     setDeleteError(failureToastMessage(failure));
-  };
-
-  const onTabChange = (key: TabBarKey): void => {
-    if (key === 'recipes') router.replace('/recipes');
-    else if (key === 'myRecipes') router.replace('/my-recipes');
-    else if (key === 'profile') router.replace('/profile');
   };
 
   const displayName =
@@ -178,7 +170,6 @@ export const SettingsScreen = (): React.JSX.Element => {
         onConfirm={() => void handleDeleteAccount()}
         onClose={() => setDeleteVisible(false)}
       />
-      <TabBar active="profile" onChange={onTabChange} />
     </View>
   );
 };

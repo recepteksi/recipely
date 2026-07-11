@@ -44,8 +44,6 @@ import {
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
 import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
@@ -353,11 +351,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     setFilters(next);
     setPendingFilters(next);
     void load(buildApiFilters(next, sortBy));
-  };
-
-  const onTabChange = (key: TabBarKey): void => {
-    if (key === 'myRecipes') router.replace('/my-recipes');
-    else if (key === 'profile') router.replace('/profile');
   };
 
   const toggleCuisineQuick = (cuisine: string): void => {
@@ -770,7 +763,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
         message={promptMessage}
       />
 
-      <TabBar active="recipes" onChange={onTabChange} />
     </SafeAreaView>
   );
 };
@@ -819,10 +811,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
   },
-  // Mobile feed: clear the resting collapsing band; the FAB clears the TabBar.
+  // Mobile feed: clear the resting collapsing band; the bottom padding only
+  // needs to clear the FAB — the root TabBar sits below the page entirely.
   mobileListContent: {
     paddingTop: sizes.homeHeaderMax,
-    paddingBottom: sizes.tabBarHeight + sizes.fabExtendedHeight + spacing.xxl,
+    paddingBottom: sizes.fabExtendedHeight + spacing.xxl,
   },
   // Cancels the list content's horizontal padding so the feed header is full-bleed.
   mobileHeaderBleed: {

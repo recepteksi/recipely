@@ -7,8 +7,6 @@ import { ScreenContainer } from '@presentation/base/widgets/layout/screen-contai
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
-import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -76,11 +74,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   }, [recipeListState, savedIds]);
 
   const items = tab === 'saved' ? savedRecipes : createdRecipes;
-
-  const onTabChange = (key: TabBarKey): void => {
-    if (key === 'recipes') router.replace('/recipes');
-    else if (key === 'profile') router.replace('/profile');
-  };
 
   const openRecipe = (id: string): void => {
     router.push({ pathname: '/recipes/[recipeId]', params: { recipeId: id } });
@@ -285,8 +278,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
         )}
         </ResponsiveContainer>
       </ScreenContainer>
-
-      <TabBar active="myRecipes" onChange={onTabChange} />
     </View>
   );
 };

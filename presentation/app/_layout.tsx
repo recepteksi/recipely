@@ -14,8 +14,10 @@ import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
+import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
+import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
 import { initLocale } from '@presentation/i18n';
 
@@ -68,6 +70,18 @@ const WebShellChrome = (): React.JSX.Element | null => {
   return <WebHeader />;
 };
 
+/**
+ * The one and only mobile TabBar, hosted below the Stack so screen
+ * transitions animate the content area while the bar itself never moves.
+ * Visibility and the active tab are pathname-driven; the TabBar widget
+ * additionally hides itself on the web-shell breakpoint.
+ */
+const RootTabBar = (): React.JSX.Element | null => {
+  const state = useTabBarState();
+  if (state === null) return null;
+  return <TabBar active={state.active} onChange={state.onChange} />;
+};
+
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
@@ -107,6 +121,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="profile/index" options={{ headerShown: false }} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
+      <RootTabBar />
       <ActiveTimersBar />
       <ToastHost />
       <AlarmOverlay />
