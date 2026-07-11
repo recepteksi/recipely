@@ -17,6 +17,7 @@ import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
+import { useScrollToEndOnKeyboard } from '@presentation/base/hooks/use-scroll-to-end-on-keyboard';
 import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition-card';
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/recipe-author-card';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
@@ -96,6 +97,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const [commentInput, setCommentInput] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
 
   const confirmDelete = useCallback(async () => {
     setDeleteError(null);
@@ -631,12 +633,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                         ]}
                         multiline
                         maxLength={2000}
-                        onFocus={() => {
-                          setTimeout(
-                            () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-                            150,
-                          );
-                        }}
+                        onFocus={revealCommentInput}
                       />
                       <Pressable
                         onPress={() => requestGate(() => void handleAddComment(), t().comments.signInToComment)}
