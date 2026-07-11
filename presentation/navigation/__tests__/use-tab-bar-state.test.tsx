@@ -5,6 +5,7 @@
  * `use-auth-guard.test.tsx`.
  */
 
+import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
@@ -33,6 +34,15 @@ const renderAt = (pathname: string): ReturnType<typeof useTabBarState> => {
 beforeEach(() => {
   mockReplace.mockClear();
   lastState = null;
+});
+
+afterEach(async () => {
+  // Let AppThemeProvider's async storage hydration (kicked off by
+  // renderComponent) settle inside act, keeping the output free of
+  // act(...) warnings — same pattern as use-scroll-to-end-on-keyboard.test.
+  await act(async () => {
+    await new Promise((resolve) => setImmediate(resolve));
+  });
 });
 
 describe('useTabBarState', () => {
