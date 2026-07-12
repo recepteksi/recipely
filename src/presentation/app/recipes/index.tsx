@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/recipe-list-item';
@@ -24,16 +24,17 @@ import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-hea
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { FilterSortFab } from '@presentation/app/recipes/items/filter-sort-fab';
 import { AiBannerCard } from '@presentation/app/recipes/items/ai-banner-card';
+import { ActiveFilterChips } from '@presentation/app/recipes/items/active-filter-chips';
+import { MobileFilterSheet } from '@presentation/app/recipes/sheets/mobile-filter-sheet';
 import { CuisineStrip } from '@presentation/app/recipes/body/cuisine-strip';
 import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
 import { WebAiBanner } from '@presentation/app/recipes/items/web-ai-banner';
 import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
-import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
+import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
-import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -44,21 +45,19 @@ import {
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
 import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
-import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import { emptyFilters, TIME_OPTIONS } from '@presentation/app/recipes/model/ui-filter-defaults';
-import { SelectChip } from '@presentation/app/recipes/items/select-chip';
+import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/responsive/use-web-shell-state';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t, useLocale } from '@presentation/i18n';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import { type Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
@@ -69,10 +68,6 @@ const HEADER_TIMING = { duration: 220, easing: Easing.out(Easing.cubic) } as con
 const REVEAL_THRESHOLD = spacing.sm;
 /** Skeleton cards shown on mobile while the list loads. */
 const SKELETON_CARD_COUNT = 4;
-
-/** Formats a SCREAMING_SNAKE_CASE enum value to Title Case for display. */
-const formatLabel = (key: string): string =>
-  key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
@@ -108,8 +103,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     () => requestGate(() => router.push('/create-recipe')),
     [requestGate, router],
   );
-  const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
-  const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
+  const { cuisineLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
@@ -281,11 +275,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     filters.difficulties.length +
     (filters.maxTime > 0 ? 1 : 0);
 
-  const nonCuisineFilterCount =
-    filters.categories.length +
-    filters.difficulties.length +
-    (filters.maxTime > 0 ? 1 : 0);
-
   const effectiveSearch = isWebShell ? webSearchQuery : search;
   // Searching hides the editorial hero / banner / cuisine sections (web) or
   // swaps the whole body for a dedicated results surface (mobile) — see the
@@ -298,8 +287,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     if (query.length === 0) return state.recipes;
     return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
   }, [state, effectiveSearch]);
-
-  const sortLabels = sortKeyLabels();
 
   const togglePendingCuisine = (c: string): void =>
     setPendingFilters((f) => ({
@@ -391,70 +378,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [openRecipe, gridColumns],
   );
 
-  // ─── Active-filter chips row ────────────────────────────────────────────────
-  // Removable chips for every applied non-cuisine filter, plus a "Clear all" link.
-  // Shared between the web sticky header and the mobile scrolling list header.
-  const activeChipsRow =
-    nonCuisineFilterCount > 0 ? (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.activeChipsScroll}
-      >
-        {filters.categories.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => removeCategoryFilter(c)}
-            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-            accessibilityRole="button"
-            accessibilityLabel={`${categoryLabel(c).name} ${t().recipes.removeFilter}`}
-          >
-            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-              {categoryLabel(c).name}
-            </ThemedText>
-            <Ionicons name="close-circle" size={14} color={colors.primary} />
-          </Pressable>
-        ))}
-        {filters.difficulties.map((d) => (
-          <Pressable
-            key={d}
-            onPress={() => removeDifficultyFilter(d)}
-            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-            accessibilityRole="button"
-            accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
-          >
-            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-              {formatLabel(d)}
-            </ThemedText>
-            <Ionicons name="close-circle" size={14} color={colors.primary} />
-          </Pressable>
-        ))}
-        {filters.maxTime > 0 ? (
-          <Pressable
-            onPress={removeMaxTimeFilter}
-            style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().recipes.removeTimeFilter}
-          >
-            <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
-              ≤ {filters.maxTime} {t().recipes.minutes}
-            </ThemedText>
-            <Ionicons name="close-circle" size={14} color={colors.primary} />
-          </Pressable>
-        ) : null}
-        <Pressable
-          onPress={resetFilters}
-          style={[styles.activeChip, styles.clearChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.clearFilters}
-        >
-          <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.textMuted }]}>
-            {t().recipes.clearFilters}
-          </ThemedText>
-        </Pressable>
-      </ScrollView>
-    ) : null;
-
   // ─── Mobile scrolling list header (everything that scrolls away with the feed) ─
   // Ai promo, cuisine strip, result-count + Clear-all row, and the active-filter
   // chips row — all inside the FlatList header so they scroll under the band.
@@ -481,7 +404,13 @@ export const RecipeListScreen = (): React.JSX.Element => {
           </Pressable>
         ) : null}
       </View>
-      {activeChipsRow}
+      <ActiveFilterChips
+        filters={filters}
+        onRemoveCategory={removeCategoryFilter}
+        onRemoveDifficulty={removeDifficultyFilter}
+        onRemoveMaxTime={removeMaxTimeFilter}
+        onClearAll={resetFilters}
+      />
     </View>
   );
 
@@ -637,103 +566,20 @@ export const RecipeListScreen = (): React.JSX.Element => {
       )}
 
       {/* Mobile filter bottom sheet (web uses the centered WebFilterModal below). */}
-      <BottomSheet
+      <MobileFilterSheet
         visible={!isWebShell && sheetOpen === 'filter'}
-        title={t().recipes.filter}
+        activeFilterCount={activeFilterCount}
+        pendingFilters={pendingFilters}
+        pendingSort={pendingSort}
+        onSelectSort={setPendingSort}
+        onToggleCuisine={togglePendingCuisine}
+        onToggleCategory={togglePendingCategory}
+        onToggleDifficulty={togglePendingDifficulty}
+        onSetMaxTime={setPendingMaxTime}
+        onApply={applyFilters}
+        onReset={resetFilters}
         onClose={() => setSheetOpen(null)}
-        rightAction={
-          activeFilterCount > 0
-            ? { label: t().recipes.clearFilters, onPress: resetFilters }
-            : undefined
-        }
-      >
-        {isWebShell ? null : (
-          <View style={styles.sheetSection}>
-            <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-              {t().recipes.sortBy}
-            </ThemedText>
-            <View style={styles.chipsWrap}>
-              {(Object.keys(sortLabels) as SortKey[]).map((key) => (
-                <SelectChip
-                  key={key}
-                  label={sortLabels[key]}
-                  selected={pendingSort === key}
-                  onToggle={() => setPendingSort(key)}
-                />
-              ))}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.sheetSection}>
-          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-            {t().recipes.cuisine}
-          </ThemedText>
-          <View style={styles.chipsWrap}>
-            {cuisineKeys.map((c) => (
-              <SelectChip
-                key={c}
-                label={cuisineLabel(c).name}
-                selected={pendingFilters.cuisines.includes(c)}
-                onToggle={() => togglePendingCuisine(c)}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.sheetSection}>
-          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-            {t().recipes.category}
-          </ThemedText>
-          <View style={styles.chipsWrap}>
-            {categoryKeys.map((c) => (
-              <SelectChip
-                key={c}
-                label={categoryLabel(c).name}
-                selected={pendingFilters.categories.includes(c)}
-                onToggle={() => togglePendingCategory(c)}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.sheetSection}>
-          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-            {t().recipes.difficulty}
-          </ThemedText>
-          <View style={styles.chipsRow}>
-            {DIFFICULTY_VALUES.map((d) => (
-              <SelectChip
-                key={d}
-                label={formatLabel(d)}
-                selected={pendingFilters.difficulties.includes(d)}
-                onToggle={() => togglePendingDifficulty(d)}
-                flex
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.sheetSection}>
-          <ThemedText variant="label" muted style={styles.sheetSectionTitle}>
-            {t().recipes.maxTime}
-          </ThemedText>
-          <View style={styles.chipsWrap}>
-            {TIME_OPTIONS.map((m) => (
-              <SelectChip
-                key={m}
-                label={m === 0 ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
-                selected={pendingFilters.maxTime === m}
-                onToggle={() => setPendingMaxTime(m)}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.sheetCta}>
-          <PrimaryButton label={t().recipes.showResults} onPress={applyFilters} />
-        </View>
-      </BottomSheet>
+      />
 
       {/* Web filter dialog — centered modal; mobile uses the bottom sheet above. */}
       <WebFilterModal
@@ -770,29 +616,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  // Active filter chips — own full-width row
-  activeChipsScroll: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-    gap: spacing.xs2,
-    alignItems: 'center',
-  },
-  activeChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    height: sizes.selectorHeight,
-    paddingHorizontal: spacing.sm2,
-    borderRadius: radii.round,
-    borderWidth: 1,
-  },
-  activeChipText: {
-    fontWeight: '600',
-    fontSize: fontSizes.small,
-  },
-  clearChip: {
-    marginLeft: spacing.xs2,
   },
   // ─── Body ───────────────────────────────────────────────────────────────────
   bodyContainer: {
@@ -866,26 +689,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     gap: spacing.md,
-  },
-  // ─── Filter bottom sheet ────────────────────────────────────────────────────
-  sheetSection: {
-    marginBottom: spacing.lg,
-  },
-  sheetSectionTitle: {
-    marginBottom: spacing.sm,
-  },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs2,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    gap: spacing.xs2,
-  },
-  sheetCta: {
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
   },
 });
 
