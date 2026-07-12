@@ -1,0 +1,66 @@
+import type { RefObject } from 'react';
+import type { ScrollView } from 'react-native';
+import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
+import type { Failure } from '@presentation/base/types';
+import type { Recipe } from '@domain/recipes/recipe';
+import type { MediaItem } from '@domain/recipes/media-item';
+import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+
+/** View model returned by {@link useRecipeDetail} for the recipe-detail screen. */
+export interface UseRecipeDetailResult {
+  recipeId: string;
+  status: StateViewStatus;
+  failure: Failure | undefined;
+  onRetry: () => void;
+
+  recipe: Recipe | null;
+  media: readonly MediaItem[];
+  firstImageUrl: string;
+  cuisineName: string;
+  liked: boolean;
+  likeCount: number;
+  likedByMe: boolean;
+
+  isOwner: boolean;
+  isSaved: boolean;
+  saveDisabled: boolean;
+  userId: string | null;
+  authorState: RecipeAuthorState;
+
+  commentState: RecipeCommentsState | undefined;
+  commentInput: string;
+  submitError: string | null;
+  onChangeCommentInput: (value: string) => void;
+  onFocusCommentInput: () => void;
+  scrollViewRef: RefObject<ScrollView | null>;
+
+  checkedIngredients: boolean[];
+  completedSteps: boolean[];
+  onToggleIngredient: (index: number) => void;
+  onToggleStep: (index: number) => void;
+
+  onToggleLike: () => void;
+  onToggleSave: () => void;
+  onAddComment: () => void;
+  onLoadMoreComments: () => void;
+  onToggleCommentLike: (commentId: string) => void;
+  onDeleteComment: (commentId: string) => void;
+  onEdit: () => void;
+
+  shareOpen: boolean;
+  onOpenShare: () => void;
+  onCloseShare: () => void;
+
+  showDeleteSheet: boolean;
+  deleteError: string | null;
+  isDeleting: boolean;
+  onOpenDelete: () => void;
+  onCloseDelete: () => void;
+  onConfirmDelete: () => void;
+
+  promptVisible: boolean;
+  promptMessage: string | undefined;
+  onClosePrompt: () => void;
+  onGoToSignIn: () => void;
+}
