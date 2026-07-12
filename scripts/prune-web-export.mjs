@@ -5,7 +5,7 @@
  * Page co-location (architecture.md §Presentation structure): the Metro-level
  * route context hides body/, items/, sheets/, hooks/, model/, shared/ and
  * __tests__/ files from the app's router, but `expo export` derives its HTML
- * page list from a raw file-system scan of `presentation/app/` and therefore
+ * page list from a raw file-system scan of `src/presentation/app/` and therefore
  * still emits a stray .html page per co-located file. Real pages are always
  * exported as `<segment>/index.html` (plus root `index.html`, `+special.html`,
  * and dynamic `[param].html`); everything else is pruned here.

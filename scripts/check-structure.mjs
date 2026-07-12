@@ -16,6 +16,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
+// Layer folders live under src/; all paths below (files, KNOWN_DEBT keys,
+// reported violations) are relative to SRC so the layer logic stays src-free.
+const SRC = path.join(ROOT, 'src');
 const LAYERS = ['core', 'domain', 'application', 'infrastructure', 'presentation'];
 const errors = [];
 
@@ -42,16 +45,16 @@ const walk = (dir) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p);
-    else if (/\.(ts|tsx)$/.test(e.name) && !e.name.endsWith('.d.ts')) files.push(path.relative(ROOT, p));
+    else if (/\.(ts|tsx)$/.test(e.name) && !e.name.endsWith('.d.ts')) files.push(path.relative(SRC, p));
   }
 };
-for (const l of LAYERS) if (fs.existsSync(path.join(ROOT, l))) walk(path.join(ROOT, l));
+for (const l of LAYERS) if (fs.existsSync(path.join(SRC, l))) walk(path.join(SRC, l));
 
 const isTest = (f) => /__tests__|\.test\.tsx?$/.test(f);
 const isBarrel = (f) => path.basename(f) === 'index.ts';
 
 for (const file of files) {
-  const src = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const src = fs.readFileSync(path.join(SRC, file), 'utf8');
   const layer = file.split(path.sep)[0];
 
   // --- B + C: import rules -------------------------------------------------

@@ -68,7 +68,7 @@
       [
         "expo-router",
         {
-          "root": "presentation/app"
+          "root": "src/presentation/app"
         }
       ],
       [

@@ -3,12 +3,12 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Page co-location under presentation/app/ (see architecture.md): expo-router
+// Page co-location under src/presentation/app/ (see architecture.md): expo-router
 // scans the app dir with a catch-all require.context, which would turn every
 // co-located body/items/hooks/model/test file into a broken route. We swap the
 // router's context module for our own, whose regex only admits real route
 // files (index.tsx, _layout.tsx, +special, [param]).
-const routeContext = path.resolve(__dirname, 'presentation/navigation/route-context.js');
+const routeContext = path.resolve(__dirname, 'src/presentation/navigation/route-context.js');
 
 // The client entry imports the context as `expo-router/_ctx`, but the static
 // web export (getServerManifest / renderStaticContent) imports the SAME module
