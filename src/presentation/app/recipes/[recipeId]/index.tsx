@@ -1,37 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { SectionHeader } from '@presentation/base/widgets/text/section-header';
-import { MediaGallery } from '@presentation/app/recipes/[recipeId]/items/media-gallery';
-import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/recipe-meta-card';
-import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/ingredient-card';
-import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/instruction-card';
-import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
 import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
-import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/base/hooks/use-scroll-to-end-on-keyboard';
-import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition-card';
-import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/recipe-author-card';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/resolved-author';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
+import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
+import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
+import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
-import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii, sizes } from '@presentation/base/theme';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import type { MediaItem } from '@domain/recipes/media-item';
@@ -282,14 +274,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
               const liked = likeState?.likedByMe ?? recipe.likedByMe;
               const likeCount = likeState?.likeCount ?? recipe.likeCount;
-              const commentTotal = commentState?.total ?? 0;
-              const nutrition = recipe.nutrition;
-              const hasNutrition =
-                recipe.caloriesPerServing > 0 ||
-                (nutrition?.protein ?? 0) > 0 ||
-                (nutrition?.carbs ?? 0) > 0 ||
-                (nutrition?.fat ?? 0) > 0 ||
-                (nutrition?.fiber ?? 0) > 0;
 
               if (isWebShell) {
                 return (
@@ -328,349 +312,35 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               }
 
               return (
-                <View>
-                  <MediaGallery media={media} />
-
-                  <View
-                    style={[
-                      styles.content,
-                      { backgroundColor: colors.background },
-                    ]}
-                  >
-                    <ThemedText variant="title">{recipe.name}</ThemedText>
-
-                    <View style={styles.captionRow}>
-                      {recipe.cuisine.length > 0 ? (
-                        <View style={styles.captionItem}>
-                          <Ionicons
-                            name="globe-outline"
-                            size={sizes.iconCaption}
-                            color={colors.textMuted}
-                          />
-                          <ThemedText style={[styles.captionText, { color: colors.textMuted }]}>
-                            {cuisineLabel(recipe.cuisine).name}
-                          </ThemedText>
-                        </View>
-                      ) : null}
-                      {recipe.rating > 0 ? (
-                        <View style={styles.captionItem}>
-                          <Ionicons name="star" size={sizes.iconCaption} color={colors.starFilled} />
-                          <ThemedText style={[styles.captionRating, { color: colors.text }]}>
-                            {recipe.rating.toFixed(1)}
-                          </ThemedText>
-                        </View>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.statsStrip}>
-                      <Pressable
-                        onPress={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
-                        accessibilityRole="button"
-                        accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
-                        style={styles.statItem}
-                      >
-                        <MaterialCommunityIcons
-                          name={liked ? 'heart' : 'heart-outline'}
-                          size={sizes.iconSm}
-                          color={liked ? colors.likeActive : colors.textMuted}
-                        />
-                        <ThemedText
-                          style={[
-                            styles.statText,
-                            { color: liked ? colors.likeActive : colors.textMuted },
-                          ]}
-                        >
-                          {String(likeCount)}
-                        </ThemedText>
-                      </Pressable>
-                      {recipe.viewCount > 0 ? (
-                        <View style={styles.statItem}>
-                          <Ionicons name="eye-outline" size={sizes.iconSm} color={colors.textMuted} />
-                          <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
-                            {recipe.viewCount.toLocaleString()}
-                          </ThemedText>
-                        </View>
-                      ) : null}
-                      {commentTotal > 0 ? (
-                        <View style={styles.statItem}>
-                          <Ionicons
-                            name="chatbubble-outline"
-                            size={sizes.iconSm}
-                            color={colors.textMuted}
-                          />
-                          <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
-                            {String(commentTotal)}
-                          </ThemedText>
-                        </View>
-                      ) : null}
-                    </View>
-
-                    {/* WHY: placed here (right below the title/rating/stats
-                    row) rather than after nutrition — tester feedback flagged
-                    a large empty gap in this spot with the author card
-                    stranded far below; closing that gap here also reads
-                    better since "who made this" belongs near the title. */}
-                    {authorState.status === 'loading' ? (
-                      <View style={styles.authorSkeleton}>
-                        <SkeletonLoader
-                          width={sizes.avatarSm}
-                          height={sizes.avatarSm}
-                          borderRadius={radii.round}
-                        />
-                        <View style={styles.authorSkeletonText}>
-                          <SkeletonLoader width="40%" height={fontSizes.micro} />
-                          <SkeletonLoader width="65%" height={fontSizes.body} />
-                        </View>
-                      </View>
-                    ) : authorState.status === 'resolved' ? (
-                      <RecipeAuthorCard
-                        authorName={authorState.author.authorName}
-                        authorPhotoUrl={authorState.author.authorPhotoUrl}
-                        recipeCount={authorState.author.recipeCount}
-                        isOwner={authorState.author.isOwner}
-                      />
-                    ) : null}
-
-                    <RecipeMetaCard
-                      prepTimeMinutes={recipe.prepTimeMinutes}
-                      cookTimeMinutes={recipe.cookTimeMinutes}
-                      servings={recipe.servings}
-                      difficulty={recipe.difficulty}
-                      recipeId={recipeId}
-                      recipeName={recipe.name}
-                    />
-
-                    {hasNutrition ? (
-                      <>
-                        <SectionHeader title={t().recipes.nutrition} />
-                        <NutritionCard
-                          caloriesPerServing={recipe.caloriesPerServing}
-                          servings={recipe.servings}
-                          nutrition={recipe.nutrition}
-                        />
-                      </>
-                    ) : null}
-
-                    {recipe.tags.length > 0 ? (
-                      <View style={styles.tagsRow}>
-                        {recipe.tags.map((tag) => (
-                          <View
-                            key={tag}
-                            style={[
-                              styles.tag,
-                              { backgroundColor: colors.chipBackground },
-                            ]}
-                          >
-                            <ThemedText
-                              variant="caption"
-                              style={{ color: colors.chipText }}
-                            >
-                              {tag}
-                            </ThemedText>
-                          </View>
-                        ))}
-                      </View>
-                    ) : null}
-
-                    <SectionHeader
-                      title={`${t().recipes.ingredients} · ${recipe.ingredients.length}`}
-                    />
-                    <View style={styles.cardsList}>
-                      {recipe.ingredients.map((item, i) => (
-                        <IngredientCard
-                          key={i}
-                          raw={item}
-                          checked={checkedIngredients[i] ?? false}
-                          onToggle={() => toggleIngredient(i)}
-                        />
-                      ))}
-                    </View>
-
-                    <SectionHeader
-                      title={`${t().recipes.instructions} · ${recipe.instructions.length}`}
-                    />
-                    <View style={styles.cardsList}>
-                      {recipe.instructions.map((step, i) => (
-                        <InstructionCard
-                          key={i}
-                          index={i}
-                          step={step}
-                          completed={completedSteps[i] ?? false}
-                          onToggle={() => toggleStep(i)}
-                          recipeId={recipeId}
-                          recipeName={recipe.name}
-                        />
-                      ))}
-                    </View>
-
-                    {isOwner ? (
-                      isWebShell ? (
-                        // WEB: design's header-cluster button language — ghost
-                        // "Edit" pill + ghost "Delete" pill (danger-tinted).
-                        <View style={styles.ownerActionsWeb}>
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t().myRecipes.editRecipe}
-                            onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
-                            style={({ pressed }) => [
-                              styles.ghostPill,
-                              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
-                            ]}
-                          >
-                            <Ionicons name="create-outline" size={16} color={colors.text} />
-                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.text }]}>
-                              {t().myRecipes.editRecipe}
-                            </ThemedText>
-                          </Pressable>
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t().myRecipes.deleteRecipe}
-                            onPress={() => setShowDeleteSheet(true)}
-                            style={({ pressed }) => [
-                              styles.ghostPill,
-                              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
-                            ]}
-                          >
-                            <Ionicons name="trash-outline" size={16} color={colors.danger} />
-                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                              {t().myRecipes.deleteRecipe}
-                            </ThemedText>
-                          </Pressable>
-                        </View>
-                      ) : (
-                        // MOBILE: edit lives in the floating overlay cluster (a
-                        // pencil button, per the design); delete stays inline as
-                        // a single danger button.
-                        <View style={styles.ownerActions}>
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={t().myRecipes.deleteRecipe}
-                            onPress={() => setShowDeleteSheet(true)}
-                            style={({ pressed }) => [
-                              styles.ownerBtn,
-                              { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
-                            ]}
-                          >
-                            <Ionicons name="trash-outline" size={16} color={colors.danger} />
-                            <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
-                              {t().myRecipes.deleteRecipe}
-                            </ThemedText>
-                          </Pressable>
-                        </View>
-                      )
-                    ) : null}
-
-                    <SectionHeader
-                      title={
-                        commentState?.total
-                          ? `${t().comments.title} · ${commentState.total}`
-                          : t().comments.title
-                      }
-                    />
-
-                    {commentState?.isLoading ? (
-                      <ActivityIndicator
-                        size="small"
-                        color={colors.primary}
-                        style={styles.commentsLoader}
-                      />
-                    ) : !commentState || commentState.items.length === 0 ? (
-                      <ThemedText variant="caption" muted style={styles.commentsEmpty}>
-                        {t().comments.empty}
-                      </ThemedText>
-                    ) : (
-                      <View style={styles.commentsList}>
-                        {commentState.items.map((comment) => (
-                          <CommentCard
-                            key={comment.id}
-                            body={comment.body}
-                            authorDisplayName={comment.authorDisplayName}
-                            authorPhotoUrl={comment.authorPhotoUrl}
-                            createdAt={comment.createdAt}
-                            isOwn={comment.authorId === userId}
-                            likeCount={comment.likeCount}
-                            likedByMe={comment.likedByMe}
-                            canLike
-                            onToggleLike={() =>
-                              requestGate(() => void handleToggleCommentLike(comment.id), t().comments.signInToLikeComment)
-                            }
-                            onDelete={() => void handleDeleteComment(comment.id)}
-                          />
-                        ))}
-                      </View>
-                    )}
-
-                    {commentState !== undefined &&
-                    commentState.items.length < commentState.total ? (
-                      <Pressable
-                        onPress={() => void commentsStore.getState().loadMore(recipeId)}
-                        style={({ pressed }) => [
-                          styles.loadMoreBtn,
-                          { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
-                        ]}
-                      >
-                        <ThemedText variant="caption" muted>
-                          {commentState.isLoadingMore
-                            ? t().common.loading
-                            : t().comments.loadMore}
-                        </ThemedText>
-                      </Pressable>
-                    ) : null}
-
-                    <View style={styles.commentInputRow}>
-                      <TextInput
-                        value={commentInput}
-                        onChangeText={setCommentInput}
-                        placeholder={t().comments.placeholder}
-                        placeholderTextColor={colors.textMuted}
-                        style={[
-                          styles.commentInput,
-                          {
-                            backgroundColor: colors.surface,
-                            color: colors.text,
-                            borderColor: colors.border,
-                          },
-                        ]}
-                        multiline
-                        maxLength={2000}
-                        onFocus={revealCommentInput}
-                      />
-                      <Pressable
-                        onPress={() => requestGate(() => void handleAddComment(), t().comments.signInToComment)}
-                        disabled={
-                          commentState?.isSubmitting === true ||
-                          commentInput.trim().length === 0
-                        }
-                        accessibilityRole="button"
-                        accessibilityLabel={t().comments.send}
-                        style={({ pressed }) => [
-                          styles.commentSendBtn,
-                          {
-                            backgroundColor: colors.primary,
-                            opacity:
-                              pressed ||
-                              commentState?.isSubmitting === true ||
-                              commentInput.trim().length === 0
-                                ? 0.6
-                                : 1,
-                          },
-                        ]}
-                      >
-                        <Ionicons name="send" size={16} color={colors.onOverlay} />
-                      </Pressable>
-                    </View>
-
-                    {submitError !== null ? (
-                      <ThemedText
-                        variant="caption"
-                        style={[styles.submitError, { color: colors.danger }]}
-                      >
-                        {submitError}
-                      </ThemedText>
-                    ) : null}
-
-                  </View>
-                </View>
+                <MobileRecipeDetail
+                  recipe={recipe}
+                  recipeId={recipeId}
+                  media={media}
+                  isOwner={isOwner}
+                  isWebShell={isWebShell}
+                  authorState={authorState}
+                  liked={liked}
+                  likeCount={likeCount}
+                  userId={userId}
+                  checkedIngredients={checkedIngredients}
+                  onToggleIngredient={toggleIngredient}
+                  completedSteps={completedSteps}
+                  onToggleStep={toggleStep}
+                  commentState={commentState}
+                  commentInput={commentInput}
+                  submitError={submitError}
+                  onChangeCommentInput={setCommentInput}
+                  onFocusCommentInput={revealCommentInput}
+                  onToggleLike={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
+                  onEdit={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                  onDelete={() => setShowDeleteSheet(true)}
+                  onAddComment={() => requestGate(() => void handleAddComment(), t().comments.signInToComment)}
+                  onLoadMoreComments={() => void commentsStore.getState().loadMore(recipeId)}
+                  onToggleCommentLike={(id) =>
+                    requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment)
+                  }
+                  onDeleteComment={(id) => void handleDeleteComment(id)}
+                />
               );
             })()
           ) : null}
@@ -688,46 +358,13 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         </Pressable>
       ) : null}
 
-      <BottomSheet
+      <DeleteRecipeSheet
         visible={showDeleteSheet}
-        title={t().myRecipes.deleteConfirmTitle}
+        deleteError={deleteError}
+        isDeleting={isDeleting}
         onClose={() => { setShowDeleteSheet(false); setDeleteError(null); }}
-      >
-        <ThemedText variant="body" muted style={styles.deleteSheetBody}>
-          {t().myRecipes.deleteConfirm}
-        </ThemedText>
-        {deleteError !== null ? (
-          <ThemedText variant="caption" style={[styles.deleteSheetError, { color: colors.danger }]}>
-            {deleteError}
-          </ThemedText>
-        ) : null}
-        <View style={styles.deleteSheetActions}>
-          <Pressable
-            onPress={() => { setShowDeleteSheet(false); setDeleteError(null); }}
-            style={({ pressed }) => [
-              styles.deleteSheetBtn,
-              { backgroundColor: colors.surface, opacity: pressed ? 0.75 : 1 },
-            ]}
-          >
-            <ThemedText variant="body" style={styles.semiBold}>
-              {t().common.cancel}
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={() => void confirmDelete()}
-            disabled={isDeleting}
-            style={({ pressed }) => [
-              styles.deleteSheetBtn,
-              styles.deleteSheetBtnDanger,
-              { opacity: pressed || isDeleting ? 0.7 : 1, backgroundColor: colors.dangerLight },
-            ]}
-          >
-            <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold, { color: colors.danger }]}>
-              {isDeleting ? t().common.loading : t().myRecipes.deleteRecipe}
-            </ThemedText>
-          </Pressable>
-        </View>
-      </BottomSheet>
+        onConfirm={() => void confirmDelete()}
+      />
 
       <SignInPromptSheet
         visible={promptVisible}
@@ -744,51 +381,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           return (
             <>
               {!isWebShell ? (
-              <View style={[styles.floatingActions, { top: insets.top + 8 }]}>
-                {isOwner && !isWebShell ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={t().myRecipes.editRecipe}
-                    onPress={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
-                    style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-                  >
-                    <Ionicons name="pencil" size={sizes.iconMd} color={colors.onOverlay} />
-                  </Pressable>
-                ) : null}
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t().recipes.share}
-                  onPress={() => setShareOpen(true)}
-                  style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-                >
-                  <Ionicons name="share-social-outline" size={sizes.iconMd} color={colors.onOverlay} />
-                </Pressable>
-                <Pressable
-                  onPress={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
-                  accessibilityRole="button"
-                  accessibilityLabel={likeState?.likedByMe ? t().recipes.unlike : t().recipes.like}
-                  style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-                >
-                  <MaterialCommunityIcons
-                    name={likeState?.likedByMe ? 'heart' : 'heart-outline'}
-                    size={20}
-                    color={likeState?.likedByMe ? colors.likeActive : colors.onOverlay}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={() => requestGate(() => void handleToggleSave(), t().recipes.signInToSave)}
-                  accessibilityRole="button"
-                  accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
-                  disabled={isLoading}
-                  style={[styles.floatingBtn, { opacity: isLoading ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
-                >
-                  <Ionicons
-                    name={isSaved ? 'bookmark' : 'bookmark-outline'}
-                    size={20}
-                    color={isLoading ? colors.textMuted : colors.onOverlay}
-                  />
-                </Pressable>
-              </View>
+                <RecipeFloatingActions
+                  insetsTop={insets.top}
+                  isOwner={isOwner}
+                  likedByMe={likeState?.likedByMe ?? false}
+                  isSaved={isSaved}
+                  saveDisabled={isLoading}
+                  onEdit={() => router.push(`/create-recipe?recipeId=${recipeId}`)}
+                  onShare={() => setShareOpen(true)}
+                  onToggleLike={() => requestGate(() => void handleToggleLike(), t().recipes.signInToLike)}
+                  onToggleSave={() => requestGate(() => void handleToggleSave(), t().recipes.signInToSave)}
+                />
               ) : null}
               <RecipeShareSheet
                 visible={shareOpen}
@@ -813,128 +416,6 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
   },
-  content: {
-    marginTop: -spacing.xxl,
-    borderTopLeftRadius: radii.xxl,
-    borderTopRightRadius: radii.xxl,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
-  },
-  captionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginTop: spacing.xs2,
-  },
-  captionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  captionText: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '600',
-  },
-  captionRating: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '700',
-  },
-  statsStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  statText: {
-    fontSize: fontSizes.caption,
-    fontWeight: '600',
-  },
-  authorSkeleton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-    marginTop: spacing.lg,
-  },
-  authorSkeletonText: {
-    flex: 1,
-    gap: spacing.xs2,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.md,
-  },
-  tag: {
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.sm2,
-    paddingVertical: spacing.xs,
-  },
-  cardsList: {
-    gap: spacing.sm,
-  },
-  ownerActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xl,
-  },
-  ownerActionsWeb: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xl,
-    alignSelf: 'flex-start',
-  },
-  ownerBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs2,
-    height: sizes.searchBarHeight,
-    borderRadius: radii.round,
-  },
-  ghostPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs2,
-    height: sizes.searchBarHeight,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-  },
-  ownerBtnLabel: {
-    fontWeight: '600',
-    fontSize: fontSizes.caption,
-  },
-  deleteSheetBody: {
-    marginBottom: spacing.md,
-    lineHeight: 22,
-  },
-  deleteSheetError: {
-    marginBottom: spacing.md,
-  },
-  deleteSheetActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  deleteSheetBtn: {
-    flex: 1,
-    height: sizes.buttonSmHeight,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteSheetBtnDanger: {},
-  deleteSheetBtnDangerLabel: {},
   backButton: {
     position: 'absolute',
     left: spacing.lg,
@@ -943,63 +424,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  floatingActions: {
-    position: 'absolute',
-    right: spacing.lg,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  floatingBtn: {
-    width: sizes.floatingBtn,
-    height: sizes.floatingBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  commentsLoader: {
-    marginVertical: spacing.md,
-  },
-  commentsEmpty: {
-    marginTop: spacing.sm,
-  },
-  commentsList: {
-    gap: spacing.sm,
-  },
-  loadMoreBtn: {
-    alignSelf: 'center',
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: 1,
-  },
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.sm,
-    marginTop: spacing.md,
-  },
-  commentInput: {
-    flex: 1,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    minHeight: sizes.searchBarHeight,
-  },
-  commentSendBtn: {
-    width: sizes.searchBarHeight,
-    height: sizes.searchBarHeight,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitError: {
-    marginTop: spacing.xs,
-  },
-  semiBold: {
-    fontWeight: '600' as const,
   },
 });
 
