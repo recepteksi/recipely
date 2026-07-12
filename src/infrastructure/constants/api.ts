@@ -106,6 +106,8 @@ export const RECIPES_PAGE_SIZE = 30;
 
 export const DRAFTS_PAGE_SIZE = 20;
 
+export const COMMENTS_PAGE_SIZE = 20;
+
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
 // WHY: the Instagram import endpoint runs yt-dlp + Whisper transcription +

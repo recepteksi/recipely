@@ -1,6 +1,6 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { type Failure, UnauthorizedFailure } from '@core/failure';
+import type { Failure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
@@ -13,13 +13,11 @@ import {
   AUTH_RESET_PASSWORD_PATH,
   AUTH_SOCIAL_PATH,
   AVATAR_UPLOAD_URL,
-  DEFAULT_CODE_TTL_SECONDS,
   ME_PATH,
   ME_PROFILE_PATH,
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
-import { decodeJwtPayload } from '@infrastructure/network/decode-jwt';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/recipely-auth-session-dto';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
@@ -29,8 +27,9 @@ import {
   acquireAppleFirebaseToken,
   acquireGoogleFirebaseToken,
 } from '@infrastructure/auth/social-auth-provider';
-
-const FALLBACK_EXPIRES_MS = 3_600_000;
+import { toChallenge } from '@infrastructure/auth/to-challenge';
+import { expiresAtFromToken } from '@infrastructure/auth/expires-at-from-token';
+import { rebuildSessionWithUser } from '@infrastructure/auth/rebuild-session-with-user';
 
 /**
  * Implements `IAuthRepository` against the Recipely backend (email/password)
@@ -164,32 +163,7 @@ export class AuthRepository implements IAuthRepository {
     if (!result.ok) {
       return result;
     }
-
-    // The avatar endpoint returns only the updated user — no token. Reuse the
-    // current session's token/expiry/id so the user stays signed in.
-    const sessionResult = await this.storage.loadSession();
-    if (!sessionResult.ok) {
-      return fail(sessionResult.failure);
-    }
-    const current = sessionResult.value;
-    if (current === null) {
-      return fail(new UnauthorizedFailure('No active session to update'));
-    }
-
-    const userResult = toUser(result.value.user);
-    if (!userResult.ok) return userResult;
-
-    const updatedResult = AuthSession.create({
-      id: current.id,
-      accessToken: current.accessToken,
-      expiresAt: current.expiresAt,
-      user: userResult.value,
-    });
-    if (!updatedResult.ok) return updatedResult;
-
-    const saveResult = await this.storage.saveSession(updatedResult.value);
-    if (!saveResult.ok) return fail(saveResult.failure);
-    return ok(updatedResult.value);
+    return rebuildSessionWithUser(this.storage, result.value.user);
   }
 
   async updateProfile(input: {
@@ -204,32 +178,7 @@ export class AuthRepository implements IAuthRepository {
     if (!result.ok) {
       return result;
     }
-
-    // The profile endpoint returns only the updated user — no token. Reuse the
-    // current session's token/expiry/id so the user stays signed in.
-    const sessionResult = await this.storage.loadSession();
-    if (!sessionResult.ok) {
-      return fail(sessionResult.failure);
-    }
-    const current = sessionResult.value;
-    if (current === null) {
-      return fail(new UnauthorizedFailure('No active session to update'));
-    }
-
-    const userResult = toUser(result.value.user);
-    if (!userResult.ok) return userResult;
-
-    const updatedResult = AuthSession.create({
-      id: current.id,
-      accessToken: current.accessToken,
-      expiresAt: current.expiresAt,
-      user: userResult.value,
-    });
-    if (!updatedResult.ok) return updatedResult;
-
-    const saveResult = await this.storage.saveSession(updatedResult.value);
-    if (!saveResult.ok) return fail(saveResult.failure);
-    return ok(updatedResult.value);
+    return rebuildSessionWithUser(this.storage, result.value.user);
   }
 
   async deleteAccount(): Promise<Result<void, Failure>> {
@@ -280,27 +229,3 @@ export class AuthRepository implements IAuthRepository {
     return ok(sessionResult.value);
   }
 }
-
-const toChallenge = (
-  email: string,
-  dto: RegistrationChallengeDto,
-): RegistrationChallenge => {
-  const expiresInSeconds = dto.expiresInSeconds ?? DEFAULT_CODE_TTL_SECONDS;
-  // Prefer the backend's absolute expiry; synthesise one from the remaining
-  // seconds only when an older backend omits it.
-  const expiresAt =
-    dto.expiresAt ?? new Date(Date.now() + expiresInSeconds * 1000).toISOString();
-  return {
-    email: dto.email ?? email,
-    expiresInSeconds,
-    expiresAt,
-  };
-};
-
-const expiresAtFromToken = (token: string): Date => {
-  const claims = decodeJwtPayload(token);
-  if (claims.ok && typeof claims.value.exp === 'number') {
-    return new Date(claims.value.exp * 1000);
-  }
-  return new Date(Date.now() + FALLBACK_EXPIRES_MS);
-};

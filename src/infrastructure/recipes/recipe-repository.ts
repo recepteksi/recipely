@@ -7,22 +7,23 @@ import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
-import { appendFilePart } from '@infrastructure/network/append-file-part';
 import {
   AI_REQUEST_TIMEOUT_MS,
   IMPORT_REQUEST_TIMEOUT_MS,
   RECIPE_TRENDING_PATH,
   RECIPES_PAGE_SIZE,
   TRENDING_RECIPES_LIMIT,
-  UPLOAD_URL,
 } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
-import { toRecipe, toRecipeSummary } from '@infrastructure/recipes/recipe-mapper';
+import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
+import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
+import { buildCreateRecipeFormData } from '@infrastructure/recipes/build-create-recipe-form-data';
+import { buildUpdateRecipeBody } from '@infrastructure/recipes/build-update-recipe-body';
+import { uploadRecipeMedia } from '@infrastructure/recipes/upload-recipe-media';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles
@@ -51,15 +52,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: RecipeSummary[] = [];
-    for (const dto of result.value.items) {
-      const mapped = toRecipeSummary(dto);
-      if (!mapped.ok) {
-        return fail(mapped.failure);
-      }
-      recipes.push(mapped.value);
-    }
-    return ok(recipes);
+    return mapRecipeSummaries(result.value.items);
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>> {
@@ -71,15 +64,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: RecipeSummary[] = [];
-    for (const dto of result.value.items) {
-      const mapped = toRecipeSummary(dto);
-      if (!mapped.ok) {
-        return fail(mapped.failure);
-      }
-      recipes.push(mapped.value);
-    }
-    return ok(recipes);
+    return mapRecipeSummaries(result.value.items);
   }
 
   async listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
@@ -91,15 +76,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const recipes: RecipeSummary[] = [];
-    for (const dto of result.value.items) {
-      const mapped = toRecipeSummary(dto);
-      if (!mapped.ok) {
-        return fail(mapped.failure);
-      }
-      recipes.push(mapped.value);
-    }
-    return ok(recipes);
+    return mapRecipeSummaries(result.value.items);
   }
 
   async getRecipe(id: string): Promise<Result<Recipe, Failure>> {
@@ -110,51 +87,14 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
-    if (!mapped.ok) {
-      return fail(mapped.failure);
-    }
-    return ok(mapped.value);
+    return this.mapRecipe(result.value);
   }
 
   async createRecipe(
     input: CreateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
-    const formData = new FormData();
-    // The backend /recipes/with-media route reads every file under the `media`
-    // field (Multer .array('media', 10)) in order, promotes the first image to
-    // the cover `image`, and persists the rest as the gallery.
-    for (const item of input.media) {
-      await appendFile(formData, 'media', item);
-    }
-
-    formData.append('name', JSON.stringify(input.name));
-    formData.append('cuisine', input.cuisine);
-    formData.append('category', input.category);
-    formData.append('difficulty', input.difficulty);
-    formData.append('ingredients', JSON.stringify(input.ingredients));
-    formData.append('instructions', JSON.stringify(input.instructions));
-    formData.append('prepTimeMinutes', String(input.prepTimeMinutes));
-    formData.append('cookTimeMinutes', String(input.cookTimeMinutes));
-    formData.append('servings', String(input.servings));
-
-    if (input.rating !== undefined) {
-      formData.append('rating', String(input.rating));
-    }
-    if (input.tags) {
-      formData.append('tags', JSON.stringify(input.tags));
-    }
-    if (
-      input.mealType &&
-      Object.values(input.mealType).some((arr) => arr.length > 0)
-    ) {
-      formData.append('mealType', JSON.stringify(input.mealType));
-    }
-    if (input.isPublished !== undefined) {
-      formData.append('isPublished', String(input.isPublished));
-    }
-
+    const formData = await buildCreateRecipeFormData(input);
     const result = await this.http.uploadMultipart<RecipeDto>(
       '/recipes/with-media',
       formData,
@@ -163,11 +103,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
-    if (!mapped.ok) {
-      return fail(mapped.failure);
-    }
-    return ok(mapped.value);
+    return this.mapRecipe(result.value);
   }
 
   async updateRecipe(
@@ -175,49 +111,16 @@ export class RecipeRepository implements IRecipeRepository {
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<Recipe, Failure>> {
-    const body: Record<string, unknown> = {};
-    if (input.name !== undefined) body['name'] = input.name;
-    if (input.cuisine !== undefined) body['cuisine'] = input.cuisine;
-    if (input.category !== undefined) body['category'] = input.category;
-    if (input.difficulty !== undefined) body['difficulty'] = input.difficulty;
-    if (input.ingredients !== undefined) body['ingredients'] = input.ingredients;
-    if (input.instructions !== undefined) body['instructions'] = input.instructions;
-    if (input.prepTimeMinutes !== undefined) body['prepTimeMinutes'] = input.prepTimeMinutes;
-    if (input.cookTimeMinutes !== undefined) body['cookTimeMinutes'] = input.cookTimeMinutes;
-    if (input.servings !== undefined) body['servings'] = input.servings;
-    if (input.rating !== undefined) body['rating'] = input.rating;
-    if (input.tags !== undefined) body['tags'] = input.tags;
-    if (
-      input.mealType !== undefined &&
-      Object.values(input.mealType).some((arr) => arr.length > 0)
-    ) {
-      body['mealType'] = input.mealType;
-    }
-    if (input.isPublished !== undefined) body['isPublished'] = input.isPublished;
-    if (input.locale !== undefined) body['locale'] = input.locale;
+    const body = buildUpdateRecipeBody(input);
 
     // WHY: the backend PATCH /:id accepts a full `media[]` of { type, url } and
     // replaces the gallery. Local URIs must first be turned into hosted URLs via
-    // POST /upload (server root, outside /api/v1); already-hosted https URLs are
-    // sent verbatim so unchanged photos are never re-uploaded. The first image
+    // POST /upload; already-hosted https URLs are sent verbatim. The first image
     // is also mirrored to `image` to keep the cover in sync.
     if (input.media !== undefined) {
-      const gallery: { type: string; url: string }[] = [];
-      for (const item of input.media) {
-        let url = item.uri;
-        if (!item.uri.startsWith('http')) {
-          const formData = new FormData();
-          await appendFile(formData, 'image', item);
-          const uploadResult = await this.http.uploadMultipart<{ url: string; filename: string }>(
-            UPLOAD_URL,
-            formData,
-            onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
-          );
-          if (!uploadResult.ok) return uploadResult;
-          url = uploadResult.value.url;
-        }
-        gallery.push({ type: item.type, url });
-      }
+      const galleryResult = await uploadRecipeMedia(this.http, input.media, onProgress);
+      if (!galleryResult.ok) return galleryResult;
+      const gallery = galleryResult.value;
       body['media'] = gallery;
       const cover = gallery.find((m) => m.type === 'image');
       if (cover !== undefined) body['image'] = cover.url;
@@ -231,11 +134,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
-    if (!mapped.ok) {
-      return fail(mapped.failure);
-    }
-    return ok(mapped.value);
+    return this.mapRecipe(result.value);
   }
 
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
@@ -268,11 +167,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
-    if (!mapped.ok) {
-      return fail(mapped.failure);
-    }
-    return ok(mapped.value);
+    return this.mapRecipe(result.value);
   }
 
   // WHY: like generateRecipe, the import returns a NOT-persisted preview Recipe
@@ -295,11 +190,7 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
-    if (!mapped.ok) {
-      return fail(mapped.failure);
-    }
-    return ok(mapped.value);
+    return this.mapRecipe(result.value);
   }
 
   // WHY: like generateRecipe, refine returns a NOT-persisted preview Recipe and
@@ -320,23 +211,14 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    const mapped = toRecipe(result.value);
+    return this.mapRecipe(result.value);
+  }
+
+  private mapRecipe(dto: RecipeDto): Result<Recipe, Failure> {
+    const mapped = toRecipe(dto);
     if (!mapped.ok) {
       return fail(mapped.failure);
     }
     return ok(mapped.value);
   }
-}
-
-/** Appends one recipe media file to a `FormData` via the shared multipart helper. */
-async function appendFile(
-  formData: FormData,
-  field: string,
-  item: RecipeMediaUpload,
-): Promise<void> {
-  await appendFilePart(formData, field, {
-    uri: item.uri,
-    fileName: item.fileName,
-    mimeType: item.mimeType,
-  });
 }
