@@ -5,27 +5,25 @@
  * instead of handing an unknown id to `getThemeColors` (which would throw on
  * an undefined lookup and blank the screen).
  */
-/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-
-const mockKvStore: Record<string, string> = {};
-
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
-    getItem: jest.fn(async (key: string) => mockKvStore[key] ?? null),
-    setItem: jest.fn(async (key: string, value: string) => {
-      mockKvStore[key] = value;
-    }),
-    removeItem: jest.fn(async (key: string) => {
-      delete mockKvStore[key];
-    }),
-  },
-}));
-
 import { act, create } from 'react-test-renderer';
+import { container } from '@core/di/container-instance';
+import { TOKENS } from '@core/di/tokens';
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/theme-defaults';
+
+const mockKvStore: Record<string, string> = {};
+
+// Register an in-memory key-value store under the DI token so the provider's
+// `getKeyValueStore()` accessor reads/writes it instead of the platform store.
+const fakeKvStore: IKeyValueStore = {
+  getItem: async (key: string) => mockKvStore[key] ?? null,
+  setItem: async (key: string, value: string) => { mockKvStore[key] = value; },
+  removeItem: async (key: string) => { delete mockKvStore[key]; },
+};
+container.register(TOKENS.KeyValueStore, () => fakeKvStore);
 
 const flushMicrotasks = async (): Promise<void> => {
   await act(async () => {

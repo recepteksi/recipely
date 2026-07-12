@@ -5,21 +5,24 @@
 
 const mockKvStore: Record<string, string> = {};
 
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
-    getItem: jest.fn(async (key: string) => mockKvStore[key] ?? null),
-    setItem: jest.fn(async (key: string, value: string) => { mockKvStore[key] = value; }),
-    removeItem: jest.fn(async (key: string) => { delete mockKvStore[key]; }),
-  },
-}));
-
 jest.mock('@infrastructure/constants/storage', () => ({
   SESSION_STORAGE_KEY: 'recipely.session.v1',
   TIMERS_STORAGE_KEY: 'recipely.timers.v1',
 }));
 
+import { container } from '@core/di/container-instance';
+import { TOKENS } from '@core/di/tokens';
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 import { timerStore } from '@application/timers/timer-store';
 import type { TimerEntry } from '@application/timers/timer-entry';
+
+// Register an in-memory key-value store under the DI token so the store's
+// `getKeyValueStore()` accessor resolves it instead of the platform backend.
+const fakeKvStore: IKeyValueStore = {
+  getItem: async (key: string) => mockKvStore[key] ?? null,
+  setItem: async (key: string, value: string) => { mockKvStore[key] = value; },
+  removeItem: async (key: string) => { delete mockKvStore[key]; },
+};
 
 const makeEntry = (overrides: Partial<TimerEntry> = {}): TimerEntry => ({
   id: 'recipe1:step0:5min',
@@ -34,6 +37,7 @@ const makeEntry = (overrides: Partial<TimerEntry> = {}): TimerEntry => ({
 });
 
 const resetAll = (): void => {
+  container.register(TOKENS.KeyValueStore, () => fakeKvStore);
   timerStore.setState({ timers: {}, hydrated: false });
   for (const key of Object.keys(mockKvStore)) delete mockKvStore[key];
 };

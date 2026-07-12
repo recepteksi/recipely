@@ -25,4 +25,7 @@ export const TOKENS = {
   GetUserProfileUseCase: Symbol.for('GetUserProfileUseCase'),
   FeedbackRepository: Symbol.for('FeedbackRepository'),
   SubmitFeedbackUseCase: Symbol.for('SubmitFeedbackUseCase'),
+  KeyValueStore: Symbol.for('KeyValueStore'),
+  NotificationService: Symbol.for('NotificationService'),
+  AlarmAudioService: Symbol.for('AlarmAudioService'),
 } as const;

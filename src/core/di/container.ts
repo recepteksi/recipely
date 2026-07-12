@@ -12,6 +12,11 @@ export class Container {
     this.instances.delete(token);
   }
 
+  /** Returns true when a factory is registered for the token. */
+  has(token: symbol): boolean {
+    return this.factories.has(token);
+  }
+
   resolve<T>(token: symbol): T {
     const cached = this.instances.get(token);
     if (cached !== undefined) {

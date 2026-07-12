@@ -2,7 +2,7 @@ import { en } from '@presentation/i18n/en';
 import type { Translations } from '@presentation/i18n/translations';
 import { tr } from '@presentation/i18n/tr';
 import { getLocales } from 'expo-localization';
-import { kvStore } from '@infrastructure/storage/kv-store';
+import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 const translations: Record<string, Translations> = { en, tr };
@@ -20,7 +20,7 @@ const applyLocale = (lang: string, persist: boolean): void => {
   if (!(lang in translations) || lang === currentLang) return;
   currentLang = lang;
   if (persist) {
-    void kvStore.setItem(LANGUAGE_STORAGE_KEY, lang);
+    void getKeyValueStore().setItem(LANGUAGE_STORAGE_KEY, lang);
   }
   notify();
 };
@@ -38,7 +38,7 @@ export const initLocale = (): void => {
  * default already seeded by {@link initLocale} when nothing is stored.
  */
 export const hydrateLocale = async (): Promise<void> => {
-  const stored = await kvStore.getItem(LANGUAGE_STORAGE_KEY);
+  const stored = await getKeyValueStore().getItem(LANGUAGE_STORAGE_KEY);
   if (stored && stored in translations) {
     applyLocale(stored, false);
   }

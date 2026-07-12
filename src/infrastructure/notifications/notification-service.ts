@@ -1,5 +1,10 @@
 import { LogBox, Platform } from 'react-native';
 import type * as NotificationsType from 'expo-notifications';
+import type { INotificationService } from '@domain/notifications/i-notification-service';
+import {
+  TIMER_COMPLETE,
+  DISMISS_ALARM_ACTION,
+} from '@domain/notifications/timer-notification-keys';
 
 // WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
 // module load time. ES `import` is hoisted before any code, so suppression
@@ -24,12 +29,8 @@ const Notifications = require('expo-notifications') as typeof NotificationsType;
 // API value for "use the device's default notification sound".
 const ALERT_CHANNEL = 'recipely-timer-alert-v4';
 
-export const TIMER_COMPLETE = 'timer-complete';
-
-// Notification category / action identifiers — shared with the sync hook so
-// there are no magic strings at the call site.
-export const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
-export const DISMISS_ALARM_ACTION = 'DISMISS_ALARM';
+// Notification category identifier — the "Kapat" dismiss action lives under it.
+const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
 
 // WHY: only one notification — the in-app expo-av loop is the continuous
 // alarm. Reminder notifications caused repeated dings every 2 min which
@@ -37,130 +38,134 @@ export const DISMISS_ALARM_ACTION = 'DISMISS_ALARM';
 // or the "Kapat" action on the single notification.
 const REMINDER_COUNT = 0;
 
-/** Must be called once at app startup (no-op on web). */
-export const initNotifications = async (): Promise<void> => {
-  if (Platform.OS === 'web') return;
-  try {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-      }),
-    });
+/**
+ * Schedules and cancels local timer-completion notifications via the platform
+ * notification API. Every method is a no-op on web, where local notifications
+ * are unsupported and the in-app alarm overlay is the sole alert.
+ */
+export class NotificationService implements INotificationService {
+  async init(): Promise<void> {
+    if (Platform.OS === 'web') return;
+    try {
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowBanner: true,
+          shouldShowList: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+        }),
+      });
 
-    // Register the "Kapat" action button — shown on both iOS (long-press /
-    // expanded notification) and Android (notification action row).
-    await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
-      {
-        identifier: DISMISS_ALARM_ACTION,
-        buttonTitle: 'Kapat',
-        options: {
-          isDestructive: true,
-          // opensAppToForeground: false lets the action run without bringing
-          // the app to the foreground. If the app is fully killed the OS may
-          // still open it briefly, but the intent is minimal interruption.
-          opensAppToForeground: false,
+      // Register the "Kapat" action button — shown on both iOS (long-press /
+      // expanded notification) and Android (notification action row).
+      await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
+        {
+          identifier: DISMISS_ALARM_ACTION,
+          buttonTitle: 'Kapat',
+          options: {
+            isDestructive: true,
+            // opensAppToForeground: false lets the action run without bringing
+            // the app to the foreground. If the app is fully killed the OS may
+            // still open it briefly, but the intent is minimal interruption.
+            opensAppToForeground: false,
+          },
         },
-      },
-    ]);
+      ]);
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
-        name: 'Cooking Timer (alarm)',
-        importance: Notifications.AndroidImportance.MAX,
-        // WHY: omitting `sound` causes the Android channel manager to set
-        // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
-        // notification sound. Passing 'default' (string) mistakenly calls
-        // mSoundResolver.resolve('default') which returns null (file not in
-        // res/raw) → silent channel. Passing `true` is a TypeScript error.
-        // So the only correct way for default sound is to omit the key.
-        enableVibrate: true,
-        vibrationPattern: [0, 500, 300, 500, 300, 500],
-        // Route audio through the Alarm volume stream so it rings loudly
-        // even when notification volume is turned down.
-        audioAttributes: {
-          usage: 4,        // AudioUsage.ALARM
-          contentType: 4,  // AudioContentType.SONIFICATION
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
+          name: 'Cooking Timer (alarm)',
+          importance: Notifications.AndroidImportance.MAX,
+          // WHY: omitting `sound` causes the Android channel manager to set
+          // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
+          // notification sound. Passing 'default' (string) mistakenly calls
+          // mSoundResolver.resolve('default') which returns null (file not in
+          // res/raw) → silent channel. Passing `true` is a TypeScript error.
+          // So the only correct way for default sound is to omit the key.
+          enableVibrate: true,
+          vibrationPattern: [0, 500, 300, 500, 300, 500],
+          // Route audio through the Alarm volume stream so it rings loudly
+          // even when notification volume is turned down.
+          audioAttributes: {
+            usage: 4, // AudioUsage.ALARM
+            contentType: 4, // AudioContentType.SONIFICATION
+          },
+        });
+      }
+    } catch {
+      // Notifications unavailable (e.g. Expo Go limitations). Timers still run.
+    }
+  }
+
+  async requestPermissions(): Promise<boolean> {
+    if (Platform.OS === 'web') return false;
+    try {
+      const { status: existing } = await Notifications.getPermissionsAsync();
+      if (existing === 'granted') return true;
+      const { status } = await Notifications.requestPermissionsAsync();
+      return status === 'granted';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Schedules the timer completion notification.
+   * Returns the scheduled notification ID(s) so they can be cancelled on dismiss.
+   */
+  async scheduleTimerComplete(
+    timerId: string,
+    recipeName: string,
+    endTimeMs: number,
+  ): Promise<string[]> {
+    if (Platform.OS === 'web') return [];
+    const ids: string[] = [];
+    const all = [endTimeMs];
+    for (let i = 1; i <= REMINDER_COUNT; i++) {
+      all.push(endTimeMs + i * 2 * 60 * 1000);
+    }
+    const results = await Promise.all(all.map((t) => this.scheduleSingle(timerId, recipeName, t)));
+    for (const id of results) {
+      if (id !== null) ids.push(id);
+    }
+    return ids;
+  }
+
+  async cancel(notifIds: string[]): Promise<void> {
+    if (Platform.OS === 'web') return;
+    await Promise.allSettled(
+      notifIds.flatMap((id) => [
+        Notifications.dismissNotificationAsync(id),
+        Notifications.cancelScheduledNotificationAsync(id),
+      ]),
+    );
+  }
+
+  private async scheduleSingle(
+    timerId: string,
+    recipeName: string,
+    fireAtMs: number,
+  ): Promise<string | null> {
+    const delaySeconds = Math.max(1, Math.round((fireAtMs - Date.now()) / 1000));
+    try {
+      return await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `⏰ ${recipeName}`,
+          body: 'Timer is done! Tap to dismiss.',
+          // iOS reads sound from content; Android ignores it (channel sets sound).
+          // Using 'default' until a native build bundles alarm.mp3 in the app.
+          sound: Platform.OS === 'ios' ? 'default' : undefined,
+          categoryIdentifier: TIMER_ALERT_CATEGORY,
+          data: { type: TIMER_COMPLETE, timerId, recipeName },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: delaySeconds,
+          ...(Platform.OS === 'android' && { channelId: ALERT_CHANNEL }),
         },
       });
+    } catch {
+      return null;
     }
-  } catch {
-    // Notifications unavailable (e.g. Expo Go limitations). Timers still run.
   }
-};
-
-/** Returns true when the user granted notification permission. */
-export const requestNotificationPermissions = async (): Promise<boolean> => {
-  if (Platform.OS === 'web') return false;
-  try {
-    const { status: existing } = await Notifications.getPermissionsAsync();
-    if (existing === 'granted') return true;
-    const { status } = await Notifications.requestPermissionsAsync();
-    return status === 'granted';
-  } catch {
-    return false;
-  }
-};
-
-const scheduleSingle = async (
-  timerId: string,
-  recipeName: string,
-  fireAtMs: number,
-): Promise<string | null> => {
-  const delaySeconds = Math.max(1, Math.round((fireAtMs - Date.now()) / 1000));
-  try {
-    return await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `⏰ ${recipeName}`,
-        body: 'Timer is done! Tap to dismiss.',
-        // iOS reads sound from content; Android ignores it (channel sets sound).
-        // Using 'default' until a native build bundles alarm.mp3 in the app.
-        sound: Platform.OS === 'ios' ? 'default' : undefined,
-        categoryIdentifier: TIMER_ALERT_CATEGORY,
-        data: { type: TIMER_COMPLETE, timerId, recipeName },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: delaySeconds,
-        ...(Platform.OS === 'android' && { channelId: ALERT_CHANNEL }),
-      },
-    });
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Schedules the timer completion notification.
- * Returns the scheduled notification ID(s) so they can be cancelled on dismiss.
- */
-export const scheduleTimerCompleteNotification = async (
-  timerId: string,
-  recipeName: string,
-  endTimeMs: number,
-): Promise<string[]> => {
-  if (Platform.OS === 'web') return [];
-  const ids: string[] = [];
-  const all = [endTimeMs];
-  for (let i = 1; i <= REMINDER_COUNT; i++) {
-    all.push(endTimeMs + (i * 2 * 60 * 1000));
-  }
-  const results = await Promise.all(all.map((t) => scheduleSingle(timerId, recipeName, t)));
-  for (const id of results) {
-    if (id !== null) ids.push(id);
-  }
-  return ids;
-};
-
-/** Cancels a list of displayed and scheduled notifications. */
-export const cancelNotifications = async (notifIds: string[]): Promise<void> => {
-  if (Platform.OS === 'web') return;
-  await Promise.allSettled(
-    notifIds.flatMap((id) => [
-      Notifications.dismissNotificationAsync(id),
-      Notifications.cancelScheduledNotificationAsync(id),
-    ]),
-  );
-};
+}

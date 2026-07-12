@@ -5,7 +5,7 @@ import { alarmStore } from '@application/timers/alarm-store';
 import {
   TIMER_COMPLETE,
   DISMISS_ALARM_ACTION,
-} from '@infrastructure/notifications/notification-service';
+} from '@domain/notifications/timer-notification-keys';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
 import type * as NotificationsType from 'expo-notifications';
 

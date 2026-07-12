@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { kvStore } from '@infrastructure/storage/kv-store';
 import { TIMERS_STORAGE_KEY } from '@infrastructure/constants/storage';
+import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import type { TimerEntry } from '@application/timers/timer-entry';
 import type { TimerStoreState } from '@application/timers/timer-store-state';
 
 const persist = async (timers: Record<string, TimerEntry>): Promise<void> => {
-  await kvStore.setItem(TIMERS_STORAGE_KEY, JSON.stringify(timers));
+  await getKeyValueStore().setItem(TIMERS_STORAGE_KEY, JSON.stringify(timers));
 };
 
 export const timerStore = create<TimerStoreState>((set, get) => ({
@@ -13,7 +13,7 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
-    const raw = await kvStore.getItem(TIMERS_STORAGE_KEY);
+    const raw = await getKeyValueStore().getItem(TIMERS_STORAGE_KEY);
     if (!raw) {
       set({ hydrated: true });
       return;

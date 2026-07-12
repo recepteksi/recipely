@@ -23,14 +23,7 @@ const LAYERS = ['core', 'domain', 'application', 'infrastructure', 'presentation
 const errors = [];
 
 /** Pre-existing layer-rule violations. Burn down; never grow. */
-const KNOWN_DEBT = new Set([
-  'presentation/base/theme/theme-context.tsx -> @infrastructure/storage/kv-store',
-  'presentation/i18n/i18n.ts -> @infrastructure/storage/kv-store',
-  'presentation/base/timers/timer-controls.ts -> @infrastructure/notifications/notification-service',
-  'presentation/base/hooks/use-timer-notification-sync.ts -> @infrastructure/notifications/notification-service',
-  'presentation/navigation/alarm-screen.tsx -> @infrastructure/audio/alarm-audio-service',
-  'application/timers/timer-store.ts -> @infrastructure/storage/kv-store',
-]);
+const KNOWN_DEBT = new Set([]);
 
 const ALLOWED_IMPORTS = {
   core: ['@core'],
