@@ -5,20 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
-import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t, getLocale } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
-import { Difficulty } from '@domain/recipes/difficulty';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import {
@@ -36,6 +30,9 @@ import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
 import { RecipePreviewEditor } from '@presentation/app/create-recipe/body/recipe-preview-editor';
 import { RefineDock } from '@presentation/app/create-recipe/body/refine-dock';
+import { CreateRecipeHeader } from '@presentation/app/create-recipe/body/create-recipe-header';
+import { toMediaUpload } from '@presentation/app/create-recipe/model/to-media-upload';
+import { DIFFICULTY_LABELS } from '@presentation/app/create-recipe/model/difficulty-tag-labels';
 import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import type { ChatMessage } from '@domain/drafts/chat-message';
@@ -50,35 +47,6 @@ import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
-
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  [Difficulty.Easy]: 'Easy',
-  [Difficulty.Medium]: 'Medium',
-  [Difficulty.Hard]: 'Hard',
-};
-
-const MIME_BY_EXT: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  heic: 'image/heic',
-};
-
-/**
- * Converts a gallery `MediaItem` into a `RecipeMediaUpload`. The filename is
- * unique per call so multiple photos never collide in the multipart payload.
- */
-const toMediaUpload = (item: MediaItem): RecipeMediaUpload => {
-  const ext = item.url.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const safeExt = ext.length > 0 && ext.length <= 4 ? ext : 'jpg';
-  return {
-    uri: item.url,
-    fileName: `recipe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`,
-    mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
-    type: item.type,
-  };
-};
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -515,6 +483,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     [isEditMode],
   );
 
+  const saveLabel = isEditMode
+    ? updateState.status === 'updating'
+      ? t().createRecipe.updating
+      : t().createRecipe.updateSave
+    : createState.status === 'creating'
+      ? t().createRecipe.publishing
+      : t().createRecipe.save;
+
   if (phase === 'prompt') {
     return (
       <KeyboardAvoider style={styles.root}>
@@ -550,63 +526,16 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="createRecipe" gutter={false} fill>
-        <View
-          style={[
-            styles.header,
-            {
-              backgroundColor: colors.background,
-              borderBottomColor: colors.border,
-              paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm,
-            },
-          ]}
-        >
-          <Pressable
-            onPress={attemptClose}
-            hitSlop={8}
-            style={styles.iconBtn}
-            accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.cancel}
-          >
-            <Ionicons name="close" size={sizes.iconXxs} color={colors.text} />
-          </Pressable>
-          <View style={styles.headerCenter}>
-            <ThemedText variant="subtitle" style={styles.headerTitle}>
-              {headerTitle}
-            </ThemedText>
-            {!isEditMode ? (
-              <View style={[styles.aiBadge, { backgroundColor: colors.chipBackground }]}>
-                <Ionicons name="sparkles" size={fontSizes.micro} color={colors.primary} />
-                <ThemedText variant="caption" style={[styles.aiBadgeLabel, { color: colors.primary }]}>
-                  {t().createRecipe.aiBadge}
-                </ThemedText>
-              </View>
-            ) : null}
-          </View>
-          <Pressable
-            onPress={handleSave}
-            disabled={isSaving}
-            style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? 0.6 : 1 }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.save}
-          >
-            <LinearGradient
-              colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.saveInner}
-            >
-              <ThemedText variant="caption" style={[styles.saveLabel, { color: colors.primaryText }]}>
-                {isEditMode
-                  ? updateState.status === 'updating'
-                    ? t().createRecipe.updating
-                    : t().createRecipe.updateSave
-                  : createState.status === 'creating'
-                    ? t().createRecipe.publishing
-                    : t().createRecipe.save}
-              </ThemedText>
-            </LinearGradient>
-          </Pressable>
-        </View>
+        <CreateRecipeHeader
+          title={headerTitle}
+          showAiBadge={!isEditMode}
+          saveLabel={saveLabel}
+          isSaving={isSaving}
+          isWebShell={isWebShell}
+          topInset={insets.top}
+          onClose={attemptClose}
+          onSave={handleSave}
+        />
 
         {refining ? (
           <View style={[styles.refiningTrack, { backgroundColor: colors.border }]}>
@@ -698,57 +627,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  iconBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs2,
-  },
-  headerTitle: {
-    fontSize: fontSizes.heading,
-  },
-  aiBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: radii.round,
-  },
-  aiBadgeLabel: {
-    fontWeight: '700',
-    fontSize: fontSizes.micro,
-  },
-  saveBtn: {
-    height: sizes.iconBtn,
-    borderRadius: radii.round,
-    overflow: 'hidden',
-  },
-  saveInner: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveLabel: {
-    fontWeight: '700',
-    fontSize: fontSizes.caption,
   },
   refiningTrack: {
     height: 3,
