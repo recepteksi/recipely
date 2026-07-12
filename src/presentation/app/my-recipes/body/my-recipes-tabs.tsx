@@ -1,0 +1,98 @@
+import { Pressable, StyleSheet, View } from 'react-native';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+
+export interface MyRecipesTabsProps {
+  tabs: readonly { key: Tab; label: string; count: number }[];
+  active: Tab;
+  onChange: (key: Tab) => void;
+}
+
+/** Mobile segmented control for the Saved / Created / Drafts tabs. */
+export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): React.JSX.Element => {
+  const colors = useTheme().colors;
+
+  return (
+    <View style={[styles.segmented, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+      {tabs.map(({ key, label, count }) => {
+        const isActive = active === key;
+        return (
+          <Pressable
+            key={key}
+            onPress={() => onChange(key)}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            style={[styles.segment, { backgroundColor: isActive ? colors.primary : 'transparent' }]}
+          >
+            <ThemedText
+              variant="caption"
+              numberOfLines={1}
+              style={[styles.segmentLabel, { color: isActive ? colors.primaryText : colors.text }]}
+            >
+              {label}
+            </ThemedText>
+            <View
+              style={[
+                styles.countPill,
+                { backgroundColor: isActive ? colors.gradientBorder : colors.chipBackground },
+              ]}
+            >
+              <ThemedText
+                variant="caption"
+                style={[styles.countText, { color: isActive ? colors.primaryText : colors.chipText }]}
+              >
+                {count}
+              </ThemedText>
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  segmented: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    padding: spacing.xs,
+    borderRadius: radii.round,
+    borderWidth: 1,
+  },
+  segment: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 'auto',
+    minWidth: 0,
+    height: sizes.iconBtn,
+    paddingHorizontal: spacing.xs2,
+    borderRadius: radii.round,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  segmentLabel: {
+    fontWeight: '600',
+    fontSize: fontSizes.small,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  countPill: {
+    minWidth: sizes.iconMd,
+    height: sizes.iconXxs,
+    paddingHorizontal: spacing.xs2,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  countText: {
+    fontWeight: '700',
+    fontSize: fontSizes.micro,
+  },
+});
