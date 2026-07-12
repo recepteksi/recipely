@@ -51,11 +51,78 @@ Each layer may only depend on layers **below** it. Never import upward:
 The dependency rule and the exceptions above are enforced mechanically by `npm run check:structure`
 (see Pre-Commit Quality Gate).
 
-`src/presentation/app/` is the expo-router root (`"root": "presentation/app"` in `app.json`) **and** where
+`src/presentation/app/` is the expo-router root (`"root": "src/presentation/app"` in `app.json`) **and** where
 page implementations live. Only `index.tsx`, `_layout.tsx`, `+special` and `[param]` files register as
 routes; everything else in a page folder is co-located page code, hidden from the router by the custom
 route context (`src/presentation/navigation/route-context.js`, wired via `metro.config.js`) and stripped from
 static web exports by `scripts/prune-web-export.mjs`.
+
+---
+
+## DDD Guardrails (Evans 2003)
+
+Audited against Eric Evans, _Domain-Driven Design_ (2003 final manuscript). These rules exist so the
+findings of that audit can never regress. Page numbers refer to the manuscript. Each rule maps to a
+Mandatory Coding Standard in `CLAUDE.md` (17–20) and is BLOCKING in review.
+
+### Ports, not direct infrastructure (Evans p.55 — CLAUDE.md §17)
+
+Infrastructure serves upper layers as **SERVICES behind interfaces**. The repository-interface pattern
+(`src/domain/**/i-*-repository.ts` + implementation in `src/infrastructure/`) is the template: any other
+infrastructure capability a higher layer needs (key-value storage, notifications, audio, clipboard, …)
+gets the same treatment — a **port interface** in `src/domain/` (or `src/application/` for purely
+app-level services), an implementation in `src/infrastructure/`, wiring in the composition root, and
+consumers resolve it via DI. Adding a direct `@infrastructure` import instead is blocking; parking it in
+`KNOWN_DEBT` is not an alternative (the list only shrinks, target zero).
+
+### Smart-UI guard (Evans p.57 — CLAUDE.md §18)
+
+Screens that grow unbounded silently become the Smart UI anti-pattern: business rules accumulate in the
+component and the domain model stops mattering. Hard limits:
+
+- a routed `index.tsx` composes co-located parts — target ≤ ~200 lines, **zero business rules**;
+- any `.tsx` over 300 lines is a blocking review finding (i18n dictionaries `en.ts` / `tr.ts` exempt);
+- a business rule discovered while editing UI is moved down (component → hook → store/use case →
+  entity/VO) **in the same PR**, never left in place;
+- presentation computes nothing the application or domain layer could own: formatting for display is
+  fine, validation / eligibility / totals are not.
+
+### OOP & rich domain model (Evans p.65-74 — CLAUDE.md §19)
+
+Object-oriented design is the active paradigm of this codebase, not a formality:
+
+- **Behavior lives with the data.** An invariant or derivation about an entity's own props is a method
+  on the entity (or a factory guard), not a helper in a store, component, or util file. Before writing
+  `isRecipeX(recipe)` anywhere outside `src/domain/`, put `recipe.isX()` on the entity.
+- **Encapsulation is mandatory.** `private` constructor + static `create(): Result<T, ValidationFailure>`,
+  `private readonly` fields behind getters, no public setters, no mutation after construction except via
+  intention-revealing methods that re-check invariants.
+- **Entities stay identity-intrinsic (p.67).** Props describe what the thing *is*, not who is looking at
+  it. Viewer-dependent flags (`likedByMe`-style) are tolerated where they already exist but must not be
+  extended — new viewer/session-relative data goes into a read model / store state, not entity props.
+- **Value Objects for conceptual wholes (p.71).** When a primitive carries rules (format, range, unit) or
+  travels as a group (amount + unit, minutes prep + cook), promote it to an immutable VO with a validating
+  factory (the `Email` pattern) instead of re-validating raw primitives at multiple call sites.
+- **Services stay stateless and verb-named (p.75-76)**, and thin: an application use case coordinates —
+  business decisions belong in entities/VOs.
+
+### Aggregates (Evans p.89-93 — CLAUDE.md §20)
+
+Consistency boundaries are documented, deliberate decisions. The server is the transactional authority;
+this client still respects the boundaries for references and deletion semantics. Cross-aggregate
+references are **by id only**.
+
+| Aggregate root | Members / notes |
+|---|---|
+| `Recipe` | Root. `RecipeSummary` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `Comment` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
+| `User` | Root (auth identity). |
+| `UserProfile` | Own root (profile lifecycle independent of auth session); references `User` by id. |
+| `AuthSession` | Root (token lifecycle). |
+| `Notification` | Own root; references related entities by id. |
+
+A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
+blocks otherwise.
 
 ---
 
