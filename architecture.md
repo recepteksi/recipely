@@ -7,39 +7,43 @@ _Domain-Driven Design: Tackling Complexity in the Heart of Software_ (2003).
 
 ## Layer Overview
 
+All five layers live under `src/`; static binary assets live in `assets/` at the repo root
+(exposed to code via the `@assets/*` alias, registered in `src/infrastructure/constants/assets.ts`).
+
 ```
-presentation/
-  app/                Pages (expo-router root): app/<segment>/index.tsx + co-located body/items/sheets/hooks/model
-  navigation/         Shell: route-context.js, auth guard, share-import hook, alarm overlay
-  i18n/               Internationalization
-  base/               Widgets (categorized), theme, utils
-  bootstrap/          DI init, stores context
-  |
-application/          Use cases, state stores, DI registration
-  |
-domain/               Entities, value objects, repository interfaces
-  |
-infrastructure/       Repository implementations, DTOs, mappers, network, storage
-  |
-core/                 Framework-agnostic building blocks (Result, Failure, Entity, DI)
+src/
+  presentation/
+    app/              Pages (expo-router root): app/<segment>/index.tsx + co-located body/items/sheets/hooks/model
+    navigation/       Shell: route-context.js, auth guard, share-import hook, alarm overlay
+    i18n/             Internationalization
+    base/             Widgets (categorized), theme, utils
+    bootstrap/        DI init, stores context
+    |
+  application/        Use cases, state stores, DI registration
+    |
+  domain/             Entities, value objects, repository interfaces
+    |
+  infrastructure/     Repository implementations, DTOs, mappers, network, storage
+    |
+  core/               Framework-agnostic building blocks (Result, Failure, Entity, DI)
 ```
 
 ### Dependency Rule
 
 Each layer may only depend on layers **below** it. Never import upward:
 
-- `domain/` — never imports from `application/`, `infrastructure/`, or `presentation/`.
-- `application/` — never imports from `infrastructure/` or `presentation/`.
-- `infrastructure/` — never imports from `presentation/` or `application/`.
-- `presentation/` — may import `application/`, `domain/` (types/entities as read models), and `core/`;
-  never `infrastructure/`.
-- `core/` — imports nothing else from the project.
+- `src/domain/` — never imports from `src/application/`, `src/infrastructure/`, or `src/presentation/`.
+- `src/application/` — never imports from `src/infrastructure/` or `src/presentation/`.
+- `src/infrastructure/` — never imports from `src/presentation/` or `src/application/`.
+- `src/presentation/` — may import `src/application/`, `src/domain/` (types/entities as read models), and `src/core/`;
+  never `src/infrastructure/`.
+- `src/core/` — imports nothing else from the project.
 
 **Sanctioned exceptions** (the only ones):
 
-- `infrastructure/constants/*` may be imported from anywhere — Coding Standard 5 deliberately homes
+- `src/infrastructure/constants/*` may be imported from anywhere — Coding Standard 5 deliberately homes
   API URLs / limits / storage keys there.
-- `presentation/bootstrap/` and the `*/di/` wiring modules are the **composition root**: they may
+- `src/presentation/bootstrap/` and the `*/di/` wiring modules are the **composition root**: they may
   import across layers to assemble the object graph. Nothing else may.
 - Anything beyond that lives in the `KNOWN_DEBT` list inside `scripts/check-structure.mjs`. That list
   only shrinks — adding an entry requires explicit user approval in review.
@@ -47,31 +51,31 @@ Each layer may only depend on layers **below** it. Never import upward:
 The dependency rule and the exceptions above are enforced mechanically by `npm run check:structure`
 (see Pre-Commit Quality Gate).
 
-`presentation/app/` is the expo-router root (`"root": "presentation/app"` in `app.json`) **and** where
+`src/presentation/app/` is the expo-router root (`"root": "presentation/app"` in `app.json`) **and** where
 page implementations live. Only `index.tsx`, `_layout.tsx`, `+special` and `[param]` files register as
 routes; everything else in a page folder is co-located page code, hidden from the router by the custom
-route context (`presentation/navigation/route-context.js`, wired via `metro.config.js`) and stripped from
+route context (`src/presentation/navigation/route-context.js`, wired via `metro.config.js`) and stripped from
 static web exports by `scripts/prune-web-export.mjs`.
 
 ---
 
 ## Layer Details
 
-### `core/`
+### `src/core/`
 
 Framework-agnostic building blocks shared across all layers.
 
 | Module | Purpose |
 |--------|---------|
-| `core/result/result.ts` | `Result<T, F>` monad (`ok` / `fail`) for typed error handling |
-| `core/failure/` | `Failure` base class + individual subclasses (one per file) with barrel `index.ts` |
-| `core/entity/entity.ts` | Base `Entity<Props>` with identity equality |
-| `core/value-object/value-object.ts` | Base `ValueObject<Props>` with structural equality |
-| `core/di/container.ts` | `Container` class (register/resolve with lazy singletons) |
-| `core/di/container-instance.ts` | Singleton `container` instance |
-| `core/di/tokens.ts` | DI token symbols |
+| `src/core/result/result.ts` | `Result<T, F>` monad (`ok` / `fail`) for typed error handling |
+| `src/core/failure/` | `Failure` base class + individual subclasses (one per file) with barrel `index.ts` |
+| `src/core/entity/entity.ts` | Base `Entity<Props>` with identity equality |
+| `src/core/value-object/value-object.ts` | Base `ValueObject<Props>` with structural equality |
+| `src/core/di/container.ts` | `Container` class (register/resolve with lazy singletons) |
+| `src/core/di/container-instance.ts` | Singleton `container` instance |
+| `src/core/di/tokens.ts` | DI token symbols |
 
-### `domain/`
+### `src/domain/`
 
 The heart of the application. Pure TypeScript, no framework dependencies.
 
@@ -80,19 +84,19 @@ The heart of the application. Pure TypeScript, no framework dependencies.
 - **Value Objects** — `Email` extends `ValueObject<Props>` with validation.
 - **Enums / Literals** — typed string unions in their own files.
 - **Repository Interfaces** — `IRecipeRepository`, `IAuthRepository`, `ICommentRepository` define contracts;
-  implementations live in `infrastructure/`.
+  implementations live in `src/infrastructure/`.
 
-### `application/`
+### `src/application/`
 
 Orchestrates domain logic through use cases and manages UI state.
 
 - **Use Cases** — Single-responsibility classes with an `execute(...)` method returning
   `Promise<Result<T, Failure>>`.
 - **Stores** — Zustand stores that call use cases and expose state to the presentation layer.
-- **DI Registration** — `application/di/register.ts` wires use cases and stores into the container.
-- **Test Fixtures** — `application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
+- **DI Registration** — `src/application/di/register.ts` wires use cases and stores into the container.
+- **Test Fixtures** — `src/application/__fixtures__/` contains fakes (e.g., `FakeAuthRepository`) for unit tests.
 
-### `infrastructure/`
+### `src/infrastructure/`
 
 Implements domain interfaces with concrete I/O.
 
@@ -102,14 +106,14 @@ Implements domain interfaces with concrete I/O.
   `Result`. Mappers are stateless and have no dependencies, so plain exported functions are idiomatic.
 - **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
-- **Constants** — `infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
-- **DI Registration** — `infrastructure/di/register.ts` wires repositories and HTTP client.
+- **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
+- **DI Registration** — `src/infrastructure/di/register.ts` wires repositories and HTTP client.
 
-### `presentation/`
+### `src/presentation/`
 
 All UI and user-facing logic.
 
-- **Pages** — One routed page per folder in `presentation/app/{segment}/`. The route component lives in
+- **Pages** — One routed page per folder in `src/presentation/app/{segment}/`. The route component lives in
   `index.tsx` (named export + `export default`), and its parts are co-located in a fixed set of subfolders:
   - `body/` — large view sections or phase views of the screen.
   - `items/` — row / tile / chip / card components rendered in lists or grids.
@@ -125,22 +129,22 @@ All UI and user-facing logic.
 
   **Route registration** — only `index.tsx`, `_layout.tsx`, `+special` and `[param]` files become routes.
   `metro.config.js` swaps expo-router's catch-all route context for
-  `presentation/navigation/route-context.js`, whose regex admits only those files; a new page is therefore
+  `src/presentation/navigation/route-context.js`, whose regex admits only those files; a new page is therefore
   always `app/<segment>/index.tsx` — a flat `app/<segment>.tsx` will NOT register. Static web exports
   still emit stray pages for co-located files (the CLI scans the file system directly), so
   `npm run build:web` runs `scripts/prune-web-export.mjs` afterwards; real pages always export as
   `<segment>/index.html`. Typed-routes generation sees co-located files too, which only loosens the
   generated `Href` union — harmless. Revisit `route-context.js` on every Expo SDK / expo-router upgrade.
-- **Navigation (shell)** — `presentation/navigation/`: `route-context.js` (router file filter),
+- **Navigation (shell)** — `src/presentation/navigation/`: `route-context.js` (router file filter),
   `use-auth-guard.ts`, `use-instagram-share-import.ts`, `alarm-screen.tsx` (global overlay rendered by the
   root layout).
 - **Bootstrap** — `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
-- **Widgets** — Shared UI components in `presentation/base/widgets/`, grouped by category folder: `text/`,
+- **Widgets** — Shared UI components in `src/presentation/base/widgets/`, grouped by category folder: `text/`,
   `buttons/`, `cards/`, `sheets/`, `layout/`, `media/`, `feedback/`, `loading/`, `settings/`, `navigation/`,
   `timers/`, `brand/`, and `web-header/`. A widget used by only one page lives in that page's folder, not here.
-- **Theme** — `presentation/base/theme/colors.ts` (palettes), `spacing.ts` (sizes), `shadows.ts`, `themes.ts`.
-- **i18n** — `presentation/i18n/en.ts`, `presentation/i18n/tr.ts`, `presentation/i18n/i18n.ts`.
-- **Utils** — `presentation/base/utils/`.
+- **Theme** — `src/presentation/base/theme/colors.ts` (palettes), `spacing.ts` (sizes), `shadows.ts`, `themes.ts`.
+- **i18n** — `src/presentation/i18n/en.ts`, `src/presentation/i18n/tr.ts`, `src/presentation/i18n/i18n.ts`.
+- **Utils** — `src/presentation/base/utils/`.
 
 ---
 
@@ -163,7 +167,7 @@ React component, or one enum. The only exceptions are:
   is for classes only — it does not cover hooks, stores, or plain functions).
 - The merged-enum idiom: a `const X` object plus a same-named `type X` union (and `X_VALUES` arrays),
   or a union type derived via `typeof` from a const in the same file. One concept = one file.
-- Constants-only files (`infrastructure/constants/api.ts`, `theme/spacing.ts`, …) and pure-function
+- Constants-only files (`src/infrastructure/constants/api.ts`, `theme/spacing.ts`, …) and pure-function
   collections with **no** type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
 
 Frequent violations to watch for — all of these must be split:
@@ -270,11 +274,11 @@ Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated c
 
 | Constant type | File |
 |---------------|------|
-| API endpoints, page sizes, timeouts | `infrastructure/constants/api.ts` |
-| Storage keys | `infrastructure/constants/storage.ts` |
-| Spacing, radii, font sizes, icon/avatar sizes | `presentation/base/theme/spacing.ts` |
-| Colour palettes (light & dark) | `presentation/base/theme/colors.ts` / `themes.ts` |
-| Shadow definitions | `presentation/base/theme/shadows.ts` |
+| API endpoints, page sizes, timeouts | `src/infrastructure/constants/api.ts` |
+| Storage keys | `src/infrastructure/constants/storage.ts` |
+| Spacing, radii, font sizes, icon/avatar sizes | `src/presentation/base/theme/spacing.ts` |
+| Colour palettes (light & dark) | `src/presentation/base/theme/colors.ts` / `themes.ts` |
+| Shadow definitions | `src/presentation/base/theme/shadows.ts` |
 
 ```ts
 // ✅ correct
@@ -340,7 +344,7 @@ export const RecipeCard = ({ recipe, onPress }: RecipeCardProps): React.JSX.Elem
 - Hooks that depend on a store must accept no arguments and read the store internally; they must not
   accept store state as props.
 - Hooks are thin adapters over application stores / use cases: view-facing glue only, no business
-  rules (those belong in `domain/`, orchestration in `application/`).
+  rules (those belong in `src/domain/`, orchestration in `src/application/`).
 
 ---
 
@@ -370,8 +374,8 @@ Every interactive element (`Pressable`, `TouchableOpacity`, button widget) must 
 
 ### 11. Internationalization (i18n)
 
-- All user-visible strings in `presentation/` must come from `t()` (never hardcoded).
-- Translation files: `presentation/i18n/en.ts` (English), `presentation/i18n/tr.ts` (Turkish).
+- All user-visible strings in `src/presentation/` must come from `t()` (never hardcoded).
+- Translation files: `src/presentation/i18n/en.ts` (English), `src/presentation/i18n/tr.ts` (Turkish).
 - Locale detection via `expo-localization` at app startup (`initLocale()`).
 - Both languages must remain in sync at all times — adding a key to `en.ts` requires the same key in
   `tr.ts` in the same commit.
@@ -384,7 +388,7 @@ Every interactive element (`Pressable`, `TouchableOpacity`, button widget) must 
 - Domain `create()` factory methods return `Result<Entity, ValidationFailure>`.
 - Infrastructure maps HTTP errors to typed `Failure` subclasses (`NetworkFailure`,
   `UnauthorizedFailure`, `NotFoundFailure`, `UnknownFailure`).
-- `presentation/` may `throw` only inside error boundaries.
+- `src/presentation/` may `throw` only inside error boundaries.
 
 ---
 
@@ -410,7 +414,7 @@ A pre-commit hook (Husky + lint-staged) runs automatically on every `git commit`
    - layer-dependency violations (Dependency Rule) beyond the sanctioned exceptions and the shrinking
      `KNOWN_DEBT` list,
    - relative imports (`./`, `../`) outside barrel `index.ts` files — use the `@layer/...` alias,
-   - loose files at the `presentation/base/widgets/` root (category folders only).
+   - loose files at the `src/presentation/base/widgets/` root (category folders only).
 
 No task is "done" until `npm run lint`, `npx tsc --noEmit`, `npx jest`, **and** `npm run check:structure`
 are all green.

@@ -4,11 +4,12 @@
     "strict": true,
     "paths": {
       "@/*": ["./*"],
-      "@core/*": ["./core/*"],
-      "@domain/*": ["./domain/*"],
-      "@infrastructure/*": ["./infrastructure/*"],
-      "@application/*": ["./application/*"],
-      "@presentation/*": ["./presentation/*"]
+      "@assets/*": ["./assets/*"],
+      "@core/*": ["./src/core/*"],
+      "@domain/*": ["./src/domain/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@application/*": ["./src/application/*"],
+      "@presentation/*": ["./src/presentation/*"]
     }
   },
   "include": [
