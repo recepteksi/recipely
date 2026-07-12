@@ -70,7 +70,6 @@ Framework-agnostic building blocks shared across all layers.
 | `src/core/result/result.ts` | `Result<T, F>` monad (`ok` / `fail`) for typed error handling |
 | `src/core/failure/` | `Failure` base class + individual subclasses (one per file) with barrel `index.ts` |
 | `src/core/entity/entity.ts` | Base `Entity<Props>` with identity equality |
-| `src/core/value-object/value-object.ts` | Base `ValueObject<Props>` with structural equality |
 | `src/core/di/container.ts` | `Container` class (register/resolve with lazy singletons) |
 | `src/core/di/container-instance.ts` | Singleton `container` instance |
 | `src/core/di/tokens.ts` | DI token symbols |
@@ -81,7 +80,7 @@ The heart of the application. Pure TypeScript, no framework dependencies.
 
 - **Entities** — `Recipe`, `AuthSession`, `User`, `Comment` extend `Entity<Props>` with factory `create()`
   methods returning `Result`.
-- **Value Objects** — `Email` extends `ValueObject<Props>` with validation.
+- **Value Objects** — e.g. `Email` (self-validating class with a factory `create()` returning `Result`).
 - **Enums / Literals** — typed string unions in their own files.
 - **Repository Interfaces** — `IRecipeRepository`, `IAuthRepository`, `ICommentRepository` define contracts;
   implementations live in `src/infrastructure/`.

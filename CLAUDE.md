@@ -82,7 +82,7 @@ folder (asset requires are centralised in `src/infrastructure/constants/assets.t
 - `src/application/` — Use cases, Zustand stores, DI registration, test fixtures.
 - `src/domain/` — Entities, value objects, repository interfaces. Pure TypeScript, no framework deps.
 - `src/infrastructure/` — Repository implementations, DTOs, mappers, HTTP client, storage, constants.
-- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, `ValueObject`, DI container.
+- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, DI container.
 
 ### Mandatory coding standards (see `architecture.md` §Coding Standards for full detail)
 
