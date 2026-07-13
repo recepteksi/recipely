@@ -45,6 +45,7 @@ const buildClient = (
   const client = new HttpClient({
     baseUrl: 'https://api.test',
     tokenProvider: () => Promise.resolve('tok'),
+    localeProvider: () => 'en',
     onUnauthorized,
     ...overrides,
   });

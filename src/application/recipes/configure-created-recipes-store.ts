@@ -63,9 +63,9 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       }
       set({ recipes: result.value });
     },
-    generateRecipe: async (prompt, locale) => {
+    generateRecipe: async (prompt) => {
       set({ generateState: { status: 'generating' } });
-      const result = await deps.generateRecipeUseCase.execute({ prompt, locale });
+      const result = await deps.generateRecipeUseCase.execute({ prompt });
       if (!result.ok) {
         set({ generateState: { status: 'error', failure: result.failure } });
         return;
@@ -82,9 +82,9 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         aiDraft: recipe,
       });
     },
-    importInstagram: async (url, locale) => {
+    importInstagram: async (url) => {
       set({ importState: { status: 'generating' } });
-      const result = await deps.importInstagramRecipeUseCase.execute({ url, locale });
+      const result = await deps.importInstagramRecipeUseCase.execute({ url });
       if (!result.ok) {
         set({ importState: { status: 'error', failure: result.failure } });
         return;

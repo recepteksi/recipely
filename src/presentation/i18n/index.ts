@@ -1,3 +1,3 @@
-export { t, initLocale, hydrateLocale, setLocale, getLocale } from '@presentation/i18n/i18n';
+export { t, hydrateLocale, setLocale, getLocale } from '@presentation/i18n/i18n';
 export { useLocale } from '@presentation/i18n/use-locale';
 export type { Translations } from '@presentation/i18n/translations';

@@ -1,5 +1,5 @@
 import '@presentation/bootstrap/crypto-polyfill';
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { timerStore } from '@application/timers/timer-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
@@ -11,11 +11,9 @@ import { registerApplication } from '@application/di/register';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
-import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
-import { useUnreadNotificationsSync } from '@presentation/base/hooks/use-unread-notifications-sync';
-import { useTaxonomySync } from '@presentation/base/hooks/use-taxonomy-sync';
+import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
-import { getLocale, hydrateLocale } from '@presentation/i18n/i18n';
+import { hydrateLocale } from '@presentation/i18n/i18n';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -31,7 +29,6 @@ let onSessionExpired: () => void = () => {};
 // Initialize stores synchronously on module load
 const initializeStores = (): Stores => {
   registerInfrastructure(container, {
-    localeProvider: getLocale,
     onUnauthorized: () => onSessionExpired(),
   });
   const created = registerApplication(container);
@@ -43,13 +40,21 @@ const initializeStores = (): Stores => {
 
 const stores = initializeStores();
 
-export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
-  useTimerNotificationSync();
-  useUnreadNotificationsSync(stores.notificationsStore, stores.authStore);
-  useTaxonomySync(stores.taxonomyStore, stores.authStore);
+export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element | null => {
+  // WHY: the app must not issue a single request before the saved language is
+  // restored, otherwise the device language leaks into `Accept-Language` and the
+  // backend answers (and generates recipes) in the wrong language. Everything
+  // that fetches lives under `AppSyncs`/`children`, which mount only once this
+  // flips — the device language is a first-render seed, never a request locale.
+  const [localeReady, setLocaleReady] = useState(false);
 
   useEffect(() => {
-    void hydrateLocale();
+    hydrateLocale()
+      .catch((err: unknown) => {
+        console.error('[AppBootstrap] locale hydrate failed:', err);
+        recordCrash(err, 'AppBootstrap.hydrateLocale');
+      })
+      .finally(() => setLocaleReady(true));
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] hydrate failed:', err);
@@ -79,5 +84,11 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     return stores.authStore.subscribe(maybeRegister);
   }, []);
 
-  return <StoresProvider value={stores}>{children}</StoresProvider>;
+  if (!localeReady) return null;
+
+  return (
+    <StoresProvider value={stores}>
+      <AppSyncs stores={stores}>{children}</AppSyncs>
+    </StoresProvider>
+  );
 };

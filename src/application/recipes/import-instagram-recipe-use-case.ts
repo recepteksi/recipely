@@ -33,6 +33,6 @@ export class ImportInstagramRecipeUseCase {
     if (!INSTAGRAM_HOSTS.includes(host.toLowerCase())) {
       return Promise.resolve(fail(new ValidationFailure('createRecipe.importNotInstagram')));
     }
-    return this.repo.importInstagramRecipe(trimmed, input.locale);
+    return this.repo.importInstagramRecipe(trimmed);
   }
 }

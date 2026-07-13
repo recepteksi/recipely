@@ -18,6 +18,6 @@ export class GenerateRecipeUseCase {
     if (trimmed.length === 0) {
       return Promise.resolve(fail(new ValidationFailure('createRecipe.aiError')));
     }
-    return this.repo.generateRecipe(trimmed, input.locale);
+    return this.repo.generateRecipe(trimmed);
   }
 }

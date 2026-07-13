@@ -154,10 +154,7 @@ export class RecipeRepository implements IRecipeRepository {
   // truth for the request locale. The per-request `timeout` override is required
   // because the synchronous Gemini call routinely exceeds the client's default
   // 10s JSON timeout, which would abort a request the backend then completes.
-  async generateRecipe(
-    prompt: string,
-    _locale: string,
-  ): Promise<Result<Recipe, Failure>> {
+  async generateRecipe(prompt: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: '/recipes/generate',
@@ -177,10 +174,7 @@ export class RecipeRepository implements IRecipeRepository {
   // client's default 10s JSON timeout would abort the request first. The request
   // interceptor only overrides config.timeout for FormData payloads, so this
   // JSON override is honoured untouched.
-  async importInstagramRecipe(
-    url: string,
-    _locale: string,
-  ): Promise<Result<Recipe, Failure>> {
+  async importInstagramRecipe(url: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: '/recipes/import',

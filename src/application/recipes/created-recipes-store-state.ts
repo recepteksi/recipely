@@ -35,8 +35,8 @@ export interface CreatedRecipesStoreState {
   findById: (id: string) => Recipe | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;
-  generateRecipe: (prompt: string, locale: string) => Promise<void>;
-  importInstagram: (url: string, locale: string) => Promise<void>;
+  generateRecipe: (prompt: string) => Promise<void>;
+  importInstagram: (url: string) => Promise<void>;
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,

@@ -151,7 +151,7 @@ describe('createdRecipesStore.generateRecipe', () => {
       recipeDetailStore: fakeRecipeDetailStore,
     });
 
-    const pending = store.getState().generateRecipe('pasta', 'en');
+    const pending = store.getState().generateRecipe('pasta');
 
     // Synchronous check — state must have flipped before we await.
     expect(store.getState().generateState).toEqual({ status: 'generating' });
@@ -165,7 +165,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     const recipe = makeRecipe({ id: 'r-new', name: 'New AI Dish' });
     const store = makeStoreWithGenerateResult(ok(recipe));
 
-    await store.getState().generateRecipe('pasta', 'en');
+    await store.getState().generateRecipe('pasta');
 
     const s = store.getState();
     expect(s.generateState.status).toBe('success');
@@ -185,7 +185,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     const store = makeStoreWithGenerateResult(ok(generated));
     store.getState().add(existing);
 
-    await store.getState().generateRecipe('pasta', 'en');
+    await store.getState().generateRecipe('pasta');
 
     const s = store.getState();
     expect(s.recipes.map((r) => r.id)).toEqual(['existing']);
@@ -196,7 +196,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     const failure = new UnknownFailure('AI down');
     const store = makeStoreWithGenerateResult(fail(failure));
 
-    await store.getState().generateRecipe('pasta', 'en');
+    await store.getState().generateRecipe('pasta');
 
     const s = store.getState();
     expect(s.generateState.status).toBe('error');
@@ -210,7 +210,7 @@ describe('createdRecipesStore.generateRecipe', () => {
   it('resetGenerateState returns generateState to idle', async () => {
     const store = makeStoreWithGenerateResult(ok(makeRecipe()));
 
-    await store.getState().generateRecipe('pasta', 'en');
+    await store.getState().generateRecipe('pasta');
     expect(store.getState().generateState.status).toBe('success');
 
     store.getState().resetGenerateState();
@@ -222,7 +222,7 @@ describe('createdRecipesStore.generateRecipe', () => {
     const recipe = makeRecipe();
     const store = makeStoreWithGenerateResult(ok(recipe));
 
-    await store.getState().generateRecipe('pasta', 'en');
+    await store.getState().generateRecipe('pasta');
     expect(store.getState().aiDraft).toBe(recipe);
 
     store.getState().clearAiDraft();

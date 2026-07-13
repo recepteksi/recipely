@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { getLocale, t } from '@presentation/i18n';
+import { t } from '@presentation/i18n';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
 import {
@@ -98,7 +98,7 @@ export const useRecipeGeneration = ({
       if (trimmed.length === 0) return;
       originalPrompt.current = trimmed;
       setPhase('generating');
-      await createdRecipesStore.getState().generateRecipe(trimmed, getLocale());
+      await createdRecipesStore.getState().generateRecipe(trimmed);
       const state = createdRecipesStore.getState().generateState;
       if (state.status === 'success') {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
@@ -123,7 +123,7 @@ export const useRecipeGeneration = ({
       if (trimmed.length === 0) return;
       setImporting(true);
       setPhase('generating');
-      await createdRecipesStore.getState().importInstagram(trimmed, getLocale());
+      await createdRecipesStore.getState().importInstagram(trimmed);
       const state = createdRecipesStore.getState().importState;
       if (state.status === 'success') {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
