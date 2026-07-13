@@ -86,6 +86,10 @@ export const uploadMultipart = async <T>(
       if (status === 401) {
         options.onUnauthorized?.();
       }
+      // `body` is the decrypted error envelope here, so the server's
+      // `messageKey` rides onto the mapped Failure via failureFromResponse.
+      // The onerror/ontimeout handlers below have no envelope at all — their
+      // failures intentionally carry no key.
       resolve(fail(failureFromResponse(status, body)));
     };
 

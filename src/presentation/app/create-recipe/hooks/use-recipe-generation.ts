@@ -3,7 +3,10 @@ import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import {
+  failureKeyMessage,
+  failureToastMessage,
+} from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure } from '@core/failure';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
 import {
@@ -118,20 +121,27 @@ export const useRecipeGeneration = ({
       // chat transcript — so it must be surfaced as a toast AND kept inline under
       // the input, or the user gets no feedback at all.
       //
-      // A 4xx (which the client maps to ValidationFailure — also its catch-all for
-      // any unhandled 4xx) means the backend refused this prompt: moderation, an
-      // empty/invalid prompt, or an AI response it couldn't use. We cannot tell
-      // those apart (the error envelope carries no machine-readable reason), and
-      // the actionable advice is the same for all of them: rephrase and retry.
-      // Everything else is an infrastructure failure — let showErrorToast pick the
-      // copy from the failure's class.
+      // The backend now names its errors (`failure.messageKey`), so the blanket
+      // "rephrase your prompt" copy of PR #157 is gone: a refused prompt
+      // (`errors.ai.prompt_rejected` — rewording IS the fix) no longer reads the
+      // same as an unusable AI response (`errors.ai.invalid_response` — the prompt
+      // was fine, just generate again), even though both arrive as
+      // `unprocessable` → ValidationFailure. `showErrorToast` derives message AND
+      // severity from that key.
+      //
+      // `aiPromptFailed` survives as the fallback for the ONE case left: a 4xx we
+      // have no key for — an older backend, or a new server key this build has no
+      // copy for. Everything else is an infrastructure failure and reads from its
+      // class, exactly as before.
       if (state.status === 'error') {
-        const refused = state.failure instanceof ValidationFailure;
-        const message = refused
+        const { failure } = state;
+        const unnamed4xx =
+          failure instanceof ValidationFailure && failureKeyMessage(failure) === undefined;
+        const message = unnamed4xx
           ? t().createRecipe.aiPromptFailed
-          : failureToastMessage(state.failure);
-        if (refused) showDangerToast(message);
-        else showErrorToast(state.failure);
+          : failureToastMessage(failure);
+        if (unnamed4xx) showDangerToast(message);
+        else showErrorToast(failure);
         setGenerateError(message);
       }
       createdRecipesStore.getState().resetGenerateState();
@@ -156,8 +166,16 @@ export const useRecipeGeneration = ({
         setPhase('preview');
         return;
       }
+      // The import failure DOES have a transcript to land in (the preview chat),
+      // so the assistant bubble says the useful thing whenever the backend named
+      // the error — "that's not an Instagram link", "no recipe in that post",
+      // "the video is too long" — instead of one flat "couldn't generate".
+      // `aiError` remains the fallback for an unnamed failure.
       if (state.status === 'error') showErrorToast(state.failure);
-      setChatHistory([{ role: 'assistant', content: t().createRecipe.aiError, error: true }]);
+      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
+      setChatHistory([
+        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
+      ]);
       createdRecipesStore.getState().resetImportState();
       setImporting(false);
       setPhase('prompt');
@@ -184,9 +202,20 @@ export const useRecipeGeneration = ({
       if (result !== null) {
         setRecipe((prev) => recipeToEditable(result, prev.media));
         setChatHistory((h) => [...h, { role: 'assistant', content: t().createRecipe.aiUpdated }]);
-      } else {
-        setChatHistory((h) => [...h, { role: 'assistant', content: t().createRecipe.aiError, error: true }]);
+        createdRecipesStore.getState().resetRefineState();
+        return;
       }
+      // `refineRecipe` collapses its failure to `null`, so the reason is read back
+      // off the store. Refine hits the same endpoint and the same prompt moderator
+      // as generate, so it needs the same disambiguation: a refused instruction
+      // must not read like an unusable AI response.
+      const state = createdRecipesStore.getState().refineState;
+      if (state.status === 'error') showErrorToast(state.failure);
+      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
+      setChatHistory((h) => [
+        ...h,
+        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
+      ]);
       createdRecipesStore.getState().resetRefineState();
     },
     [createdRecipesStore, recipe, refining, setRecipe],

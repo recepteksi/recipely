@@ -70,6 +70,127 @@ export const tr: Translations = {
       body: 'Beklenmedik bir aksilik oldu. Lütfen tekrar dene.',
       short: 'Bir şeyler ters gitti',
     },
+    // ── backend hata kataloğundaki anahtarlara (`messageKey`) özel metinler ───
+    aiPromptRejected: {
+      title: 'Bunu pişiremeyiz',
+      body: 'Bu istek uygunsuz olarak işaretlendi, o yüzden yapay zekâya göndermedik. Farklı bir şekilde yazıp tekrar dene.',
+      short: 'Bu istek uygun değil — farklı ifade et',
+    },
+    aiInvalidResponse: {
+      title: 'Yapay zekâ şaşırdı',
+      body: 'Yapay zekâ tarife dönüştüremediğimiz bir yanıt verdi. İsteğinde sorun yok — tekrar oluştur.',
+      short: 'Yapay zekânın yanıtı kullanılamadı — tekrar dene',
+    },
+    aiUpstreamFailed: {
+      title: 'Yapay zekâ şu an müsait değil',
+      body: 'Yapay zekâ şu anda tarif üretemedi. Biraz bekleyip tekrar oluştur.',
+      short: 'Yapay zekâ yanıt veremedi — tekrar dene',
+    },
+    aiCooldown: {
+      title: 'Biraz yavaşla',
+      body: 'Kısa sürede çok fazla yapay zekâ isteği gönderdin. Bir dakika bekleyip tekrar dene.',
+      short: 'Çok fazla yapay zekâ isteği — bir dakika bekle',
+    },
+    promptRequired: {
+      title: 'Ne pişirelim?',
+      body: 'Aklındaki yemeği anlat — birkaç kelime yeterli.',
+      short: 'Önce bir şeyler yaz',
+    },
+    refineInstructionRequired: {
+      title: 'Neyi değiştirelim?',
+      body: 'Şefe neyi değiştireceğini söyle — malzemeyi değiştir, porsiyonu yarıya indir, biraz acılı yap.',
+      short: 'Neyi değiştirmek istediğini yaz',
+    },
+    importInvalidUrl: {
+      title: 'Bu bağlantı olmadı',
+      body: 'Bir Instagram gönderisinin ya da reelinin tam bağlantısını yapıştırıp tekrar dene.',
+      short: 'Geçerli bir Instagram bağlantısı yapıştır',
+    },
+    importNotInstagram: {
+      title: 'Yalnızca Instagram bağlantıları',
+      body: 'İçe aktarma şimdilik yalnızca Instagram gönderileri ve reelleri ile çalışıyor.',
+      short: 'Bu bir Instagram bağlantısı değil',
+    },
+    importFetchFailed: {
+      title: 'Bu gönderiyi açamadık',
+      body: 'Instagram videosunu alamadık. Gönderinin herkese açık olduğundan emin olup tekrar dene.',
+      short: 'Gönderi alınamadı — bağlantıyı kontrol et',
+    },
+    importDurationExceeded: {
+      title: 'Bu video çok uzun',
+      body: 'İçe aktarma 90 saniyeden kısa videolarla çalışıyor. Daha kısa bir reel dene.',
+      short: 'Video çok uzun — 90 saniyenin altını kullan',
+    },
+    importNoRecipeFound: {
+      title: 'Burada tarif yok',
+      body: 'Videoyu baştan sona izledik ama bir tarif bulamadık. İçinde gerçekten yemek yapılan bir gönderi dene.',
+      short: 'Bu gönderide tarif bulunamadı',
+    },
+    importBusy: {
+      title: 'Aynı anda tek içe aktarma',
+      body: 'Zaten devam eden bir içe aktarma var. Bitmesini bekleyip yenisini başlat.',
+      short: 'Zaten devam eden bir içe aktarma var',
+    },
+    recipeExists: {
+      title: 'Zaten mutfağında',
+      body: 'Bu gönderiyi daha önce içe aktardın. Tariflerim bölümünde bulabilirsin.',
+      short: 'Bu gönderiyi zaten içe aktardın',
+    },
+    emailExists: {
+      title: 'Bu e-posta kullanılıyor',
+      body: 'Bu e-postayla açılmış bir hesap zaten var. Giriş yap ya da şifreni sıfırla.',
+      short: 'Bu e-postayla bir hesap zaten var',
+    },
+    codeInvalid: {
+      title: 'Kod tutmadı',
+      body: 'E-postandaki 6 haneli kodu kontrol edip tekrar gir.',
+      short: 'Kod hatalı — e-postanı kontrol et',
+    },
+    codeExpired: {
+      title: 'Kodun süresi doldu',
+      body: 'Kodlar yalnızca birkaç dakika geçerli. Yeni bir kod isteyip hemen gir.',
+      short: 'Kodun süresi doldu — yeni kod iste',
+    },
+    codeAttemptsExceeded: {
+      title: 'Çok fazla deneme',
+      body: 'Çok fazla hatalı kod girdin. Devam etmek için yeni bir kod iste.',
+      short: 'Çok fazla hatalı kod — yeni kod iste',
+    },
+    codeCooldown: {
+      title: 'Bir saniye',
+      body: 'Az önce kod istedin. Yenisini istemeden önce birkaç saniye bekle.',
+      short: 'Yeni kod istemeden önce biraz bekle',
+    },
+    registrationExpired: {
+      title: 'Baştan başlayalım',
+      body: 'Bu e-posta için bekleyen bir kayıt kalmadı. Bilgilerini yeniden gir.',
+      short: 'Kaydın süresi doldu — baştan başla',
+    },
+    accountDeleted: {
+      title: 'Bu hesap silinmiş',
+      body: 'Bu hesap artık yok. Recipely’de pişirmeye devam etmek için yeniden kayıt ol.',
+      short: 'Hesap silinmiş — yeniden kayıt ol',
+    },
+    resetLinkInvalid: {
+      title: 'Bu bağlantı bozuk',
+      body: 'Bu şifre sıfırlama bağlantısı geçerli değil. Giriş ekranından yenisini iste.',
+      short: 'Geçersiz sıfırlama bağlantısı — yenisini iste',
+    },
+    resetLinkExpired: {
+      title: 'Bağlantının süresi doldu',
+      body: 'Sıfırlama bağlantıları yalnızca bir saat geçerli. Yenisini isteyip hemen kullan.',
+      short: 'Bağlantının süresi doldu — yenisini iste',
+    },
+    resetLinkUsed: {
+      title: 'Bu bağlantı kullanılmış',
+      body: 'Şifren bu bağlantıyla zaten sıfırlandı. Giriş yap ya da yeni bir bağlantı iste.',
+      short: 'Sıfırlama bağlantısı zaten kullanılmış',
+    },
+    passwordTooShort: {
+      title: 'Daha uzun bir şifre seç',
+      body: 'Şifreler en az 8 karakter olmalı.',
+      short: 'Şifre en az 8 karakter olmalı',
+    },
   },
   splash: {
     tagline: 'Tariflerin senin elinde',
@@ -318,8 +439,6 @@ export const tr: Translations = {
     gen2: 'Malzemeler toplanıyor',
     gen3: 'Adımlar yazılıyor',
     gen4: 'Son rötuşlar yapılıyor',
-    importInvalidUrl: 'Lütfen geçerli bir bağlantı paylaş.',
-    importNotInstagram: 'Bu bir Instagram bağlantısına benzemiyor.',
     importFirstReply: 'O Instagram videosunu tarife dönüştürdüm — aşağıda dilediğini değiştir.',
     importTitle: 'Reel tarife dönüştürülüyor',
     importSub: 'Bu bir iki dakika sürebilir — şef çalışırken biraz bekle.',

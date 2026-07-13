@@ -10,7 +10,8 @@ export class UnknownFailure extends Failure {
   constructor(
     readonly message: string = 'Unknown error',
     readonly cause?: unknown,
+    messageKey?: string,
   ) {
-    super();
+    super(messageKey);
   }
 }

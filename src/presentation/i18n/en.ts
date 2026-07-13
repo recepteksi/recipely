@@ -68,6 +68,130 @@ export const en = {
       body: 'We hit an unexpected snag. Please try again.',
       short: 'Something went wrong',
     },
+    // ── copy keyed by the backend's error catalogue (`messageKey`) ────────────
+    // Only for errors whose fix differs from their code bucket's. Anything the
+    // user cannot act on (internal, provider-not-configured, per-field form
+    // errors) deliberately has NO entry and falls back to the buckets above.
+    aiPromptRejected: {
+      title: "We can't cook that one",
+      body: "That prompt was flagged as inappropriate, so we didn't send it to the AI. Reword it and try again.",
+      short: "That prompt isn't allowed — try rewording it",
+    },
+    aiInvalidResponse: {
+      title: 'The AI got muddled',
+      body: "The AI sent back something we couldn't turn into a recipe. Your prompt was fine — just generate again.",
+      short: 'The AI response was unusable — generate again',
+    },
+    aiUpstreamFailed: {
+      title: 'The AI is off duty',
+      body: "Our AI couldn't produce a recipe right now. Give it a moment and generate again.",
+      short: "The AI couldn't respond — try again",
+    },
+    aiCooldown: {
+      title: 'Slow down a sec',
+      body: "That's a lot of AI requests in a short time. Wait about a minute and try again.",
+      short: 'Too many AI requests — wait a minute',
+    },
+    promptRequired: {
+      title: 'Tell us what to cook',
+      body: 'Describe the dish you have in mind — a few words is enough.',
+      short: 'Write a prompt first',
+    },
+    refineInstructionRequired: {
+      title: 'What should we change?',
+      body: 'Tell the chef what to tweak — swap an ingredient, halve the servings, make it spicier.',
+      short: 'Say what you want changed',
+    },
+    importInvalidUrl: {
+      title: "That link didn't work",
+      body: 'Paste the full link to an Instagram post or reel and try again.',
+      short: 'Paste a valid Instagram link',
+    },
+    importNotInstagram: {
+      title: 'Instagram links only',
+      body: 'Imports only work with Instagram posts and reels for now.',
+      short: "That's not an Instagram link",
+    },
+    importFetchFailed: {
+      title: "We couldn't open that post",
+      body: "We couldn't fetch that Instagram video. Make sure the post is public, then try again.",
+      short: "Couldn't fetch that post — check the link",
+    },
+    importDurationExceeded: {
+      title: 'That video is too long',
+      body: 'Imports work with videos under 90 seconds. Try a shorter reel.',
+      short: 'Video too long — use one under 90 seconds',
+    },
+    importNoRecipeFound: {
+      title: 'No recipe in there',
+      body: "We watched the whole thing and couldn't find a recipe. Try a post that actually cooks something.",
+      short: 'No recipe found in that post',
+    },
+    importBusy: {
+      title: 'One import at a time',
+      body: 'An import is already running. Wait for it to finish, then start the next one.',
+      short: 'An import is already running',
+    },
+    recipeExists: {
+      title: 'Already in your kitchen',
+      body: "You've already imported this post. Find it in My Recipes.",
+      short: "You've already imported that post",
+    },
+    emailExists: {
+      title: 'That email is taken',
+      body: 'An account already uses this email. Sign in instead, or reset your password.',
+      short: 'That email already has an account',
+    },
+    codeInvalid: {
+      title: "That code didn't match",
+      body: 'Check the 6 digits in your email and enter them again.',
+      short: 'Wrong code — check your email',
+    },
+    codeExpired: {
+      title: 'That code expired',
+      body: 'Codes are only valid for a few minutes. Request a new one and enter it right away.',
+      short: 'Code expired — request a new one',
+    },
+    codeAttemptsExceeded: {
+      title: 'Too many tries',
+      body: 'That was too many wrong codes. Request a new one to continue.',
+      short: 'Too many wrong codes — request a new one',
+    },
+    codeCooldown: {
+      title: 'Hang on a moment',
+      body: 'You just asked for a code. Wait a few seconds before requesting another.',
+      short: 'Wait a moment before asking for a new code',
+    },
+    registrationExpired: {
+      title: "Let's start over",
+      body: 'We have no pending sign-up for this email anymore. Enter your details again.',
+      short: 'Sign-up expired — start over',
+    },
+    accountDeleted: {
+      title: 'This account was deleted',
+      body: 'This account no longer exists. Sign up again to keep cooking with Recipely.',
+      short: 'Account deleted — sign up again',
+    },
+    resetLinkInvalid: {
+      title: 'This link is broken',
+      body: 'This password reset link is not valid. Request a fresh one from the sign-in screen.',
+      short: 'Invalid reset link — request a new one',
+    },
+    resetLinkExpired: {
+      title: 'This link expired',
+      body: 'Reset links are only good for an hour. Request a new one and use it right away.',
+      short: 'Reset link expired — request a new one',
+    },
+    resetLinkUsed: {
+      title: 'This link was already used',
+      body: 'Your password has already been reset with this link. Sign in, or request a new link.',
+      short: 'Reset link already used',
+    },
+    passwordTooShort: {
+      title: 'Pick a longer password',
+      body: 'Passwords need at least 8 characters.',
+      short: 'Password must be at least 8 characters',
+    },
   },
   splash: {
     tagline: 'Recipes, simply yours',
@@ -316,8 +440,6 @@ export const en = {
     gen2: 'Gathering ingredients',
     gen3: 'Writing the steps',
     gen4: 'Plating & final touches',
-    importInvalidUrl: 'Please share a valid link.',
-    importNotInstagram: "That doesn't look like an Instagram link.",
     importFirstReply: 'I turned that Instagram video into a recipe — tweak anything below.',
     importTitle: 'Turning the reel into a recipe',
     importSub: 'This can take a minute or two — hang tight while the chef works.',

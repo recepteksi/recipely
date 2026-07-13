@@ -1,6 +1,6 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
-import { UnknownFailure, ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
@@ -38,7 +38,7 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
 };
 
 describe('GenerateRecipeUseCase.execute', () => {
-  it('returns ValidationFailure with messageKey createRecipe.aiError when prompt is empty', async () => {
+  it('returns ValidationFailure keyed errors.validation.prompt_required when prompt is empty', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new GenerateRecipeUseCase(repo);
 
@@ -47,7 +47,7 @@ describe('GenerateRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.aiError');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.promptRequired);
       expect((r.failure as ValidationFailure).code).toBe('validation');
     }
     expect(repo.generateCallCount).toBe(0);
@@ -62,7 +62,7 @@ describe('GenerateRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.aiError');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.promptRequired);
     }
     expect(repo.generateCallCount).toBe(0);
   });

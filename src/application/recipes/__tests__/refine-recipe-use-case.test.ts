@@ -1,6 +1,6 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
-import { UnknownFailure, ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
@@ -56,7 +56,10 @@ describe('RefineRecipeUseCase.execute', () => {
     if (r.ok) expect(r.value).toBe(recipe);
   });
 
-  it('returns ValidationFailure createRecipe.aiError for an empty instruction without calling the repo', async () => {
+  // A blank refine instruction is NOT a blank prompt: a recipe already exists on
+  // screen, so "describe the dish you want" is the wrong advice — the user is
+  // being asked what to CHANGE. Hence refine's own key rather than promptRequired.
+  it('returns ValidationFailure keyed errors.ai.refine_instruction_required for an empty instruction without calling the repo', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new RefineRecipeUseCase(repo);
 
@@ -65,7 +68,9 @@ describe('RefineRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.aiError');
+      expect((r.failure as ValidationFailure).messageKey).toBe(
+        ErrorMessageKey.refineInstructionRequired,
+      );
     }
     expect(repo.refineCallCount).toBe(0);
   });

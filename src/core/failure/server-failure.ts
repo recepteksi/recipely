@@ -11,7 +11,8 @@ export class ServerFailure extends Failure {
   constructor(
     readonly message: string = 'Server error',
     readonly status?: number,
+    messageKey?: string,
   ) {
-    super();
+    super(messageKey);
   }
 }

@@ -11,14 +11,20 @@ import type { ValidationFieldError } from '@core/failure/validation-field-error'
  * segments, each `path: message` or just `message` when there is no path).
  * `field` only ever holds the first offending field for backward
  * compatibility; use `fieldErrors` to recover the full per-field breakdown.
+ *
+ * The widest subtype: the backend maps both `validation` (400) and
+ * `unprocessable` (422) onto it, so `code` alone cannot say what went wrong.
+ * The inherited `messageKey` disambiguates — e.g. `errors.validation.prompt_required`
+ * vs. `errors.ai.prompt_rejected` vs. `errors.ai.invalid_response`.
  */
 export class ValidationFailure extends Failure {
   readonly code = 'validation';
   constructor(
     readonly message: string,
     readonly field?: string,
+    messageKey?: string,
   ) {
-    super();
+    super(messageKey);
   }
 
   /**

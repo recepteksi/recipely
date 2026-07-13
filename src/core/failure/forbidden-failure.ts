@@ -7,7 +7,10 @@ import { Failure } from '@core/failure/failure';
  */
 export class ForbiddenFailure extends Failure {
   readonly code = 'forbidden';
-  constructor(readonly message: string = 'Forbidden') {
-    super();
+  constructor(
+    readonly message: string = 'Forbidden',
+    messageKey?: string,
+  ) {
+    super(messageKey);
   }
 }
