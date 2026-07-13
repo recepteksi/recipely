@@ -25,6 +25,9 @@ import { RegisterDeviceTokenUseCase } from '@application/notifications/register-
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
+import { kvStore } from '@infrastructure/storage/kv-store';
+import { NotificationService } from '@infrastructure/notifications/notification-service';
+import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
@@ -33,6 +36,12 @@ import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-op
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();
   container.register(TOKENS.SecureStorage, () => storage);
+
+  // Platform key-value store + local notification / alarm-audio services,
+  // resolved by presentation/application consumers through their ports.
+  container.register(TOKENS.KeyValueStore, () => kvStore);
+  container.register(TOKENS.NotificationService, () => new NotificationService());
+  container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
 
   const httpClientOptions: HttpClientOptions = {
     baseUrl: API_BASE_URL,

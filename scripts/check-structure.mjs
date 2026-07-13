@@ -8,6 +8,7 @@
  *      from the composition root, `infrastructure/constants/*`, or via DI.
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines.
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -23,14 +24,7 @@ const LAYERS = ['core', 'domain', 'application', 'infrastructure', 'presentation
 const errors = [];
 
 /** Pre-existing layer-rule violations. Burn down; never grow. */
-const KNOWN_DEBT = new Set([
-  'presentation/base/theme/theme-context.tsx -> @infrastructure/storage/kv-store',
-  'presentation/i18n/i18n.ts -> @infrastructure/storage/kv-store',
-  'presentation/base/timers/timer-controls.ts -> @infrastructure/notifications/notification-service',
-  'presentation/base/hooks/use-timer-notification-sync.ts -> @infrastructure/notifications/notification-service',
-  'presentation/navigation/alarm-screen.tsx -> @infrastructure/audio/alarm-audio-service',
-  'application/timers/timer-store.ts -> @infrastructure/storage/kv-store',
-]);
+const KNOWN_DEBT = new Set([]);
 
 const ALLOWED_IMPORTS = {
   core: ['@core'],
@@ -126,6 +120,16 @@ for (const file of files) {
   }
   if (typeLike.length >= 1 && (hooks.length >= 1 || (classes.length === 0 && decls.some((d) => (d.kind === 'const' || d.kind === 'function') && !typeLike.includes(d) && !comps.includes(d) && !/^[A-Z0-9_]+$/.test(d.name))))) {
     errors.push(`${file}: type/interface shares a file with runtime code — move ${typeLike.map((d) => `${d.kind} ${d.name}`).join(', ')} to its own file`);
+  }
+
+  // --- F: Smart-UI size guard (CLAUDE.md §18) --------------------------------
+  // A .tsx over 300 lines is a blocking violation: split it into body/items/
+  // sheets/hooks/model parts (or a hook) instead of growing the component.
+  if (file.endsWith('.tsx')) {
+    const lines = src.split('\n').length;
+    if (lines > 300) {
+      errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
+    }
   }
 
   // --- D: widgets root must stay categorized --------------------------------

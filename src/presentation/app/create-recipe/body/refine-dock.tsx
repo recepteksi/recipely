@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import {
   Keyboard,
   Pressable,
@@ -7,9 +6,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -47,7 +46,6 @@ export const RefineDock = ({
   bottomInset,
 }: RefineDockProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const scrollRef = useRef<ScrollView>(null);
   const canSend = chatInput.trim().length > 0 && !refining;
   // WHY: `KeyboardAvoidingView` (in the parent screen) already pads its content
   // up flush with the keyboard's top edge once shown — that alone clears the
@@ -70,78 +68,7 @@ export const RefineDock = ({
   return (
     <View style={[styles.root, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {expanded ? (
-        <View style={{ borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }}>
-          <View style={styles.transcriptHeader}>
-            <LinearGradient
-              colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.assistantBadge}
-            >
-              <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primaryText} />
-            </LinearGradient>
-            <View style={styles.transcriptHeaderText}>
-              <ThemedText style={[styles.assistantName, { color: colors.text }]}>
-                {t().createRecipe.assistant}
-              </ThemedText>
-              <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-                {t().createRecipe.refineHint}
-              </ThemedText>
-            </View>
-            <Pressable
-              onPress={closeAssistant}
-              hitSlop={8}
-              style={styles.collapseBtn}
-              accessibilityRole="button"
-              accessibilityLabel={t().createRecipe.closeAssistant}
-            >
-              <Ionicons name="close" size={sizes.iconSm} color={colors.textMuted} />
-            </Pressable>
-          </View>
-          <ScrollView
-            ref={scrollRef}
-            style={styles.transcript}
-            contentContainerStyle={styles.transcriptInner}
-            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
-          >
-            {chatHistory.map((message, i) => {
-              const isUser = message.role === 'user';
-              const bubbleColor = isUser
-                ? colors.primary
-                : message.error
-                  ? colors.dangerLight
-                  : colors.chipBackground;
-              const textColor = isUser
-                ? colors.primaryText
-                : message.error
-                  ? colors.danger
-                  : colors.text;
-              return (
-                <View
-                  key={`${i}-${message.role}`}
-                  style={[
-                    styles.bubble,
-                    {
-                      alignSelf: isUser ? 'flex-end' : 'flex-start',
-                      backgroundColor: bubbleColor,
-                    },
-                  ]}
-                >
-                  <ThemedText style={[styles.bubbleText, { color: textColor }]}>
-                    {message.content}
-                  </ThemedText>
-                </View>
-              );
-            })}
-            {refining ? (
-              <View style={[styles.bubble, styles.thinkingBubble, { alignSelf: 'flex-start', backgroundColor: colors.chipBackground }]}>
-                <ThemedText style={[styles.bubbleText, styles.thinking, { color: colors.textMuted }]}>
-                  {t().createRecipe.refining}
-                </ThemedText>
-              </View>
-            ) : null}
-          </ScrollView>
-        </View>
+        <RefineTranscript chatHistory={chatHistory} refining={refining} onClose={closeAssistant} />
       ) : null}
 
       <ScrollView
@@ -218,55 +145,6 @@ export const RefineDock = ({
 const styles = StyleSheet.create({
   root: {
     borderTopWidth: StyleSheet.hairlineWidth,
-  },
-  transcriptHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  assistantBadge: {
-    width: sizes.badgeSm,
-    height: sizes.badgeSm,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  transcriptHeaderText: {
-    flex: 1,
-  },
-  assistantName: {
-    fontSize: fontSizes.caption,
-    fontWeight: '700',
-  },
-  collapseBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  transcript: {
-    maxHeight: 200,
-  },
-  transcriptInner: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  bubble: {
-    maxWidth: '84%',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.xl,
-  },
-  thinkingBubble: {},
-  bubbleText: {
-    fontSize: fontSizes.caption,
-    lineHeight: 19,
-  },
-  thinking: {
-    fontStyle: 'italic',
   },
   chipScroll: {
     gap: spacing.xs2,

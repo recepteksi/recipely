@@ -7,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
 export interface PromptPhaseProps {
@@ -79,25 +80,7 @@ export const PromptPhase = ({
         </LinearGradient>
 
         {latestDraft !== null ? (
-          <Pressable
-            onPress={onResumeDraft}
-            style={[styles.resumeCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.resumeDraft}
-          >
-            <View style={[styles.resumeIcon, { backgroundColor: colors.chipBackground }]}>
-              <Ionicons name="bookmark" size={sizes.iconSm} color={colors.primary} />
-            </View>
-            <View style={styles.resumeBody}>
-              <ThemedText variant="caption" style={[styles.resumeKicker, { color: colors.primary }]}>
-                {t().createRecipe.resumeDraft}
-              </ThemedText>
-              <ThemedText variant="body" style={[styles.resumeName, { color: colors.text }]} numberOfLines={1}>
-                {draftName !== undefined && draftName.length > 0 ? draftName : t().drafts.untitled}
-              </ThemedText>
-            </View>
-            <Ionicons name="chevron-forward" size={sizes.iconXxs} color={colors.textMuted} />
-          </Pressable>
+          <ResumeDraftCard draftName={draftName} onPress={onResumeDraft} />
         ) : null}
 
         <View style={[styles.promptCard, { backgroundColor: colors.surface, borderColor: colors.inputBorder }, shadows.sm]}>
@@ -223,33 +206,6 @@ const styles = StyleSheet.create({
   heroSub: {
     marginTop: spacing.xs,
     lineHeight: 21,
-  },
-  resumeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.sm2,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-  },
-  resumeIcon: {
-    width: sizes.floatingBtn,
-    height: sizes.floatingBtn,
-    borderRadius: radii.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resumeBody: {
-    flex: 1,
-  },
-  resumeKicker: {
-    fontWeight: '700',
-    fontSize: fontSizes.micro,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
-  resumeName: {
-    fontWeight: '600',
   },
   promptCard: {
     borderRadius: radii.xl,

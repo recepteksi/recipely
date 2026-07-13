@@ -63,6 +63,12 @@ Code-reviewer will check:
 - Missing error handling
 - Duplicate code
 - Test coverage
+- **DDD guardrails** (`architecture.md` §DDD Guardrails, CLAUDE.md §17-20) — all blocking:
+  - new infrastructure access goes through a port interface + DI, never a direct `@infrastructure` import
+  - no `.tsx` over 300 lines; routed `index.tsx` is composition-only (≤ ~200 lines, no business rules)
+  - business rules live on entities/VOs (OOP), not in stores/components/utils; encapsulation intact
+    (private ctor + `create(): Result`, no public setters)
+  - new domain entity ⇒ a row in the Aggregates table; cross-aggregate references by id only
 
 ### Feedback Loop
 - If agent finds issues → write to relevant task → have agent fix → send for review again

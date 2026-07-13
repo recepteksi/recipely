@@ -3,27 +3,15 @@
  */
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
-const mockKvStore: Record<string, string> = {};
-
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
-    getItem: jest.fn(async (key: string) => mockKvStore[key] ?? null),
-    setItem: jest.fn(async (key: string, value: string) => { mockKvStore[key] = value; }),
-    removeItem: jest.fn(async (key: string) => { delete mockKvStore[key]; }),
-  },
-}));
-
 jest.mock('@infrastructure/constants/storage', () => ({
   SESSION_STORAGE_KEY: 'recipely.session.v1',
   TIMERS_STORAGE_KEY: 'recipely.timers.v1',
 }));
 
-jest.mock('@infrastructure/notifications/notification-service', () => ({
-  requestNotificationPermissions: jest.fn(async () => true),
-  scheduleTimerCompleteNotification: jest.fn(async () => ['notif-1', 'notif-2', 'notif-3']),
-  cancelNotifications: jest.fn(async () => undefined),
-}));
-
+import { container } from '@core/di/container-instance';
+import { TOKENS } from '@core/di/tokens';
+import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
+import { FakeNotificationService } from '@application/__fixtures__/fake-notification-service';
 import { timerStore } from '@application/timers/timer-store';
 import {
   startTimer,
@@ -31,15 +19,20 @@ import {
   pauseTimer,
   resumeTimer,
 } from '@presentation/base/timers/timer-controls';
-import {
-  scheduleTimerCompleteNotification,
-  cancelNotifications,
-} from '@infrastructure/notifications/notification-service';
+
+// Shared in-memory / recording fakes resolved via the DI tokens. The
+// notification fake's default `scheduledIds` are the ids the assertions below
+// expect to land on the timer entry's `completionNotifIds`.
+const fakeKvStore = new FakeKeyValueStore();
+const notificationService = new FakeNotificationService();
 
 const resetAll = (): void => {
+  container.register(TOKENS.KeyValueStore, () => fakeKvStore);
+  container.register(TOKENS.NotificationService, () => notificationService);
   timerStore.setState({ timers: {}, hydrated: false });
-  for (const key of Object.keys(mockKvStore)) delete mockKvStore[key];
-  jest.clearAllMocks();
+  fakeKvStore.clear();
+  notificationService.scheduleCalls = [];
+  notificationService.cancelCalls = [];
 };
 
 describe('timer-controls', () => {
@@ -61,13 +54,13 @@ describe('timer-controls', () => {
 
     it('schedules alarm notifications', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
-      expect(scheduleTimerCompleteNotification).toHaveBeenCalledTimes(1);
+      expect(notificationService.scheduleCalls).toHaveLength(1);
     });
 
     it('is a no-op for a non-positive duration', async () => {
       await startTimer('r1:cook', 'r1', 'Pasta', 0);
       expect(timerStore.getState().timers['r1:cook']).toBeUndefined();
-      expect(scheduleTimerCompleteNotification).not.toHaveBeenCalled();
+      expect(notificationService.scheduleCalls).toHaveLength(0);
     });
   });
 
@@ -77,7 +70,7 @@ describe('timer-controls', () => {
       await stopTimer('r1:prep');
 
       expect(timerStore.getState().timers['r1:prep']).toBeUndefined();
-      expect(cancelNotifications).toHaveBeenCalledWith(['notif-1', 'notif-2', 'notif-3']);
+      expect(notificationService.cancelCalls).toContainEqual(['notif-1', 'notif-2', 'notif-3']);
     });
 
     it('is a no-op when the timer does not exist', async () => {

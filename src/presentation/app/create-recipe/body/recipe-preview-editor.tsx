@@ -6,11 +6,10 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { Difficulty } from '@domain/recipes/difficulty';
+import type { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
-import { SpecRow } from '@presentation/app/create-recipe/items/spec-row';
-import { Stepper } from '@presentation/app/create-recipe/body/stepper';
-import { DifficultyToggle } from '@presentation/app/create-recipe/items/difficulty-toggle';
+import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
+import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
 import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
@@ -41,18 +40,6 @@ export interface RecipePreviewEditorProps {
   onAddStep: () => void;
   onOpenPhotos: () => void;
 }
-
-const SERVINGS_MIN = 1;
-const SERVINGS_MAX = 50;
-const TIME_STEP = 5;
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  [Difficulty.Easy]: 'Easy',
-  [Difficulty.Medium]: 'Medium',
-  [Difficulty.Hard]: 'Hard',
-};
-
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(min, Math.min(max, value));
 
 /** Inline live editor of every recipe field shown in the preview phase. */
 export const RecipePreviewEditor = ({
@@ -136,129 +123,55 @@ export const RecipePreviewEditor = ({
           </View>
         </View>
 
-        <View style={[styles.specCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-          <SpecRow icon="people" label={t().createRecipe.servings} error={fieldErrors.servings}>
-            <Stepper
-              value={recipe.servings}
-              decreaseLabel={t().createRecipe.servings}
-              increaseLabel={t().createRecipe.servings}
-              onDecrement={() => onChangeServings(clamp(recipe.servings - 1, SERVINGS_MIN, SERVINGS_MAX))}
-              onIncrement={() => onChangeServings(clamp(recipe.servings + 1, SERVINGS_MIN, SERVINGS_MAX))}
-            />
-          </SpecRow>
-          <SpecRow icon="speedometer" label={t().createRecipe.difficulty} error={fieldErrors.difficulty}>
-            <DifficultyToggle
-              value={recipe.difficulty}
-              label={(d) => DIFFICULTY_LABELS[d]}
-              onChange={onChangeDifficulty}
-            />
-          </SpecRow>
-          <SpecRow icon="time-outline" label={t().createRecipe.prep} error={fieldErrors.prepTimeMinutes}>
-            <Stepper
-              value={recipe.prepTimeMinutes}
-              suffix={t().createRecipe.minShort}
-              decreaseLabel={t().createRecipe.prep}
-              increaseLabel={t().createRecipe.prep}
-              onDecrement={() => onChangePrep(Math.max(0, recipe.prepTimeMinutes - TIME_STEP))}
-              onIncrement={() => onChangePrep(recipe.prepTimeMinutes + TIME_STEP)}
-            />
-          </SpecRow>
-          <SpecRow icon="flame" label={t().createRecipe.cook} error={fieldErrors.cookTimeMinutes} last>
-            <Stepper
-              value={recipe.cookTimeMinutes}
-              suffix={t().createRecipe.minShort}
-              decreaseLabel={t().createRecipe.cook}
-              increaseLabel={t().createRecipe.cook}
-              onDecrement={() => onChangeCook(Math.max(0, recipe.cookTimeMinutes - TIME_STEP))}
-              onIncrement={() => onChangeCook(recipe.cookTimeMinutes + TIME_STEP)}
-            />
-          </SpecRow>
-        </View>
+        <RecipeSpecCard
+          recipe={recipe}
+          fieldErrors={fieldErrors}
+          onChangeServings={onChangeServings}
+          onChangeDifficulty={onChangeDifficulty}
+          onChangePrep={onChangePrep}
+          onChangeCook={onChangeCook}
+        />
 
-        <View>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitle}>
-              <Ionicons name="restaurant-outline" size={sizes.iconXxs} color={colors.primary} />
-              <ThemedText variant="subtitle">{t().recipes.ingredients}</ThemedText>
-            </View>
-            <ThemedText variant="caption" muted>{ingredientCount}</ThemedText>
-          </View>
-          {fieldErrors.ingredients !== undefined ? (
-            <FieldErrorText message={fieldErrors.ingredients} />
-          ) : null}
-          <View
-            style={[
-              styles.ingredientList,
-              fieldErrors.ingredients !== undefined
-                ? { borderWidth: 1, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
-                : null,
-            ]}
-          >
-            {recipe.ingredients.map((value, i) => (
-              <IngredientRow
-                key={`ing-${i}`}
-                value={value}
-                onChange={(v) => onChangeIngredient(i, v)}
-                onRemove={() => onRemoveIngredient(i)}
-                removeLabel={t().mediaPicker.remove}
-              />
-            ))}
-          </View>
-          <Pressable
-            onPress={onAddIngredient}
-            style={[styles.addBtn, { borderColor: colors.primary }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.addIngredient}
-          >
-            <Ionicons name="add" size={sizes.iconSm} color={colors.primary} />
-            <ThemedText variant="body" style={[styles.addLabel, { color: colors.primary }]}>
-              {t().createRecipe.addIngredient}
-            </ThemedText>
-          </Pressable>
-        </View>
+        <EditableItemsSection
+          icon="restaurant-outline"
+          title={t().recipes.ingredients}
+          count={ingredientCount}
+          error={fieldErrors.ingredients}
+          listGap={spacing.xxs}
+          onAdd={onAddIngredient}
+          addLabel={t().createRecipe.addIngredient}
+        >
+          {recipe.ingredients.map((value, i) => (
+            <IngredientRow
+              key={`ing-${i}`}
+              value={value}
+              onChange={(v) => onChangeIngredient(i, v)}
+              onRemove={() => onRemoveIngredient(i)}
+              removeLabel={t().mediaPicker.remove}
+            />
+          ))}
+        </EditableItemsSection>
 
-        <View>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitle}>
-              <Ionicons name="flame" size={sizes.iconXxs} color={colors.primary} />
-              <ThemedText variant="subtitle">{t().recipes.instructions}</ThemedText>
-            </View>
-            <ThemedText variant="caption" muted>{stepCount}</ThemedText>
-          </View>
-          {fieldErrors.instructions !== undefined ? (
-            <FieldErrorText message={fieldErrors.instructions} />
-          ) : null}
-          <View
-            style={[
-              styles.stepList,
-              fieldErrors.instructions !== undefined
-                ? { borderWidth: 1, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
-                : null,
-            ]}
-          >
-            {recipe.instructions.map((value, i) => (
-              <StepRow
-                key={`step-${i}`}
-                index={i}
-                value={value}
-                onChange={(v) => onChangeStep(i, v)}
-                onRemove={() => onRemoveStep(i)}
-                removeLabel={t().mediaPicker.remove}
-              />
-            ))}
-          </View>
-          <Pressable
-            onPress={onAddStep}
-            style={[styles.addBtn, { borderColor: colors.primary }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.addStep}
-          >
-            <Ionicons name="add" size={sizes.iconSm} color={colors.primary} />
-            <ThemedText variant="body" style={[styles.addLabel, { color: colors.primary }]}>
-              {t().createRecipe.addStep}
-            </ThemedText>
-          </Pressable>
-        </View>
+        <EditableItemsSection
+          icon="flame"
+          title={t().recipes.instructions}
+          count={stepCount}
+          error={fieldErrors.instructions}
+          listGap={spacing.sm}
+          onAdd={onAddStep}
+          addLabel={t().createRecipe.addStep}
+        >
+          {recipe.instructions.map((value, i) => (
+            <StepRow
+              key={`step-${i}`}
+              index={i}
+              value={value}
+              onChange={(v) => onChangeStep(i, v)}
+              onRemove={() => onRemoveStep(i)}
+              removeLabel={t().mediaPicker.remove}
+            />
+          ))}
+        </EditableItemsSection>
 
         {missingMessage !== null ? (
           <ThemedText variant="caption" style={[styles.missing, { color: colors.danger }]}>
@@ -327,43 +240,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.md,
-  },
-  specCard: {
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  sectionTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  ingredientList: {
-    gap: spacing.xxs,
-  },
-  stepList: {
-    gap: spacing.sm,
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs2,
-    height: sizes.searchBarHeight,
-    borderRadius: radii.lg,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    marginTop: spacing.sm,
-  },
-  addLabel: {
-    fontWeight: '600',
-    fontSize: fontSizes.medium,
   },
   missing: {
     textAlign: 'center',

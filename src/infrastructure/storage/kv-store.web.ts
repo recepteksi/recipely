@@ -1,4 +1,6 @@
-export const kvStore = {
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+
+export const kvStore: IKeyValueStore = {
   getItem: async (key: string): Promise<string | null> =>
     localStorage.getItem(key),
   setItem: async (key: string, value: string): Promise<void> => {

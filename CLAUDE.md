@@ -82,7 +82,7 @@ folder (asset requires are centralised in `src/infrastructure/constants/assets.t
 - `src/application/` — Use cases, Zustand stores, DI registration, test fixtures.
 - `src/domain/` — Entities, value objects, repository interfaces. Pure TypeScript, no framework deps.
 - `src/infrastructure/` — Repository implementations, DTOs, mappers, HTTP client, storage, constants.
-- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, `ValueObject`, DI container.
+- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, DI container.
 
 ### Mandatory coding standards (see `architecture.md` §Coding Standards for full detail)
 
@@ -141,6 +141,29 @@ blocking.
 
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 8, 14, 15 mechanically and must be
     green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user approval.
+
+17. **Ports over direct infrastructure** — presentation/application consume infrastructure capabilities
+    (storage, notifications, audio, …) ONLY through port interfaces resolved via DI, following the
+    repository-interface pattern (Evans 2003 p.55: infrastructure serves upper layers as SERVICES behind
+    interfaces). A new direct `@infrastructure` import is always blocking — never "temporarily" via
+    `KNOWN_DEBT`; that list only shrinks and its target is zero.
+
+18. **Smart-UI guard (screen size)** — a routed `index.tsx` is composition/orchestration only: target
+    ≤ ~200 lines, zero business rules. Any `.tsx` over 300 lines is a blocking review finding (i18n
+    dictionaries exempt). A business rule discovered while editing UI moves down to application/domain
+    in the same PR — it never stays in the component (Evans 2003 p.57, Smart UI anti-pattern).
+
+19. **OOP & rich domain** — behavior lives with the data it belongs to: invariants and derivations are
+    entity / value-object methods (the `Recipe.create()` pattern), not helper functions scattered in
+    stores or components. Encapsulation is mandatory: `private` constructor + static `create(): Result`,
+    `private readonly` fields, no public setters. Entities carry only identity-intrinsic state —
+    viewer-dependent flags belong in read models, not new entity props (Evans 2003 p.67). A primitive
+    that forms a "conceptual whole" and carries rules is promoted to a Value Object instead of being
+    re-validated in two places (Evans 2003 p.71).
+
+20. **Aggregate boundaries** — every domain entity is declared root-or-member in the Aggregates table in
+    `architecture.md`; a PR adding an entity must update that table. Cross-aggregate references are by
+    id only, never object references (Evans 2003 p.89-93).
 
 ### Pre-commit quality gate
 

@@ -1,0 +1,13 @@
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+
+/**
+ * Null-object key-value store used only when no platform store is registered in
+ * the container (unit tests that mount UI without the composition root). Reads
+ * return `null` and writes are dropped, mirroring an empty secure store — the
+ * real platform store is always registered before the UI mounts in the app.
+ */
+export const noopKeyValueStore: IKeyValueStore = {
+  getItem: async () => null,
+  setItem: async () => {},
+  removeItem: async () => {},
+};

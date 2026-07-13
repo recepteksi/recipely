@@ -1,7 +1,7 @@
 import '@presentation/bootstrap/crypto-polyfill';
 import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
-import { initNotifications } from '@infrastructure/notifications/notification-service';
+import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { container } from '@core/di/container-instance';
@@ -55,7 +55,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       console.error('[AppBootstrap] hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.authStore.hydrate');
     });
-    void initNotifications();
+    void getNotificationService().init();
     timerStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');

@@ -7,21 +7,19 @@
  * `t()` string and consumes `useTheme` (but never calls `useLocale` itself)
  * must show the new language immediately after `setLocale`.
  */
-/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-
-jest.mock('@infrastructure/storage/kv-store', () => ({
-  kvStore: {
-    getItem: jest.fn(async () => null),
-    setItem: jest.fn(async () => {}),
-    removeItem: jest.fn(async () => {}),
-  },
-}));
-
 import { act, create } from 'react-test-renderer';
 import { Text } from 'react-native';
+import { container } from '@core/di/container-instance';
+import { TOKENS } from '@core/di/tokens';
+import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t, setLocale } from '@presentation/i18n';
+
+// Empty in-memory key-value store under the DI token so the provider and
+// setLocale never hit the platform backend during this render/reactivity test.
+const fakeKvStore = new FakeKeyValueStore();
+container.register(TOKENS.KeyValueStore, () => fakeKvStore);
 
 const flushMicrotasks = async (): Promise<void> => {
   await act(async () => {

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Platform, useColorScheme } from 'react-native';
-import { kvStore } from '@infrastructure/storage/kv-store';
+import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/themes';
@@ -50,13 +50,13 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   // Load persisted theme + preference on mount
   useEffect(() => {
-    void kvStore.getItem('theme_id').then((stored) => {
+    void getKeyValueStore().getItem('theme_id').then((stored) => {
       // A previously-persisted theme may no longer be part of the palette
       // (e.g. after trimming it down) — fall back to the default instead of
       // handing an unknown id to `getThemeColors`, which would crash.
       setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
-    void kvStore.getItem('theme_preference').then((stored) => {
+    void getKeyValueStore().getItem('theme_preference').then((stored) => {
       if (stored !== null && isThemePreference(stored)) {
         setPreferenceState(stored);
       }
@@ -65,12 +65,12 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const setThemeId = useCallback((id: ThemeId) => {
     setThemeIdState(id);
-    void kvStore.setItem('theme_id', id);
+    void getKeyValueStore().setItem('theme_id', id);
   }, []);
 
   const setPreference = useCallback((pref: ThemePreference) => {
     setPreferenceState(pref);
-    void kvStore.setItem('theme_preference', pref);
+    void getKeyValueStore().setItem('theme_preference', pref);
   }, []);
 
   // On web the static export prerenders without `prefers-color-scheme`, so the

@@ -1,0 +1,142 @@
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { spacing, radii } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
+import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
+
+const STAT_VALUE_SIZE = 18;
+const STAT_VALUE_LINE = 20;
+const STAT_LABEL_SIZE = 10;
+const STAT_LABEL_TRACKING = 0.5;
+
+/** Compact-notation display formatter for large stat counts (1.2K, 3.4M). */
+const formatStat = (n: number): string => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+};
+
+export interface ProfileStatsProps {
+  stats: ProfileStatsState;
+}
+
+/** Renders the recipes / likes / views / saved row with loading + error branches. */
+export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | null => {
+  const colors = useTheme().colors;
+
+  if (stats.status === 'loading') {
+    return (
+      <View style={styles.statsLoading}>
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (stats.status === 'error') {
+    return (
+      <Pressable
+        onPress={stats.onRetry}
+        style={[
+          styles.statsError,
+          { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+        ]}
+        accessibilityRole="button"
+        accessibilityLabel={t().common.retry}
+      >
+        <ThemedText variant="caption" muted style={styles.statsErrorText}>
+          {stats.message}
+        </ThemedText>
+        <ThemedText variant="caption" style={[styles.retryText, { color: colors.primary }]}>
+          {t().common.retry}
+        </ThemedText>
+      </Pressable>
+    );
+  }
+
+  if (stats.status === 'loaded') {
+    const cells = [
+      { value: String(stats.recipeCount), label: t().profile.recipes },
+      { value: formatStat(stats.totalLikes), label: t().profile.likes },
+      { value: formatStat(stats.totalViews), label: t().profile.views },
+      { value: String(stats.savedCount), label: t().profile.saved },
+    ];
+
+    return (
+      <View
+        style={[
+          styles.statsRow,
+          { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+        ]}
+      >
+        {cells.map((stat, idx, arr) => (
+          <View
+            key={stat.label}
+            style={[
+              styles.statCell,
+              idx < arr.length - 1
+                ? [styles.statDivider, { borderRightColor: colors.border }]
+                : null,
+            ]}
+          >
+            <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
+            <ThemedText variant="caption" muted style={styles.statLabel}>
+              {stat.label.toUpperCase()}
+            </ThemedText>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  return null;
+};
+
+const styles = StyleSheet.create({
+  statsLoading: {
+    marginTop: spacing.lg,
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+  },
+  statsError: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    gap: spacing.xs,
+    alignItems: 'center',
+  },
+  statsErrorText: {
+    textAlign: 'center',
+  },
+  retryText: {
+    fontWeight: '700',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    paddingVertical: spacing.md,
+  },
+  statCell: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statDivider: {
+    borderRightWidth: 1,
+  },
+  statValue: {
+    fontWeight: '800',
+    fontSize: STAT_VALUE_SIZE,
+    lineHeight: STAT_VALUE_LINE,
+  },
+  statLabel: {
+    fontSize: STAT_LABEL_SIZE,
+    fontWeight: '600',
+    letterSpacing: STAT_LABEL_TRACKING,
+  },
+});

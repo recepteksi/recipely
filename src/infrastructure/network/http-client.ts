@@ -1,39 +1,17 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError, AxiosHeaders } from 'axios';
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import {
-  type Failure,
-  NetworkFailure,
-  TimeoutFailure,
-  UnauthorizedFailure,
-  UnknownFailure,
-  ValidationFailure,
-} from '@core/failure';
+import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { failureFromResponse } from '@infrastructure/network/failure-from-response';
-import {
-  API_AES_KEY_HEX,
-  DEFAULT_REQUEST_TIMEOUT_MS,
-  MULTIPART_UPLOAD_TIMEOUT_MS,
-} from '@infrastructure/constants/api';
-import {
-  decryptEnvelope,
-  encryptEnvelope,
-  keyFromHex,
-} from '@infrastructure/crypto/aes-envelope';
-import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
-import type { Envelope } from '@infrastructure/crypto/envelope';
+import { API_AES_KEY_HEX, DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
 import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
-import type { RecipelyDataBody } from '@infrastructure/network/recipely-data-body';
+import { isRecipelyDataBody } from '@infrastructure/network/is-recipely-data-body';
+import { mapAxiosError } from '@infrastructure/network/map-axios-error';
+import { buildRequestInterceptor } from '@infrastructure/network/build-request-interceptor';
+import { buildResponseInterceptor } from '@infrastructure/network/build-response-interceptor';
+import { uploadMultipart } from '@infrastructure/network/upload-multipart';
 import type { UploadProgressEvent } from '@infrastructure/network/upload-progress-event';
-
-function isEnvelope(body: unknown): body is Envelope {
-  return (
-    typeof body === 'object' &&
-    body !== null &&
-    typeof (body as Envelope).payload === 'string' &&
-    typeof (body as Envelope).iv === 'string'
-  );
-}
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches
@@ -59,86 +37,9 @@ export class HttpClient {
       validateStatus: () => true,
     });
 
-    // Request interceptor: attach JWT, set Content-Type, and encrypt body.
-    this.instance.interceptors.request.use(async (config) => {
-      const token = await options.tokenProvider();
-      if (token) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      const locale = options.localeProvider ? options.localeProvider() : 'en';
-      config.headers = config.headers ?? {};
-      config.headers['Accept-Language'] = locale;
-
-      // WHY: FormData uploads must NOT have an explicit Content-Type — the XHR
-      // runtime sets it with the correct multipart boundary. If we leave
-      // 'application/json' from the instance defaults the backend's decrypt-body
-      // middleware sees the wrong content-type, its multipart guard misses, and
-      // the request is rejected as a missing AES envelope (400).
-      const isFormDataPayload =
-        typeof FormData !== 'undefined' && config.data instanceof FormData;
-
-      if (isFormDataPayload) {
-        // WHY: AxiosHeaders uses internal storage — plain JS `delete` on the cast
-        // Record does not call the class's delete() and leaves the header live.
-        // Must use the class method so the XHR runtime can auto-set
-        // Content-Type: multipart/form-data; boundary=... from the FormData.
-        if (config.headers instanceof AxiosHeaders) {
-          config.headers.delete('Content-Type');
-        }
-        // WHY: axios v1's default transformRequest detects FormData by
-        // `Object.prototype.toString.call(data) === '[object FormData]'` and by
-        // `instanceof FormData`. On React Native (Hermes) the polyfilled FormData
-        // does not always pass these checks reliably, which makes axios fall
-        // through to `JSON.stringify(data)` — the server then receives `"{}"`
-        // instead of multipart. Setting transformRequest to identity bypasses
-        // every default transformer and guarantees FormData is sent untouched.
-        config.transformRequest = [(data) => data];
-        // WHY: bump timeout to the upload budget — multipart uploads over
-        // cellular routinely take longer than the 10s JSON default, which
-        // surfaces as `ECONNABORTED` → "Network error" in the UI.
-        config.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
-        return config;
-      }
-
-      config.headers['Content-Type'] = 'application/json';
-
-      // Encrypt body for POST/PUT/PATCH. For requests with no data (like POST /favorite),
-      // send an empty encrypted envelope so the backend's decryptBody middleware doesn't reject it.
-      const methodsWithBody = ['POST', 'PUT', 'PATCH'];
-      if (methodsWithBody.includes(config.method?.toUpperCase() ?? '')) {
-        const bodyData = config.data ?? {};
-        // WHY: backend's decryptBody middleware expects plaintext to be
-        // `{ data: <T> }` (mirroring the response side). Wrap before encrypt
-        // so the contract is symmetric.
-        config.data = encryptEnvelope({ data: bodyData }, this.aesKey);
-      }
-      if (options.enableLogging) {
-         
-        console.log(`[HTTP →] ${config.method?.toUpperCase()} ${config.baseURL ?? ''}${config.url ?? ''}`);
-      }
-      return config;
-    });
-
-    // Response interceptor: decrypt envelopes back into plain JSON.
+    this.instance.interceptors.request.use(buildRequestInterceptor(options, this.aesKey));
     this.instance.interceptors.response.use(
-      (response) => {
-        if (isEnvelope(response.data)) {
-          try {
-            response.data = decryptEnvelope(response.data, this.aesKey);
-          } catch (err) {
-            if (options.enableLogging) {
-               
-              console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`);
-            }
-          }
-        }
-        if (options.enableLogging) {
-           
-          console.log(`[HTTP ←] ${response.status} ${response.config.url ?? ''}`);
-        }
-        return response;
-      },
+      buildResponseInterceptor(options, this.aesKey),
       (error: unknown) => Promise.reject(error),
     );
   }
@@ -173,141 +74,11 @@ export class HttpClient {
     return fail(failure);
   }
 
-  /**
-   * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios
-   * entirely. axios v1's XHR adapter is unreliable for RN multipart on Android:
-   * its FormData detection (`Object.prototype.toString.call`) misses RN's
-   * polyfilled FormData and the request body is JSON-stringified to `"{}"`,
-   * which surfaces to the user as "Network error". XHR is what every reliable
-   * RN upload library uses under the hood.
-   *
-   * `url` may be relative (resolved against `baseUrl`) or absolute (used as-is,
-   * needed for endpoints mounted outside `/api/v1` like `/upload`).
-   */
-  async uploadMultipart<T>(
+  uploadMultipart<T>(
     url: string,
     formData: FormData,
     onProgress?: (event: UploadProgressEvent) => void,
   ): Promise<Result<T, Failure>> {
-    const fullUrl = /^https?:\/\//i.test(url)
-      ? url
-      : `${this.options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
-    const token = await this.options.tokenProvider();
-    const locale = this.options.localeProvider ? this.options.localeProvider() : 'en';
-    const enableLogging = this.options.enableLogging === true;
-    const aesKey = this.aesKey;
-
-    return new Promise<Result<T, Failure>>((resolve) => {
-      if (enableLogging) {
-
-        console.log(`[HTTP → multipart] POST ${fullUrl}`);
-      }
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', fullUrl, true);
-      xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
-      xhr.setRequestHeader('Accept', 'application/json');
-      xhr.setRequestHeader('Accept-Language', locale);
-      if (token !== null) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      }
-      // WHY: deliberately NOT setting Content-Type — the XHR runtime sets it
-      // to `multipart/form-data; boundary=...` from the FormData object. Any
-      // explicit value breaks the boundary contract and the backend's
-      // multer/decryptBody middleware rejects the request.
-
-      if (onProgress !== undefined && xhr.upload) {
-        xhr.upload.onprogress = (ev: ProgressEvent): void => {
-          onProgress({ loaded: ev.loaded, total: ev.total });
-        };
-      }
-
-      xhr.onload = (): void => {
-        const status = xhr.status;
-        const responseText = xhr.responseText;
-        if (enableLogging) {
-
-          console.log(`[HTTP ← multipart] ${status} ${fullUrl}`);
-        }
-        let body: unknown;
-        try {
-          body = JSON.parse(responseText);
-        } catch {
-          body = responseText;
-        }
-        if (isEnvelope(body)) {
-          try {
-            body = decryptEnvelope(body, aesKey);
-          } catch (err) {
-            if (enableLogging) {
-
-              console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`);
-            }
-          }
-        }
-        if (status >= 200 && status < 300) {
-          if (isRecipelyDataBody<T>(body)) {
-            resolve(ok(body.data));
-            return;
-          }
-          resolve(ok(body as T));
-          return;
-        }
-        if (status === 401) {
-          this.options.onUnauthorized?.();
-        }
-        resolve(fail(failureFromResponse(status, body)));
-      };
-
-      xhr.onerror = (): void => {
-        if (enableLogging) {
-
-          console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
-        }
-        // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
-        // unreadable file URI, cleartext blocked). Surface as NetworkFailure
-        // with the status (0 == no response) so the UI can show something
-        // concrete instead of axios's opaque "Network Error" string.
-        resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || 0})`)));
-      };
-
-      xhr.ontimeout = (): void => {
-        if (enableLogging) {
-
-          console.log(`[HTTP ← multipart] timeout ${fullUrl}`);
-        }
-        resolve(fail(new TimeoutFailure('Request timed out')));
-      };
-
-      xhr.send(formData);
-    });
+    return uploadMultipart<T>(this.options, this.aesKey, url, formData, onProgress);
   }
 }
-
-const isRecipelyDataBody = <T>(body: unknown): body is RecipelyDataBody<T> => {
-  return typeof body === 'object' && body !== null && 'data' in body;
-};
-
-// WHY: Recipely backend wraps errors as { error: { code, message, field? } }
-// inside the AES envelope. We decrypt in the response interceptor, then map
-// `code` → domain Failure class (see `failureFromResponse`) so controller/store
-// code never sees HTTP quirks.
-const mapAxiosError = (error: unknown): Failure => {
-  if (error instanceof EnvelopeDecryptError) {
-    return new ValidationFailure(`Bad envelope: ${error.message}`);
-  }
-  if (!(error instanceof AxiosError)) {
-    return new UnknownFailure('Unexpected error', error);
-  }
-
-  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return new TimeoutFailure('Request timed out');
-  }
-
-  if (error.response) {
-    return failureFromResponse(error.response.status, error.response.data);
-  }
-  if (error.request) {
-    return new NetworkFailure(error.message || 'Network unreachable');
-  }
-  return new UnknownFailure(error.message, error);
-};

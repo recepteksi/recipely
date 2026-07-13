@@ -1,0 +1,122 @@
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { shadows } from '@presentation/base/theme/shadows';
+import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
+
+const AVATAR_FRAME = 110;
+const AVATAR_INNER = 104;
+const CAMERA_BTN = 32;
+
+export interface EditProfileAvatarProps {
+  photoUri: string | undefined;
+  displayName: string;
+  isUploading: boolean;
+  onPick: () => void;
+}
+
+/** Avatar with an upload overlay + camera button and a "Change photo" link. */
+export const EditProfileAvatar = ({
+  photoUri,
+  displayName,
+  isUploading,
+  onPick,
+}: EditProfileAvatarProps): React.JSX.Element => {
+  const colors = useTheme().colors;
+
+  return (
+    <View style={styles.avatarSection}>
+      <View style={styles.avatarWrap}>
+        <View
+          style={[
+            styles.avatarFrame,
+            { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+            shadows.sm,
+          ]}
+        >
+          <AvatarImage uri={photoUri} name={displayName} size={AVATAR_INNER} />
+          {isUploading ? (
+            <View style={[styles.avatarOverlay, { backgroundColor: colors.overlay }]}>
+              <ActivityIndicator color={colors.onOverlay} />
+            </View>
+          ) : null}
+        </View>
+        <Pressable
+          onPress={onPick}
+          disabled={isUploading}
+          style={[
+            styles.cameraBtn,
+            { backgroundColor: colors.primary, borderColor: colors.background },
+            shadows.sm,
+            isUploading ? styles.disabled : null,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={t().profile.changePhoto}
+        >
+          <Ionicons name="camera" size={sizes.iconSm - 2} color={colors.primaryText} />
+        </Pressable>
+      </View>
+      <Pressable
+        onPress={onPick}
+        disabled={isUploading}
+        style={isUploading ? styles.disabled : null}
+        accessibilityRole="button"
+        accessibilityLabel={t().profile.changePhoto}
+      >
+        <ThemedText style={[styles.changePhoto, { color: colors.primary }]}>
+          {t().profile.changePhoto}
+        </ThemedText>
+      </Pressable>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  avatarSection: {
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  avatarWrap: {
+    width: AVATAR_FRAME,
+    height: AVATAR_FRAME,
+    position: 'relative',
+  },
+  avatarFrame: {
+    width: AVATAR_FRAME,
+    height: AVATAR_FRAME,
+    borderRadius: AVATAR_FRAME / 2,
+    padding: (AVATAR_FRAME - AVATAR_INNER) / 2,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: AVATAR_FRAME / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraBtn: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: CAMERA_BTN,
+    height: CAMERA_BTN,
+    borderRadius: CAMERA_BTN / 2,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  changePhoto: {
+    fontWeight: '700',
+    fontSize: fontSizes.body,
+  },
+});
