@@ -25,6 +25,15 @@ export const showErrorToast = (failure: Failure, retry?: ToastRetry): string =>
     onAction: retry?.onRetry,
   });
 
+/**
+ * Surfaces a plain danger toast for an error the caller has already turned into
+ * user-facing copy — e.g. a failure whose class-derived message is too generic
+ * for the screen's context. When a raw `Failure` is in hand, prefer
+ * {@link showErrorToast}, which selects both message and severity from it.
+ */
+export const showDangerToast = (message: string): string =>
+  toastStore.getState().show({ severity: 'danger', message });
+
 /** Surfaces a success confirmation (green). */
 export const showSuccessToast = (message: string, action?: ToastRetry): string =>
   toastStore.getState().show({

@@ -22,6 +22,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           <PromptPhase
             insets={vm.insets}
             prompt={vm.prompt}
+            generateError={vm.generateError}
             onChangePrompt={vm.onChangePrompt}
             onAppendChip={vm.onAppendChip}
             onGenerate={vm.onGenerate}

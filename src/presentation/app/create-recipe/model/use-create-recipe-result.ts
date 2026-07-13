@@ -15,6 +15,8 @@ export interface UseCreateRecipeResult {
 
   // Prompt phase.
   prompt: string;
+  /** Inline copy for a failed generate run, shown under the prompt input. */
+  generateError: string | null;
   onChangePrompt: (value: string) => void;
   onAppendChip: (chip: string) => void;
   onGenerate: () => void;

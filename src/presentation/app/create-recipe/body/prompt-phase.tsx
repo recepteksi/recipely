@@ -8,11 +8,13 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
+import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
 export interface PromptPhaseProps {
   insets: EdgeInsets;
   prompt: string;
+  generateError: string | null;
   onChangePrompt: (value: string) => void;
   onAppendChip: (chip: string) => void;
   onGenerate: () => void;
@@ -26,6 +28,7 @@ export interface PromptPhaseProps {
 export const PromptPhase = ({
   insets,
   prompt,
+  generateError,
   onChangePrompt,
   onAppendChip,
   onGenerate,
@@ -83,7 +86,16 @@ export const PromptPhase = ({
           <ResumeDraftCard draftName={draftName} onPress={onResumeDraft} />
         ) : null}
 
-        <View style={[styles.promptCard, { backgroundColor: colors.surface, borderColor: colors.inputBorder }, shadows.sm]}>
+        <View
+          style={[
+            styles.promptCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: generateError !== null ? colors.danger : colors.inputBorder,
+            },
+            shadows.sm,
+          ]}
+        >
           <TextInput
             value={prompt}
             onChangeText={onChangePrompt}
@@ -93,6 +105,7 @@ export const PromptPhase = ({
             numberOfLines={4}
             style={[styles.promptInput, { color: colors.text }]}
           />
+          {generateError !== null ? <FieldErrorText message={generateError} /> : null}
           <View style={styles.chipRow}>
             {ideaChips.map((chip) => (
               <Pressable

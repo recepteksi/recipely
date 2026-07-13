@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
-import { showErrorToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { ValidationFailure } from '@core/failure';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
 import {
   editableHasContent,
@@ -42,6 +44,7 @@ export const useRecipeGeneration = ({
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(0);
   const [prompt, setPrompt] = useState('');
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const originalPrompt = useRef('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -97,6 +100,7 @@ export const useRecipeGeneration = ({
       const trimmed = text.trim();
       if (trimmed.length === 0) return;
       originalPrompt.current = trimmed;
+      setGenerateError(null);
       setPhase('generating');
       await createdRecipesStore.getState().generateRecipe(trimmed);
       const state = createdRecipesStore.getState().generateState;
@@ -110,7 +114,26 @@ export const useRecipeGeneration = ({
         setPhase('preview');
         return;
       }
-      setChatHistory([{ role: 'assistant', content: t().createRecipe.aiError, error: true }]);
+      // WHY: the failure lands back on the prompt phase, which does NOT render the
+      // chat transcript — so it must be surfaced as a toast AND kept inline under
+      // the input, or the user gets no feedback at all.
+      //
+      // A 4xx (which the client maps to ValidationFailure — also its catch-all for
+      // any unhandled 4xx) means the backend refused this prompt: moderation, an
+      // empty/invalid prompt, or an AI response it couldn't use. We cannot tell
+      // those apart (the error envelope carries no machine-readable reason), and
+      // the actionable advice is the same for all of them: rephrase and retry.
+      // Everything else is an infrastructure failure — let showErrorToast pick the
+      // copy from the failure's class.
+      if (state.status === 'error') {
+        const refused = state.failure instanceof ValidationFailure;
+        const message = refused
+          ? t().createRecipe.aiPromptFailed
+          : failureToastMessage(state.failure);
+        if (refused) showDangerToast(message);
+        else showErrorToast(state.failure);
+        setGenerateError(message);
+      }
       createdRecipesStore.getState().resetGenerateState();
       setPhase('prompt');
     },
@@ -169,6 +192,18 @@ export const useRecipeGeneration = ({
     [createdRecipesStore, recipe, refining, setRecipe],
   );
 
+  // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
+  // for a failed run, so any change to it drops the stale error.
+  const onChangePrompt = useCallback((value: string): void => {
+    setPrompt(value);
+    setGenerateError(null);
+  }, []);
+
+  const onAppendChip = useCallback((chip: string): void => {
+    setPrompt((p) => (p.trim().length === 0 ? chip : `${p}, ${chip.toLowerCase()}`));
+    setGenerateError(null);
+  }, []);
+
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
@@ -217,9 +252,9 @@ export const useRecipeGeneration = ({
     genStep,
     refining,
     prompt,
-    onChangePrompt: setPrompt,
-    onAppendChip: (chip: string) =>
-      setPrompt((p) => (p.trim().length === 0 ? chip : `${p}, ${chip.toLowerCase()}`)),
+    generateError,
+    onChangePrompt,
+    onAppendChip,
     onGenerate: () => void runGenerate(prompt),
     onStartBlank,
     onClose,

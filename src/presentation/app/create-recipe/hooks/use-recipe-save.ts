@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
-import { showErrorToast, showToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
 import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-recipe/model/build-recipe-input';
@@ -44,7 +44,7 @@ export const useRecipeSave = ({
       const parsed = mapFieldErrorsToInputs(failure.fieldErrors);
       setFieldErrors(parsed);
       if (parsed.unmatched.length > 0) {
-        showToast({ severity: 'danger', message: parsed.unmatched.join(' ') });
+        showDangerToast(parsed.unmatched.join(' '));
       }
     },
     [setFieldErrors],

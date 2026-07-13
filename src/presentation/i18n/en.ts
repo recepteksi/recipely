@@ -274,6 +274,7 @@ export const en = {
     aiButton: 'Generate with AI',
     aiGenerating: 'Cooking up your recipe…',
     aiError: "Couldn't generate. Try again.",
+    aiPromptFailed: "We couldn't generate a recipe from that prompt. Try rephrasing it and generating again.",
     aiUpdated: 'Updated!',
     aiThinking: 'Thinking…',
     aiFirstReply: "Here's your recipe! Ask me to tweak anything.",
