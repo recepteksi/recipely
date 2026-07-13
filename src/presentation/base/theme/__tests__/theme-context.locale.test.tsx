@@ -11,18 +11,14 @@ import { act, create } from 'react-test-renderer';
 import { Text } from 'react-native';
 import { container } from '@core/di/container-instance';
 import { TOKENS } from '@core/di/tokens';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t, setLocale } from '@presentation/i18n';
 
-// Inert key-value store under the DI token so the provider and setLocale never
-// hit the platform backend during this render/reactivity test.
-const fakeKvStore: IKeyValueStore = {
-  getItem: async () => null,
-  setItem: async () => {},
-  removeItem: async () => {},
-};
+// Empty in-memory key-value store under the DI token so the provider and
+// setLocale never hit the platform backend during this render/reactivity test.
+const fakeKvStore = new FakeKeyValueStore();
 container.register(TOKENS.KeyValueStore, () => fakeKvStore);
 
 const flushMicrotasks = async (): Promise<void> => {

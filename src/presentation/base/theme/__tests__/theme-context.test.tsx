@@ -8,21 +8,16 @@
 import { act, create } from 'react-test-renderer';
 import { container } from '@core/di/container-instance';
 import { TOKENS } from '@core/di/tokens';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/theme-defaults';
 
-const mockKvStore: Record<string, string> = {};
-
-// Register an in-memory key-value store under the DI token so the provider's
-// `getKeyValueStore()` accessor reads/writes it instead of the platform store.
-const fakeKvStore: IKeyValueStore = {
-  getItem: async (key: string) => mockKvStore[key] ?? null,
-  setItem: async (key: string, value: string) => { mockKvStore[key] = value; },
-  removeItem: async (key: string) => { delete mockKvStore[key]; },
-};
+// Register the shared in-memory key-value store under the DI token so the
+// provider's `getKeyValueStore()` accessor reads/writes it instead of the
+// platform store; `seed` plants a persisted theme_id per case.
+const fakeKvStore = new FakeKeyValueStore();
 container.register(TOKENS.KeyValueStore, () => fakeKvStore);
 
 const flushMicrotasks = async (): Promise<void> => {
@@ -52,7 +47,7 @@ const renderThemeId = (): { latest: () => ThemeId } => {
 
 describe('AppThemeProvider — stale persisted theme_id', () => {
   beforeEach(() => {
-    for (const key of Object.keys(mockKvStore)) delete mockKvStore[key];
+    fakeKvStore.clear();
   });
 
   it('falls back to the default theme when nothing is persisted', async () => {
@@ -63,7 +58,7 @@ describe('AppThemeProvider — stale persisted theme_id', () => {
   });
 
   it('adopts a persisted theme_id that is still part of the trimmed palette', async () => {
-    mockKvStore.theme_id = 'royal-purple';
+    fakeKvStore.seed('theme_id', 'royal-purple');
 
     const { latest } = renderThemeId();
     await flushMicrotasks();
@@ -73,7 +68,7 @@ describe('AppThemeProvider — stale persisted theme_id', () => {
 
   it('falls back to the default instead of crashing when the persisted theme_id was removed from the palette', async () => {
     // e.g. a value persisted before the palette was trimmed from 20 to 4.
-    mockKvStore.theme_id = 'chartreuse-zap';
+    fakeKvStore.seed('theme_id', 'chartreuse-zap');
 
     const { latest } = renderThemeId();
     await flushMicrotasks();
@@ -82,7 +77,7 @@ describe('AppThemeProvider — stale persisted theme_id', () => {
   });
 
   it('falls back to the default for garbage/corrupted storage values', async () => {
-    mockKvStore.theme_id = 'not-a-real-theme';
+    fakeKvStore.seed('theme_id', 'not-a-real-theme');
 
     const { latest } = renderThemeId();
     await flushMicrotasks();
