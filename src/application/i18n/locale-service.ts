@@ -21,6 +21,7 @@ import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 export class LocaleService {
   private current: string;
   private hydration: Promise<void> | null = null;
+  private chosenByUser = false;
   private readonly listeners = new Set<() => void>();
 
   constructor(
@@ -47,23 +48,28 @@ export class LocaleService {
   }
 
   /**
-   * Reads the persisted choice exactly once. A storage failure is swallowed on
-   * purpose: the app then runs on the device seed rather than hanging every
-   * request behind a rejected promise.
+   * Reads the persisted choice exactly once. A storage failure never rejects —
+   * that would hang every request behind a rejected promise — it drops the
+   * cached attempt instead, so the app keeps running on the device seed and the
+   * next request retries the read.
+   *
+   * A restore still in flight when the user picks a language loses to that
+   * choice: applying the stored value afterwards would silently undo it.
    */
   private async restore(): Promise<void> {
     try {
       const stored = await this.store.getItem(LANGUAGE_STORAGE_KEY);
-      if (stored === null) return;
+      if (stored === null || this.chosenByUser) return;
       this.apply(toSupportedLocale(stored));
     } catch {
-      // Keep the device seed.
+      this.hydration = null;
     }
   }
 
   /** Switches the active language and persists it across restarts. */
   setLocale(locale: string): void {
     const next = toSupportedLocale(locale);
+    this.chosenByUser = true;
     if (!this.apply(next)) return;
     void this.store.setItem(LANGUAGE_STORAGE_KEY, next);
   }

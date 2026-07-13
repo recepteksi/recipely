@@ -56,12 +56,32 @@ describe('LocaleService', () => {
     expect(service.getLocale()).toBe('tr');
   });
 
-  it('keeps the device seed when the storage read fails', async () => {
-    const store = makeStore();
-    jest.spyOn(store, 'getItem').mockRejectedValue(new Error('storage unavailable'));
+  it('keeps the device seed when the storage read fails, and retries on the next hydrate', async () => {
+    const store = makeStore('en');
+    const getItem = jest
+      .spyOn(store, 'getItem')
+      .mockRejectedValueOnce(new Error('storage unavailable'));
     const service = new LocaleService(store, deviceLocale('tr'));
 
     await expect(service.hydrate()).resolves.toBeUndefined();
+    expect(service.getLocale()).toBe('tr');
+
+    // A failed read must not be cached as "hydrated" — the next request retries.
+    await service.hydrate();
+
+    expect(getItem).toHaveBeenCalledTimes(2);
+    expect(service.getLocale()).toBe('en');
+  });
+
+  // Ordering: a restore still in flight must not undo a language the user picked
+  // while it was running.
+  it('lets a language picked mid-hydration win over the value being restored', async () => {
+    const store = makeStore('en');
+    const service = new LocaleService(store, deviceLocale('en'));
+
+    const hydration = service.hydrate();
+    service.setLocale('tr');
+    await hydration;
 
     expect(service.getLocale()).toBe('tr');
   });

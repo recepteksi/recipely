@@ -48,10 +48,9 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
   // server for the static web export (a render gate here would emit blank pages).
   // Starting it early only means the UI re-renders in the saved language sooner.
   useEffect(() => {
-    hydrateLocale().catch((err: unknown) => {
-      console.error('[AppBootstrap] locale hydrate failed:', err);
-      recordCrash(err, 'AppBootstrap.hydrateLocale');
-    });
+    // Never rejects — a storage failure falls back to the device seed inside
+    // LocaleService, because a rejection here would hang every request.
+    void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] hydrate failed:', err);
