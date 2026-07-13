@@ -42,6 +42,30 @@ describe('LocaleService', () => {
     expect(service.getLocale()).toBe('en');
   });
 
+  // Every request awaits hydrate(), so it must be a cheap, single-read no-op
+  // after the first call — not a storage hit per request.
+  it('reads storage once however often hydrate is awaited', async () => {
+    const store = makeStore('tr');
+    const getItem = jest.spyOn(store, 'getItem');
+    const service = new LocaleService(store, deviceLocale('en'));
+
+    await Promise.all([service.hydrate(), service.hydrate()]);
+    await service.hydrate();
+
+    expect(getItem).toHaveBeenCalledTimes(1);
+    expect(service.getLocale()).toBe('tr');
+  });
+
+  it('keeps the device seed when the storage read fails', async () => {
+    const store = makeStore();
+    jest.spyOn(store, 'getItem').mockRejectedValue(new Error('storage unavailable'));
+    const service = new LocaleService(store, deviceLocale('tr'));
+
+    await expect(service.hydrate()).resolves.toBeUndefined();
+
+    expect(service.getLocale()).toBe('tr');
+  });
+
   it('persists a language switch and notifies subscribers', () => {
     const store = makeStore(null);
     const service = new LocaleService(store, deviceLocale('en'));

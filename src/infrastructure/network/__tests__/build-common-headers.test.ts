@@ -4,7 +4,7 @@ import type { HttpClientOptions } from '@infrastructure/network/http-client-opti
 const makeOptions = (overrides: Partial<HttpClientOptions> = {}): HttpClientOptions => ({
   baseUrl: 'https://api.test',
   tokenProvider: () => Promise.resolve('tok'),
-  localeProvider: () => 'en',
+  localeProvider: () => Promise.resolve('en'),
   ...overrides,
 });
 
@@ -29,7 +29,7 @@ describe('buildCommonHeaders', () => {
   // picked up by the very next call instead of the one captured at wiring time.
   it('reads the locale on every call, so a language switch applies immediately', async () => {
     let locale = 'en';
-    const options = makeOptions({ localeProvider: () => locale });
+    const options = makeOptions({ localeProvider: () => Promise.resolve(locale) });
 
     const before = await buildCommonHeaders(options);
     locale = 'tr';
@@ -37,5 +37,19 @@ describe('buildCommonHeaders', () => {
 
     expect(before['Accept-Language']).toBe('en');
     expect(after['Accept-Language']).toBe('tr');
+  });
+
+  // The startup race: a request issued before the saved language is restored
+  // must wait for it, not go out with the device seed.
+  it('waits for the locale provider to resolve, so a startup request cannot outrun hydration', async () => {
+    let resolveLocale: (locale: string) => void = () => {};
+    const pending = new Promise<string>((resolve) => {
+      resolveLocale = resolve;
+    });
+    const headers = buildCommonHeaders(makeOptions({ localeProvider: () => pending }));
+
+    resolveLocale('tr');
+
+    expect((await headers)['Accept-Language']).toBe('tr');
   });
 });

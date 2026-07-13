@@ -2,11 +2,14 @@ export interface HttpClientOptions {
   baseUrl: string;
   tokenProvider: () => Promise<string | null>;
   /**
-   * Reads the active language for `Accept-Language`. Required on purpose: a
-   * defaulted locale would silently ship every request in the wrong language
-   * the moment the wiring breaks, which is exactly the bug this closes.
+   * Resolves the active language for `Accept-Language`.
+   *
+   * Async on purpose: it awaits the restore of the user's saved language, so a
+   * request issued during startup waits for it instead of racing ahead with the
+   * device language. Required on purpose too — a defaulted locale would silently
+   * ship every request in the wrong language the moment the wiring breaks.
    */
-  localeProvider: () => string;
+  localeProvider: () => Promise<string>;
   timeoutMs?: number;
   // WHY: keeps logging opt-in — production builds flip this off to drop PII out of logcat/xcode.
   enableLogging?: boolean;

@@ -21,10 +21,13 @@ export const buildRequestInterceptor = (
   aesKey: Uint8Array,
 ) => {
   return async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-    config.headers = config.headers ?? new AxiosHeaders();
+    const headers = config.headers ?? new AxiosHeaders();
+    config.headers = headers;
     const common = await buildCommonHeaders(options);
     for (const [name, value] of Object.entries(common)) {
-      config.headers[name] = value;
+      // WHY .set(): AxiosHeaders keeps its own normalized storage — a bare index
+      // assignment bypasses it (the same reason `delete` is wrong below).
+      headers.set(name, value);
     }
 
     const isFormDataPayload =

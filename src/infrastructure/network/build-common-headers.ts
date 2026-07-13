@@ -11,7 +11,7 @@ export const buildCommonHeaders = async (
   options: HttpClientOptions,
 ): Promise<Record<string, string>> => {
   const headers: Record<string, string> = {
-    'Accept-Language': options.localeProvider(),
+    'Accept-Language': await options.localeProvider(),
   };
   const token = await options.tokenProvider();
   if (token !== null) {

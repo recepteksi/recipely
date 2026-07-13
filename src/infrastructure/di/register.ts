@@ -31,6 +31,7 @@ import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
 import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
@@ -54,7 +55,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     TOKENS.LocaleService,
     () =>
       new LocaleService(
-        kvStore,
+        container.resolve<IKeyValueStore>(TOKENS.KeyValueStore),
         container.resolve<IDeviceLocaleProvider>(TOKENS.DeviceLocaleProvider),
       ),
   );
@@ -68,9 +69,15 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       }
       return result.value.accessToken;
     },
-    // Resolved per request, never captured: a language switch must be visible
-    // to the very next request without rebuilding the HTTP client.
-    localeProvider: () => container.resolve<LocaleService>(TOKENS.LocaleService).getLocale(),
+    // Resolved per request, never captured: a language switch must be visible to
+    // the very next request without rebuilding the HTTP client. Awaiting
+    // `hydrate()` (a no-op after the first call) is what keeps a request issued
+    // during startup from racing ahead with the device language.
+    localeProvider: async () => {
+      const localeService = container.resolve<LocaleService>(TOKENS.LocaleService);
+      await localeService.hydrate();
+      return localeService.getLocale();
+    },
     // WHY: dev-only HTTP traces — strips automatically from release bundles
     // (Metro replaces __DEV__ with false in production). Helps diagnose
     // network errors on real devices without leaking PII to logcat in prod.

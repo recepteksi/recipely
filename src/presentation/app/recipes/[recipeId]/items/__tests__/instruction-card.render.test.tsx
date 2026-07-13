@@ -20,12 +20,12 @@ jest.mock('@presentation/app/recipes/[recipeId]/items/inline-timer', () => ({
 const STEP_WITH_TIMER = 'Bake at 170°C for 10 minutes, then rest.';
 const PLAIN_STEP = 'Chop the onions finely.';
 
-const renderCard = (step: string): ReactTestInstance =>
+const renderCard = (step: string, completed = false): ReactTestInstance =>
   renderComponent(
     <InstructionCard
       index={0}
       step={step}
-      completed={false}
+      completed={completed}
       onToggle={jest.fn()}
       recipeId="recipe-1"
       recipeName="Test recipe"
@@ -49,11 +49,10 @@ describe('InstructionCard step text', () => {
     expect(textContent(root)).toContain(PLAIN_STEP);
   });
 
-  it('keeps the text visible when the step is completed', () => {
-    const root = renderCard(PLAIN_STEP);
-    const completed = renderCard(PLAIN_STEP);
+  it('keeps the text visible when the step is completed (struck through, not hidden)', () => {
+    const root = renderCard(STEP_WITH_TIMER, true);
 
-    expect(textContent(root)).toContain(PLAIN_STEP);
-    expect(textContent(completed)).toContain(PLAIN_STEP);
+    expect(textContent(root)).toContain(STEP_WITH_TIMER);
+    expect(stepTextNodes(root).map((node) => node.props.children)).toContain(STEP_WITH_TIMER);
   });
 });

@@ -1,5 +1,5 @@
 import '@presentation/bootstrap/crypto-polyfill';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
@@ -40,21 +40,18 @@ const initializeStores = (): Stores => {
 
 const stores = initializeStores();
 
-export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element | null => {
-  // WHY: the app must not issue a single request before the saved language is
-  // restored, otherwise the device language leaks into `Accept-Language` and the
-  // backend answers (and generates recipes) in the wrong language. Everything
-  // that fetches lives under `AppSyncs`/`children`, which mount only once this
-  // flips — the device language is a first-render seed, never a request locale.
-  const [localeReady, setLocaleReady] = useState(false);
-
+export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
+  // WHY hydration is kicked off but NOT rendered around: the requests are what
+  // must wait for the saved language, not the UI. Every request awaits the same
+  // hydration through the HTTP client's async `localeProvider`, so the device
+  // seed can never reach the backend — while the tree still renders on the
+  // server for the static web export (a render gate here would emit blank pages).
+  // Starting it early only means the UI re-renders in the saved language sooner.
   useEffect(() => {
-    hydrateLocale()
-      .catch((err: unknown) => {
-        console.error('[AppBootstrap] locale hydrate failed:', err);
-        recordCrash(err, 'AppBootstrap.hydrateLocale');
-      })
-      .finally(() => setLocaleReady(true));
+    hydrateLocale().catch((err: unknown) => {
+      console.error('[AppBootstrap] locale hydrate failed:', err);
+      recordCrash(err, 'AppBootstrap.hydrateLocale');
+    });
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
       console.error('[AppBootstrap] hydrate failed:', err);
@@ -83,8 +80,6 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     maybeRegister();
     return stores.authStore.subscribe(maybeRegister);
   }, []);
-
-  if (!localeReady) return null;
 
   return (
     <StoresProvider value={stores}>

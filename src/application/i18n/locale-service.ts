@@ -13,12 +13,14 @@ import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
  * switch can leave one of them stale (the bug this class exists to prevent).
  *
  * Precedence is strictly: stored user choice > device language > default. The
- * device language is a synchronous seed for the first render only; {@link hydrate}
- * must be awaited during bootstrap, before the app issues its first request, so
- * a saved preference can never lose to the device language.
+ * device language is a synchronous seed so the first render has *something* to
+ * show; it must never reach the backend. {@link hydrate} is what guarantees that
+ * — every request awaits it, so a saved preference can never lose to the device
+ * language.
  */
 export class LocaleService {
   private current: string;
+  private hydration: Promise<void> | null = null;
   private readonly listeners = new Set<() => void>();
 
   constructor(
@@ -33,14 +35,30 @@ export class LocaleService {
   }
 
   /**
-   * Restores the persisted language choice, overriding the device seed. Await
-   * this before the first network request: until it resolves, the active locale
-   * is still the device language.
+   * Resolves once the persisted choice has been restored, starting the restore
+   * on first call. Every request awaits this (through the HTTP client's async
+   * `localeProvider`), which is what makes the saved language — not the device
+   * seed — the one that reaches the backend, without any UI having to block on
+   * it.
    */
-  async hydrate(): Promise<void> {
-    const stored = await this.store.getItem(LANGUAGE_STORAGE_KEY);
-    if (stored === null) return;
-    this.apply(toSupportedLocale(stored));
+  hydrate(): Promise<void> {
+    this.hydration ??= this.restore();
+    return this.hydration;
+  }
+
+  /**
+   * Reads the persisted choice exactly once. A storage failure is swallowed on
+   * purpose: the app then runs on the device seed rather than hanging every
+   * request behind a rejected promise.
+   */
+  private async restore(): Promise<void> {
+    try {
+      const stored = await this.store.getItem(LANGUAGE_STORAGE_KEY);
+      if (stored === null) return;
+      this.apply(toSupportedLocale(stored));
+    } catch {
+      // Keep the device seed.
+    }
   }
 
   /** Switches the active language and persists it across restarts. */

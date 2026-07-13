@@ -10,11 +10,13 @@ export interface AppSyncsProps {
 }
 
 /**
- * Hosts the background sync hooks that issue backend requests on mount.
+ * Hosts the background sync hooks that issue backend requests on mount, keeping
+ * `AppBootstrap` down to composition + the one-shot init effects.
  *
- * WHY it is a separate component: `AppBootstrap` mounts it only once the locale
- * has hydrated, so no request (the taxonomy catalogs in particular) can leave
- * carrying the device language while the user has a different language saved.
+ * These requests do not need a locale gate: the HTTP client's async
+ * `localeProvider` makes every request await the saved-language restore, so the
+ * taxonomy catalogs here can fire on mount and still come back in the user's
+ * language rather than the device's.
  */
 export const AppSyncs = ({ stores, children }: AppSyncsProps): React.JSX.Element => {
   useTimerNotificationSync();
