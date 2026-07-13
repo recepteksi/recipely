@@ -42,7 +42,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: '', locale: 'en' });
+    const r = await useCase.execute({ url: '' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -56,7 +56,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: '   \n\t  ', locale: 'en' });
+    const r = await useCase.execute({ url: '   \n\t  ' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -70,7 +70,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'https://tiktok.com/x', locale: 'en' });
+    const r = await useCase.execute({ url: 'https://tiktok.com/x' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -84,7 +84,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'not a url', locale: 'en' });
+    const r = await useCase.execute({ url: 'not a url' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -99,12 +99,11 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ importInstagramRecipeResult: ok(recipe) });
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: '  https://www.instagram.com/reel/abc/  ', locale: 'tr' });
+    const r = await useCase.execute({ url: '  https://www.instagram.com/reel/abc/  ' });
 
     expect(repo.importInstagramCallCount).toBe(1);
     expect(repo.lastImportInstagramCall).toEqual({
       url: 'https://www.instagram.com/reel/abc/',
-      locale: 'tr',
     });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBe(recipe);
@@ -115,12 +114,11 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ importInstagramRecipeResult: ok(recipe) });
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'https://instagram.com/p/xyz', locale: 'en' });
+    const r = await useCase.execute({ url: 'https://instagram.com/p/xyz' });
 
     expect(repo.importInstagramCallCount).toBe(1);
     expect(repo.lastImportInstagramCall).toEqual({
       url: 'https://instagram.com/p/xyz',
-      locale: 'en',
     });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBe(recipe);
@@ -131,7 +129,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ importInstagramRecipeResult: fail(failure) });
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'https://www.instagram.com/reel/abc/', locale: 'en' });
+    const r = await useCase.execute({ url: 'https://www.instagram.com/reel/abc/' });
 
     expect(repo.importInstagramCallCount).toBe(1);
     expect(r.ok).toBe(false);

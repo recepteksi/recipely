@@ -64,16 +64,16 @@ export class FakeRecipeRepository implements IRecipeRepository {
     );
   }
 
-  generateRecipe(prompt: string, locale: string): Promise<Result<Recipe, Failure>> {
-    this.lastGenerateCall = { prompt, locale };
+  generateRecipe(prompt: string): Promise<Result<Recipe, Failure>> {
+    this.lastGenerateCall = { prompt };
     this.generateCallCount += 1;
     return Promise.resolve(
       this.config.generateRecipeResult ?? ok(undefined as unknown as Recipe),
     );
   }
 
-  importInstagramRecipe(url: string, locale: string): Promise<Result<Recipe, Failure>> {
-    this.lastImportInstagramCall = { url, locale };
+  importInstagramRecipe(url: string): Promise<Result<Recipe, Failure>> {
+    this.lastImportInstagramCall = { url };
     this.importInstagramCallCount += 1;
     return Promise.resolve(
       this.config.importInstagramRecipeResult ?? ok(undefined as unknown as Recipe),

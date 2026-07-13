@@ -1,12 +1,14 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
+import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
 
 /**
- * Builds the axios request interceptor that attaches the JWT bearer token and
- * `Accept-Language` header, then either preserves FormData multipart uploads
- * untouched or encrypts JSON bodies into an AES envelope.
+ * Builds the axios request interceptor that attaches the common headers (JWT
+ * bearer token + `Accept-Language`, via `buildCommonHeaders`), then either
+ * preserves FormData multipart uploads untouched or encrypts JSON bodies into
+ * an AES envelope.
  *
  * WHY FormData is special-cased: the XHR runtime must set
  * `Content-Type: multipart/form-data; boundary=...` itself, so the explicit
@@ -19,14 +21,14 @@ export const buildRequestInterceptor = (
   aesKey: Uint8Array,
 ) => {
   return async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {
-    const token = await options.tokenProvider();
-    if (token) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
+    const headers = config.headers ?? new AxiosHeaders();
+    config.headers = headers;
+    const common = await buildCommonHeaders(options);
+    for (const [name, value] of Object.entries(common)) {
+      // WHY .set(): AxiosHeaders keeps its own normalized storage — a bare index
+      // assignment bypasses it (the same reason `delete` is wrong below).
+      headers.set(name, value);
     }
-    const locale = options.localeProvider ? options.localeProvider() : 'en';
-    config.headers = config.headers ?? {};
-    config.headers['Accept-Language'] = locale;
 
     const isFormDataPayload =
       typeof FormData !== 'undefined' && config.data instanceof FormData;

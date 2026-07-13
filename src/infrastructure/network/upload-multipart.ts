@@ -6,6 +6,7 @@ import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { failureFromResponse } from '@infrastructure/network/failure-from-response';
 import { isEnvelope } from '@infrastructure/network/is-envelope';
 import { isRecipelyDataBody } from '@infrastructure/network/is-recipely-data-body';
+import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload-progress-event';
 
@@ -29,8 +30,7 @@ export const uploadMultipart = async <T>(
   const fullUrl = /^https?:\/\//i.test(url)
     ? url
     : `${options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
-  const token = await options.tokenProvider();
-  const locale = options.localeProvider ? options.localeProvider() : 'en';
+  const commonHeaders = await buildCommonHeaders(options);
   const enableLogging = options.enableLogging === true;
 
   return new Promise<Result<T, Failure>>((resolve) => {
@@ -41,9 +41,8 @@ export const uploadMultipart = async <T>(
     xhr.open('POST', fullUrl, true);
     xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
     xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Accept-Language', locale);
-    if (token !== null) {
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    for (const [name, value] of Object.entries(commonHeaders)) {
+      xhr.setRequestHeader(name, value);
     }
     // WHY: deliberately NOT setting Content-Type — the XHR runtime sets it to
     // `multipart/form-data; boundary=...` from the FormData object. Any explicit

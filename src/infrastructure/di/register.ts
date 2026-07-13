@@ -28,6 +28,10 @@ import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
+import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
+import { LocaleService } from '@application/i18n/locale-service';
+import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
+import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
@@ -42,6 +46,19 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.KeyValueStore, () => kvStore);
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
+  container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
+
+  // The app-wide single source of truth for the active language. Everything
+  // that needs a locale — the UI, the localized payloads, and the
+  // `Accept-Language` header below — reads it from this one service.
+  container.register(
+    TOKENS.LocaleService,
+    () =>
+      new LocaleService(
+        container.resolve<IKeyValueStore>(TOKENS.KeyValueStore),
+        container.resolve<IDeviceLocaleProvider>(TOKENS.DeviceLocaleProvider),
+      ),
+  );
 
   const httpClientOptions: HttpClientOptions = {
     baseUrl: API_BASE_URL,
@@ -52,14 +69,20 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       }
       return result.value.accessToken;
     },
+    // Resolved per request, never captured: a language switch must be visible to
+    // the very next request without rebuilding the HTTP client. Awaiting
+    // `hydrate()` (a no-op after the first call) is what keeps a request issued
+    // during startup from racing ahead with the device language.
+    localeProvider: async () => {
+      const localeService = container.resolve<LocaleService>(TOKENS.LocaleService);
+      await localeService.hydrate();
+      return localeService.getLocale();
+    },
     // WHY: dev-only HTTP traces — strips automatically from release bundles
     // (Metro replaces __DEV__ with false in production). Helps diagnose
     // network errors on real devices without leaking PII to logcat in prod.
     enableLogging: __DEV__,
   };
-  if (opts?.localeProvider) {
-    httpClientOptions.localeProvider = opts.localeProvider;
-  }
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }

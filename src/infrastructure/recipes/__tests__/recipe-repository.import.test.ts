@@ -63,7 +63,7 @@ describe('RecipeRepository.importInstagramRecipe', () => {
     const { http } = makeHttp(ok(validDto));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/', 'en');
+    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/');
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -78,7 +78,7 @@ describe('RecipeRepository.importInstagramRecipe', () => {
     const { http, calls } = makeHttp(ok(validDto));
     const repo = new RecipeRepository(http);
 
-    await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/', 'tr');
+    await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/');
 
     expect(calls).toHaveLength(1);
     expect(calls[0].method).toBe('POST');
@@ -97,7 +97,7 @@ describe('RecipeRepository.importInstagramRecipe', () => {
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/', 'en');
+    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/');
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe(failure);
@@ -108,7 +108,7 @@ describe('RecipeRepository.importInstagramRecipe', () => {
     const { http } = makeHttp(ok(malformed));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/', 'en');
+    const r = await repo.importInstagramRecipe('https://www.instagram.com/reel/abc/');
 
     expect(r.ok).toBe(false);
     if (!r.ok) {

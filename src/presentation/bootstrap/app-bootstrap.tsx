@@ -11,11 +11,9 @@ import { registerApplication } from '@application/di/register';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
-import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
-import { useUnreadNotificationsSync } from '@presentation/base/hooks/use-unread-notifications-sync';
-import { useTaxonomySync } from '@presentation/base/hooks/use-taxonomy-sync';
+import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
-import { getLocale, hydrateLocale } from '@presentation/i18n/i18n';
+import { hydrateLocale } from '@presentation/i18n/i18n';
 
 export interface AppBootstrapProps {
   children: ReactNode;
@@ -31,7 +29,6 @@ let onSessionExpired: () => void = () => {};
 // Initialize stores synchronously on module load
 const initializeStores = (): Stores => {
   registerInfrastructure(container, {
-    localeProvider: getLocale,
     onUnauthorized: () => onSessionExpired(),
   });
   const created = registerApplication(container);
@@ -44,11 +41,15 @@ const initializeStores = (): Stores => {
 const stores = initializeStores();
 
 export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
-  useTimerNotificationSync();
-  useUnreadNotificationsSync(stores.notificationsStore, stores.authStore);
-  useTaxonomySync(stores.taxonomyStore, stores.authStore);
-
+  // WHY hydration is kicked off but NOT rendered around: the requests are what
+  // must wait for the saved language, not the UI. Every request awaits the same
+  // hydration through the HTTP client's async `localeProvider`, so the device
+  // seed can never reach the backend — while the tree still renders on the
+  // server for the static web export (a render gate here would emit blank pages).
+  // Starting it early only means the UI re-renders in the saved language sooner.
   useEffect(() => {
+    // Never rejects — a storage failure falls back to the device seed inside
+    // LocaleService, because a rejection here would hang every request.
     void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
@@ -79,5 +80,9 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     return stores.authStore.subscribe(maybeRegister);
   }, []);
 
-  return <StoresProvider value={stores}>{children}</StoresProvider>;
+  return (
+    <StoresProvider value={stores}>
+      <AppSyncs stores={stores}>{children}</AppSyncs>
+    </StoresProvider>
+  );
 };

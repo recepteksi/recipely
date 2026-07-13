@@ -137,14 +137,13 @@ describe('createdRecipesStore.importInstagram', () => {
     const deferred = makeDeferredImportUseCase();
     const store = makeStoreWithImportUseCase(deferred.useCase);
 
-    const pending = store.getState().importInstagram('https://www.instagram.com/reel/abc/', 'en');
+    const pending = store.getState().importInstagram('https://www.instagram.com/reel/abc/');
 
     // Synchronous check — state must have flipped before we await.
     expect(store.getState().importState).toEqual({ status: 'generating' });
     expect(store.getState().aiDraft).toBeNull();
     expect(deferred.lastInput).toEqual({
       url: 'https://www.instagram.com/reel/abc/',
-      locale: 'en',
     });
 
     deferred.resolve(ok(makeRecipe()));
@@ -155,7 +154,7 @@ describe('createdRecipesStore.importInstagram', () => {
     const recipe = makeRecipe({ id: 'r-import', name: 'Imported Dish' });
     const store = makeStoreWithImportResult(ok(recipe));
 
-    await store.getState().importInstagram('https://www.instagram.com/reel/abc/', 'en');
+    await store.getState().importInstagram('https://www.instagram.com/reel/abc/');
 
     const s = store.getState();
     expect(s.importState.status).toBe('success');
@@ -174,7 +173,7 @@ describe('createdRecipesStore.importInstagram', () => {
     const store = makeStoreWithImportResult(ok(imported));
     store.getState().add(existing);
 
-    await store.getState().importInstagram('https://instagram.com/p/xyz', 'en');
+    await store.getState().importInstagram('https://instagram.com/p/xyz');
 
     const s = store.getState();
     expect(s.recipes.map((r) => r.id)).toEqual(['existing']);
@@ -185,7 +184,7 @@ describe('createdRecipesStore.importInstagram', () => {
     const failure = new UnknownFailure('import down');
     const store = makeStoreWithImportResult(fail(failure));
 
-    await store.getState().importInstagram('https://www.instagram.com/reel/abc/', 'en');
+    await store.getState().importInstagram('https://www.instagram.com/reel/abc/');
 
     const s = store.getState();
     expect(s.importState.status).toBe('error');
@@ -199,7 +198,7 @@ describe('createdRecipesStore.importInstagram', () => {
   it('resetImportState returns importState to idle', async () => {
     const store = makeStoreWithImportResult(ok(makeRecipe()));
 
-    await store.getState().importInstagram('https://www.instagram.com/reel/abc/', 'en');
+    await store.getState().importInstagram('https://www.instagram.com/reel/abc/');
     expect(store.getState().importState.status).toBe('success');
 
     store.getState().resetImportState();

@@ -42,7 +42,7 @@ describe('GenerateRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new GenerateRecipeUseCase(repo);
 
-    const r = await useCase.execute({ prompt: '', locale: 'en' });
+    const r = await useCase.execute({ prompt: '' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -57,7 +57,7 @@ describe('GenerateRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new GenerateRecipeUseCase(repo);
 
-    const r = await useCase.execute({ prompt: '   \n\t  ', locale: 'en' });
+    const r = await useCase.execute({ prompt: '   \n\t  ' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -72,9 +72,9 @@ describe('GenerateRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ generateRecipeResult: ok(recipe) });
     const useCase = new GenerateRecipeUseCase(repo);
 
-    const r = await useCase.execute({ prompt: '  spicy pasta  ', locale: 'tr' });
+    const r = await useCase.execute({ prompt: '  spicy pasta  ' });
 
-    expect(repo.lastGenerateCall).toEqual({ prompt: 'spicy pasta', locale: 'tr' });
+    expect(repo.lastGenerateCall).toEqual({ prompt: 'spicy pasta' });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBe(recipe);
   });
@@ -84,7 +84,7 @@ describe('GenerateRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ generateRecipeResult: fail(failure) });
     const useCase = new GenerateRecipeUseCase(repo);
 
-    const r = await useCase.execute({ prompt: 'pizza', locale: 'en' });
+    const r = await useCase.execute({ prompt: 'pizza' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe(failure);

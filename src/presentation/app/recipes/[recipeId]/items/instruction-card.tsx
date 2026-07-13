@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -69,12 +68,14 @@ export const InstructionCard = ({
             },
           ]}
         >
-          {/* The full step renders as plain text — embedding the timer chip
-              (a View) inside Text baseline-misaligns it on native, which is
-              exactly the "crooked 10dk badge" bug. Chips live below instead. */}
-          {parts.map((part, i) => (
-            <Fragment key={i}>{part.value}</Fragment>
-          ))}
+          {/* The step is passed as ONE plain string, never as element children.
+              `parts` exists only to derive the timer chips below: embedding the
+              chip (a View) inside Text baseline-misaligns it on native (the
+              "crooked 10dk badge" bug), and feeding Text element children (even
+              Fragments wrapping strings) lets the native text layout drop them
+              on a re-measure mid-scroll — the step then renders as blank space
+              at full height. A string child cannot do that. */}
+          {step}
         </ThemedText>
         {parts.some((part) => part.kind === 'timer') ? (
           <View style={styles.timerRow}>

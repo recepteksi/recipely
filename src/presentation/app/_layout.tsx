@@ -19,9 +19,6 @@ import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
-import { initLocale } from '@presentation/i18n';
-
-initLocale();
 
 /** Full-screen overlay that appears whenever `alarmStore` has an active alarm. */
 const AlarmOverlay = (): React.JSX.Element | null => {
