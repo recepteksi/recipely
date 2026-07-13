@@ -1,5 +1,6 @@
 import {
   ConflictFailure,
+  ErrorMessageKey,
   NetworkFailure,
   UnauthorizedFailure,
   ValidationFailure,
@@ -27,6 +28,32 @@ describe('authFormMessage', () => {
 
     expect(authFormMessage(new ValidationFailure('x'), {})).toBe(
       en.errors.validation.short,
+    );
+  });
+
+  it('prefers the failure’s own messageKey copy over the screen’s per-code override', () => {
+    // The override exists because `code` is coarse. A key is finer still: an
+    // expired code and a wrong one are both `validation`, and the verify screen
+    // maps that whole bucket to "invalid code" — the key says which it really was.
+    const expired = new ValidationFailure(
+      'The verification code has expired.',
+      undefined,
+      ErrorMessageKey.codeExpired,
+    );
+
+    expect(authFormMessage(expired, { validation: 'Wrong code' })).toBe(
+      en.errors.codeExpired.short,
+    );
+  });
+
+  it('still honours the override when the key is one we have no copy for', () => {
+    const invalidToken = new UnauthorizedFailure(
+      'Invalid authentication token',
+      'errors.unauthorized.invalid_token',
+    );
+
+    expect(authFormMessage(invalidToken, { unauthorized: 'Wrong email or password' })).toBe(
+      'Wrong email or password',
     );
   });
 });

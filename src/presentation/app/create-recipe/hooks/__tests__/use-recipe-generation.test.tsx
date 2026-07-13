@@ -8,11 +8,14 @@
  * prompt refused by the backend (422 -> ValidationFailure) was the worst case:
  * nothing told the user that rephrasing was the fix.
  *
- * Note on the copy: the client CANNOT tell WHY a 4xx came back — the error
- * envelope is `{ code, message, field? }` with no machine-readable reason, and
- * `ValidationFailure` is also the catch-all for any unhandled 4xx. So every 4xx
- * gets the same non-accusatory "rephrase and try again" copy; the tests below
- * pin that down for both a moderation 422 and a plain 400.
+ * Note on the copy: the backend now NAMES its errors (`failure.messageKey`), so a
+ * 4xx no longer reads as one blanket sentence. A refused prompt
+ * (`errors.ai.prompt_rejected`) says "reword it"; an unusable AI response
+ * (`errors.ai.invalid_response`) says "your prompt was fine, generate again" —
+ * both arrive as `unprocessable` → ValidationFailure, and only the key tells them
+ * apart. The `createRecipe.aiPromptFailed` blanket copy survives for exactly one
+ * case: a 4xx carrying NO key we recognise (an older backend, a brand-new server
+ * key). The tests below pin down all three.
  *
  * Harness: the repo has no @testing-library/react-native — presentation hooks are
  * driven through a probe component rendered with `renderComponent` (react-test-
@@ -25,7 +28,7 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
@@ -38,7 +41,7 @@ import { configureCreatedRecipesStore } from '@application/recipes/configure-cre
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
-import type { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
+import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
 import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
@@ -102,20 +105,65 @@ const makeRecipe = (): Recipe => {
   return result.value;
 };
 
+// What the backend prompt moderator returns as a 422: `message` is the server's
+// own sentence, `messageKey` the stable catalogue key the client selects copy from.
 const rejectedPrompt = (): FakeRecipeRepositoryConfig => ({
-  // What the backend prompt moderator returns as a 422.
-  generateRecipeResult: fail(new ValidationFailure('errors.ai.prompt_rejected')),
+  generateRecipeResult: fail(
+    new ValidationFailure(
+      'Your prompt was flagged as inappropriate.',
+      undefined,
+      ErrorMessageKey.aiPromptRejected,
+    ),
+  ),
 });
 
-// Any other 4xx on this endpoint also arrives as a ValidationFailure (it is the
-// client's catch-all for unhandled 4xx) — e.g. a plain 400 with a backend
-// sentence the user must never be shown.
+// The other 422 that used to be indistinguishable from the moderation one: the AI
+// answered with something unusable. Nothing is wrong with the prompt — retrying is
+// the fix, and the copy must say so.
+const unusableAiResponse = (): FakeRecipeRepositoryConfig => ({
+  generateRecipeResult: fail(
+    new ValidationFailure(
+      'The AI returned an unexpected response.',
+      undefined,
+      ErrorMessageKey.aiInvalidResponse,
+    ),
+  ),
+});
+
+// A 4xx with no key at all — an older backend, or a server key this build does not
+// know. This is the ONLY case that still gets the blanket "rephrase" copy, and the
+// backend's raw sentence must never reach the user.
 const genericBadRequest = (): FakeRecipeRepositoryConfig => ({
   generateRecipeResult: fail(new ValidationFailure('HTTP 400')),
 });
 
 const offline = (): FakeRecipeRepositoryConfig => ({
   generateRecipeResult: fail(new NetworkFailure('axios ECONNREFUSED')),
+});
+
+// Refine hits the same AI endpoint and the same prompt moderator as generate, so
+// it can fail the same two ways — and `refineRecipe` collapses both to `null`.
+// These pin that the reason still reaches the transcript.
+const refineRefused = (): FakeRecipeRepositoryConfig => ({
+  generateRecipeResult: ok(makeRecipe()),
+  refineRecipeResult: fail(
+    new ValidationFailure(
+      'Your instruction was flagged as inappropriate.',
+      undefined,
+      ErrorMessageKey.aiPromptRejected,
+    ),
+  ),
+});
+
+const refineUnusable = (): FakeRecipeRepositoryConfig => ({
+  generateRecipeResult: ok(makeRecipe()),
+  refineRecipeResult: fail(
+    new ValidationFailure(
+      'The AI returned an unexpected response.',
+      undefined,
+      ErrorMessageKey.aiInvalidResponse,
+    ),
+  ),
 });
 
 const generated = (): FakeRecipeRepositoryConfig => ({
@@ -140,7 +188,7 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
     generateRecipeUseCase: new GenerateRecipeUseCase(new FakeRecipeRepository(config)),
-    refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
+    refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     updateRecipeUseCase: unusedUseCase<UpdateRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
@@ -169,6 +217,8 @@ interface HookDriver {
   latest: () => Generation;
   /** Types a prompt into the input and taps Generate. */
   generate: (text?: string) => Promise<void>;
+  /** Sends a refine instruction from the preview phase. */
+  refine: (instruction: string) => Promise<void>;
 }
 
 /**
@@ -206,7 +256,13 @@ const driveHook = (config: FakeRecipeRepositoryConfig): HookDriver => {
     });
   };
 
-  return { latest: () => latest, generate };
+  const refine = async (instruction: string): Promise<void> => {
+    await act(async () => {
+      latest.onSubmitRefine(instruction);
+    });
+  };
+
+  return { latest: () => latest, generate, refine };
 };
 
 afterEach(() => {
@@ -215,30 +271,22 @@ afterEach(() => {
 
 // ─── the regression: a failed generate must reach the user ────────────────────
 
-describe('useRecipeGeneration.runGenerate — the backend refuses the prompt (4xx)', () => {
-  it('sets generateError to the aiPromptFailed copy when the generate fails with a ValidationFailure', async () => {
+describe('useRecipeGeneration.runGenerate — the backend refuses the prompt (422 + key)', () => {
+  it('sets generateError to the copy written for the failure’s messageKey', async () => {
     const { latest, generate } = driveHook(rejectedPrompt());
 
     await generate();
 
-    expect(latest().generateError).toBe(en.createRecipe.aiPromptFailed);
+    expect(latest().generateError).toBe(en.errors.aiPromptRejected.short);
   });
 
-  it('shows a danger toast carrying the aiPromptFailed copy', async () => {
+  it('surfaces the failure through showErrorToast, which derives copy from the same key', async () => {
     const { generate } = driveHook(rejectedPrompt());
 
     await generate();
 
-    expect(showDangerToast).toHaveBeenCalledTimes(1);
-    expect(showDangerToast).toHaveBeenCalledWith(en.createRecipe.aiPromptFailed);
-  });
-
-  it('does not fall back to the generic failure toast for a refused prompt', async () => {
-    const { generate } = driveHook(rejectedPrompt());
-
-    await generate();
-
-    expect(showErrorToast).not.toHaveBeenCalled();
+    expect(showErrorToast).toHaveBeenCalledTimes(1);
+    expect(showDangerToast).not.toHaveBeenCalled();
   });
 
   it('returns to the prompt phase so the user can rephrase', async () => {
@@ -249,11 +297,30 @@ describe('useRecipeGeneration.runGenerate — the backend refuses the prompt (4x
     expect(latest().phase).toBe('prompt');
   });
 
-  // The wire format carries no machine-readable reason, so the client cannot know
-  // a 4xx was the moderator. The copy must therefore hold for EVERY 4xx: a plain
-  // 400 gets the same "rephrase and retry" advice, never an accusation of
-  // inappropriate content.
-  it('gives a plain 400 the same non-accusatory copy as a moderation 422', async () => {
+  it('never surfaces the backend’s raw sentence', async () => {
+    const { latest, generate } = driveHook(rejectedPrompt());
+
+    await generate();
+
+    expect(latest().generateError).not.toContain('flagged as inappropriate.');
+  });
+});
+
+// The whole point of the key channel: these two 422s used to be one message.
+describe('useRecipeGeneration.runGenerate — an unusable AI response (422 + key)', () => {
+  it('tells the user to generate again instead of blaming the prompt', async () => {
+    const { latest, generate } = driveHook(unusableAiResponse());
+
+    await generate();
+
+    expect(latest().generateError).toBe(en.errors.aiInvalidResponse.short);
+    expect(latest().generateError).not.toBe(en.errors.aiPromptRejected.short);
+    expect(latest().generateError).not.toBe(en.createRecipe.aiPromptFailed);
+  });
+});
+
+describe('useRecipeGeneration.runGenerate — a 4xx with no recognised key (older backend)', () => {
+  it('falls back to the blanket aiPromptFailed copy', async () => {
     const { latest, generate } = driveHook(genericBadRequest());
 
     await generate();
@@ -262,7 +329,7 @@ describe('useRecipeGeneration.runGenerate — the backend refuses the prompt (4x
     expect(showDangerToast).toHaveBeenCalledWith(en.createRecipe.aiPromptFailed);
   });
 
-  it('never surfaces the backend’s raw message for a 4xx', async () => {
+  it('never surfaces the backend’s raw message', async () => {
     const { latest, generate } = driveHook(genericBadRequest());
 
     await generate();
@@ -291,7 +358,7 @@ describe('useRecipeGeneration.runGenerate — infrastructure failure', () => {
     expect(latest().phase).toBe('prompt');
   });
 
-  it('does not raise the prompt-refused toast for a non-validation failure', async () => {
+  it('does not raise the blanket danger toast for a non-validation failure', async () => {
     const { generate } = driveHook(offline());
 
     await generate();
@@ -332,7 +399,7 @@ describe('useRecipeGeneration.runGenerate — chat transcript on failure', () =>
     const transcript = latest().chatHistory;
     expect(transcript).toHaveLength(2);
 
-    config.generateRecipeResult = fail(new ValidationFailure('errors.ai.prompt_rejected'));
+    config.generateRecipeResult = rejectedPrompt().generateRecipeResult;
     await act(async () => {
       latest().onRegenerate();
     });
@@ -340,17 +407,72 @@ describe('useRecipeGeneration.runGenerate — chat transcript on failure', () =>
     // The failure is surfaced by the toast + inline error, NOT by overwriting the
     // transcript the user built in preview.
     expect(latest().chatHistory).toEqual(transcript);
-    expect(latest().generateError).toBe(en.createRecipe.aiPromptFailed);
+    expect(latest().generateError).toBe(en.errors.aiPromptRejected.short);
   });
 });
 
 // ─── the error must not outlive the condition that caused it ─────────────────
 
+// ─── the same regression, on the refine path ─────────────────────────────────
+//
+// `refineRecipe` returns `Recipe | null`, so the failure is collapsed at the store
+// boundary. The hook has to read it back off `refineState` — otherwise a refused
+// instruction and an unusable AI response, the exact pair the messageKey channel
+// exists to separate, both read as one flat "couldn't do that" in the transcript.
+
+const lastBubble = (history: readonly { content: string }[]): string =>
+  history[history.length - 1]?.content ?? '';
+
+describe('useRecipeGeneration.handleRefine — the backend refuses the instruction', () => {
+  it('says the instruction was refused, not that the AI misbehaved', async () => {
+    const { latest, generate, refine } = driveHook(refineRefused());
+    await generate();
+    await refine('add horse meat');
+
+    expect(lastBubble(latest().chatHistory)).toBe(en.errors.aiPromptRejected.short);
+  });
+
+  it('surfaces the failure through showErrorToast, as generate and import do', async () => {
+    const { generate, refine } = driveHook(refineRefused());
+    await generate();
+    await refine('add horse meat');
+
+    expect(showErrorToast).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks the assistant bubble as an error so the transcript renders it as one', async () => {
+    const { latest, generate, refine } = driveHook(refineRefused());
+    await generate();
+    await refine('add horse meat');
+
+    expect(latest().chatHistory[latest().chatHistory.length - 1]?.error).toBe(true);
+  });
+});
+
+describe('useRecipeGeneration.handleRefine — an unusable AI response', () => {
+  it('reads differently from a refused instruction, though both are 422s', async () => {
+    const { latest, generate, refine } = driveHook(refineUnusable());
+    await generate();
+    await refine('make it spicier');
+
+    expect(lastBubble(latest().chatHistory)).toBe(en.errors.aiInvalidResponse.short);
+    expect(lastBubble(latest().chatHistory)).not.toBe(en.errors.aiPromptRejected.short);
+  });
+
+  it('never puts the backend’s raw sentence in the transcript', async () => {
+    const { latest, generate, refine } = driveHook(refineUnusable());
+    await generate();
+    await refine('make it spicier');
+
+    expect(lastBubble(latest().chatHistory)).not.toContain('unexpected response');
+  });
+});
+
 describe('useRecipeGeneration — clearing a stale generateError', () => {
   it('drops the inline error as soon as the user edits the prompt', async () => {
     const { latest, generate } = driveHook(rejectedPrompt());
     await generate();
-    expect(latest().generateError).toBe(en.createRecipe.aiPromptFailed);
+    expect(latest().generateError).toBe(en.errors.aiPromptRejected.short);
 
     await act(async () => {
       latest().onChangePrompt('a wholesome family dinner');
@@ -364,7 +486,7 @@ describe('useRecipeGeneration — clearing a stale generateError', () => {
   it('drops the inline error when the user appends an idea chip', async () => {
     const { latest, generate } = driveHook(rejectedPrompt());
     await generate();
-    expect(latest().generateError).toBe(en.createRecipe.aiPromptFailed);
+    expect(latest().generateError).toBe(en.errors.aiPromptRejected.short);
 
     await act(async () => {
       latest().onAppendChip('Vegetarian');

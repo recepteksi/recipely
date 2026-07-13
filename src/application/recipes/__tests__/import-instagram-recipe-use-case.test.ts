@@ -1,6 +1,6 @@
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
-import { UnknownFailure, ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
@@ -47,7 +47,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.importInvalidUrl');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importInvalidUrl);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });
@@ -61,7 +61,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.importInvalidUrl');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importInvalidUrl);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });
@@ -75,7 +75,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.importNotInstagram');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });
@@ -89,7 +89,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).message).toBe('createRecipe.importNotInstagram');
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });

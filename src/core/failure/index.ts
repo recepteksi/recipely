@@ -1,4 +1,5 @@
 export { Failure } from '@core/failure/failure';
+export { ErrorMessageKey } from '@core/failure/error-message-key';
 export { NetworkFailure } from './network-failure';
 export { TimeoutFailure } from './timeout-failure';
 export { UnauthorizedFailure } from './unauthorized-failure';
