@@ -5,6 +5,18 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  # Manual entry point for the dev mobile builds. Run it from the Actions tab or
+  # with `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+  workflow_dispatch:
+    inputs:
+      android:
+        description: 'Build & ship the Android dev APK to Firebase App Distribution'
+        type: boolean
+        default: true
+      ios:
+        description: 'Build & ship the iOS dev IPA to Firebase App Distribution'
+        type: boolean
+        default: true
 
 # Tag-and-deploy on main needs write access to push the new annotated tag.
 permissions:
@@ -67,6 +79,62 @@ jobs:
           fi
           echo "tag=$tag" >>"$GITHUB_OUTPUT"
           echo "version=${tag#v}" >>"$GITHUB_OUTPUT"
+
+  # A dev merge no longer ships a mobile build. Every push to dev used to burn a
+  # Gradle run plus a macOS runner and push a fresh APK/IPA at the testers, which
+  # is noise when most merges are backend/web/refactor work. Mobile dev builds are
+  # now OPT-IN, two ways:
+  #
+  #   * put `[dist]` in the merge commit message (or `[dist:android]` /
+  #     `[dist:ios]` for one platform only) — the squash-merge subject is what CI
+  #     sees, so the flag goes in the PR title or the squash message;
+  #   * or trigger the workflow by hand on dev:
+  #     `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+  #
+  # Lint/typecheck/test and the dev web deploy still run on every dev push — they
+  # are cheap and dev.recipely.net is expected to track dev.
+  dev-distribution-gate:
+    name: Dev Distribution Gate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    outputs:
+      android: ${{ steps.decide.outputs.android }}
+      ios: ${{ steps.decide.outputs.ios }}
+    steps:
+      - name: Decide which dev mobile builds to ship
+        id: decide
+        env:
+          # Via env, not inline `${{ }}`: a commit message is untrusted input and
+          # must never be interpolated straight into the shell.
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          INPUT_ANDROID: ${{ inputs.android }}
+          INPUT_IOS: ${{ inputs.ios }}
+        run: |
+          set -euo pipefail
+          android=false
+          ios=false
+          if [ "${{ github.event_name }}" = 'workflow_dispatch' ]; then
+            android="$INPUT_ANDROID"
+            ios="$INPUT_IOS"
+          else
+            case "$COMMIT_MESSAGE" in
+              *'[dist]'*) android=true; ios=true ;;
+            esac
+            case "$COMMIT_MESSAGE" in
+              *'[dist:android]'*) android=true ;;
+            esac
+            case "$COMMIT_MESSAGE" in
+              *'[dist:ios]'*) ios=true ;;
+            esac
+          fi
+          echo "android=$android" >>"$GITHUB_OUTPUT"
+          echo "ios=$ios" >>"$GITHUB_OUTPUT"
+          {
+            echo "Android dev APK: $android"
+            echo "iOS dev IPA: $ios"
+            echo ""
+            echo "Opt in with \`[dist]\` / \`[dist:android]\` / \`[dist:ios]\` in the merge commit, or run the workflow manually on dev."
+          } >>"$GITHUB_STEP_SUMMARY"
 
   lint-and-typecheck:
     name: Lint & Type Check
@@ -225,8 +293,10 @@ jobs:
   distribute-dev:
     name: Distribute Android Dev (Firebase APK)
     runs-on: ubuntu-latest
-    needs: [lint-and-typecheck, test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: [lint-and-typecheck, test, dev-distribution-gate]
+    # Opt-in only — see dev-distribution-gate. The gate itself is skipped off dev,
+    # which skips this job with it.
+    if: needs.dev-distribution-gate.outputs.android == 'true'
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
@@ -335,10 +405,10 @@ jobs:
   distribute-ios-dev:
     name: Distribute iOS Dev (Firebase IPA)
     runs-on: macos-26
-    needs: [lint-and-typecheck, test]
-    # Kill switch: set the IOS_CI_ENABLED repo variable to '0' to pause iOS
-    # distribution without touching the workflow.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && vars.IOS_CI_ENABLED == '1'
+    needs: [lint-and-typecheck, test, dev-distribution-gate]
+    # Opt-in only — see dev-distribution-gate. IOS_CI_ENABLED stays as the kill
+    # switch: set the repo variable to '0' to pause iOS builds even when asked for.
+    if: needs.dev-distribution-gate.outputs.ios == 'true' && vars.IOS_CI_ENABLED == '1'
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}

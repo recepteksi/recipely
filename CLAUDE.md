@@ -46,6 +46,22 @@ changes, a merge conflict you can't safely resolve) and the Exceptions below.
 6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull`.
 7. **Report** the PR # and the merged commit. Stop.
 
+### Dev mobile builds are opt-in
+
+A merge to `dev` does **not** ship an Android/iOS build. Lint, typecheck, tests and the
+dev web deploy (dev.recipely.net) still run on every dev push; the Gradle APK and the
+macOS IPA only run when explicitly asked for — the user gives the order, you never add
+the flag on your own initiative:
+
+- **Flag the merge commit**: `[dist]` (both platforms), `[dist:android]`, or `[dist:ios]`
+  anywhere in the squash-merge message. CI reads the merge commit's message, so put it in
+  the PR title or the `--squash` body.
+- **Or trigger by hand**: `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+
+`IOS_CI_ENABLED` (repo variable) remains the iOS kill switch — `0` pauses iOS builds even
+when one is requested. Production (`main`) distribution is unchanged: every push to `main`
+tags a version and ships to Play internal + TestFlight.
+
 ### Exceptions (stop and ask)
 
 - Promoting `dev → main` or any production web deploy (Firebase Hosting) — `main` is release-only.
