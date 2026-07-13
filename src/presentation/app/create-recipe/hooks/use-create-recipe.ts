@@ -57,6 +57,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     isWebShell,
     insets,
     prompt: generation.prompt,
+    generateError: generation.generateError,
     onChangePrompt: generation.onChangePrompt,
     onAppendChip: generation.onAppendChip,
     onGenerate: generation.onGenerate,

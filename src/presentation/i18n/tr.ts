@@ -276,6 +276,7 @@ export const tr: Translations = {
     aiButton: 'AI ile oluştur',
     aiGenerating: 'Tarifin hazırlanıyor…',
     aiError: 'Oluşturulamadı. Tekrar dene.',
+    aiPromptFailed: 'Bu istekten tarif oluşturulamadı. Lütfen farklı bir şekilde ifade edip tekrar deneyin.',
     aiUpdated: 'Güncellendi!',
     aiThinking: 'Düşünüyor…',
     aiFirstReply: 'Tarifin hazır! İstediğin değişikliği söyle.',
