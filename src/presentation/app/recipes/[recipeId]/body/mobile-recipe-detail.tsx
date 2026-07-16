@@ -4,6 +4,7 @@ import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import type { Recipe } from '@domain/recipes/recipe';
@@ -36,6 +37,7 @@ export interface MobileRecipeDetailProps {
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
+  commentHighlight: UseCommentHighlightResult;
 }
 
 /**
@@ -87,6 +89,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           onLoadMoreComments={props.onLoadMoreComments}
           onToggleCommentLike={props.onToggleCommentLike}
           onDeleteComment={props.onDeleteComment}
+          commentHighlight={props.commentHighlight}
         />
       </View>
     </View>

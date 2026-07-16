@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -17,6 +17,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Notification } from '@domain/notifications/notification';
+import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import type { SectionData } from '@presentation/app/notifications/model/section-data';
@@ -50,6 +51,7 @@ const toNotifItem = (n: Notification): NotifItem => ({
   read: n.read,
   // Surface free-text payload (e.g. the comment body) as the secondary line.
   body: n.message ?? undefined,
+  target: n.target,
 });
 
 const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
@@ -99,10 +101,15 @@ export const NotificationsScreen = (): React.JSX.Element => {
     state.status === 'loaded' ? state.unreadCount : 0;
   const sections = buildSections(items, filter);
 
-  const tap = (_id: string): void => {
-    // Tapping a notification only routes to the underlying entity — the
-    // markOneRead endpoint is not yet wired through the store, and faking the
-    // read flag locally would diverge from the server source of truth.
+  // Cast: a dynamic recipe path can't be statically verified against
+  // expo-router's typed-routes union — same pattern as useRecipeDetail.
+  const tap = (target: NotificationTarget): void => {
+    const path = `/recipes/${encodeURIComponent(target.recipeId)}`;
+    router.push(
+      (target.kind === 'comment'
+        ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
+        : path) as Href,
+    );
   };
 
   return (

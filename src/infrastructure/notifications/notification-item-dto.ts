@@ -9,6 +9,13 @@ export interface NotificationItemDto {
   senderPhotoUrl: string | null;
   recipeId: string | null;
   recipeTitle: string | null;
+  /**
+   * Optional because the app ships independently of the backend: a server that
+   * predates the comment-deep-link work omits the field entirely. The mapper
+   * degrades a missing value to null, which downgrades the notification to a
+   * plain recipe link rather than breaking it.
+   */
+  commentId?: string | null;
   message: string | null;
   read: boolean;
   createdAt: string;

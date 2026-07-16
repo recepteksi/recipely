@@ -6,6 +6,7 @@ import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
 
 export interface RecipeCommentsSectionProps {
@@ -19,6 +20,7 @@ export interface RecipeCommentsSectionProps {
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
+  commentHighlight: UseCommentHighlightResult;
 }
 
 /**
@@ -36,6 +38,7 @@ export const RecipeCommentsSection = ({
   onLoadMoreComments,
   onToggleCommentLike,
   onDeleteComment,
+  commentHighlight,
 }: RecipeCommentsSectionProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -70,6 +73,12 @@ export const RecipeCommentsSection = ({
               canLike
               onToggleLike={() => onToggleCommentLike(comment.id)}
               onDelete={() => onDeleteComment(comment.id)}
+              highlighted={comment.id === commentHighlight.highlightedCommentId}
+              nodeRef={
+                comment.id === commentHighlight.targetCommentId
+                  ? commentHighlight.registerTargetNode
+                  : undefined
+              }
             />
           ))}
         </View>
