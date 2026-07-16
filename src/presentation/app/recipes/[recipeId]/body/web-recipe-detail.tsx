@@ -8,6 +8,7 @@ import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body
 import { WebRecipeDetailSidebar } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-comments';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
@@ -44,6 +45,7 @@ export interface WebRecipeDetailProps {
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
+  commentHighlight: UseCommentHighlightResult;
 }
 
 const HERO_ASPECT = 16 / 10;
@@ -157,6 +159,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
             onLoadMore={props.onLoadMoreComments}
             onToggleCommentLike={props.onToggleCommentLike}
             onDeleteComment={props.onDeleteComment}
+            commentHighlight={props.commentHighlight}
           />
         </View>
 

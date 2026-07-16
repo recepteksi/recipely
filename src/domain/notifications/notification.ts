@@ -2,6 +2,7 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import type { NotificationTarget } from '@domain/notifications/notification-target';
 
 export interface NotificationProps {
   id: string;
@@ -11,6 +12,7 @@ export interface NotificationProps {
   senderPhotoUrl: string | null;
   recipeId: string | null;
   recipeTitle: string | null;
+  commentId: string | null;
   message: string | null;
   read: boolean;
   createdAt: Date;
@@ -56,6 +58,10 @@ export class Notification extends Entity<NotificationProps> {
     return this.props.recipeTitle;
   }
 
+  get commentId(): string | null {
+    return this.props.commentId;
+  }
+
   /** Free-text payload (e.g. the comment body); null for types without text. */
   get message(): string | null {
     return this.props.message;
@@ -67,5 +73,24 @@ export class Notification extends Entity<NotificationProps> {
 
   get createdAt(): Date {
     return this.props.createdAt;
+  }
+
+  /**
+   * Derives where tapping this notification should navigate. Deliberately
+   * data-driven rather than keyed off `type`: a `commentId` only ever
+   * accompanies a `recipeId` (comment notifications always target a recipe),
+   * so that combination wins; a bare `recipeId` (likes, AI completions, and
+   * any future type we don't special-case) lands on the recipe; a `follow`
+   * notification carries no `recipeId` — there is no public user-profile
+   * route yet — so it has no destination and this returns `null`.
+   */
+  get target(): NotificationTarget | null {
+    if (this.props.commentId !== null && this.props.recipeId !== null) {
+      return { kind: 'comment', recipeId: this.props.recipeId, commentId: this.props.commentId };
+    }
+    if (this.props.recipeId !== null) {
+      return { kind: 'recipe', recipeId: this.props.recipeId };
+    }
+    return null;
   }
 }

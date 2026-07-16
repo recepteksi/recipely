@@ -5,6 +5,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
+import type { NotificationTarget } from '@domain/notifications/notification-target';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
 
 const actionText = (n: NotifItem): string => {
@@ -23,26 +24,37 @@ const actionText = (n: NotifItem): string => {
 
 interface NotifRowProps {
   item: NotifItem;
-  onTap: (id: string) => void;
+  onTap: (target: NotificationTarget) => void;
 }
 
+const PRESSED_OPACITY = 0.8;
+
+/**
+ * One notification row. A row whose `item.target` is null (e.g. a follow — there
+ * is no public user-profile route) has nowhere to go: it renders disabled, with
+ * no press feedback, and announces as text rather than a button so assistive
+ * tech never offers an action that does nothing.
+ */
 export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
+  const target = item.target;
+  const tappable = target !== null;
 
   return (
     <Pressable
-      onPress={() => onTap(item.id)}
+      onPress={tappable ? () => onTap(target) : undefined}
+      disabled={!tappable}
       style={({ pressed }) => [
         styles.row,
         {
           backgroundColor: item.read ? colors.cardBackground : colors.chipBackground,
           borderLeftWidth: item.read ? 0 : 3,
           borderLeftColor: colors.primary,
-          opacity: pressed ? 0.8 : 1,
+          opacity: pressed && tappable ? PRESSED_OPACITY : 1,
         },
       ]}
-      accessibilityRole="button"
+      accessibilityRole={tappable ? 'button' : 'text'}
       accessibilityLabel={`${item.actor} ${actionText(item)}`}
     >
       <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>

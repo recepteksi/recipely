@@ -11,6 +11,7 @@ import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
+import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -23,11 +24,23 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
+  // Composed here rather than inside useRecipeDetail: the deep-link concern is
+  // self-contained (it only needs the comment state + scroll ref the vm already
+  // exposes), and useRecipeDetail is at its size budget already.
+  const commentHighlight = useCommentHighlight({
+    recipeId: vm.recipeId,
+    commentState: vm.commentState,
+    scrollViewRef: vm.scrollViewRef,
+  });
 
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
-        <ScrollView ref={vm.scrollViewRef} contentContainerStyle={styles.scroll}>
+        <ScrollView
+          ref={vm.scrollViewRef}
+          contentContainerStyle={styles.scroll}
+          {...commentHighlight.scrollViewProps}
+        >
           <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>
             {vm.recipe !== null ? (
               isWebShell ? (
@@ -59,6 +72,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onLoadMoreComments={vm.onLoadMoreComments}
                   onToggleCommentLike={vm.onToggleCommentLike}
                   onDeleteComment={vm.onDeleteComment}
+                  commentHighlight={commentHighlight}
                 />
               ) : (
                 <MobileRecipeDetail
@@ -87,6 +101,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onLoadMoreComments={vm.onLoadMoreComments}
                   onToggleCommentLike={vm.onToggleCommentLike}
                   onDeleteComment={vm.onDeleteComment}
+                  commentHighlight={commentHighlight}
                 />
               )
             ) : null}

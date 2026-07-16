@@ -1,4 +1,13 @@
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
@@ -6,6 +15,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
+import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
 
 export interface CommentCardProps {
   body: string;
@@ -18,11 +28,19 @@ export interface CommentCardProps {
   canLike: boolean;
   onToggleLike: () => void;
   onDelete?: () => void;
+  /** When true the card flashes a primary tint once, then settles back. */
+  highlighted?: boolean;
+  /** Registers the card's root node so a deep link can scroll to it. */
+  nodeRef?: (node: CommentNode | null) => void;
 }
 
 const DISABLED_OPACITY = 0.5;
 
 const AVATAR_SIZE = 36;
+
+const FLASH_IN_MS = 220;
+const FLASH_HOLD_MS = 700;
+const FLASH_OUT_MS = 900;
 
 /** Displays a single recipe comment: author avatar, name, relative time, body, and an owner-only delete button. */
 export const CommentCard = ({
@@ -36,16 +54,33 @@ export const CommentCard = ({
   canLike,
   onToggleLike,
   onDelete,
+  highlighted = false,
+  nodeRef,
 }: CommentCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const flash = useSharedValue(0);
+
+  useEffect(() => {
+    if (!highlighted) return;
+    flash.value = withSequence(
+      withTiming(1, { duration: FLASH_IN_MS }),
+      withDelay(FLASH_HOLD_MS, withTiming(0, { duration: FLASH_OUT_MS })),
+    );
+  }, [highlighted, flash]);
+
+  // At rest (flash = 0) this resolves to exactly the normal card colors, so a
+  // non-highlighted card is visually unchanged.
+  const flashStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      flash.value,
+      [0, 1],
+      [colors.cardBackground, colors.primaryLight],
+    ),
+    borderColor: interpolateColor(flash.value, [0, 1], [colors.cardBorder, colors.primary]),
+  }));
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
-      ]}
-    >
+    <Animated.View ref={nodeRef} style={[styles.card, flashStyle]}>
       <View style={styles.headerRow}>
         <AvatarImage
           uri={authorPhotoUrl ?? undefined}
@@ -94,7 +129,7 @@ export const CommentCard = ({
           </ThemedText>
         </Pressable>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
