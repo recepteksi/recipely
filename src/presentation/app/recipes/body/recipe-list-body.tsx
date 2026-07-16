@@ -141,7 +141,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         scrollEventThrottle={16}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
-        refreshControl={<RefreshControl refreshing={isRecipeListRefreshing(state)} onRefresh={vm.onRefresh} />}
+        refreshControl={<RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} />}
       />
     );
   }

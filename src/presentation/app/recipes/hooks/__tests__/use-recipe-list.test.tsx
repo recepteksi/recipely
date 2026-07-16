@@ -1,0 +1,356 @@
+/**
+ * Regression tests for `useRecipeList`'s `isPullRefreshing` flag.
+ *
+ * The bug: on iOS, tapping a cuisine filter made the list slide down and snap
+ * back like a pull-to-refresh. `recipe-list-body` drove `RefreshControl.refreshing`
+ * from the store's `isRecipeListRefreshing(state)`, which is true for EVERY
+ * in-place refetch (filter/sort/locale/focus) — and setting `refreshing`
+ * programmatically on iOS calls `UIRefreshControl.beginRefreshing`, animating
+ * the scroll view down to reveal the spinner and back when cleared.
+ *
+ * The invariant locked in here: `isPullRefreshing` tracks ONLY a user-initiated
+ * pull, never any other refetch — so the suite asserts the store IS refreshing
+ * while the flag stays false, which is exactly what the old wiring got wrong.
+ *
+ * The suite drives the hook through a probe component (react-test-renderer has
+ * no `renderHook`, and `@testing-library/react-native` is not a dependency of
+ * this repo — same pattern as `use-refresh-failure-toast.test.tsx`). It records
+ * EVERY render rather than just the last, so an intermediate frame that flipped
+ * the spinner on and off within the in-flight window can't slip through.
+ *
+ * The real `configureRecipeListStore` is used (not a stub) so `isRefreshing`
+ * transitions come from production code; only `ListRecipesUseCase` is faked, with
+ * a deferred promise for timing control — same seam as `recipe-list-store.test.ts`.
+ *
+ * The stuck-spinner guard is covered twice: via a failed refresh (a `Result`
+ * failure), which is how a load reports an error here — every layer down to the
+ * HTTP client returns `Result` and never throws (CLAUDE.md §12) — and via a
+ * rejecting load, the defensive path behind `onRefresh`'s catch/finally.
+ */
+
+import { act } from 'react-test-renderer';
+import { create } from 'zustand';
+import { renderComponent } from '@presentation/base/test-support/render-component';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
+import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
+import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
+import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
+import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
+import type { SavedRecipesStoreState } from '@application/recipes/saved-recipes-store-state';
+import { NetworkFailure } from '@core/failure';
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
+import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { Difficulty } from '@domain/recipes/difficulty';
+
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
+  usePathname: jest.fn(() => '/recipes'),
+  // The real hook runs its callback whenever the screen gains focus; an effect
+  // is close enough here (the hook skips the mount focus via its own ref).
+  useFocusEffect: jest.fn((callback: () => void) => {
+    jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
+  }),
+}));
+
+jest.mock('@presentation/base/feedback/show-toast', () => ({
+  showErrorToast: jest.fn(),
+}));
+
+// Sibling hooks that only add unrelated store reads (favorites, taxonomy labels).
+jest.mock('@presentation/app/recipes/shared/hooks/use-save-recipe', () => ({
+  useSaveRecipe: jest.fn(() => ({ isSaved: () => false, toggleSave: jest.fn() })),
+}));
+
+jest.mock('@presentation/app/recipes/shared/hooks/use-taxonomy-label', () => ({
+  useTaxonomyLabel: jest.fn(() => ({
+    cuisineLabel: (key: string) => ({ name: key, emoji: '🍝' }),
+    categoryLabel: (key: string) => ({ name: key, emoji: '🍽️' }),
+  })),
+}));
+
+type ListResult = Result<RecipeSummary[], Failure>;
+
+/** A promise plus the handle to settle it, so a load can be held in flight. */
+interface Deferred {
+  promise: Promise<ListResult>;
+  resolve: (result: ListResult) => void;
+}
+
+const makeDeferred = (): Deferred => {
+  let resolve: (result: ListResult) => void = () => {};
+  const promise = new Promise<ListResult>((r) => {
+    resolve = r;
+  });
+  return { promise, resolve };
+};
+
+const makeRecipe = (id: string): RecipeSummary => {
+  const result = RecipeSummary.create({
+    id,
+    name: `Recipe ${id}`,
+    image: `https://cdn.example.com/${id}.webp`,
+    cuisine: CuisineKey.Italian,
+    category: RecipeCategory.Dinner,
+    difficulty: Difficulty.Easy,
+    totalTimeMinutes: 30,
+    rating: 4.5,
+    moderationStatus: 'approved',
+    likeCount: 0,
+    likedByMe: false,
+    commentCount: 0,
+    viewCount: 0,
+  });
+  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  return result.value;
+};
+
+const makeAuthStore = () =>
+  create<AuthStoreState>(() => ({
+    state: { status: 'unauthenticated' },
+  }) as unknown as AuthStoreState);
+
+const makeNotificationsStore = () =>
+  create<NotificationsStoreState>(() => ({
+    unreadCount: 0,
+  }) as unknown as NotificationsStoreState);
+
+const makeSavedRecipesStore = () =>
+  create<SavedRecipesStoreState>(() => ({
+    savedIds: new Set<string>(),
+    setSavedIds: jest.fn(),
+  }) as unknown as SavedRecipesStoreState);
+
+const makeStores = (recipeListStore: RecipeListStore): Stores =>
+  ({
+    recipeListStore,
+    authStore: makeAuthStore(),
+    notificationsStore: makeNotificationsStore(),
+    savedRecipesStore: makeSavedRecipesStore(),
+    loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
+  }) as unknown as Stores;
+
+/** One render of the hook: the spinner flag next to what the store reports. */
+interface RenderSnapshot {
+  isPullRefreshing: boolean;
+  isStoreRefreshing: boolean;
+}
+
+describe('useRecipeList — pull-to-refresh spinner', () => {
+  let renders: RenderSnapshot[] = [];
+  let vm: ReturnType<typeof useRecipeList>;
+
+  const Probe = (): null => {
+    vm = useRecipeList();
+    renders.push({
+      isPullRefreshing: vm.isPullRefreshing,
+      isStoreRefreshing: isRecipeListRefreshing(vm.state),
+    });
+    return null;
+  };
+
+  /** Mounts the hook and settles the initial auto-load into a `loaded` list. */
+  const mountLoaded = async (
+    execute: jest.Mock,
+  ): Promise<void> => {
+    const store = configureRecipeListStore({
+      listRecipes: { execute } as unknown as ListRecipesUseCase,
+    });
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r1')])));
+
+    renderComponent(
+      <StoresProvider value={makeStores(store)}>
+        <Probe />
+      </StoresProvider>,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  /** Everything rendered after the given index — the in-flight window. */
+  const rendersSince = (index: number): RenderSnapshot[] => renders.slice(index);
+
+  beforeEach(() => {
+    renders = [];
+  });
+
+  afterEach(async () => {
+    // Let AppThemeProvider's async storage hydration settle inside act, so a
+    // late re-render can't fire after the Jest environment is torn down.
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  it('leaves isPullRefreshing false for the whole in-flight window of a filter refetch', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    expect(vm.state.status).toBe('loaded');
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+    const beforeToggle = renders.length;
+
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+
+    // The store IS refreshing — this is precisely the state the old
+    // `refreshing={isRecipeListRefreshing(state)}` wiring turned into a
+    // spinner (and an iOS scroll jump) on a plain filter tap.
+    expect(isRecipeListRefreshing(vm.state)).toBe(true);
+    expect(vm.isPullRefreshing).toBe(false);
+    expect(rendersSince(beforeToggle).some((r) => r.isStoreRefreshing)).toBe(true);
+    expect(rendersSince(beforeToggle).every((r) => !r.isPullRefreshing)).toBe(true);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+
+    expect(vm.isPullRefreshing).toBe(false);
+    expect(renders.every((r) => !r.isPullRefreshing)).toBe(true);
+  });
+
+  it('leaves isPullRefreshing false for the whole in-flight window of a sort refetch', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+    const beforeSort = renders.length;
+
+    act(() => {
+      vm.onChangeSort('newest');
+    });
+
+    expect(isRecipeListRefreshing(vm.state)).toBe(true);
+    expect(rendersSince(beforeSort).every((r) => !r.isPullRefreshing)).toBe(true);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+
+    expect(renders.every((r) => !r.isPullRefreshing)).toBe(true);
+  });
+
+  it('sets isPullRefreshing true while a pull-initiated refetch is in flight', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onRefresh();
+    });
+
+    expect(vm.isPullRefreshing).toBe(true);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+
+    expect(vm.isPullRefreshing).toBe(false);
+  });
+
+  it('clears isPullRefreshing once a pull-initiated refetch settles into a failure', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const failure = new NetworkFailure('offline');
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onRefresh();
+    });
+    expect(vm.isPullRefreshing).toBe(true);
+
+    await act(async () => {
+      deferred.resolve({ ok: false, failure });
+      await deferred.promise;
+    });
+
+    // A failed refresh must not strand the spinner: the list stays visible
+    // (stale recipes + refreshFailure) and the pull indicator goes away.
+    expect(vm.isPullRefreshing).toBe(false);
+    expect(vm.state.status).toBe('loaded');
+  });
+
+  it('does not re-arm the spinner when a filter refetch follows a pull-refresh', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const pull = makeDeferred();
+    execute.mockReturnValueOnce(pull.promise);
+    act(() => {
+      vm.onRefresh();
+    });
+    await act(async () => {
+      pull.resolve(ok([makeRecipe('r2')]));
+      await pull.promise;
+    });
+    expect(vm.isPullRefreshing).toBe(false);
+
+    const filter = makeDeferred();
+    execute.mockReturnValueOnce(filter.promise);
+    const beforeToggle = renders.length;
+
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+
+    // A pull immediately followed by a filter tap must not leave the flag
+    // latched on: the filter refetch is not user-initiated.
+    expect(isRecipeListRefreshing(vm.state)).toBe(true);
+    expect(rendersSince(beforeToggle).every((r) => !r.isPullRefreshing)).toBe(true);
+
+    await act(async () => {
+      filter.resolve(ok([makeRecipe('r3')]));
+      await filter.promise;
+    });
+
+    expect(vm.isPullRefreshing).toBe(false);
+  });
+
+  it('clears isPullRefreshing and leaks no unhandled rejection when the load rejects', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    execute.mockImplementationOnce(() => Promise.reject(new Error('boom')));
+
+    // `onRefresh` fires its reload from a `void`ed async IIFE, so a rejection can
+    // only surface process-wide. The listener IS the assertion: without the
+    // `catch` in `onRefresh` this fires, and registering it also keeps Node from
+    // killing the run outright, so the regression reads as a clean failure.
+    const unhandled = jest.fn();
+    process.on('unhandledRejection', unhandled);
+
+    try {
+      await act(async () => {
+        vm.onRefresh();
+        // A macrotask turn: Node only emits `unhandledRejection` once the
+        // microtask queue has drained with no handler attached.
+        await new Promise((resolve) => setImmediate(resolve));
+      });
+
+      expect(vm.isPullRefreshing).toBe(false);
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
+  });
+});
