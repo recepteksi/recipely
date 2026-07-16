@@ -133,8 +133,27 @@ export const useRecipeList = (): UseRecipeListResult => {
     [],
   );
 
+  // WHY: the store's `isRefreshing` covers every in-place refetch (filter, sort,
+  // locale switch, focus), but `RefreshControl.refreshing` must reflect ONLY a
+  // user-initiated pull: setting it programmatically on iOS calls
+  // `UIRefreshControl.beginRefreshing`, which animates the scroll view down to
+  // reveal the spinner and back when cleared — a visible jump on a filter tap.
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
   const onRefresh = useCallback(() => {
-    void load(buildApiFilters(filters, sortBy));
+    setIsPullRefreshing(true);
+    void (async () => {
+      try {
+        await load(buildApiFilters(filters, sortBy));
+      } catch {
+        // `load` folds failures into state and shouldn't reject; swallow anyway so
+        // an unexpected throw can't escape as an unhandled rejection.
+      } finally {
+        // Unconditional clear: never leave the spinner stuck. A late clear after
+        // unmount is a harmless no-op, so this needs no mounted-ref guard.
+        setIsPullRefreshing(false);
+      }
+    })();
   }, [load, filters, sortBy, buildApiFilters]);
 
   // Recipe content is localized server-side, so a language switch must re-fetch.
@@ -228,6 +247,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     scrollHandler,
     search,
     onSearchChange: setSearch,
+    isPullRefreshing,
     onRefresh,
     onOpenRecipe,
     onOpenCreate,

@@ -28,6 +28,17 @@ export interface UseRecipeListResult {
   search: string;
   onSearchChange: (value: string) => void;
 
+  /**
+   * True while a refetch the user explicitly asked for — a pull-to-refresh or a
+   * retry button, i.e. anything routed through `onRefresh` — is in flight.
+   * Refetches the user didn't ask for (filter, sort, locale, focus) leave it
+   * false. Drives the mobile `RefreshControl`: on iOS a programmatic
+   * `refreshing` animates the scroll view down and back, so a filter tap would
+   * read as an unexplained jump. For "is the list refetching at all" use
+   * `isRecipeListRefreshing` on `state` instead.
+   */
+  isPullRefreshing: boolean;
+
   // Navigation + list actions.
   onRefresh: () => void;
   onOpenRecipe: (id: string) => void;
