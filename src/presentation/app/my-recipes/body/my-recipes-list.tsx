@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
@@ -26,11 +26,17 @@ export interface MyRecipesListProps {
   onOpenDraft: (id: string) => void;
   onDeleteDraft: (id: string) => void;
   onCreate: () => void;
+  isRefreshing: boolean;
+  onRefresh: () => void;
 }
 
 /**
  * Renders the active My-Recipes tab body: the drafts list, an empty state, or
  * the saved/created recipe grid (single column on mobile, multi-column on web).
+ *
+ * Every branch is pull-to-refreshable — the empty states are wrapped in a
+ * scroll view because a plain `View` accepts no pull gesture, and an empty tab
+ * is exactly when a user reaches for one.
  */
 export const MyRecipesList = ({
   tab,
@@ -44,22 +50,41 @@ export const MyRecipesList = ({
   onOpenDraft,
   onDeleteDraft,
   onCreate,
+  isRefreshing,
+  onRefresh,
 }: MyRecipesListProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  // `tintColor` is iOS-only and `colors` is Android-only; both are needed for the
+  // spinner to follow the theme on each platform.
+  const refreshControl = (
+    <RefreshControl
+      refreshing={isRefreshing}
+      onRefresh={onRefresh}
+      tintColor={colors.textMuted}
+      colors={[colors.primary]}
+    />
+  );
 
   if (tab === 'drafts') {
     if (drafts.length === 0) {
       return (
-        <View style={styles.empty}>
-          <MaterialCommunityIcons name="file-document-edit-outline" size={56} color={colors.textMuted} />
-          <ThemedText variant="body" muted style={styles.emptyText}>
-            {t().drafts.empty}
-          </ThemedText>
-        </View>
+        <ScrollView
+          style={styles.list}
+          contentContainerStyle={styles.emptyContent}
+          refreshControl={refreshControl}
+        >
+          <View style={styles.empty}>
+            <MaterialCommunityIcons name="file-document-edit-outline" size={56} color={colors.textMuted} />
+            <ThemedText variant="body" muted style={styles.emptyText}>
+              {t().drafts.empty}
+            </ThemedText>
+          </View>
+        </ScrollView>
       );
     }
     return (
       <FlatList
+        refreshControl={refreshControl}
         data={drafts}
         keyExtractor={(d) => d.id}
         renderItem={({ item }) => (
@@ -78,26 +103,33 @@ export const MyRecipesList = ({
 
   if (items.length === 0) {
     return (
-      <View style={styles.empty}>
-        <MaterialCommunityIcons
-          name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
-          size={56}
-          color={colors.textMuted}
-        />
-        <ThemedText variant="body" muted style={styles.emptyText}>
-          {tab === 'saved' ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
-        </ThemedText>
-        {tab === 'created' ? (
-          <View style={styles.emptyAction}>
-            <PrimaryButton label={t().myRecipes.createNew} onPress={onCreate} />
-          </View>
-        ) : null}
-      </View>
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={styles.emptyContent}
+        refreshControl={refreshControl}
+      >
+        <View style={styles.empty}>
+          <MaterialCommunityIcons
+            name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
+            size={56}
+            color={colors.textMuted}
+          />
+          <ThemedText variant="body" muted style={styles.emptyText}>
+            {tab === 'saved' ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
+          </ThemedText>
+          {tab === 'created' ? (
+            <View style={styles.emptyAction}>
+              <PrimaryButton label={t().myRecipes.createNew} onPress={onCreate} />
+            </View>
+          ) : null}
+        </View>
+      </ScrollView>
     );
   }
 
   return (
     <FlatList
+      refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
       data={items as RecipeSummary[]}
       keyExtractor={(r) => r.id}
@@ -154,6 +186,11 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     flex: 1,
+  },
+  // flexGrow keeps the empty state pullable: the scroll content must fill the
+  // viewport so the gesture has a surface even with almost nothing rendered.
+  emptyContent: {
+    flexGrow: 1,
   },
   empty: {
     alignItems: 'center',
