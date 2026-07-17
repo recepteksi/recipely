@@ -21,7 +21,8 @@
  */
 
 import { act } from 'react-test-renderer';
-import { RefreshControl } from 'react-native';
+import { RefreshControl, ScrollView } from 'react-native';
+import type { ReactTestInstance } from 'react-test-renderer';
 import { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -31,6 +32,7 @@ import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body'
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import { sizes } from '@presentation/base/theme';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy-store-state';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
@@ -157,20 +159,38 @@ const Harness = ({ overrides }: HarnessProps): React.JSX.Element => {
   );
 };
 
+/** Renders the body with vm overrides and returns the tree root. */
+const render = (overrides: Partial<UseRecipeListResult>): ReactTestInstance => {
+  const { root } = renderComponent(<Harness overrides={overrides} />);
+  return root;
+};
+
 /**
- * The `refreshing` prop the mobile feed's RefreshControl actually receives.
- * Throws rather than returning a default if the control or the prop goes
- * missing, so these tests can't pass vacuously.
+ * The `refreshing` prop the rendered RefreshControl actually receives. Throws
+ * rather than returning a default if the control or the prop goes missing, so
+ * these tests can't pass vacuously.
  */
 const refreshingProp = (overrides: Partial<UseRecipeListResult>): boolean => {
-  const { root } = renderComponent(<Harness overrides={overrides} />);
-  const refreshing = root.findByType(RefreshControl).props.refreshing;
+  const refreshing = render(overrides).findByType(RefreshControl).props.refreshing;
 
   if (typeof refreshing !== 'boolean') {
     throw new Error(`expected a boolean 'refreshing' prop, got ${String(refreshing)}`);
   }
   return refreshing;
 };
+
+/**
+ * The vm overrides that land on the empty branch: loaded, mobile, not searching,
+ * zero filtered results. `withFilters` picks which empty copy renders — the
+ * "no results" + clear-filters button (filters active) or the "empty" + retry
+ * button (no filters).
+ */
+const emptyVm = (withFilters: boolean): Partial<UseRecipeListResult> => ({
+  state: { status: 'loaded', recipes: [] },
+  filteredRecipes: [],
+  activeFilterCount: withFilters ? 1 : 0,
+  filters: withFilters ? { ...emptyFilters, cuisines: [CuisineKey.Italian] } : emptyFilters,
+});
 
 describe('RecipeListBody — mobile RefreshControl wiring', () => {
   // AppThemeProvider hydrates theme/preference from async storage on mount; let
@@ -216,5 +236,61 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
     // Guards the inverse mis-wiring: `isPullRefreshing` must be the source of
     // truth, not a value derived from `state`.
     expect(refreshingProp({ isPullRefreshing: true })).toBe(true);
+  });
+
+  it('offsets the spinner below the collapsing header so it is not hidden behind it', () => {
+    // The header band is absolutely positioned and opaque over the list; without
+    // this offset the spinner renders behind it and reads as no refresh at all.
+    const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
+
+    expect(control.props.progressViewOffset).toBe(sizes.homeHeaderMax);
+  });
+
+  it('binds the feed pull handler to onRefresh', () => {
+    const onRefresh = jest.fn();
+
+    const control = render({ onRefresh }).findByType(RefreshControl);
+
+    expect(control.props.onRefresh).toBe(onRefresh);
+  });
+});
+
+describe('RecipeListBody — empty state is pullable', () => {
+  // Same async-storage settle as the sibling body suites (see above).
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  // `true` renders the "no results" + clear-filters branch, `false` the "empty"
+  // + retry branch — both must sit on the same pullable surface.
+  const FLAVORS: readonly boolean[] = [true, false];
+
+  it.each(FLAVORS)('hangs the RefreshControl off a ScrollView (filters active: %s)', (withFilters) => {
+    const onRefresh = jest.fn();
+
+    const root = render({ ...emptyVm(withFilters), onRefresh });
+
+    // A plain View would render the icon and copy but swallow the pull gesture:
+    // the control must hang off the ScrollView that replaced it.
+    const scrollView = root.findByType(ScrollView);
+    expect(scrollView.props.refreshControl).toBeDefined();
+    expect(root.findByType(RefreshControl).props.onRefresh).toBe(onRefresh);
+  });
+
+  it.each(FLAVORS)('mirrors the pull flag on the empty surface (filters active: %s)', (withFilters) => {
+    expect(refreshingProp({ ...emptyVm(withFilters), isPullRefreshing: true })).toBe(true);
+    expect(refreshingProp({ ...emptyVm(withFilters), isPullRefreshing: false })).toBe(false);
+  });
+
+  it.each(FLAVORS)('lets the empty content grow so the pull gesture has a surface (filters active: %s)', (withFilters) => {
+    const root = render(emptyVm(withFilters));
+
+    // Without flexGrow the content collapses to its natural height and there is
+    // nothing tall enough to pull on.
+    const contentStyle = root.findByType(ScrollView).props.contentContainerStyle;
+    expect(contentStyle).toEqual(expect.objectContaining({ flexGrow: 1 }));
   });
 });
