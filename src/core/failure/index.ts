@@ -1,0 +1,13 @@
+export { Failure } from '@core/failure/failure';
+export { ErrorMessageKey } from '@core/failure/error-message-key';
+export { NetworkFailure } from './network-failure';
+export { TimeoutFailure } from './timeout-failure';
+export { UnauthorizedFailure } from './unauthorized-failure';
+export { ForbiddenFailure } from './forbidden-failure';
+export { NotFoundFailure } from './not-found-failure';
+export { ValidationFailure } from './validation-failure';
+export type { ValidationFieldError } from '@core/failure/validation-field-error';
+export { ConflictFailure } from './conflict-failure';
+export { RateLimitFailure } from './rate-limit-failure';
+export { ServerFailure } from './server-failure';
+export { UnknownFailure } from './unknown-failure';

@@ -1,0 +1,26 @@
+import { fail } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import { ValidationFailure, type Failure } from '@core/failure';
+import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
+import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
+
+/**
+ * Submits user feedback via the Help & Feedback form.
+ * Validates that `message` is non-empty before delegating to the repository.
+ * Trims both `subject` and `message` before dispatch so the backend
+ * does not receive leading/trailing whitespace.
+ */
+export class SubmitFeedbackUseCase {
+  constructor(private readonly repo: IFeedbackRepository) {}
+
+  async execute(input: FeedbackSubmission): Promise<Result<void, Failure>> {
+    if (input.message.trim() === '') {
+      return fail(new ValidationFailure('Message is required', 'message'));
+    }
+
+    return this.repo.submitFeedback({
+      subject: input.subject.trim(),
+      message: input.message.trim(),
+    });
+  }
+}

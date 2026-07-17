@@ -66,6 +66,17 @@ npm run ios
 npm run android
 ```
 
+### VS Code Run & Debug (Dev / Prod)
+
+This repository includes `.vscode/launch.json` with ready-to-run profiles:
+
+- `Recipely: Expo (Dev)` -> `npm run start:dev`
+- `Recipely: Expo (Prod)` -> `npm start`
+- `Recipely: Web (Dev)` -> `npm run web:dev`
+- `Recipely: Web (Prod)` -> `npm run web`
+
+Open **Run and Debug** in VS Code and start the profile you need.
+
 ### Test Credentials
 
 The app uses DummyJSON's auth API. Use these credentials to log in:

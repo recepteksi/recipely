@@ -1,0 +1,87 @@
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
+import { useTheme } from '@presentation/base/theme/use-theme';
+import { t } from '@presentation/i18n';
+import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
+import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
+import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
+import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create-recipe-preview';
+import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
+import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
+
+export const CreateRecipeScreen = (): React.JSX.Element => {
+  const colors = useTheme().colors;
+  const vm = useCreateRecipe();
+
+  if (vm.phase === 'prompt') {
+    return (
+      <KeyboardAvoider style={styles.root}>
+        <ResponsiveContainer route="createRecipe" gutter={false} fill>
+          <PromptPhase
+            insets={vm.insets}
+            prompt={vm.prompt}
+            generateError={vm.generateError}
+            onChangePrompt={vm.onChangePrompt}
+            onAppendChip={vm.onAppendChip}
+            onGenerate={vm.onGenerate}
+            onStartBlank={vm.onStartBlank}
+            onClose={vm.onClose}
+            latestDraft={vm.latestDraft}
+            onResumeDraft={vm.onResumeDraft}
+          />
+        </ResponsiveContainer>
+      </KeyboardAvoider>
+    );
+  }
+
+  if (vm.phase === 'generating') {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+        <ResponsiveContainer route="createRecipe" gutter={false} fill>
+          <GeneratingView activeStep={vm.genStep} variant={vm.importing ? 'import' : 'generate'} />
+        </ResponsiveContainer>
+      </View>
+    );
+  }
+
+  return (
+    <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
+      <ResponsiveContainer route="createRecipe" gutter={false} fill>
+        <CreateRecipePreview vm={vm} />
+      </ResponsiveContainer>
+
+      <PhotosSheet
+        visible={vm.photosOpen}
+        media={vm.recipe.media}
+        onAdd={vm.onAddMedia}
+        onRemove={vm.onRemoveMedia}
+        onSetCover={vm.onSetCover}
+        onClose={vm.onClosePhotos}
+      />
+      <ExitSheet
+        visible={vm.exitOpen}
+        onSaveDraft={vm.onSaveDraftAndExit}
+        onDiscard={vm.onDiscardAndExit}
+        onKeepEditing={vm.onKeepEditing}
+      />
+      <ConfirmSheet
+        visible={vm.saveError !== null}
+        title={t().createRecipe.saveErrorTitle}
+        message={vm.saveError?.message ?? ''}
+        confirmLabel={t().common.retry}
+        onConfirm={vm.onConfirmSaveError}
+        onClose={vm.onCloseSaveError}
+      />
+    </KeyboardAvoider>
+  );
+};
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});
+
+export default CreateRecipeScreen;
