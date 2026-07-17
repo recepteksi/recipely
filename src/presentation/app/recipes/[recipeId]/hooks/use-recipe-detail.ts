@@ -12,6 +12,7 @@ import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-tax
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
+import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media-item';
 
 /**
@@ -116,7 +117,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       setCommentInput('');
       setSubmitError(null);
     } else {
-      setSubmitError(t().comments.error);
+      // WHY: the store records the real failure on its `error` field rather than
+      // throwing — resolve the copy from it so a dropped connection or an expired
+      // session doesn't read as a generic "try again" prompt. The static string is
+      // only a defensive fallback: the store always sets a failure on `false`.
+      const failure = commentsStore.getState().byRecipe[recipeId]?.error;
+      setSubmitError(failure != null ? failureToastMessage(failure) : t().comments.error);
     }
   }, [commentInput, commentsStore, recipeId]);
 
