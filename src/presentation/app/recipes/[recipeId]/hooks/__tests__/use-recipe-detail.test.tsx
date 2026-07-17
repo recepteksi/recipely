@@ -1,0 +1,296 @@
+/**
+ * Regression tests for `useRecipeDetail`'s comment-submit error copy.
+ *
+ * The bug: `handleAddComment` always set `submitError` to the static
+ * `t().comments.error` ("Failed to post. Please try again.") whenever the post
+ * failed — so a dropped connection or an expired session read as a generic
+ * "try again" prompt, telling the user to retry something that could not
+ * possibly succeed. The store had the real failure on `byRecipe[id].error` the
+ * whole time; the hook simply never read it.
+ *
+ * The invariant locked in here: the copy shown to the user is resolved FROM the
+ * store's failure (`failureToastMessage`), and the static string survives only
+ * as the defensive fallback for the (production-unreachable) case where the
+ * store reports `false` without recording a failure. Test 1 asserts the
+ * resolved network copy verbatim, so the pre-fix implementation fails it.
+ *
+ * Strategy: the real `configureCommentsStore` is used (not a stub) so the
+ * `error` field is written by production code — the exact seam the fix depends
+ * on; only `AddCommentUseCase` is faked. The remaining stores are hand-built
+ * Zustand stores supplied through a real `StoresProvider`, and the hook is
+ * driven by a probe component — matching `use-save-recipe.test.tsx` and
+ * `use-recipe-author.test.tsx`. Sibling hooks that only add unrelated reads
+ * (author fetch, taxonomy labels, keyboard scrolling) and expo-router are
+ * module-mocked.
+ */
+
+import { act } from 'react-test-renderer';
+import { create } from 'zustand';
+import { NetworkFailure, type Failure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import { Comment, type CommentProps } from '@domain/comments/comment';
+import { configureCommentsStore } from '@application/comments/configure-comments-store';
+import { defaultRecipeState } from '@application/comments/default-recipe-comments-state';
+import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
+import type { CommentsStoreState } from '@application/comments/comments-store-state';
+import type { CommentsStore } from '@application/comments/comments-store';
+import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
+import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
+import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
+import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import type { AuthStoreState } from '@application/auth/auth-store-state';
+import type { RecipeDetailStoreState } from '@application/recipes/recipe-detail-store-state';
+import { AuthSession } from '@domain/auth/auth-session';
+import { User } from '@domain/auth/user';
+import { Email } from '@domain/common/email';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
+import { renderComponent } from '@presentation/base/test-support/render-component';
+import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
+import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
+import { t } from '@presentation/i18n';
+
+const RECIPE_ID = 'recipe-3';
+const USER_ID = 'user-1';
+
+// ─── module mocks ────────────────────────────────────────────────────────────
+
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() })),
+  usePathname: jest.fn(() => `/recipes/${'recipe-3'}`),
+  useLocalSearchParams: jest.fn(() => ({ recipeId: 'recipe-3' })),
+}));
+
+jest.mock('@presentation/base/feedback/show-toast', () => ({
+  showErrorToast: jest.fn(),
+}));
+
+// Sibling hooks that only add unrelated reads (a DI-resolved author fetch, the
+// taxonomy store, and RN Keyboard listeners) — none of them touch submitError.
+jest.mock('@presentation/app/recipes/[recipeId]/hooks/use-recipe-author', () => ({
+  useRecipeAuthor: jest.fn(() => ({ status: 'unavailable' })),
+}));
+
+jest.mock('@presentation/app/recipes/shared/hooks/use-taxonomy-label', () => ({
+  useTaxonomyLabel: jest.fn(() => ({
+    cuisineLabel: () => ({ name: 'Italian', emoji: '🍝' }),
+    categoryLabel: () => ({ name: 'Dinner', emoji: '🍽️' }),
+  })),
+}));
+
+jest.mock('@presentation/base/hooks/use-scroll-to-end-on-keyboard', () => ({
+  useScrollToEndOnKeyboard: jest.fn(() => jest.fn()),
+}));
+
+// ─── fixtures ────────────────────────────────────────────────────────────────
+
+const makeComment = (overrides: Partial<CommentProps> = {}): Comment => {
+  const result = Comment.create({
+    id: 'c1',
+    body: 'Looks delicious!',
+    authorId: USER_ID,
+    recipeId: RECIPE_ID,
+    createdAt: new Date('2026-05-11T12:00:00.000Z'),
+    authorDisplayName: 'Ada Lovelace',
+    authorPhotoUrl: null,
+    likeCount: 0,
+    likedByMe: false,
+    ...overrides,
+  });
+  if (!result.ok) throw new Error('Test setup expected a valid Comment');
+  return result.value;
+};
+
+/** Unwraps a domain `Result`, throwing in-test if construction unexpectedly fails. */
+const unwrap = <T,>(result: Result<T, Failure>): T => {
+  if (!result.ok) throw new Error('Test fixture construction failed');
+  return result.value;
+};
+
+const buildSession = (userId: string): AuthSession => {
+  const email = unwrap(Email.create('test@example.com'));
+  const user = unwrap(User.create({ id: userId, email, displayName: 'Test User' }));
+  return unwrap(
+    AuthSession.create({
+      id: 'session-1',
+      accessToken: 'access-token',
+      expiresAt: new Date(Date.now() + 3_600_000),
+      user,
+    }),
+  );
+};
+
+/**
+ * Builds a real comments store whose `addComment` is backed by the given fake
+ * use-case result — so `byRecipe[id].error` is written by the production
+ * `createAddCommentAction`, not by the test.
+ */
+const makeRealCommentsStore = (
+  execute: jest.Mock<Promise<Result<Comment, Failure>>, [{ recipeId: string; body: string }]>,
+): CommentsStore =>
+  configureCommentsStore({
+    addComment: { execute } as unknown as AddCommentUseCase,
+    listComments: { execute: jest.fn() } as unknown as ListCommentsUseCase,
+    deleteComment: { execute: jest.fn() } as unknown as DeleteCommentUseCase,
+    likeComment: { execute: jest.fn() } as unknown as LikeCommentUseCase,
+    unlikeComment: { execute: jest.fn() } as unknown as UnlikeCommentUseCase,
+  });
+
+/**
+ * Assembles the eight stores `useRecipeDetail` pulls from `useStores`. Only the
+ * comments store carries real behaviour; the rest are seeded to the quietest
+ * state that keeps the hook's effects from firing (recipe kept `loading` so no
+ * fetch, no comment load, and no like sync runs during these tests).
+ */
+const makeStores = (commentsStore: CommentsStore): Stores => {
+  const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
+    byId: { [RECIPE_ID]: { status: 'loading' } },
+    load: jest.fn(),
+    replace: jest.fn(),
+    remove: jest.fn(),
+  }));
+
+  const authStore = create<AuthStoreState>(
+    () =>
+      ({
+        state: { status: 'authenticated', session: buildSession(USER_ID) },
+      }) as unknown as AuthStoreState,
+  );
+
+  const savedRecipesStore = create(() => ({ savedIds: new Set<string>() }));
+  const favoritesStore = create(() => ({ isLoading: false, error: null }));
+  const createdRecipesStore = create(() => ({
+    findById: () => undefined,
+    deleteState: { status: 'idle' as const },
+    loadMyRecipes: jest.fn(),
+  }));
+  const likesStore = create(() => ({ byRecipe: {}, syncFromApi: jest.fn() }));
+  const userProfileStore = create(() => ({ state: { status: 'idle' as const }, load: jest.fn() }));
+
+  return {
+    recipeDetailStore,
+    savedRecipesStore,
+    createdRecipesStore,
+    authStore,
+    favoritesStore,
+    commentsStore,
+    likesStore,
+    userProfileStore,
+  } as unknown as Stores;
+};
+
+/** Renders a probe that captures the live hook output on every render. */
+const driveHook = (commentsStore: CommentsStore): { latest: () => UseRecipeDetailResult } => {
+  let latest: UseRecipeDetailResult | null = null;
+
+  const Probe = (): null => {
+    latest = useRecipeDetail();
+    return null;
+  };
+
+  renderComponent(
+    <StoresProvider value={makeStores(commentsStore)}>
+      <Probe />
+    </StoresProvider>,
+  );
+
+  return {
+    latest: () => {
+      if (latest === null) throw new Error('Probe never rendered');
+      return latest;
+    },
+  };
+};
+
+/** Types a comment body into the input, then submits it and flushes the post. */
+const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<void> => {
+  await act(async () => {
+    latest().onChangeCommentInput(body);
+  });
+
+  await act(async () => {
+    latest().onAddComment();
+  });
+};
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+// ─── the regression ──────────────────────────────────────────────────────────
+
+describe('useRecipeDetail — submitError after a failed comment post', () => {
+  it('shows the copy resolved from the store failure, not the generic retry string', async () => {
+    const execute = jest.fn().mockResolvedValue(fail(new NetworkFailure('offline')));
+    const { latest } = driveHook(makeRealCommentsStore(execute));
+
+    await typeAndSubmit(latest, 'Great recipe!');
+
+    // The network failure's own short copy ("You're offline") — the pre-fix
+    // hook showed t().comments.error here regardless of what went wrong.
+    expect(latest().submitError).toBe(t().errors.network.short);
+    expect(latest().submitError).not.toBe(t().comments.error);
+  });
+
+  it('keeps the typed comment in the input so a failed post is not lost', async () => {
+    const execute = jest.fn().mockResolvedValue(fail(new NetworkFailure('offline')));
+    const { latest } = driveHook(makeRealCommentsStore(execute));
+
+    await typeAndSubmit(latest, 'Great recipe!');
+
+    expect(latest().commentInput).toBe('Great recipe!');
+  });
+
+  it('falls back to the generic error when the store records no failure', async () => {
+    // The defensive branch: the real store always sets a failure alongside
+    // `false`, so this shape only exists to keep submitError non-empty if that
+    // contract ever breaks. A stub store is the only way to produce it.
+    const commentsStore = create<CommentsStoreState>(() => ({
+      byRecipe: { [RECIPE_ID]: { ...defaultRecipeState(), error: null } },
+      load: jest.fn(),
+      loadMore: jest.fn(),
+      addComment: jest.fn().mockResolvedValue(false),
+      deleteComment: jest.fn(),
+      toggleLike: jest.fn(),
+    })) as unknown as CommentsStore;
+
+    const { latest } = driveHook(commentsStore);
+
+    await typeAndSubmit(latest, 'Great recipe!');
+
+    expect(latest().submitError).toBe(t().comments.error);
+  });
+});
+
+// ─── the success path ────────────────────────────────────────────────────────
+
+describe('useRecipeDetail — submitError after a successful comment post', () => {
+  it('clears a previous error and resets the input once the post succeeds', async () => {
+    const execute = jest
+      .fn()
+      .mockResolvedValueOnce(fail(new NetworkFailure('offline')))
+      .mockResolvedValueOnce(ok(makeComment()));
+    const { latest } = driveHook(makeRealCommentsStore(execute));
+
+    await typeAndSubmit(latest, 'Great recipe!');
+    expect(latest().submitError).toBe(t().errors.network.short);
+
+    await act(async () => {
+      latest().onAddComment();
+    });
+
+    expect(latest().submitError).toBeNull();
+    expect(latest().commentInput).toBe('');
+  });
+
+  it('does not post a whitespace-only comment', async () => {
+    const execute = jest.fn().mockResolvedValue(ok(makeComment()));
+    const { latest } = driveHook(makeRealCommentsStore(execute));
+
+    await typeAndSubmit(latest, '   ');
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(latest().submitError).toBeNull();
+  });
+});
