@@ -11,6 +11,7 @@ import { WebMyRecipesTabs } from '@presentation/app/my-recipes/body/web-my-recip
 import { MyRecipesHeader } from '@presentation/app/my-recipes/body/my-recipes-header';
 import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
+import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -35,6 +36,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const drafts = draftsStore((s) => s.drafts);
 
   const [tab, setTab] = useState<Tab>('saved');
+  const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
   const gridColumns = useMemo<number>(() => {
@@ -126,6 +128,8 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onOpenDraft={openDraft}
             onDeleteDraft={(id) => void deleteDraft(id)}
             onCreate={openCreate}
+            isRefreshing={isRefreshing}
+            onRefresh={onRefresh}
           />
         </ResponsiveContainer>
       </ScreenContainer>
