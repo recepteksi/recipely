@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 
 const NOTIF_BTN_SIZE = 38;
 const AVATAR_SIZE = 36;
@@ -147,6 +147,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: fontSizes.nano + 1,
     fontWeight: '700',
+    lineHeight: sizes.notifBadgeLineHeight,
+    includeFontPadding: false,
   },
   avatarBtn: {
     width: NOTIF_BTN_SIZE,
