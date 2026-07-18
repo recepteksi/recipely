@@ -682,6 +682,7 @@ export const tr: Translations = {
     today: 'Bugün',
     yesterday: 'Dün',
     earlier: 'Daha önce',
+    daysShort: '{n}g',
     commented: 'tarife yorum yaptı:',
     liked: 'beğendi:',
     saved: 'kaydetti:',

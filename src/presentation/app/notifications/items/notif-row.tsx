@@ -71,7 +71,9 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
           </ThemedText>
         ) : null}
         <ThemedText variant="caption" muted style={styles.timestamp}>
-          {item.daysAgo === 0 ? t().notifications.today : `${item.daysAgo}d`}
+          {item.daysAgo === 0
+            ? t().notifications.today
+            : t().notifications.daysShort.replace('{n}', String(item.daysAgo))}
         </ThemedText>
       </View>
       {!item.read && (
