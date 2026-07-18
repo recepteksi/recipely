@@ -21,13 +21,25 @@ if (!fs.existsSync(dist)) {
   process.exit(1);
 }
 
+// Static assets copied verbatim from public/ (legal/*.html, about/, …) are
+// never co-located page strays — a file whose relative path also exists in
+// public/ must survive the prune (Firebase rewrites point at them).
+const publicDir = 'public';
+const isPublicAsset = (p) =>
+  fs.existsSync(path.join(publicDir, path.relative(dist, p)));
+
 const keep = (base) => base === 'index.html' || base.startsWith('+') || base.startsWith('[');
 let pruned = 0;
 const walk = (dir) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walk(p);
-    else if (e.name.endsWith('.html') && !keep(e.name) && !(dir === dist && e.name === '_sitemap.html')) {
+    else if (
+      e.name.endsWith('.html') &&
+      !keep(e.name) &&
+      !(dir === dist && e.name === '_sitemap.html') &&
+      !isPublicAsset(p)
+    ) {
       fs.rmSync(p);
       pruned += 1;
     }
