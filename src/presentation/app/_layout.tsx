@@ -14,7 +14,7 @@ import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
+import { CollapsingTabBarHost } from '@presentation/base/widgets/navigation/collapsing-tab-bar-host';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
@@ -69,14 +69,15 @@ const WebShellChrome = (): React.JSX.Element | null => {
 
 /**
  * The one and only mobile TabBar, hosted below the Stack so screen
- * transitions animate the content area while the bar itself never moves.
- * Visibility and the active tab are pathname-driven; the TabBar widget
- * additionally hides itself on the web-shell breakpoint.
+ * transitions animate the content area above it. Visibility and the active
+ * tab are pathname-driven; when navigation crosses into a tab-less route the
+ * host collapses the bar's height in sync with the push transition (an
+ * instant unmount would jump the outgoing screen mid-transition). The TabBar
+ * widget additionally hides itself on the web-shell breakpoint.
  */
 const RootTabBar = (): React.JSX.Element | null => {
   const state = useTabBarState();
-  if (state === null) return null;
-  return <TabBar active={state.active} onChange={state.onChange} />;
+  return <CollapsingTabBarHost state={state} />;
 };
 
 const RootStack = (): React.JSX.Element => {
