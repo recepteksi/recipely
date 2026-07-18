@@ -95,6 +95,11 @@ export const sizes = {
   homeHeaderMax: 132,
   homeHeaderMin: 0,
   homeTitleShrink: 96,
+  // Android pull-to-refresh spinner offset for the home feed. Android's
+  // SwipeRefreshLayout rests the circle at `offset + 64dp(target) - diameter`,
+  // so passing homeHeaderMax directly parks it ~60dp below the band, floating
+  // over the AI banner; this value tucks its resting spot just under the band.
+  homeRefreshOffsetAndroid: 92,
   fab: 56,
   fabExtendedHeight: 48,
   // Web home (WebRecipesPage) redesign (Jun 2026).
