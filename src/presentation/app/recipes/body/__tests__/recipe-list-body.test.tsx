@@ -21,7 +21,7 @@
  */
 
 import { act } from 'react-test-renderer';
-import { RefreshControl, ScrollView } from 'react-native';
+import { Platform, RefreshControl, ScrollView } from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { create } from 'zustand';
@@ -241,9 +241,26 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
   it('offsets the spinner below the collapsing header so it is not hidden behind it', () => {
     // The header band is absolutely positioned and opaque over the list; without
     // this offset the spinner renders behind it and reads as no refresh at all.
+    // iOS applies the value as a raw frame shift, so the full band height is right.
     const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
 
     expect(control.props.progressViewOffset).toBe(sizes.homeHeaderMax);
+  });
+
+  it('uses the smaller Android offset so the spinner rests under the band, not over the AI banner', () => {
+    // Android's SwipeRefreshLayout rests the circle at `offset + 64dp - diameter`,
+    // so the full band height parks it ~60dp too low, floating over content.
+    const selectSpy = jest
+      .spyOn(Platform, 'select')
+      .mockImplementation((spec) => spec.android ?? (spec as { default?: unknown }).default);
+
+    try {
+      const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
+
+      expect(control.props.progressViewOffset).toBe(sizes.homeRefreshOffsetAndroid);
+    } finally {
+      selectSpy.mockRestore();
+    }
   });
 
   it('binds the feed pull handler to onRefresh', () => {

@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -160,13 +160,20 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         refreshControl={
           // `progressViewOffset` drops the spinner below the collapsing header
           // band, which is absolutely positioned and opaque over the list — the
-          // spinner would otherwise render behind it and be invisible.
+          // spinner would otherwise render behind it and be invisible. iOS
+          // applies the value as a raw frame shift, so the full band height is
+          // right; Android's SwipeRefreshLayout rests the circle lower (see
+          // homeRefreshOffsetAndroid) and needs the smaller value to tuck the
+          // spinner under the band instead of floating it over the AI banner.
           // `tintColor` is iOS-only and `colors` is Android-only; both are
           // needed for the spinner to follow the theme on each platform.
           <RefreshControl
             refreshing={vm.isPullRefreshing}
             onRefresh={vm.onRefresh}
-            progressViewOffset={sizes.homeHeaderMax}
+            progressViewOffset={Platform.select({
+              android: sizes.homeRefreshOffsetAndroid,
+              default: sizes.homeHeaderMax,
+            })}
             tintColor={colors.textMuted}
             colors={[colors.primary]}
           />
