@@ -1,5 +1,4 @@
 import Constants from "expo-constants";
-import { Platform } from "react-native";
 
 // Build variant, injected by app.config.ts into `extra.variant` at config
 // evaluation time (driven by the APP_VARIANT env var). Lets the dev build
@@ -50,16 +49,13 @@ export const WEB_APP_BASE_URL: string =
   process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
   DEFAULT_WEB_APP_BASE_URL;
 
-// Public legal pages served as static HTML. On web they ship with the web app
-// itself (recipely.net/privacy, Firebase-rewritten to /legal/*.html) so users
-// stay on the app's own origin. On native we open the backend-hosted copy
-// (api.recipely.net/privacy), which is also the Privacy Policy URL submitted
-// to Google Play. Both copies render identical content.
-const LEGAL_ORIGIN: string =
-  Platform.OS === "web" ? WEB_APP_BASE_URL : SERVER_URL;
-
-export const PRIVACY_POLICY_URL: string = `${LEGAL_ORIGIN}/privacy`;
-export const TERMS_OF_USE_URL: string = `${LEGAL_ORIGIN}/terms`;
+// Public legal pages served as static HTML on the production web origin
+// (recipely.net/privacy|/terms, Firebase-rewritten to /legal/*.html). Always
+// the production site, regardless of build variant or platform: the dev
+// backend and the dev web build don't ship these pages, and the legal text is
+// environment-independent anyway.
+export const PRIVACY_POLICY_URL: string = `${PROD_WEB_APP_BASE_URL}/privacy`;
+export const TERMS_OF_USE_URL: string = `${PROD_WEB_APP_BASE_URL}/terms`;
 
 /** Shareable canonical URL for a recipe — opens the app's recipes/[recipeId] route. */
 export const recipeWebUrl = (recipeId: string): string =>
