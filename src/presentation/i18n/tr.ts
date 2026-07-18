@@ -529,7 +529,6 @@ export const tr: Translations = {
     setCover: 'Kapak yap',
     remove: 'Fotoğrafı kaldır',
     more: 'Ekle',
-    takePhoto: 'Fotoğraf çek',
   },
   timer: {
     done: 'Bitti',
