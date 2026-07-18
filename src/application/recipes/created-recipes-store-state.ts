@@ -4,6 +4,7 @@ import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
+import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
 import type { CreateRecipeState } from '@application/recipes/create-recipe-state';
 import type { GenerateRecipeState } from '@application/recipes/generate-recipe-state';
 import type { UpdateRecipeState } from '@application/recipes/update-recipe-state';
@@ -40,7 +41,7 @@ export interface CreatedRecipesStoreState {
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
-  ) => Promise<Recipe | null>;
+  ) => Promise<RefinedRecipe | null>;
   updateRecipe: (id: string, input: UpdateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   deleteRecipe: (id: string) => Promise<void>;
   resetCreateState: () => void;

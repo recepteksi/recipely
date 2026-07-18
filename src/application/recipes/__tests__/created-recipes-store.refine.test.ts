@@ -13,6 +13,7 @@ import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
+import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
@@ -84,13 +85,13 @@ const fakeRecipeDetailStore = {
 
 interface DeferredRefineUseCase {
   useCase: RefineRecipeUseCase;
-  resolve: (r: Result<Recipe, Failure>) => void;
+  resolve: (r: Result<RefinedRecipe, Failure>) => void;
   lastInput: RefineRecipeInput | null;
 }
 
 const makeDeferredRefineUseCase = (): DeferredRefineUseCase => {
-  let resolveFn: (r: Result<Recipe, Failure>) => void = () => undefined;
-  const promise = new Promise<Result<Recipe, Failure>>((res) => {
+  let resolveFn: (r: Result<RefinedRecipe, Failure>) => void = () => undefined;
+  const promise = new Promise<Result<RefinedRecipe, Failure>>((res) => {
     resolveFn = res;
   });
   const ref: DeferredRefineUseCase = {
@@ -106,7 +107,7 @@ const makeDeferredRefineUseCase = (): DeferredRefineUseCase => {
   return ref;
 };
 
-const makeStoreWithRefineResult = (result: Result<Recipe, Failure>) => {
+const makeStoreWithRefineResult = (result: Result<RefinedRecipe, Failure>) => {
   const refineUseCase = {
     execute: (_input: RefineRecipeInput) => Promise.resolve(result),
   } as unknown as RefineRecipeUseCase;
@@ -126,7 +127,7 @@ const makeStoreWithRefineResult = (result: Result<Recipe, Failure>) => {
 
 describe('createdRecipesStore.refineRecipe', () => {
   it('starts with refineState idle', () => {
-    const store = makeStoreWithRefineResult(ok(makeRecipe()));
+    const store = makeStoreWithRefineResult(ok({ recipe: makeRecipe() }));
 
     expect(store.getState().refineState).toEqual({ status: 'idle' });
   });
@@ -149,13 +150,14 @@ describe('createdRecipesStore.refineRecipe', () => {
 
     expect(store.getState().refineState).toEqual({ status: 'refining' });
 
-    deferred.resolve(ok(makeRecipe()));
+    deferred.resolve(ok({ recipe: makeRecipe() }));
     await pending;
   });
 
-  it('on success sets refineState.success, returns the Recipe, and does NOT add it to recipes', async () => {
+  it('on success sets refineState.success from refined.recipe, returns the RefinedRecipe, and does NOT add it to recipes', async () => {
     const recipe = makeRecipe({ id: 'r-refined' });
-    const store = makeStoreWithRefineResult(ok(recipe));
+    const refined: RefinedRecipe = { recipe, summary: 'Added garlic.', suggestion: 'Try basil.' };
+    const store = makeStoreWithRefineResult(ok(refined));
 
     const returned = await store.getState().refineRecipe(snapshot, 'add garlic');
 
@@ -164,7 +166,7 @@ describe('createdRecipesStore.refineRecipe', () => {
     if (s.refineState.status === 'success') {
       expect(s.refineState.recipe).toBe(recipe);
     }
-    expect(returned).toBe(recipe);
+    expect(returned).toBe(refined);
     // WHY: refine returns a NOT-persisted preview; prepending it to `recipes`
     // would surface a phantom "My Recipes" entry that does not exist on the server.
     expect(s.recipes).toEqual([]);
@@ -173,7 +175,7 @@ describe('createdRecipesStore.refineRecipe', () => {
   it('leaves existing recipes untouched when a recipe is refined', async () => {
     const existing = makeRecipe({ id: 'existing' });
     const refined = makeRecipe({ id: 'refined' });
-    const store = makeStoreWithRefineResult(ok(refined));
+    const store = makeStoreWithRefineResult(ok({ recipe: refined }));
     store.getState().add(existing);
 
     await store.getState().refineRecipe(snapshot, 'add garlic');
@@ -197,7 +199,7 @@ describe('createdRecipesStore.refineRecipe', () => {
   });
 
   it('resetRefineState returns refineState to idle', async () => {
-    const store = makeStoreWithRefineResult(ok(makeRecipe()));
+    const store = makeStoreWithRefineResult(ok({ recipe: makeRecipe() }));
 
     await store.getState().refineRecipe(snapshot, 'add garlic');
     expect(store.getState().refineState.status).toBe('success');

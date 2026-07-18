@@ -107,12 +107,14 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         set({ refineState: { status: 'error', failure: result.failure } });
         return null;
       }
-      const recipe = result.value;
+      const refined = result.value;
       // WHY: refine returns a NOT-persisted preview (same contract as generate).
       // It is surfaced via refineState only and must NOT be prepended to
-      // `recipes`, which would create a phantom "My Recipes" entry.
-      set({ refineState: { status: 'success', recipe } });
-      return recipe;
+      // `recipes`, which would create a phantom "My Recipes" entry. The full
+      // RefinedRecipe (recipe + AI summary/suggestion) is returned so the
+      // caller can surface the natural-language commentary.
+      set({ refineState: { status: 'success', recipe: refined.recipe } });
+      return refined;
     },
     updateRecipe: async (id, input, onProgress) => {
       set({ updateState: { status: 'updating' } });

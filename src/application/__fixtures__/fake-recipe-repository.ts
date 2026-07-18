@@ -7,6 +7,7 @@ import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
@@ -83,11 +84,11 @@ export class FakeRecipeRepository implements IRecipeRepository {
   refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RefinedRecipe, Failure>> {
     this.lastRefineCall = { currentRecipe, instruction };
     this.refineCallCount += 1;
     return Promise.resolve(
-      this.config.refineRecipeResult ?? ok(undefined as unknown as Recipe),
+      this.config.refineRecipeResult ?? ok(undefined as unknown as RefinedRecipe),
     );
   }
 
