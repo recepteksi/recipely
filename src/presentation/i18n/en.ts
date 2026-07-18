@@ -530,7 +530,6 @@ export const en = {
     setCover: 'Set cover',
     remove: 'Remove photo',
     more: 'Add more',
-    takePhoto: 'Take a photo',
   },
   timer: {
     done: 'Done',
