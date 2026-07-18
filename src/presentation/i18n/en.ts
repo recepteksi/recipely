@@ -477,6 +477,13 @@ export const en = {
     selectCategory: 'Select category',
     pickCuisineTitle: 'Choose a cuisine',
     pickCategoryTitle: 'Choose a category',
+    successTitle: 'Recipe saved',
+    successPublished: 'Your recipe is now published and visible on My Recipes.',
+    successUpdated: 'Your changes have been saved.',
+    viewRecipe: 'View recipe',
+    successDone: 'Done',
+    nameRequired: 'Add a recipe name.',
+    ingredientsRequired: 'Add at least one ingredient.',
   },
   cuisineNames: {
     TURKISH: 'Turkish',

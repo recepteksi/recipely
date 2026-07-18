@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -63,6 +64,7 @@ export const RecipePreviewEditor = ({
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
+  const scrollRef = useRef<ScrollView>(null);
   const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
@@ -70,8 +72,19 @@ export const RecipePreviewEditor = ({
   const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > 0).length;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > 0).length;
 
+  // Surface a rejected submission at the top of the form: the banner is pinned
+  // above the fold, so scroll the editor back up whenever a new message appears.
+  useEffect(() => {
+    if (missingMessage !== null) scrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, [missingMessage]);
+
   return (
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+    <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+      {missingMessage !== null ? (
+        <View style={styles.banner}>
+          <FormBanner message={missingMessage} />
+        </View>
+      ) : null}
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
         <RecipeImage uri={cover?.url} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
         <Pressable
@@ -172,12 +185,6 @@ export const RecipePreviewEditor = ({
             />
           ))}
         </EditableItemsSection>
-
-        {missingMessage !== null ? (
-          <ThemedText variant="caption" style={[styles.missing, { color: colors.danger }]}>
-            {missingMessage}
-          </ThemedText>
-        ) : null}
       </View>
 
       <TaxonomyPickerSheet
@@ -201,6 +208,10 @@ export const RecipePreviewEditor = ({
 const styles = StyleSheet.create({
   scroll: {
     paddingBottom: spacing.lg,
+  },
+  banner: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
   cover: {
     height: sizes.heroImageHeight,
@@ -240,8 +251,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.md,
-  },
-  missing: {
-    textAlign: 'center',
   },
 });

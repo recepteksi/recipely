@@ -104,5 +104,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     saveError: save.saveError,
     onConfirmSaveError: save.onConfirmSaveError,
     onCloseSaveError: save.onCloseSaveError,
+    saveSuccess: save.saveSuccess,
+    onSuccessPrimary: save.onSuccessPrimary,
+    onCloseSuccess: save.onCloseSuccess,
   };
 };

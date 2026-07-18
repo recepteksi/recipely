@@ -10,6 +10,7 @@ import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create
 import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
+import { SuccessSheet } from '@presentation/base/widgets/sheets/success-sheet';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -73,6 +74,26 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         confirmLabel={t().common.retry}
         onConfirm={vm.onConfirmSaveError}
         onClose={vm.onCloseSaveError}
+      />
+      <SuccessSheet
+        visible={vm.saveSuccess !== null}
+        title={t().createRecipe.successTitle}
+        message={
+          vm.saveSuccess?.mode === 'update'
+            ? t().createRecipe.successUpdated
+            : t().createRecipe.successPublished
+        }
+        primaryLabel={
+          vm.saveSuccess?.mode === 'update'
+            ? t().createRecipe.successDone
+            : t().createRecipe.viewRecipe
+        }
+        onPrimary={vm.onSuccessPrimary}
+        secondaryLabel={
+          vm.saveSuccess?.mode === 'publish' ? t().createRecipe.successDone : undefined
+        }
+        onSecondary={vm.saveSuccess?.mode === 'publish' ? vm.onCloseSuccess : undefined}
+        onClose={vm.onCloseSuccess}
       />
     </KeyboardAvoider>
   );

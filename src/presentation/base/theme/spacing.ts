@@ -60,6 +60,8 @@ export const sizes = {
   avatarMd: 56,
   avatarLg: 80,
   badgeSm: 28,
+  // Circular success disc behind the ✓ in the save-confirmation sheet.
+  successDisc: 64,
   notifBadge: 18,
   // Line height that keeps the unread count vertically centered inside the
   // 18px notifBadge circle (14px inner box after the 2px border).
