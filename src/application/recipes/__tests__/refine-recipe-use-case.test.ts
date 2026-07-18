@@ -44,16 +44,39 @@ const makeRecipe = (): Recipe => {
 };
 
 describe('RefineRecipeUseCase.execute', () => {
-  it('returns the refined Recipe and forwards the trimmed instruction to the repo', async () => {
+  it('returns the RefinedRecipe read model and forwards the trimmed instruction to the repo', async () => {
     const recipe = makeRecipe();
-    const repo = new FakeRecipeRepository({ refineRecipeResult: ok(recipe) });
+    const repo = new FakeRecipeRepository({
+      refineRecipeResult: ok({ recipe, summary: 'Added garlic.', suggestion: 'Try basil too.' }),
+    });
     const useCase = new RefineRecipeUseCase(repo);
 
     const r = await useCase.execute({ currentRecipe: snapshot, instruction: '  add garlic  ' });
 
     expect(repo.lastRefineCall).toEqual({ currentRecipe: snapshot, instruction: 'add garlic' });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value).toBe(recipe);
+    if (r.ok) {
+      expect(r.value.recipe).toBe(recipe);
+      expect(r.value.summary).toBe('Added garlic.');
+      expect(r.value.suggestion).toBe('Try basil too.');
+    }
+  });
+
+  // The use case must not "helpfully" default the commentary — absence is the
+  // signal build-refine-reply keys its i18n fallback off.
+  it('passes through a RefinedRecipe without summary or suggestion untouched', async () => {
+    const recipe = makeRecipe();
+    const repo = new FakeRecipeRepository({ refineRecipeResult: ok({ recipe }) });
+    const useCase = new RefineRecipeUseCase(repo);
+
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: 'add garlic' });
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.recipe).toBe(recipe);
+      expect(r.value.summary).toBeUndefined();
+      expect(r.value.suggestion).toBeUndefined();
+    }
   });
 
   // A blank refine instruction is NOT a blank prompt: a recipe already exists on

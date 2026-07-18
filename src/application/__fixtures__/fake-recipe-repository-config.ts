@@ -1,6 +1,7 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface FakeRecipeRepositoryConfig {
@@ -11,7 +12,7 @@ export interface FakeRecipeRepositoryConfig {
   createRecipeResult?: Result<Recipe, Failure>;
   generateRecipeResult?: Result<Recipe, Failure>;
   importInstagramRecipeResult?: Result<Recipe, Failure>;
-  refineRecipeResult?: Result<Recipe, Failure>;
+  refineRecipeResult?: Result<RefinedRecipe, Failure>;
   updateRecipeResult?: Result<Recipe, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
 }

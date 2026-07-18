@@ -170,6 +170,15 @@ const generated = (): FakeRecipeRepositoryConfig => ({
   generateRecipeResult: ok(makeRecipe()),
 });
 
+// Refine succeeded and the AI narrated what it changed: the RefinedRecipe read
+// model carries the preview recipe plus optional `summary` / `suggestion`.
+const refineSucceeded = (
+  commentary: { summary?: string; suggestion?: string } = {},
+): FakeRecipeRepositoryConfig => ({
+  generateRecipeResult: ok(makeRecipe()),
+  refineRecipeResult: ok({ recipe: makeRecipe(), ...commentary }),
+});
+
 // The generate flow never touches these — stubs that satisfy the stores'
 // construction-time dependency lists without exercising the sibling flows.
 const unusedUseCase = <T,>(): T =>
@@ -415,10 +424,11 @@ describe('useRecipeGeneration.runGenerate — chat transcript on failure', () =>
 
 // ─── the same regression, on the refine path ─────────────────────────────────
 //
-// `refineRecipe` returns `Recipe | null`, so the failure is collapsed at the store
-// boundary. The hook has to read it back off `refineState` — otherwise a refused
-// instruction and an unusable AI response, the exact pair the messageKey channel
-// exists to separate, both read as one flat "couldn't do that" in the transcript.
+// `refineRecipe` returns `RefinedRecipe | null`, so the failure is collapsed at
+// the store boundary. The hook has to read it back off `refineState` — otherwise
+// a refused instruction and an unusable AI response, the exact pair the
+// messageKey channel exists to separate, both read as one flat "couldn't do
+// that" in the transcript.
 
 const lastBubble = (history: readonly { content: string }[]): string =>
   history[history.length - 1]?.content ?? '';
@@ -465,6 +475,54 @@ describe('useRecipeGeneration.handleRefine — an unusable AI response', () => {
     await refine('make it spicier');
 
     expect(lastBubble(latest().chatHistory)).not.toContain('unexpected response');
+  });
+});
+
+// ─── the successful refine must speak in the AI's own words ──────────────────
+//
+// The backend now narrates each refinement (`summary` + `suggestion` on the
+// RefinedRecipe read model). The assistant bubble must carry that narration —
+// the canned "Updated!" survives only for an older backend that sends neither.
+
+describe('useRecipeGeneration.handleRefine — success with AI commentary', () => {
+  it('puts the summary in the assistant bubble instead of the canned aiUpdated copy', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe('Doubled the garlic.');
+  });
+
+  it('joins summary and suggestion with a blank line', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.', suggestion: 'Roast it first.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe('Doubled the garlic.\n\nRoast it first.');
+  });
+
+  it('falls back to the aiUpdated copy when the response has no summary', async () => {
+    const { latest, generate, refine } = driveHook(refineSucceeded());
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe(en.createRecipe.aiUpdated);
+  });
+
+  it('does not mark the commentary bubble as an error and raises no toast', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(latest().chatHistory[latest().chatHistory.length - 1]?.error).toBeUndefined();
+    expect(showErrorToast).not.toHaveBeenCalled();
+    expect(showDangerToast).not.toHaveBeenCalled();
   });
 });
 

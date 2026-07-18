@@ -16,6 +16,7 @@ import {
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/app/create-recipe/model/recipe-mapping';
+import { buildRefineReply } from '@presentation/app/create-recipe/model/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { Phase } from '@presentation/app/create-recipe/model/phase';
 import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/use-recipe-generation-args';
@@ -198,10 +199,11 @@ export const useRecipeGeneration = ({
       setChatInput('');
       setChatExpanded(true);
       setChatHistory((h) => [...h, { role: 'user', content: trimmed }]);
-      const result = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
-      if (result !== null) {
-        setRecipe((prev) => recipeToEditable(result, prev.media));
-        setChatHistory((h) => [...h, { role: 'assistant', content: t().createRecipe.aiUpdated }]);
+      const refined = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
+      if (refined !== null) {
+        setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
+        const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
+        setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
         createdRecipesStore.getState().resetRefineState();
         return;
       }
