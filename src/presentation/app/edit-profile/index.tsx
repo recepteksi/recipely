@@ -24,7 +24,10 @@ export const EditProfileScreen = (): React.JSX.Element => {
         onSave={vm.onSave}
       />
 
-      <KeyboardAvoider style={styles.flex} keyboardVerticalOffset={insets.top + spacing.xxl}>
+      {/* No keyboardVerticalOffset: the avoider's own layout already sits below
+          the header, so any extra offset is double-counted and shows up as a
+          same-sized blank band above the keyboard. */}
+      <KeyboardAvoider style={styles.flex}>
         <ScrollView
           contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
           keyboardShouldPersistTaps="handled"
