@@ -476,6 +476,13 @@ export const tr: Translations = {
     selectCategory: 'Kategori seç',
     pickCuisineTitle: 'Bir mutfak seç',
     pickCategoryTitle: 'Bir kategori seç',
+    successTitle: 'Tarif kaydedildi',
+    successPublished: 'Tarifin yayınlandı, artık Tariflerim\'de görünüyor.',
+    successUpdated: 'Değişikliklerin kaydedildi.',
+    viewRecipe: 'Tarifi gör',
+    successDone: 'Tamam',
+    nameRequired: 'Tarife bir ad ver.',
+    ingredientsRequired: 'En az bir malzeme ekle.',
   },
   cuisineNames: {
     TURKISH: 'Türk',

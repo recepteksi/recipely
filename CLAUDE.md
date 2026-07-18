@@ -13,6 +13,25 @@ persistent team `recipely-team` (`~/.claude/teams/recipely-team/config.json`) �
 Skip the team only for genuinely trivial one-liners (a typo, a version bump, a single-line
 config edit, a copy tweak). When in doubt, delegate.
 
+### Token economy (mandatory — maximum work per token)
+
+Every agent spawn starts cold and re-derives context; that is the expensive path. Rules:
+
+1. **Explore once, brief completely.** The lead does (or delegates ONE) exploration pass,
+   then hands each implementer a self-contained brief: exact file paths, verified APIs,
+   the precise changes wanted. An agent prompt that forces re-discovery is a bug.
+2. **Minimum spawns.** One implementer agent per task, and only when the change is large
+   or genuinely parallel. Small/medium edits, i18n additions, test updates, and gate runs
+   are done inline by the lead — no spawn.
+3. **`test-developer` only for new harnesses or large suites.** Routine specs are written
+   inline by whoever holds the context (lead or the same implementer, in the same spawn).
+4. **`code-reviewer`: one pass, diff-scoped.** Point it at `git diff dev...HEAD` at the
+   end; still blocking, but never multiple review rounds for style nits the gates catch.
+5. **`ui-designer` only for a genuinely new visual surface**, not for reusing existing
+   widgets/specs.
+6. **No polling, no repetition.** Background agents notify on completion; don't re-ask,
+   re-list, or re-read what is already in context.
+
 ### Roster
 
 | Agent | Owns |
@@ -27,6 +46,9 @@ config edit, a copy tweak). When in doubt, delegate.
 
 - **Feature** → (`ui-designer` first if it has a visual surface) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer`
 - **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test) → `code-reviewer`
+
+Both pipelines are subject to **Token economy** above: stages collapse into the lead or
+into a single implementer whenever the context is already in hand.
 
 Match each agent's tool capabilities to the work: read-only agents for research/review,
 full-capability agents for implementation. Run agents in parallel when their files don't overlap.

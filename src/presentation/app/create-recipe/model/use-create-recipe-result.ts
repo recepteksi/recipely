@@ -77,4 +77,9 @@ export interface UseCreateRecipeResult {
   saveError: { message: string; mode: 'publish' | 'update' } | null;
   onConfirmSaveError: () => void;
   onCloseSaveError: () => void;
+
+  // Save-success dialog.
+  saveSuccess: { mode: 'publish'; recipeId: string } | { mode: 'update' } | null;
+  onSuccessPrimary: () => void;
+  onCloseSuccess: () => void;
 }
