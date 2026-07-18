@@ -683,6 +683,7 @@ export const en = {
     today: 'Today',
     yesterday: 'Yesterday',
     earlier: 'Earlier',
+    daysShort: '{n}d',
     commented: 'commented on',
     liked: 'liked',
     saved: 'saved',

@@ -91,5 +91,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: fontSizes.nano,
     fontWeight: '700',
+    lineHeight: sizes.notifBadgeLineHeight,
+    includeFontPadding: false,
   },
 });

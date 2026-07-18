@@ -103,7 +103,23 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={vm.onOpenRecipe} />;
   } else if (filteredRecipes.length === 0) {
     body = (
-      <View style={styles.center}>
+      // A plain View accepts no pull gesture, and an empty list is exactly when
+      // a user reaches for one — the ScrollView (with flexGrow content) gives
+      // the refresh gesture a surface. No `progressViewOffset` here: the empty
+      // branch renders inside `bodyTopInset`, which already pushes it below the
+      // collapsing header band. `tintColor` (iOS) + `colors` (Android) theme it.
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={styles.center}
+        refreshControl={
+          <RefreshControl
+            refreshing={vm.isPullRefreshing}
+            onRefresh={vm.onRefresh}
+            tintColor={colors.textMuted}
+            colors={[colors.primary]}
+          />
+        }
+      >
         <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
           {vm.activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
@@ -115,7 +131,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
           )}
         </View>
-      </View>
+      </ScrollView>
     );
   } else {
     body = (
@@ -141,7 +157,20 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         scrollEventThrottle={16}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
-        refreshControl={<RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} />}
+        refreshControl={
+          // `progressViewOffset` drops the spinner below the collapsing header
+          // band, which is absolutely positioned and opaque over the list — the
+          // spinner would otherwise render behind it and be invisible.
+          // `tintColor` is iOS-only and `colors` is Android-only; both are
+          // needed for the spinner to follow the theme on each platform.
+          <RefreshControl
+            refreshing={vm.isPullRefreshing}
+            onRefresh={vm.onRefresh}
+            progressViewOffset={sizes.homeHeaderMax}
+            tintColor={colors.textMuted}
+            colors={[colors.primary]}
+          />
+        }
       />
     );
   }
@@ -220,8 +249,10 @@ const styles = StyleSheet.create({
   separator: {
     height: spacing.md,
   },
+  // flexGrow keeps the empty state pullable: the scroll content must fill the
+  // viewport so the refresh gesture has a surface even with little rendered.
   center: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,

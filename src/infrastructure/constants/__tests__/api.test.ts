@@ -1,4 +1,4 @@
-import { recipeWebUrl } from '@infrastructure/constants/api';
+import { recipeWebUrl, PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 describe('recipeWebUrl', () => {
   it('builds the canonical recipe URL using the default web-app base', () => {
@@ -51,5 +51,29 @@ describe('recipeWebUrl', () => {
     const id = '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234';
 
     expect(recipeWebUrl(id)).toBe(`https://recipely.net/recipes/${id}`);
+  });
+});
+
+describe('legal page URLs', () => {
+  it('always points at the production static site, regardless of env overrides', () => {
+    expect(PRIVACY_POLICY_URL).toBe('https://recipely.net/privacy');
+    expect(TERMS_OF_USE_URL).toBe('https://recipely.net/terms');
+  });
+
+  it('ignores EXPO_PUBLIC_WEB_APP_URL for legal pages', () => {
+    const originalEnv = process.env.EXPO_PUBLIC_WEB_APP_URL;
+
+    try {
+      process.env.EXPO_PUBLIC_WEB_APP_URL = 'https://staging.recipely.net';
+      jest.resetModules();
+
+
+      const fresh = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
+      expect(fresh.PRIVACY_POLICY_URL).toBe('https://recipely.net/privacy');
+      expect(fresh.TERMS_OF_USE_URL).toBe('https://recipely.net/terms');
+    } finally {
+      process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
+      jest.resetModules();
+    }
   });
 });

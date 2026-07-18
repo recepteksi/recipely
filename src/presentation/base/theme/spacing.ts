@@ -61,6 +61,9 @@ export const sizes = {
   avatarLg: 80,
   badgeSm: 28,
   notifBadge: 18,
+  // Line height that keeps the unread count vertically centered inside the
+  // 18px notifBadge circle (14px inner box after the 2px border).
+  notifBadgeLineHeight: 12,
   chipHeight: 30,
   buttonHeight: 52,
   buttonSmHeight: 48,
