@@ -18,7 +18,6 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
       ? recipeToEditable(existingRecipe, [...existingRecipe.media])
       : emptyEditable(),
   );
-  const [missingMessage, setMissingMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<CreateRecipeFieldErrors>(NO_CREATE_RECIPE_FIELD_ERRORS);
   const [photosOpen, setPhotosOpen] = useState(false);
 
@@ -103,8 +102,6 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
   return {
     recipe,
     setRecipe,
-    missingMessage,
-    setMissingMessage,
     fieldErrors,
     setFieldErrors,
     onUpdateField,

@@ -1,7 +1,7 @@
 /**
- * Behavior tests for the shared `SuccessSheet`. Covers the content rendering,
- * the primary/secondary action wiring, and the optional secondary action being
- * omitted entirely when not provided.
+ * Behavior tests for the shared `FeedbackSheet`. Covers the content rendering,
+ * the primary/secondary action wiring, the optional secondary action being
+ * omitted entirely when not provided, and the danger severity variant.
  */
 
 import { act } from 'react-test-renderer';
@@ -10,7 +10,8 @@ import {
   textContent,
 } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
-import { SuccessSheet } from '@presentation/base/widgets/sheets/success-sheet';
+import { FeedbackSheet } from '@presentation/base/widgets/sheets/feedback-sheet';
+import { Ionicons } from '@expo/vector-icons';
 
 const PRIMARY_LABEL = 'View recipe';
 const SECONDARY_LABEL = 'Done';
@@ -23,9 +24,9 @@ const buttonByLabel = (root: RenderResult['root'], label: string) =>
       typeof node.props.onPress === 'function',
   )[0];
 
-const renderSheet = (overrides: Partial<React.ComponentProps<typeof SuccessSheet>> = {}) =>
+const renderSheet = (overrides: Partial<React.ComponentProps<typeof FeedbackSheet>> = {}) =>
   renderComponent(
-    <SuccessSheet
+    <FeedbackSheet
       visible
       title="Recipe saved"
       message="Your recipe is now published."
@@ -36,7 +37,7 @@ const renderSheet = (overrides: Partial<React.ComponentProps<typeof SuccessSheet
     />,
   );
 
-describe('SuccessSheet', () => {
+describe('FeedbackSheet', () => {
   it('renders the title, message, and primary label when visible', () => {
     const { root } = renderSheet();
 
@@ -71,5 +72,13 @@ describe('SuccessSheet', () => {
     const { root } = renderSheet();
 
     expect(buttonByLabel(root, SECONDARY_LABEL)).toBeUndefined();
+  });
+
+  it('renders a checkmark disc by default and an alert disc for danger', () => {
+    const success = renderSheet();
+    expect(success.root.findByType(Ionicons).props.name).toBe('checkmark');
+
+    const danger = renderSheet({ severity: 'danger' });
+    expect(danger.root.findByType(Ionicons).props.name).toBe('alert');
   });
 });

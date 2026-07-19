@@ -6,12 +6,19 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 
-export interface SuccessSheetProps {
+const SEVERITY_ICON = {
+  success: 'checkmark',
+  danger: 'alert',
+} as const;
+
+export interface FeedbackSheetProps {
   visible: boolean;
   title: string;
   message: string;
   primaryLabel: string;
   onPrimary: () => void;
+  /** Visual tone of the disc + icon; success by default. */
+  severity?: 'success' | 'danger';
   /** Optional secondary text action shown under the primary button. */
   secondaryLabel?: string;
   onSecondary?: () => void;
@@ -19,29 +26,30 @@ export interface SuccessSheetProps {
 }
 
 /**
- * Cross-platform success confirmation dialog built on {@link BottomSheet}. Shows
- * a centered ✓ disc, a title and message, a full-width primary button and an
- * optional secondary text action — the design's "operation succeeded"
- * acknowledgement so a save can never complete silently.
+ * Cross-platform operation-outcome dialog built on {@link BottomSheet}. Shows a
+ * centered severity disc (✓ success / ! danger), a title and message, a
+ * full-width primary button and an optional secondary text action — so neither
+ * a completed nor a failed operation can ever pass silently or off-screen.
  */
-export const SuccessSheet = ({
+export const FeedbackSheet = ({
   visible,
   title,
   message,
   primaryLabel,
   onPrimary,
+  severity = 'success',
   secondaryLabel,
   onSecondary,
   onClose,
-}: SuccessSheetProps): React.JSX.Element => {
+}: FeedbackSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const success = useSeveritySurfaces().success;
+  const surface = useSeveritySurfaces()[severity];
 
   return (
     <BottomSheet visible={visible} title="" onClose={onClose}>
       <View style={styles.content}>
-        <View style={[styles.disc, { backgroundColor: success.disc }]}>
-          <Ionicons name="checkmark" size={sizes.iconXl} color={success.icon} />
+        <View style={[styles.disc, { backgroundColor: surface.disc }]}>
+          <Ionicons name={SEVERITY_ICON[severity]} size={sizes.iconXl} color={surface.icon} />
         </View>
         <ThemedText variant="subtitle" style={styles.title}>
           {title}
@@ -86,8 +94,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   disc: {
-    width: sizes.successDisc,
-    height: sizes.successDisc,
+    width: sizes.feedbackDisc,
+    height: sizes.feedbackDisc,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

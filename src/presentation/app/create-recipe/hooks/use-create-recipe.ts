@@ -48,7 +48,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     isEditMode,
     activeDraftId,
     setFieldErrors: editable.setFieldErrors,
-    setMissingMessage: editable.setMissingMessage,
   });
 
   return {
@@ -73,7 +72,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onSave: save.onSave,
     refining: generation.refining,
     recipe: editable.recipe,
-    missingMessage: editable.missingMessage,
     fieldErrors: editable.fieldErrors.fields,
     onUpdateField: editable.onUpdateField,
     onChangeIngredient: editable.onChangeIngredient,
@@ -104,6 +102,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     saveError: save.saveError,
     onConfirmSaveError: save.onConfirmSaveError,
     onCloseSaveError: save.onCloseSaveError,
+    saveIssue: save.saveIssue,
+    onCloseSaveIssue: save.onCloseSaveIssue,
     saveSuccess: save.saveSuccess,
     onSuccessPrimary: save.onSuccessPrimary,
     onCloseSuccess: save.onCloseSuccess,

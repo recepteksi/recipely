@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
 import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-recipe/model/build-recipe-input';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
@@ -20,7 +20,6 @@ export const useRecipeSave = ({
   isEditMode,
   activeDraftId,
   setFieldErrors,
-  setMissingMessage,
 }: UseRecipeSaveArgs) => {
   const router = useRouter();
   const { createdRecipesStore, draftsStore } = useStores();
@@ -28,15 +27,17 @@ export const useRecipeSave = ({
   const updateState = createdRecipesStore((s) => s.updateState);
 
   const [saveError, setSaveError] = useState<{ message: string; mode: 'publish' | 'update' } | null>(null);
+  const [saveIssue, setSaveIssue] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<
     { mode: 'publish'; recipeId: string } | { mode: 'update' } | null
   >(null);
 
-  // WHY: a `ValidationFailure` carries a per-field breakdown that binds to inputs
-  // (red border + inline message) and, at the form level, a banner pinned above
-  // the editor — unmatched entries are appended there so nothing is dropped.
-  // Non-validation failures get a blocking dialog with a retry action so a
-  // failed save can never go unnoticed.
+  // WHY: every rejected save surfaces as a dialog — a positional banner/toast can
+  // sit off-screen on a long scrolling editor, and a dialog cannot be missed. A
+  // `ValidationFailure` additionally binds its per-field breakdown to inputs
+  // (red border + inline message). The dialog copy comes from the localized
+  // key/code tiers, NEVER from the backend's raw `message` (which may be
+  // unlocalised English). Non-validation failures get the retry dialog instead.
   const surfaceSaveFailure = useCallback(
     (failure: Failure, mode: 'publish' | 'update'): void => {
       if (!(failure instanceof ValidationFailure)) {
@@ -44,21 +45,16 @@ export const useRecipeSave = ({
         setSaveError({ message: failureToastMessage(failure), mode });
         return;
       }
-      const parsed = mapFieldErrorsToInputs(failure.fieldErrors);
-      setFieldErrors(parsed);
-      const banner =
-        parsed.unmatched.length > 0
-          ? `${failureToastMessage(failure)} ${parsed.unmatched.join(' ')}`
-          : failureToastMessage(failure);
-      setMissingMessage(banner);
+      setFieldErrors(mapFieldErrorsToInputs(failure.fieldErrors));
+      setSaveIssue(failureKeyMessage(failure) ?? failureToastMessage(failure));
     },
-    [setFieldErrors, setMissingMessage],
+    [setFieldErrors],
   );
 
-  // Clears the form-level banner and every inline field error at the start of a
-  // save attempt so a prior rejection doesn't linger over a fresh submission.
+  // Clears the previous rejection dialog and every inline field error at the
+  // start of a save attempt so it doesn't linger over a fresh submission.
   const clearSaveFeedback = (): void => {
-    setMissingMessage(null);
+    setSaveIssue(null);
     setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
   };
 
@@ -70,7 +66,7 @@ export const useRecipeSave = ({
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;
       if (ingredientsEmpty) fields.ingredients = t().createRecipe.ingredientsRequired;
       setFieldErrors({ fields, unmatched: [] });
-      setMissingMessage(t().createRecipe.missing);
+      setSaveIssue(t().createRecipe.missing);
       return false;
     }
     return true;
@@ -82,7 +78,7 @@ export const useRecipeSave = ({
     // WHY: the backend create endpoint requires a cover image URL, so a recipe
     // cannot be published without at least one photo.
     if (recipe.media.filter((m) => m.type === 'image').length === 0) {
-      setMissingMessage(t().createRecipe.noImage);
+      setSaveIssue(t().createRecipe.noImage);
       return;
     }
     await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
@@ -173,6 +169,8 @@ export const useRecipeSave = ({
       void (mode === 'update' ? handleUpdate() : handlePublish());
     },
     onCloseSaveError: () => setSaveError(null),
+    saveIssue,
+    onCloseSaveIssue: () => setSaveIssue(null),
     saveSuccess,
     onSuccessPrimary,
     onCloseSuccess,

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -23,7 +22,6 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
-  missingMessage: string | null;
   /** Per-field backend validation messages, keyed by input — highlights the offending fields. */
   fieldErrors?: CreateRecipeFieldErrors['fields'];
   onChangeName: (value: string) => void;
@@ -45,7 +43,6 @@ export interface RecipePreviewEditorProps {
 /** Inline live editor of every recipe field shown in the preview phase. */
 export const RecipePreviewEditor = ({
   recipe,
-  missingMessage,
   fieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS.fields,
   onChangeName,
   onChangeCuisine,
@@ -64,7 +61,6 @@ export const RecipePreviewEditor = ({
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
-  const scrollRef = useRef<ScrollView>(null);
   const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
@@ -72,19 +68,8 @@ export const RecipePreviewEditor = ({
   const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > 0).length;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > 0).length;
 
-  // Surface a rejected submission at the top of the form: the banner is pinned
-  // above the fold, so scroll the editor back up whenever a new message appears.
-  useEffect(() => {
-    if (missingMessage !== null) scrollRef.current?.scrollTo({ y: 0, animated: true });
-  }, [missingMessage]);
-
   return (
-    <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
-      {missingMessage !== null ? (
-        <View style={styles.banner}>
-          <FormBanner message={missingMessage} />
-        </View>
-      ) : null}
+    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
         <RecipeImage uri={cover?.url} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
         <Pressable
@@ -208,10 +193,6 @@ export const RecipePreviewEditor = ({
 const styles = StyleSheet.create({
   scroll: {
     paddingBottom: spacing.lg,
-  },
-  banner: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
   },
   cover: {
     height: sizes.heroImageHeight,
