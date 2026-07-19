@@ -38,7 +38,6 @@ export interface UseCreateRecipeResult {
   // Preview editor.
   refining: boolean;
   recipe: EditableRecipe;
-  missingMessage: string | null;
   fieldErrors: CreateRecipeFieldErrors['fields'];
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
   onChangeIngredient: (index: number, value: string) => void;
@@ -77,6 +76,10 @@ export interface UseCreateRecipeResult {
   saveError: { message: string; mode: 'publish' | 'update' } | null;
   onConfirmSaveError: () => void;
   onCloseSaveError: () => void;
+
+  // Rejected-save dialog (pre-submit guards + validation failures).
+  saveIssue: string | null;
+  onCloseSaveIssue: () => void;
 
   // Save-success dialog.
   saveSuccess: { mode: 'publish'; recipeId: string } | { mode: 'update' } | null;

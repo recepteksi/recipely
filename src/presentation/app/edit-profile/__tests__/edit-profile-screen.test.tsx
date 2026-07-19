@@ -29,6 +29,8 @@ const mockVm: UseEditProfileResult = {
   isSaving: false,
   onSave: jest.fn(),
   onBack: jest.fn(),
+  errorDialog: null,
+  onCloseErrorDialog: jest.fn(),
 };
 
 jest.mock('@presentation/app/edit-profile/hooks/use-edit-profile', () => ({

@@ -45,7 +45,6 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
       <View style={styles.content}>
         <RecipePreviewEditor
           recipe={vm.recipe}
-          missingMessage={vm.missingMessage}
           fieldErrors={vm.fieldErrors}
           onChangeName={(v) => vm.onUpdateField('name', v)}
           onChangeCuisine={(v) => vm.onUpdateField('cuisine', v)}

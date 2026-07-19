@@ -1,13 +1,13 @@
 /**
  * Behavior tests for `useRecipeSave` — the save-feedback rework.
  *
- * The bugs being pinned: (1) a rejected submission used to render as a caption
- * at the BOTTOM of the scrollable editor, invisible when scrolled up — it now
- * flows through the form-level banner (`missingMessage`) plus inline field
- * errors; (2) validation failures used to split across two toasts — toasts are
- * gone from this path entirely; (3) a successful save used to navigate away
- * silently — it now surfaces a `saveSuccess` state that drives the SuccessSheet
- * dialog, and navigation only happens from the dialog's actions.
+ * The bugs being pinned: (1) a rejected submission used to render positionally
+ * (bottom caption, then a top banner) — either can sit off-screen, so it now
+ * surfaces as a `saveIssue` dialog state plus inline field errors; (2) the
+ * dialog copy is always localized — the backend's raw (possibly English)
+ * `message` must never reach the UI, and validation failures fire no toasts;
+ * (3) a successful save surfaces a `saveSuccess` dialog state instead of
+ * navigating away silently — navigation only happens from the dialog's actions.
  *
  * Harness: same as use-recipe-generation.test.tsx — the hook is driven through
  * a probe component with the REAL Zustand stores wired to `FakeRecipeRepository`,
@@ -17,7 +17,7 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { UnknownFailure, ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
 import { CuisineKey } from '@domain/recipes/cuisine-key';
@@ -149,14 +149,13 @@ type Save = ReturnType<typeof useRecipeSave>;
 interface HookDriver {
   latest: () => Save;
   fieldErrors: () => CreateRecipeFieldErrors;
-  missingMessage: () => string | null;
   save: () => Promise<void>;
 }
 
 /**
- * Mounts the hook behind a probe that owns the banner + field-error state (the
- * job `useEditableRecipe` does on the real screen), so assertions can read what
- * the hook pushed into them.
+ * Mounts the hook behind a probe that owns the field-error state (the job
+ * `useEditableRecipe` does on the real screen), so assertions can read what
+ * the hook pushed into it.
  */
 const driveHook = (
   config: FakeRecipeRepositoryConfig,
@@ -165,20 +164,16 @@ const driveHook = (
 ): HookDriver => {
   let latest!: Save;
   let fieldErrors: CreateRecipeFieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS;
-  let missingMessage: string | null = null;
 
   const Probe = (): null => {
     const [errors, setErrors] = useState<CreateRecipeFieldErrors>(NO_CREATE_RECIPE_FIELD_ERRORS);
-    const [missing, setMissing] = useState<string | null>(null);
     fieldErrors = errors;
-    missingMessage = missing;
     latest = useRecipeSave({
       recipe,
       recipeId: edit?.recipeId,
       isEditMode: edit !== undefined,
       activeDraftId: 'draft-1',
       setFieldErrors: setErrors,
-      setMissingMessage: setMissing,
     });
     return null;
   };
@@ -192,7 +187,6 @@ const driveHook = (
   return {
     latest: () => latest,
     fieldErrors: () => fieldErrors,
-    missingMessage: () => missingMessage,
     save: async () => {
       await act(async () => {
         latest.onSave();
@@ -208,23 +202,23 @@ beforeEach(() => {
 });
 
 describe('useRecipeSave — pre-submit guards', () => {
-  it('sets the form banner and inline field errors when name and ingredients are missing', async () => {
+  it('sets the dialog and inline field errors when name and ingredients are missing', async () => {
     const driver = driveHook({}, emptyEditable());
 
     await driver.save();
 
-    expect(driver.missingMessage()).toBe(en.createRecipe.missing);
+    expect(driver.latest().saveIssue).toBe(en.createRecipe.missing);
     expect(driver.fieldErrors().fields.name).toBe(en.createRecipe.nameRequired);
     expect(driver.fieldErrors().fields.ingredients).toBe(en.createRecipe.ingredientsRequired);
     expect(driver.latest().saveSuccess).toBeNull();
   });
 
-  it('sets the no-image banner when text is complete but no photo was added', async () => {
+  it('sets the no-image dialog when text is complete but no photo was added', async () => {
     const driver = driveHook({}, { ...publishable(), media: [] });
 
     await driver.save();
 
-    expect(driver.missingMessage()).toBe(en.createRecipe.noImage);
+    expect(driver.latest().saveIssue).toBe(en.createRecipe.noImage);
     expect(driver.latest().saveSuccess).toBeNull();
   });
 });
@@ -263,7 +257,7 @@ describe('useRecipeSave — publish', () => {
     expect(driver.latest().saveSuccess).toBeNull();
   });
 
-  it('routes a validation failure to the banner + inline fields with no toasts', async () => {
+  it('routes a validation failure to the dialog + inline fields, never leaking raw copy', async () => {
     const failure = new ValidationFailure(
       'name: Name is too short; image: Cover image is required',
     );
@@ -272,12 +266,26 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
 
     expect(driver.fieldErrors().fields.name).toBe('Name is too short');
-    expect(driver.missingMessage()).toBe(
-      `${en.errors.validation.short} image: Cover image is required`,
-    );
+    // The dialog shows the localized code-tier copy — the backend's raw
+    // (unlocalised) sentence must not appear in it.
+    expect(driver.latest().saveIssue).toBe(en.errors.validation.short);
+    expect(driver.latest().saveIssue).not.toContain('Cover image');
     expect(showErrorToast).not.toHaveBeenCalled();
     expect(showDangerToast).not.toHaveBeenCalled();
     expect(driver.latest().saveSuccess).toBeNull();
+  });
+
+  it('prefers the dedicated key-tier copy when the failure carries a known messageKey', async () => {
+    const failure = new ValidationFailure(
+      'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) are allowed',
+      'image',
+      ErrorMessageKey.invalidMediaType,
+    );
+    const driver = driveHook({ createRecipeResult: fail(failure) }, publishable());
+
+    await driver.save();
+
+    expect(driver.latest().saveIssue).toBe(en.errors.invalidMediaType.short);
   });
 });
 

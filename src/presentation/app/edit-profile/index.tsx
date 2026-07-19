@@ -5,6 +5,8 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
+import { FeedbackSheet } from '@presentation/base/widgets/sheets/feedback-sheet';
+import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
@@ -51,6 +53,16 @@ export const EditProfileScreen = (): React.JSX.Element => {
           </ResponsiveContainer>
         </ScrollView>
       </KeyboardAvoider>
+
+      <FeedbackSheet
+        severity="danger"
+        visible={vm.errorDialog !== null}
+        title={t().errors.genericTitle}
+        message={vm.errorDialog ?? ''}
+        primaryLabel={t().common.ok}
+        onPrimary={vm.onCloseErrorDialog}
+        onClose={vm.onCloseErrorDialog}
+      />
     </View>
   );
 };

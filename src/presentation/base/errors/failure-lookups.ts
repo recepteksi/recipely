@@ -85,6 +85,10 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   codeCooldown: 'hourglass-outline',
   registrationExpired: 'refresh-outline',
 
+  invalidMediaType: 'images-outline',
+  invalidImageType: 'image-outline',
+  fileTooLarge: 'cloud-upload-outline',
+
   accountDeleted: 'person-remove-outline',
   resetLinkInvalid: 'link-outline',
   resetLinkExpired: 'time-outline',

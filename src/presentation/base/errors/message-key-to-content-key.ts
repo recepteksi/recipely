@@ -45,6 +45,10 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.codeCooldown]: 'codeCooldown',
   [ErrorMessageKey.registrationExpired]: 'registrationExpired',
 
+  [ErrorMessageKey.invalidMediaType]: 'invalidMediaType',
+  [ErrorMessageKey.invalidImageType]: 'invalidImageType',
+  [ErrorMessageKey.fileTooLarge]: 'fileTooLarge',
+
   [ErrorMessageKey.accountDeleted]: 'accountDeleted',
   [ErrorMessageKey.resetLinkInvalid]: 'resetLinkInvalid',
   [ErrorMessageKey.resetLinkExpired]: 'resetLinkExpired',

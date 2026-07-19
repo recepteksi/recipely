@@ -7,5 +7,4 @@ export interface UseRecipeSaveArgs {
   isEditMode: boolean;
   activeDraftId: string;
   setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
-  setMissingMessage: (message: string | null) => void;
 }

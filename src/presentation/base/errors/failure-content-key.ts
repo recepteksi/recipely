@@ -40,6 +40,10 @@ export type FailureContentKey =
   | 'codeAttemptsExceeded'
   | 'codeCooldown'
   | 'registrationExpired'
+  // ── key-tier: media upload ─────────────────────────────────────────────────
+  | 'invalidMediaType'
+  | 'invalidImageType'
+  | 'fileTooLarge'
   // ── key-tier: session / password reset ─────────────────────────────────────
   | 'accountDeleted'
   | 'resetLinkInvalid'

@@ -31,7 +31,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@presentation/app/profile/hooks/use-avatar-upload', () => ({
-  useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false })),
+  useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false, uploadError: null, onDismissUploadError: jest.fn() })),
 }));
 
 jest.mock('@presentation/app/profile/body/profile-settings-sections', () => ({

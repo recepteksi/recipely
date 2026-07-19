@@ -14,7 +14,7 @@ import type { UseProfileResult } from '@presentation/app/profile/model/use-profi
  */
 export const useProfile = (): UseProfileResult => {
   const router = useRouter();
-  const { pickAndUpload, isUploading } = useAvatarUpload();
+  const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore, userProfileStore, savedRecipesStore } = useStores();
   const authState = authStore((s) => s.state);
@@ -72,5 +72,7 @@ export const useProfile = (): UseProfileResult => {
     onPickAvatar: () => void pickAndUpload(),
     onEditProfile: () => router.push('/edit-profile'),
     stats,
+    uploadError,
+    onDismissUploadError,
   };
 };

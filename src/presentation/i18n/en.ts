@@ -6,6 +6,7 @@ export const en = {
     empty: 'Nothing here yet.',
     search: 'Search',
     cancel: 'Cancel',
+    ok: 'OK',
     of: 'of',
     clear: 'Clear',
     close: 'Close',
@@ -166,6 +167,21 @@ export const en = {
       title: "Let's start over",
       body: 'We have no pending sign-up for this email anymore. Enter your details again.',
       short: 'Sign-up expired — start over',
+    },
+    invalidMediaType: {
+      title: "We can't use that file",
+      body: 'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) can be uploaded. Pick a different file.',
+      short: 'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) can be uploaded',
+    },
+    invalidImageType: {
+      title: "We can't use that image",
+      body: 'Only images (jpeg, png, gif, webp) can be uploaded. Pick a different file.',
+      short: 'Only images (jpeg, png, gif, webp) can be uploaded',
+    },
+    fileTooLarge: {
+      title: 'That file is too big',
+      body: 'The file you picked is over the upload limit. Choose a smaller file and try again.',
+      short: 'The file is too large — choose a smaller one',
     },
     accountDeleted: {
       title: 'This account was deleted',
