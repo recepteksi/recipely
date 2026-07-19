@@ -1,8 +1,8 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
-import type { ListNotificationsInput } from '@application/notifications/list-notifications-input';
-import type { ListNotificationsResult } from '@application/notifications/list-notifications-result';
+import type { ListNotificationsInput } from '@application/notifications/list/list-notifications-input';
+import type { ListNotificationsResult } from '@application/notifications/list/list-notifications-result';
 
 /** Retrieves a paginated list of notifications for the current user. */
 export class ListNotificationsUseCase {
