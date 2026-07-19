@@ -1,10 +1,10 @@
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
-import type { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import type { ListDraftsInput } from '@application/drafts/list-drafts-input';
-import type { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import type { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import type { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import type { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
+import type { ListDraftsInput } from '@application/drafts/list/list-drafts-input';
+import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
+import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
+import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
+import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';

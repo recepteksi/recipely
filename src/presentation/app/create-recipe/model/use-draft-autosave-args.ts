@@ -1,5 +1,5 @@
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
+import type { UpsertDraftStoreInput } from '@application/drafts/write/upsert-draft-store-input';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 
 export interface UseDraftAutosaveArgs {

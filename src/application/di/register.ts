@@ -24,11 +24,11 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
+import { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
+import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
+import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
+import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
 import { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';

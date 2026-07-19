@@ -1,5 +1,5 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
-import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
+import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
