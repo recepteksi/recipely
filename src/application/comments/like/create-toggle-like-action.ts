@@ -3,8 +3,8 @@ import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Comment } from '@domain/comments/comment';
-import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
+import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 
 /**

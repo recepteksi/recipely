@@ -1,4 +1,4 @@
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
 /** Returns the empty per-recipe comments state used before any load. */

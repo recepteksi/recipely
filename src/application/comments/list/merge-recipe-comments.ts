@@ -1,5 +1,5 @@
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
-import { defaultRecipeState } from '@application/comments/default-recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
 
 /**
  * Returns a new `byRecipe` map with one recipe's comment state patched. The
