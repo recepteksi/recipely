@@ -4,6 +4,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { BIO_MAX, BIO_MIN_HEIGHT } from '@presentation/app/edit-profile/model/edit-profile-limits';
+import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 
 export interface EditProfileFormProps {
   displayName: string;
@@ -42,6 +43,7 @@ export const EditProfileForm = ({
           ]}
           autoCapitalize="words"
           returnKeyType="done"
+          maxLength={DISPLAY_NAME_MAX}
         />
         {showNameError ? (
           <ThemedText variant="caption" style={[styles.errorLine, { color: colors.danger }]}>
