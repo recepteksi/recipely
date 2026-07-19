@@ -13,6 +13,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
+import { t } from '@presentation/i18n';
 
 describe('EditProfileForm — input length caps', () => {
   afterEach(async () => {
@@ -33,11 +34,14 @@ describe('EditProfileForm — input length caps', () => {
       />,
     );
 
-    const maxLengths = tree.root
-      .findAllByType(TextInput)
-      .map((input) => input.props.maxLength);
+    // Bind each cap to its own field: asserting the set of maxLengths would
+    // still pass if the two inputs had their caps swapped.
+    const capFor = (placeholder: string): unknown =>
+      tree.root
+        .findAllByType(TextInput)
+        .find((input) => input.props.placeholder === placeholder)?.props.maxLength;
 
-    expect(maxLengths).toContain(DISPLAY_NAME_MAX);
-    expect(maxLengths).toContain(BIO_MAX);
+    expect(capFor(t().editProfile.displayNamePlaceholder)).toBe(DISPLAY_NAME_MAX);
+    expect(capFor(t().editProfile.bioPlaceholder)).toBe(BIO_MAX);
   });
 });
