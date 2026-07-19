@@ -17,6 +17,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
+import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 export const SettingsScreen = (): React.JSX.Element => {
@@ -139,7 +140,7 @@ export const SettingsScreen = (): React.JSX.Element => {
             label={t().settings.version}
             rightElement={
               <ThemedText variant="body" muted>
-                1.0.0
+                {appVersion}
               </ThemedText>
             }
             showChevron={false}

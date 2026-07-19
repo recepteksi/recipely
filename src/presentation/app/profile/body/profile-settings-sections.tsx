@@ -16,6 +16,7 @@ import { t, useLocale, setLocale } from '@presentation/i18n';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-modal';
+import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 
 export const ProfileSettingsSections = (): React.JSX.Element => {
@@ -111,7 +112,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
           label={t().settings.version}
           rightElement={
             <ThemedText variant="body" muted>
-              {APP_VERSION}
+              {appVersion}
             </ThemedText>
           }
           showChevron={false}
@@ -147,8 +148,6 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
     </View>
   );
 };
-
-const APP_VERSION = '1.0.0';
 
 const styles = StyleSheet.create({
   group: {
