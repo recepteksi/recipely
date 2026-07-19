@@ -127,7 +127,6 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
             onDeleteDraft={(id) => void deleteDraft(id)}
-            onCreate={openCreate}
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
           />

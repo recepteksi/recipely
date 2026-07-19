@@ -81,7 +81,6 @@ const baseProps = (): MyRecipesListProps => ({
   onOpenRecipe: jest.fn(),
   onOpenDraft: jest.fn(),
   onDeleteDraft: jest.fn(),
-  onCreate: jest.fn(),
   isRefreshing: false,
   onRefresh: jest.fn(),
 });
