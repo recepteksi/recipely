@@ -3,7 +3,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { ITaxonomyRepository } from '@domain/recipes/taxonomy/i-taxonomy-repository';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import {
   RECIPE_CATEGORIES_PATH,
   RECIPE_CUISINES_PATH,

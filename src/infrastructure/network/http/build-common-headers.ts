@@ -1,4 +1,4 @@
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 
 /**
  * Builds the headers every backend request carries, regardless of transport:

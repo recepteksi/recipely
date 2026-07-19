@@ -10,7 +10,7 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import {
   AI_REQUEST_TIMEOUT_MS,
   IMPORT_REQUEST_TIMEOUT_MS,

@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';

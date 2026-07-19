@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';

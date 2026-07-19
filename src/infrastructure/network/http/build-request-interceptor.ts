@@ -1,8 +1,8 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
-import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { CharConstants } from '@core/constants';
 
 /**

@@ -3,8 +3,8 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeMediaUpload } from '@domain/recipes/media/recipe-media-upload';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
-import type { HttpClient } from '@infrastructure/network/http-client';
-import { appendFilePart } from '@infrastructure/network/append-file-part';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
+import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import { UPLOAD_URL } from '@infrastructure/constants/api';
 import type { ResolvedRecipeMedia } from '@infrastructure/recipes/media/resolved-recipe-media';
 

@@ -1,5 +1,5 @@
-import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 
 const makeOptions = (overrides: Partial<HttpClientOptions> = {}): HttpClientOptions => ({
   baseUrl: 'https://api.test',

@@ -1,5 +1,5 @@
-import { HttpClient } from '@infrastructure/network/http-client';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { HttpClient } from '@infrastructure/network/http/http-client';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 
 // Mock axios so `axios.create()` returns a fake instance whose `request`
 // resolves with a status we control. The real interceptors are registered on

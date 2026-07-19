@@ -2,16 +2,16 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
-import { failureFromResponse } from '@infrastructure/network/failure-from-response';
+import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
 import { API_AES_KEY_HEX, DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
-import { isRecipelyDataBody } from '@infrastructure/network/is-recipely-data-body';
-import { mapAxiosError } from '@infrastructure/network/map-axios-error';
-import { buildRequestInterceptor } from '@infrastructure/network/build-request-interceptor';
-import { buildResponseInterceptor } from '@infrastructure/network/build-response-interceptor';
-import { uploadMultipart } from '@infrastructure/network/upload-multipart';
-import type { UploadProgressEvent } from '@infrastructure/network/upload-progress-event';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely-data-body';
+import { mapAxiosError } from '@infrastructure/network/errors/map-axios-error';
+import { buildRequestInterceptor } from '@infrastructure/network/http/build-request-interceptor';
+import { buildResponseInterceptor } from '@infrastructure/network/http/build-response-interceptor';
+import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart';
+import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches

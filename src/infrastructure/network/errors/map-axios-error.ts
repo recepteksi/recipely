@@ -6,7 +6,7 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
-import { failureFromResponse } from '@infrastructure/network/failure-from-response';
+import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
 
 /**

@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
