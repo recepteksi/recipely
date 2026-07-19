@@ -1,18 +1,19 @@
 import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
+import { HexColorConstants } from '@presentation/base/constants';
 
 const parseHex = (hex: string): { r: number; g: number; b: number } => {
   if (!RegexConstants.hexColor.test(hex)) {
     throw new Error(`Invalid hex color: ${hex}`);
   }
-  const body = hex.slice(1);
+  const body = hex.slice(ValueConstants.one);
   const expanded =
-    body.length === 3
+    body.length === HexColorConstants.shorthandLength
       ? body.split(CharConstants.empty).map((c) => c + c).join(CharConstants.empty)
-      : body.slice(ValueConstants.zero, 6);
+      : body.slice(ValueConstants.zero, HexColorConstants.fullLength);
   return {
-    r: parseInt(expanded.slice(ValueConstants.zero, 2), 16),
-    g: parseInt(expanded.slice(2, 4), 16),
-    b: parseInt(expanded.slice(4, 6), 16),
+    r: parseInt(expanded.slice(...HexColorConstants.redRange), HexColorConstants.radix),
+    g: parseInt(expanded.slice(...HexColorConstants.greenRange), HexColorConstants.radix),
+    b: parseInt(expanded.slice(...HexColorConstants.blueRange), HexColorConstants.radix),
   };
 };
 

@@ -17,6 +17,7 @@ import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
 import { ValueConstants } from '@core/constants';
+import { AnimationConstants } from '@presentation/base/constants';
 
 export interface CommentCardProps {
   body: string;
@@ -74,10 +75,14 @@ export const CommentCard = ({
   const flashStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       flash.value,
-      [ValueConstants.zero, 1],
+      AnimationConstants.progressRange,
       [colors.cardBackground, colors.primaryLight],
     ),
-    borderColor: interpolateColor(flash.value, [ValueConstants.zero, 1], [colors.cardBorder, colors.primary]),
+    borderColor: interpolateColor(
+      flash.value,
+      AnimationConstants.progressRange,
+      [colors.cardBorder, colors.primary],
+    ),
   }));
 
   return (

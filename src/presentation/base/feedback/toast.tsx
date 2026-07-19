@@ -14,6 +14,7 @@ import { t } from '@presentation/i18n';
 import { DEFAULT_TOAST_DURATION_MS } from '@presentation/base/feedback/toast-model';
 import type { ToastItem } from '@presentation/base/feedback/toast-item';
 import { ValueConstants } from '@core/constants';
+import { AnimationConstants } from '@presentation/base/constants';
 
 const ENTER_OFFSET = 16;
 const EXIT_DURATION_MS = 160;
@@ -80,7 +81,13 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
           backgroundColor: toastBackground(scheme),
           opacity: anim,
           transform: [
-            { translateY: anim.interpolate({ inputRange: [ValueConstants.zero, 1], outputRange: [ENTER_OFFSET, ValueConstants.zero] }) },
+            {
+              translateY: anim.interpolate({
+                // Copied: Animated.interpolate takes a mutable `number[]`.
+                inputRange: [...AnimationConstants.progressRange],
+                outputRange: [ENTER_OFFSET, ValueConstants.zero],
+              }),
+            },
           ],
         },
       ]}
