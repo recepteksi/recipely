@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import { toFeedbackRequestDto } from '@infrastructure/feedback/feedback-mapper';

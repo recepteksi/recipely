@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UserProfile } from '@domain/user-profile/user-profile';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
 

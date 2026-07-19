@@ -16,8 +16,8 @@ import {
   ME_PATH,
   ME_PROFILE_PATH,
 } from '@infrastructure/constants/api';
-import type { HttpClient } from '@infrastructure/network/http-client';
-import { appendFilePart } from '@infrastructure/network/append-file-part';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
+import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/recipely-auth-session-dto';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';

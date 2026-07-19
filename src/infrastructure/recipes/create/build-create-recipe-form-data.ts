@@ -1,5 +1,5 @@
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import { appendFilePart } from '@infrastructure/network/append-file-part';
+import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import { ValueConstants } from '@core/constants';
 
 /**

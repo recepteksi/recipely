@@ -4,12 +4,12 @@ import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
 import { RegexConstants, ValueConstants } from '@core/constants';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
-import { failureFromResponse } from '@infrastructure/network/failure-from-response';
-import { isEnvelope } from '@infrastructure/network/is-envelope';
-import { isRecipelyDataBody } from '@infrastructure/network/is-recipely-data-body';
-import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
-import type { UploadProgressEvent } from '@infrastructure/network/upload-progress-event';
+import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
+import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
+import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely-data-body';
+import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 
 /**
  * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios

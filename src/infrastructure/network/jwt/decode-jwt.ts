@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import type { JwtClaims } from '@infrastructure/network/jwt-claims';
+import type { JwtClaims } from '@infrastructure/network/jwt/jwt-claims';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 // WHY: avoid pulling in a dep (jwt-decode) just to split and base64-parse the payload.

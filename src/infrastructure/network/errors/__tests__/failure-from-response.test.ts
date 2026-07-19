@@ -8,7 +8,7 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
-import { failureFromResponse } from '@infrastructure/network/failure-from-response';
+import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
 
 const withCode = (code: string, message = 'msg', field?: string): unknown => ({
   error: { code, message, field },

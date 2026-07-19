@@ -1,7 +1,7 @@
 import type { AxiosResponse } from 'axios';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
-import { isEnvelope } from '@infrastructure/network/is-envelope';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { CharConstants } from '@core/constants';
 
 /**

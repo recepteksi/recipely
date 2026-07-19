@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
 import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 

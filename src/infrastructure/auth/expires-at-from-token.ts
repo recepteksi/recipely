@@ -1,4 +1,4 @@
-import { decodeJwtPayload } from '@infrastructure/network/decode-jwt';
+import { decodeJwtPayload } from '@infrastructure/network/jwt/decode-jwt';
 
 const FALLBACK_EXPIRES_MS = 3_600_000;
 
