@@ -1,8 +1,8 @@
 import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
-import type { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
-import type { ListNotificationsResult } from '@application/notifications/list-notifications-result';
-import type { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
-import type { MarkOneReadUseCase } from '@application/notifications/mark-one-read-use-case';
+import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
+import type { ListNotificationsResult } from '@application/notifications/list/list-notifications-result';
+import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
+import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
