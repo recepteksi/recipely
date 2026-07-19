@@ -15,6 +15,7 @@ import {
 } from '@presentation/app/recipes/model/web-hero-constants';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { ValueConstants } from '@core/constants';
+import { HeroGradientConstants } from '@presentation/base/constants';
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummary;
@@ -43,9 +44,9 @@ export const WebHeroFeaturedCard = ({
       />
       <LinearGradient
         colors={[HERO_OVERLAY_DEEP, HERO_OVERLAY_MID, HERO_OVERLAY_FADE, HERO_OVERLAY_FADE]}
-        locations={[ValueConstants.zero, 0.45, 0.8, 1]}
-        start={{ x: 0.15, y: 1 }}
-        end={{ x: 0.85, y: ValueConstants.zero }}
+        locations={HeroGradientConstants.locations}
+        start={HeroGradientConstants.start}
+        end={HeroGradientConstants.end}
         style={styles.gradient}
       />
       {/* Full-bleed open overlay rendered BEFORE content so it sits below it

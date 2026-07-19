@@ -6,6 +6,7 @@ import {
   DISMISS_ALARM_ACTION,
 } from '@domain/notifications/timer-notification-keys';
 import { ValueConstants } from '@core/constants';
+import { ALARM_VIBRATION_PATTERN } from '@infrastructure/constants/notifications';
 
 // WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
 // module load time. ES `import` is hoisted before any code, so suppression
@@ -84,7 +85,9 @@ export class NotificationService implements INotificationService {
           // res/raw) → silent channel. Passing `true` is a TypeScript error.
           // So the only correct way for default sound is to omit the key.
           enableVibrate: true,
-          vibrationPattern: [ValueConstants.zero, 500, 300, 500, 300, 500],
+          // Copied: expo-notifications takes a mutable `number[]`, and the
+          // constant must not be mutable shared state.
+          vibrationPattern: [...ALARM_VIBRATION_PATTERN],
           // Route audio through the Alarm volume stream so it rings loudly
           // even when notification volume is turned down.
           audioAttributes: {

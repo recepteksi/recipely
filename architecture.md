@@ -411,25 +411,52 @@ unions and narrowing depend on them. Do not widen those.
 a global/sticky RegExp carries `lastIndex` between calls, so two unrelated call sites would
 silently corrupt each other's matches. A pattern needing `g` is constructed per use.
 
-#### Exemption — literal sequences
+#### No literal sequences in components
 
-When a number's meaning comes from its **position among neighbours** rather than from being zero,
-leave the whole sequence bare. Naming only the `0` destroys the pattern that made the line readable:
+A raw array of numbers in a component or service is a magic value — including when only part of it
+looks meaningful. **Name the whole sequence** in a constants file; do not half-substitute it.
 
-```ts
-// ✅ correct — the sequence reads as a unit
-vibrationPattern: [0, 500, 300, 500, 300, 500],
+```tsx
+// ❌ wrong — raw sequence inline
 locations={[0, 0.45, 0.8, 1]}
-hex.slice(0, 2), hex.slice(2, 4), hex.slice(4, 6)
+vibrationPattern: [0, 500, 300, 500, 300, 500],
 
-// ❌ wrong — half-named sequence
-vibrationPattern: [ValueConstants.zero, 500, 300, 500, 300, 500],
-hex.slice(ValueConstants.zero, 2), hex.slice(2, 4)
+// ❌ also wrong — half-named, hides the pattern the neighbours form
+locations={[ValueConstants.zero, 0.45, 0.8, 1]}
+
+// ✅ correct — the sequence is named where it is defined
+locations={HeroGradientConstants.locations}
+vibrationPattern: [...ALARM_VIBRATION_PATTERN],
 ```
 
-This covers coordinate arrays, ranges, gradient stops, animation input/output ranges and
-`slice`/`substring` bounds. Structural zeros — `length === 0`, `Math.max(0, n)`, `[0]` indexing,
-defaults — are **not** exempt and use `ValueConstants.zero`.
+Where a count drives the sequence, derive it instead of listing it:
+`Array.from({ length: PresentationValueConstants.passwordStrengthSegments }, (_, i) => …)`.
+
+#### `presentation/base/constants/` — UI values
+
+UI-specific values do **not** go in `@core/constants` (core is framework-free and shared by every
+layer). They live in `src/presentation/base/constants/`, consumed via the
+`@presentation/base/constants` barrel:
+
+| File | Holds |
+|------|-------|
+| `presentation-value-constants.ts` | UI counts and limits (tag limit, meter segments, filter options) |
+| `animation-constants.ts` | Driver ranges for `interpolate()` / `interpolateColor()` |
+| `gradient-constants.ts` | Gradient stops and start/end geometry |
+| `hex-color-constants.ts` | Channel offsets for parsing `#RRGGBB` |
+
+Scalars here carry `as number` / `as string` for the same reason as `@core/constants` — see the
+widening invariant above.
+
+**Layer check before choosing a home.** `presentation/base/constants` is unreachable from
+`domain`, `application` and `infrastructure` (`ALLOWED_IMPORTS` in `scripts/check-structure.mjs`).
+A value used by a repository or service goes in `src/infrastructure/constants/` instead — this is
+why the alarm vibration pattern lives in `infrastructure/constants/notifications.ts`.
+
+**Readonly arrays and native APIs.** Export sequences as `readonly`, and spread at the call site
+(`[...ALARM_VIBRATION_PATTERN]`) when the consumer demands a mutable `number[]` — several
+Expo/React Native props do. Never widen the constant to mutable just to satisfy a call site: that
+turns it into shared state a native module can write through.
 
 ---
 

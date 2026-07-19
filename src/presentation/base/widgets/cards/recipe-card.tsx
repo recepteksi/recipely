@@ -13,6 +13,7 @@ import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ValueConstants } from '@core/constants';
+import { PresentationValueConstants } from '@presentation/base/constants';
 
 export interface RecipeCardProps {
   name: string;
@@ -115,7 +116,9 @@ export const RecipeCard = ({
         <View style={styles.bottomRow}>
           <View style={styles.tagsRow}>
             {tags.length > ValueConstants.zero
-              ? tags.slice(ValueConstants.zero, 2).map((tag) => (
+              ? tags
+                  .slice(ValueConstants.zero, PresentationValueConstants.recipeCardTagLimit)
+                  .map((tag) => (
                   <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
                     <ThemedText variant="caption" style={{ color: colors.chipText }}>{tag}</ThemedText>
                   </View>
