@@ -1,4 +1,4 @@
-import { CuisineKey } from '@domain/recipes/cuisine-key';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 
 /** Single source of truth mapping each cuisine key to its display emoji. */
 export const CUISINE_EMOJI: Record<CuisineKey, string> = {

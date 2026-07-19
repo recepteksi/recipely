@@ -1,7 +1,7 @@
 import type { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
-import type { RecipeListState } from '@application/recipes/recipe-list-state';
+import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { Difficulty } from '@domain/recipes/difficulty';
 

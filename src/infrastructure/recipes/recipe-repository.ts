@@ -4,12 +4,12 @@ import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
-import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import {
   AI_REQUEST_TIMEOUT_MS,
@@ -19,13 +19,13 @@ import {
   TRENDING_RECIPES_LIMIT,
 } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
-import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine-recipe-response-dto';
+import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
-import { buildCreateRecipeFormData } from '@infrastructure/recipes/build-create-recipe-form-data';
-import { buildUpdateRecipeBody } from '@infrastructure/recipes/build-update-recipe-body';
-import { uploadRecipeMedia } from '@infrastructure/recipes/upload-recipe-media';
+import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
+import { buildUpdateRecipeBody } from '@infrastructure/recipes/update/build-update-recipe-body';
+import { uploadRecipeMedia } from '@infrastructure/recipes/media/upload-recipe-media';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles

@@ -1,5 +1,5 @@
-import type { MediaItem } from '@domain/recipes/media-item';
-import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import type { MediaItem } from '@domain/recipes/media/media-item';
+import type { RecipeMediaUpload } from '@domain/recipes/media/recipe-media-upload';
 import { ValueConstants } from '@core/constants';
 
 const MIME_BY_EXT: Record<string, string> = {

@@ -31,12 +31,12 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
-import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import { sizes } from '@presentation/base/theme';
-import type { TaxonomyStoreState } from '@application/recipes/taxonomy-store-state';
+import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 jest.mock('@expo/vector-icons', () => {

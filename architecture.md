@@ -553,6 +553,38 @@ Every interactive element (`Pressable`, `TouchableOpacity`, button widget) must 
 
 ---
 
+### 13a. Feature Folders in domain / application / infrastructure
+
+A feature folder is grouped **by capability**, never left as one flat pile of files. Once a
+feature folder passes roughly a dozen files, split it: each capability gets its own folder
+holding everything that capability needs — use case, state, store, deps, DTOs, mappers — plus
+its own `__tests__/`.
+
+```
+src/application/recipes/
+  create/      create-recipe-use-case.ts, create-recipe-state.ts
+  generate/    generate-recipe-{input,state,use-case}.ts, __tests__/
+  detail/      recipe-detail-{state,store,store-deps,store-state}.ts,
+               configure-recipe-detail-store.ts, get-recipe-use-case.ts
+  list/        recipe-list-*.ts, list-recipes-use-case.ts, __tests__/
+  taxonomy/    taxonomy-*.ts, load-taxonomy-use-case.ts, __tests__/
+```
+
+Rules:
+
+- **Group by capability, not by kind.** `create/` and `list/`, never `use-cases/`, `stores/`,
+  `states/` — grouping by kind just reproduces the flat pile one level down.
+- **What the aggregate root owns stays at the feature root.** In `domain/recipes/` the entity,
+  its summary and its repository interface stay put; only the capability-specific types move
+  into `create/`, `media/`, `taxonomy/`, … The same applies to `recipe-repository.ts` and
+  `recipe-mapper.ts` in infrastructure.
+- **The same capability name is used across layers.** `create/`, `refine/`, `taxonomy/` and
+  `media/` mean the same thing in `domain/`, `application/` and `infrastructure/`.
+- **Tests move with their subject** into that capability's `__tests__/`.
+- **No barrel `index.ts` per capability.** Imports stay explicit deep paths
+  (`@application/recipes/list/recipe-list-store`), which keeps the layer graph readable and
+  avoids import cycles between capabilities.
+
 ### 13. Testing
 
 - Tests live next to the code they test in `__tests__/` directories.

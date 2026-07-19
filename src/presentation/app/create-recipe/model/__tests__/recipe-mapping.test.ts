@@ -1,9 +1,9 @@
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { MediaItem } from '@domain/recipes/media-item';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
+import type { MediaItem } from '@domain/recipes/media/media-item';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { Recipe } from '@domain/recipes/recipe';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import {
   editableHasContent,

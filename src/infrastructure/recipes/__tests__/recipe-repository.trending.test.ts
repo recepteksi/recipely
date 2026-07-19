@@ -6,8 +6,8 @@ import type { HttpClient } from '@infrastructure/network/http-client';
 import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 const validDto: RecipeListItemDto = {

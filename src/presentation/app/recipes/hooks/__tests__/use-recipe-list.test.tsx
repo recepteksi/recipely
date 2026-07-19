@@ -34,20 +34,20 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
-import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
-import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
-import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
-import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
+import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved-recipes-store-state';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import { NetworkFailure } from '@core/failure';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 jest.mock('expo-router', () => ({

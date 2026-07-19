@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { AuthStore } from '@application/auth/auth-store';
-import type { TaxonomyStore } from '@application/recipes/taxonomy-store';
+import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 
 /**

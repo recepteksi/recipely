@@ -16,7 +16,7 @@ import { MediaSlide } from '@presentation/app/recipes/[recipeId]/items/media-sli
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
 
 export interface MediaGalleryProps {

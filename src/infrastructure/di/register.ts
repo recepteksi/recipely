@@ -5,8 +5,8 @@ import type { HttpClientOptions } from '@infrastructure/network/http-client-opti
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy-repository';
-import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
+import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
+import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';

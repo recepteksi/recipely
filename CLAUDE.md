@@ -185,6 +185,14 @@ blocking.
     in `base/*` they become a sibling file. New routes are always `app/<segment>/index.tsx` — a flat
     `app/<segment>.tsx` will NOT register.
 
+14b. **Feature folders below presentation** — `domain/` / `application/` / `infrastructure/` feature
+    folders are grouped **by capability**, not left flat and not grouped by kind: `recipes/create/`,
+    `recipes/list/`, `recipes/taxonomy/` — never `recipes/use-cases/` or `recipes/stores/`. Each
+    capability folder holds its use case + state + store + deps + DTOs and its own `__tests__/`.
+    What the aggregate root owns (the entity, its repository interface, the main mapper) stays at
+    the feature root. Capability names match across layers. No per-capability barrel — imports stay
+    explicit deep paths. Split a feature folder once it passes ~a dozen files. See `architecture.md` §13a.
+
 15. **Imports** — always the `@layer/...` alias (`@presentation/...`, `@domain/...`, …). Relative `./`
     imports are allowed only inside barrel `index.ts` files. Layer line: presentation → application/domain/core,
     never infrastructure (exceptions: `src/infrastructure/constants/*`, `src/presentation/bootstrap/`, `*/di/` wiring).

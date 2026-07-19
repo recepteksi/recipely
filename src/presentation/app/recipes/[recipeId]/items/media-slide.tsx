@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { t } from '@presentation/i18n';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 interface MediaSlideProps {
   item: MediaItem;
