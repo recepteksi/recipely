@@ -1,9 +1,9 @@
 import type { StoreApi } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api';
-import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
+import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import { mergeRecipeComments } from '@application/comments/merge-recipe-comments';
+import { mergeRecipeComments } from '@application/comments/list/merge-recipe-comments';
 
 type SetState = StoreApi<CommentsStoreState>['setState'];
 

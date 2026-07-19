@@ -5,7 +5,7 @@ import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/mod
 import type { Failure } from '@presentation/base/types';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { MediaItem } from '@domain/recipes/media/media-item';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 
 /** View model returned by {@link useRecipeDetail} for the recipe-detail screen. */
 export interface UseRecipeDetailResult {

@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 
 export interface CommentsStoreState {
   byRecipe: Record<string, RecipeCommentsState>;

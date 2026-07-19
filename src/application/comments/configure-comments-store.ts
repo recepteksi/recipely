@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { ConfigureCommentsStoreOptions } from '@application/comments/configure-comments-store-options';
 import type { CommentsStore } from '@application/comments/comments-store';
-import { createLoadCommentsAction } from '@application/comments/create-load-comments-action';
-import { createLoadMoreCommentsAction } from '@application/comments/create-load-more-comments-action';
-import { createAddCommentAction } from '@application/comments/create-add-comment-action';
-import { createDeleteCommentAction } from '@application/comments/create-delete-comment-action';
-import { createToggleLikeAction } from '@application/comments/create-toggle-like-action';
+import { createLoadCommentsAction } from '@application/comments/list/create-load-comments-action';
+import { createLoadMoreCommentsAction } from '@application/comments/list/create-load-more-comments-action';
+import { createAddCommentAction } from '@application/comments/add/create-add-comment-action';
+import { createDeleteCommentAction } from '@application/comments/delete/create-delete-comment-action';
+import { createToggleLikeAction } from '@application/comments/like/create-toggle-like-action';
 
 /**
  * Assembles the comments store from its per-action factories. State is keyed by

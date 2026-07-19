@@ -1,4 +1,4 @@
-import { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';

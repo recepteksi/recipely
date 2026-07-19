@@ -44,11 +44,11 @@ import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/co
 import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
 import { configureTaxonomyStore } from '@application/recipes/taxonomy/configure-taxonomy-store';
 import { configureFavoritesStore } from '@application/favorites/configure-favorites-store';
-import { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
-import { AddCommentUseCase } from '@application/comments/add-comment-use-case';
-import { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
-import { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
+import { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
+import { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
+import { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
+import { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';

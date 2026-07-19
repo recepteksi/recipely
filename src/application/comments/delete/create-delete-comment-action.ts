@@ -1,33 +1,26 @@
 import type { StoreApi } from 'zustand';
 import { UnknownFailure } from '@core/failure';
-import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
+import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import { mergeRecipeComments } from '@application/comments/merge-recipe-comments';
+import { mergeRecipeComments } from '@application/comments/list/merge-recipe-comments';
+import { ValueConstants } from '@core/constants';
 
 type SetState = StoreApi<CommentsStoreState>['setState'];
 
 /**
- * Builds the `addComment` action: submits a new comment and prepends it to the
- * recipe's list on success. Resolves `true` when the comment was created.
+ * Builds the `deleteComment` action: removes a comment and decrements the total
+ * on success. Resolves `true` when the comment was deleted.
  */
-export const createAddCommentAction = (
+export const createDeleteCommentAction = (
   set: SetState,
-  addComment: AddCommentUseCase,
+  deleteComment: DeleteCommentUseCase,
 ) => {
-  return async (recipeId: string, body: string): Promise<boolean> => {
-    set((state) => ({
-      byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
-        isSubmitting: true,
-        error: null,
-      })),
-    }));
-
+  return async (recipeId: string, commentId: string): Promise<boolean> => {
     try {
-      const result = await addComment.execute({ recipeId, body });
+      const result = await deleteComment.execute({ recipeId, commentId });
       if (!result.ok) {
         set((state) => ({
           byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
-            isSubmitting: false,
             error: result.failure,
           })),
         }));
@@ -35,9 +28,8 @@ export const createAddCommentAction = (
       }
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, (existing) => ({
-          items: [result.value, ...existing.items],
-          total: existing.total + 1,
-          isSubmitting: false,
+          items: existing.items.filter((c) => c.id !== commentId),
+          total: Math.max(ValueConstants.zero, existing.total - 1),
           error: null,
         })),
       }));
@@ -46,7 +38,6 @@ export const createAddCommentAction = (
       const msg = err instanceof Error ? err.message : String(err);
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
-          isSubmitting: false,
           error: new UnknownFailure(msg),
         })),
       }));
