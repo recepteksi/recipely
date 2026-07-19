@@ -5,7 +5,6 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
 
 const actionText = (n: NotifItem): string => {
@@ -24,26 +23,26 @@ const actionText = (n: NotifItem): string => {
 
 interface NotifRowProps {
   item: NotifItem;
-  onTap: (target: NotificationTarget) => void;
+  onTap: (item: NotifItem) => void;
 }
 
 const PRESSED_OPACITY = 0.8;
 
 /**
- * One notification row. A row whose `item.target` is null (e.g. a follow — there
- * is no public user-profile route) has nowhere to go: it renders disabled, with
- * no press feedback, and announces as text rather than a button so assistive
- * tech never offers an action that does nothing.
+ * One notification row. Tapping marks the notification read and, when it has a
+ * target, navigates to it. A read row whose `item.target` is null (e.g. a
+ * follow — there is no public user-profile route) has nothing left to do: it
+ * renders disabled, with no press feedback, and announces as text rather than
+ * a button so assistive tech never offers an action that does nothing.
  */
 export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
-  const target = item.target;
-  const tappable = target !== null;
+  const tappable = item.target !== null || !item.read;
 
   return (
     <Pressable
-      onPress={tappable ? () => onTap(target) : undefined}
+      onPress={tappable ? () => onTap(item) : undefined}
       disabled={!tappable}
       style={({ pressed }) => [
         styles.row,
@@ -56,6 +55,11 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
       accessibilityLabel={`${item.actor} ${actionText(item)}`}
+      // A target-less unread row's only action is "mark read" — say so, since
+      // the label alone gives assistive tech no cue what activating it does.
+      accessibilityHint={
+        item.target === null && !item.read ? t().notifications.markOneHint : undefined
+      }
     >
       <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
         <Ionicons name={meta.icon} size={20} color={meta.color} />

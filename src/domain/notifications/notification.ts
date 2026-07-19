@@ -93,4 +93,13 @@ export class Notification extends Entity<NotificationProps> {
     }
     return null;
   }
+
+  /**
+   * Returns a copy of this notification with `read: true` (or `this` when
+   * already read). Copies stay valid by construction, so no `Result` needed.
+   */
+  asRead(): Notification {
+    if (this.props.read) return this;
+    return new Notification({ ...this.props, read: true });
+  }
 }

@@ -55,3 +55,21 @@ describe('Notification.target', () => {
     expect(notification.target).toBeNull();
   });
 });
+
+describe('Notification — asRead', () => {
+  it('returns a read copy and leaves the original unchanged', () => {
+    const unread = build({ read: false });
+
+    const read = unread.asRead();
+
+    expect(read.read).toBe(true);
+    expect(read.id).toBe(unread.id);
+    expect(unread.read).toBe(false);
+  });
+
+  it('returns the same instance when already read', () => {
+    const notification = build({ read: true });
+
+    expect(notification.asRead()).toBe(notification);
+  });
+});
