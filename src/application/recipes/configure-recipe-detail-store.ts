@@ -33,5 +33,6 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): RecipeD
         delete next[id];
         return { byId: next };
       }),
+    clear: () => set({ byId: {} }),
   }));
 };

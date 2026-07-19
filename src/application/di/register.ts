@@ -110,7 +110,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
@@ -172,6 +171,20 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // WHY: built after every session-scoped store exists so sign-out / account
+  // deletion / session expiry can wipe all of them in one place — a cache that
+  // survives an account switch shows the previous user's data (stale comments,
+  // likes, notifications) until a manual refresh.
+  const clearSessionCaches = (): void => {
+    savedRecipesStore.getState().setSavedIds(new Set());
+    commentsStore.getState().clear();
+    likesStore.getState().clear();
+    recipeDetailStore.getState().clear();
+    notificationsStore.getState().clear();
+    createdRecipesStore.getState().clear();
+    userProfileStore.getState().reset();
+  };
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
   return {
     authStore,
     recipeListStore,

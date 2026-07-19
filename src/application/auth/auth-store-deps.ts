@@ -30,4 +30,11 @@ export interface AuthStoreDeps {
   uploadAvatar: UploadAvatarUseCase;
   updateProfile: UpdateProfileUseCase;
   deleteAccount: DeleteAccountUseCase;
+  /**
+   * Clears every session-scoped cache (comments, likes, recipe details,
+   * notifications, saved/created recipes, viewed profile) so nothing from the
+   * previous account survives into the next session. Invoked on sign-out,
+   * account deletion, and session expiry.
+   */
+  clearSessionCaches: () => void;
 }

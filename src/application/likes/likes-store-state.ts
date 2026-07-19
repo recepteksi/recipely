@@ -24,4 +24,6 @@ export interface LikesStoreState {
    * the optimistic rollback alone is easy to miss.
    */
   toggle: (recipeId: string) => Promise<Result<void, Failure>>;
+  /** Drops every per-recipe like overlay. Called when the session ends. */
+  clear: () => void;
 }

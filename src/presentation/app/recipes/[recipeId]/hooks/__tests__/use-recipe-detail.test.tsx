@@ -149,6 +149,7 @@ const makeStores = (commentsStore: CommentsStore): Stores => {
     load: jest.fn(),
     replace: jest.fn(),
     remove: jest.fn(),
+    clear: jest.fn(),
   }));
 
   const authStore = create<AuthStoreState>(
@@ -253,6 +254,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
       addComment: jest.fn().mockResolvedValue(false),
       deleteComment: jest.fn(),
       toggleLike: jest.fn(),
+      clear: jest.fn(),
     })) as unknown as CommentsStore;
 
     const { latest } = driveHook(commentsStore);

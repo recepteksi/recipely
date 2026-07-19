@@ -51,4 +51,6 @@ export interface CreatedRecipesStoreState {
   resetUpdateState: () => void;
   resetDeleteState: () => void;
   clearAiDraft: () => void;
+  /** Drops the signed-in user's recipe lists and AI draft. Called when the session ends. */
+  clear: () => void;
 }

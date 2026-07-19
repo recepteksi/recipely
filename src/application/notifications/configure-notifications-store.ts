@@ -80,5 +80,6 @@ export const configureNotificationsStore = (
         await get().load();
       }
     },
+    clear: () => set({ state: { status: 'idle' }, unreadCount: 0 }),
   }));
 };

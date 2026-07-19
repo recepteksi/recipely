@@ -6,4 +6,6 @@ export interface RecipeDetailStoreState {
   load: (id: string) => Promise<void>;
   replace: (recipe: Recipe) => void;
   remove: (id: string) => void;
+  /** Drops every cached recipe detail. Called when the session ends. */
+  clear: () => void;
 }
