@@ -110,10 +110,6 @@ export const useRecipeList = (): UseRecipeListResult => {
   const [pendingSort, setPendingSort] = useState<SortKey>('popular');
   const [sheetOpen, setSheetOpen] = useState<'filter' | null>(null);
 
-  useEffect(() => {
-    if (state.status === 'idle') void load();
-  }, [state.status, load]);
-
   // Web home shows a Save bookmark on each card, so the saved set must be populated.
   useEffect(() => {
     if (!isWebShell) return;
@@ -132,6 +128,15 @@ export const useRecipeList = (): UseRecipeListResult => {
     }),
     [],
   );
+
+  // WHY: the initial load must carry the same `sort` the header advertises
+  // ('popular' by default). A bare `load()` would fall back to the backend's
+  // default order (createdAt desc), so the first paint and the focus refetch
+  // would use different orderings — the list visibly reshuffled the first
+  // time the user came back from a recipe detail.
+  useEffect(() => {
+    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy));
+  }, [state.status, load, buildApiFilters, filters, sortBy]);
 
   // WHY: the store's `isRefreshing` covers every in-place refetch (filter, sort,
   // locale switch, focus), but `RefreshControl.refreshing` must reflect ONLY a
@@ -217,7 +222,8 @@ export const useRecipeList = (): UseRecipeListResult => {
   const onResetFilters = (): void => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
-    void load();
+    // Keep the active sort: resetting filters must not silently change ordering.
+    void load(buildApiFilters(emptyFilters, sortBy));
   };
 
   const effectiveSearch = isWebShell ? webSearchQuery : search;

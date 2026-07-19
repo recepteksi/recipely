@@ -143,7 +143,10 @@ interface RenderSnapshot {
   isStoreRefreshing: boolean;
 }
 
-describe('useRecipeList — pull-to-refresh spinner', () => {
+// The suite also covers load-parameter regressions: the initial load and the
+// filter reset must send the same `sort` as every other refetch path, or the
+// backend's fallback ordering makes the list reshuffle on the first focus refetch.
+describe('useRecipeList — pull-to-refresh spinner and load parameters', () => {
   let renders: RenderSnapshot[] = [];
   let vm: ReturnType<typeof useRecipeList>;
 
@@ -325,6 +328,50 @@ describe('useRecipeList — pull-to-refresh spinner', () => {
     });
 
     expect(vm.isPullRefreshing).toBe(false);
+  });
+
+  it('sends the advertised default sort on the initial load', async () => {
+    // Regression: a bare `load()` on mount fell back to the backend's default
+    // ordering (createdAt desc) while the header showed "popular" — so the
+    // focus refetch (which does send sort=popular) visibly reshuffled the list
+    // the first time the user came back from a recipe detail.
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    expect(execute).toHaveBeenCalledWith(expect.objectContaining({ sort: 'popular' }));
+  });
+
+  it('keeps the active sort but clears filters when filters are reset', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+    act(() => {
+      vm.onChangeSort('rating');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r3')])));
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r4')])));
+    act(() => {
+      vm.onResetFilters();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const lastCall = execute.mock.calls.at(-1)?.[0];
+    expect(lastCall).toEqual(expect.objectContaining({ sort: 'rating' }));
+    expect(lastCall).not.toHaveProperty('cuisines');
   });
 
   it('clears isPullRefreshing and leaks no unhandled rejection when the load rejects', async () => {
