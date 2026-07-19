@@ -5,7 +5,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
-import { FeedbackSheet } from '@presentation/base/widgets/sheets/feedback-sheet';
+import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
@@ -54,7 +54,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
         </ScrollView>
       </KeyboardAvoider>
 
-      <FeedbackSheet
+      <FeedbackDialog
         severity="danger"
         visible={vm.errorDialog !== null}
         title={t().errors.genericTitle}

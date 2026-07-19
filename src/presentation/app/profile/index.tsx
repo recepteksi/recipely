@@ -5,7 +5,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, sizes } from '@presentation/base/theme';
 import { useProfile } from '@presentation/app/profile/hooks/use-profile';
-import { FeedbackSheet } from '@presentation/base/widgets/sheets/feedback-sheet';
+import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
 import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity';
 import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
@@ -50,7 +50,7 @@ export const ProfileScreen = (): React.JSX.Element => {
         </ResponsiveContainer>
       </ScrollView>
 
-      <FeedbackSheet
+      <FeedbackDialog
         severity="danger"
         visible={vm.uploadError !== null}
         title={t().errors.genericTitle}

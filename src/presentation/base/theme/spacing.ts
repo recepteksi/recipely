@@ -60,8 +60,10 @@ export const sizes = {
   avatarMd: 56,
   avatarLg: 80,
   badgeSm: 28,
-  // Circular severity disc behind the icon in the FeedbackSheet dialog.
+  // Circular severity disc behind the icon in the FeedbackDialog.
   feedbackDisc: 64,
+  // Width cap of the centered FeedbackDialog card (phone-sized on tablets/web).
+  dialogMaxWidth: 400,
   notifBadge: 18,
   // Line height that keeps the unread count vertically centered inside the
   // 18px notifBadge circle (14px inner box after the 2px border).

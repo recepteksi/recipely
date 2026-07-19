@@ -10,7 +10,7 @@ import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create
 import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { FeedbackSheet } from '@presentation/base/widgets/sheets/feedback-sheet';
+import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -75,7 +75,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onConfirm={vm.onConfirmSaveError}
         onClose={vm.onCloseSaveError}
       />
-      <FeedbackSheet
+      <FeedbackDialog
         severity="danger"
         visible={vm.saveIssue !== null}
         title={t().createRecipe.saveErrorTitle}
@@ -84,7 +84,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onPrimary={vm.onCloseSaveIssue}
         onClose={vm.onCloseSaveIssue}
       />
-      <FeedbackSheet
+      <FeedbackDialog
         visible={vm.saveSuccess !== null}
         title={t().createRecipe.successTitle}
         message={
