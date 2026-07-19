@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import { emptyEditable, recipeToEditable } from '@presentation/app/create-recipe/model/recipe-mapping';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';

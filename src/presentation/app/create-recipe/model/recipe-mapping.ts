@@ -1,7 +1,7 @@
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import { CharConstants, ValueConstants } from '@core/constants';

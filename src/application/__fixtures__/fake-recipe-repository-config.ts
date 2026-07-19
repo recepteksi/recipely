@@ -1,7 +1,7 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 
 export interface FakeRecipeRepositoryConfig {

@@ -12,7 +12,7 @@ import type { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-ca
 import type { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
 import type { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { SavedRecipesStore } from '@application/recipes/saved-recipes-store';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 
 export interface AuthStoreDeps {
   signIn: SignInUseCase;

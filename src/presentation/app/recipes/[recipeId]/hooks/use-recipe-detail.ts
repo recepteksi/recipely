@@ -13,7 +13,7 @@ import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**

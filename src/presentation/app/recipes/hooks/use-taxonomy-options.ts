@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { CUISINE_KEY_VALUES } from '@domain/recipes/cuisine-key';
-import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/recipe-category';
+import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
+import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
 import type { TaxonomyOptions } from '@presentation/app/recipes/model/taxonomy-options';
 import { ValueConstants } from '@core/constants';
 

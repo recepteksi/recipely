@@ -5,11 +5,11 @@ import { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
-import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine-recipe-response-dto';
+import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 const validDto: RecipeDto = {

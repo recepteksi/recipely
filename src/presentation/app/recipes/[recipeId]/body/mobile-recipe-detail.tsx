@@ -8,7 +8,7 @@ import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recip
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 

@@ -17,7 +17,7 @@ import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-hea
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
-import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';

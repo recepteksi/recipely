@@ -1,6 +1,6 @@
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import { toMediaUpload } from '@presentation/app/create-recipe/model/to-media-upload';
 import { DIFFICULTY_LABELS } from '@presentation/app/create-recipe/model/difficulty-tag-labels';

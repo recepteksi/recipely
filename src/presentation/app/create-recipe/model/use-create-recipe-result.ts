@@ -4,7 +4,7 @@ import type { Phase } from '@presentation/app/create-recipe/model/phase';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 /** View model returned by {@link useCreateRecipe} for the create/edit screen. */
 export interface UseCreateRecipeResult {

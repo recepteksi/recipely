@@ -3,7 +3,6 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
 import { PresentationValueConstants } from '@presentation/base/constants';
 
 export interface PasswordStrengthMeterProps {

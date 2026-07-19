@@ -40,7 +40,7 @@ import type { DeleteCommentUseCase } from '@application/comments/delete-comment-
 import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { RecipeDetailStoreState } from '@application/recipes/recipe-detail-store-state';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';

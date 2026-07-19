@@ -17,7 +17,7 @@ import { useWebShellState } from '@presentation/base/responsive/use-web-shell-st
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, sizes } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 const RECIPE_CARD_MIN_WIDTH = 320;

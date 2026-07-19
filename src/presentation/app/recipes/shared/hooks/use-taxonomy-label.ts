@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
-import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
+import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_EMOJI } from '@presentation/app/create-recipe/model/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/app/create-recipe/model/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';

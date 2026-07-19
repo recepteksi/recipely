@@ -1,13 +1,13 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
-import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 
 export interface IRecipeRepository {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>>;
