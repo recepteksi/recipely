@@ -84,15 +84,6 @@ export class Notification extends Entity<NotificationProps> {
    * notification carries no `recipeId` — there is no public user-profile
    * route yet — so it has no destination and this returns `null`.
    */
-  /**
-   * Returns a copy of this notification with `read: true` (or `this` when
-   * already read). Copies stay valid by construction, so no `Result` needed.
-   */
-  asRead(): Notification {
-    if (this.props.read) return this;
-    return new Notification({ ...this.props, read: true });
-  }
-
   get target(): NotificationTarget | null {
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: 'comment', recipeId: this.props.recipeId, commentId: this.props.commentId };
@@ -101,5 +92,14 @@ export class Notification extends Entity<NotificationProps> {
       return { kind: 'recipe', recipeId: this.props.recipeId };
     }
     return null;
+  }
+
+  /**
+   * Returns a copy of this notification with `read: true` (or `this` when
+   * already read). Copies stay valid by construction, so no `Result` needed.
+   */
+  asRead(): Notification {
+    if (this.props.read) return this;
+    return new Notification({ ...this.props, read: true });
   }
 }
