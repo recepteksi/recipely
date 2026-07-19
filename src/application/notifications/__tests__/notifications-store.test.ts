@@ -2,6 +2,7 @@ import { configureNotificationsStore } from '@application/notifications/configur
 import type { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
 import type { ListNotificationsResult } from '@application/notifications/list-notifications-result';
 import type { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import type { MarkOneReadUseCase } from '@application/notifications/mark-one-read-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -28,6 +29,7 @@ const makeNotification = (id: string, read: boolean): Notification => {
 interface StubConfig {
   listResults?: Result<ListNotificationsResult, Failure>[];
   markResult?: Result<void, Failure>;
+  markOneResult?: Result<void, Failure>;
 }
 
 const makeStore = (config: StubConfig) => {
@@ -35,6 +37,7 @@ const makeStore = (config: StubConfig) => {
   const listInputs: { limit?: number; offset?: number }[] = [];
   let listIndex = 0;
   let markCalls = 0;
+  const markOneIds: string[] = [];
 
   const listNotifications = {
     execute: (input: { limit?: number; offset?: number } = {}) => {
@@ -52,8 +55,15 @@ const makeStore = (config: StubConfig) => {
     },
   } as unknown as MarkAllReadUseCase;
 
-  const store = configureNotificationsStore({ listNotifications, markAllRead });
-  return { store, listInputs, markCallCount: () => markCalls };
+  const markOneRead = {
+    execute: (id: string) => {
+      markOneIds.push(id);
+      return Promise.resolve(config.markOneResult ?? ok(undefined));
+    },
+  } as unknown as MarkOneReadUseCase;
+
+  const store = configureNotificationsStore({ listNotifications, markAllRead, markOneRead });
+  return { store, listInputs, markCallCount: () => markCalls, markOneIds };
 };
 
 const loaded = (items: Notification[], unreadCount: number): Result<ListNotificationsResult, Failure> =>
@@ -119,5 +129,53 @@ describe('notifications store — markAllRead', () => {
 
     expect(store.getState().unreadCount).toBe(0);
     expect(markCallCount()).toBe(1);
+  });
+});
+
+describe('notifications store — markOneRead', () => {
+  it('flips only the tapped item to read and decrements both unread counts', async () => {
+    const { store, markOneIds } = makeStore({
+      listResults: [loaded([makeNotification('n1', false), makeNotification('n2', false)], 2)],
+    });
+
+    await store.getState().load();
+    await store.getState().markOneRead('n1');
+
+    expect(markOneIds).toEqual(['n1']);
+    expect(store.getState().unreadCount).toBe(1);
+    const state = store.getState().state;
+    if (state.status !== 'loaded') throw new Error('expected loaded state');
+    expect(state.unreadCount).toBe(1);
+    expect(state.items.find((n) => n.id === 'n1')?.read).toBe(true);
+    expect(state.items.find((n) => n.id === 'n2')?.read).toBe(false);
+  });
+
+  it('is a no-op for an already-read item', async () => {
+    const { store, markOneIds } = makeStore({
+      listResults: [loaded([makeNotification('n1', true)], 0)],
+    });
+
+    await store.getState().load();
+    await store.getState().markOneRead('n1');
+
+    expect(markOneIds).toEqual([]);
+    expect(store.getState().unreadCount).toBe(0);
+  });
+
+  it('reloads the feed when the backend rejects the mark', async () => {
+    const { store, listInputs } = makeStore({
+      listResults: [loaded([makeNotification('n1', false)], 1)],
+      markOneResult: fail(new NetworkFailure('offline')),
+    });
+
+    await store.getState().load();
+    await store.getState().markOneRead('n1');
+
+    // load (1) + reload after failure (1) — the source of truth wins.
+    expect(listInputs).toHaveLength(2);
+    const state = store.getState().state;
+    if (state.status !== 'loaded') throw new Error('expected loaded state');
+    expect(state.items[0]?.read).toBe(false);
+    expect(store.getState().unreadCount).toBe(1);
   });
 });

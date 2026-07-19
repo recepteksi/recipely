@@ -11,6 +11,8 @@ export interface NotificationsStoreState {
   load: () => Promise<void>;
   refreshUnread: () => Promise<void>;
   markAllRead: () => Promise<void>;
+  /** Marks a single notification as read (optimistic; reloads on failure). */
+  markOneRead: (id: string) => Promise<void>;
   /** Resets the feed and badge to their initial state. Called when the session ends. */
   clear: () => void;
 }

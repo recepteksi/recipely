@@ -4,9 +4,10 @@ import type { AuthStore } from '@application/auth/auth-store';
 import type { NotificationsStore } from '@application/notifications/notifications-store';
 
 // How often to re-poll the unread count while the app is in the foreground.
-// Push delivery would make this redundant, but polling keeps the bell badge
-// climbing without any native push dependency.
-const POLL_INTERVAL_MS = 60_000;
+// Android and web receive FCM pushes, but iOS has no push registration yet —
+// this poll is its only freshness source, so it stays reasonably tight. The
+// endpoint is called with limit=1, so each tick is a minimal request.
+const POLL_INTERVAL_MS = 30_000;
 
 /**
  * Keeps the notification bell badge fresh app-wide: refreshes the unread count

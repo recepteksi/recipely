@@ -77,18 +77,15 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const state = notificationsStore((s) => s.state);
   const load = notificationsStore((s) => s.load);
   const markAllRead = notificationsStore((s) => s.markAllRead);
+  const markOneRead = notificationsStore((s) => s.markOneRead);
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  // Opening the screen is itself an acknowledgement: load the latest feed, then
-  // mark everything read so the bell badge clears. Runs once per mount.
+  // Load the latest feed once per mount. Notifications stay unread until the
+  // user taps them individually or presses the explicit "mark all read" button —
+  // opening the screen alone never clears the badge.
   useEffect(() => {
-    void (async () => {
-      await load();
-      if (notificationsStore.getState().unreadCount > 0) {
-        await markAllRead();
-      }
-    })();
+    void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -103,13 +100,18 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
-  const tap = (target: NotificationTarget): void => {
+  const openTarget = (target: NotificationTarget): void => {
     const path = `/recipes/${encodeURIComponent(target.recipeId)}`;
     router.push(
       (target.kind === 'comment'
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
         : path) as Href,
     );
+  };
+
+  const tap = (item: NotifItem): void => {
+    if (!item.read) void markOneRead(item.id);
+    if (item.target !== null) openTarget(item.target);
   };
 
   return (

@@ -4,12 +4,29 @@ import type { NotificationsStoreState } from '@application/notifications/notific
 import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
 import type { NotificationsStore } from '@application/notifications/notifications-store';
 
+const asRead = (n: Notification): Notification | null => {
+  const next = Notification.create({
+    id: n.id,
+    type: n.type,
+    senderId: n.senderId,
+    senderDisplayName: n.senderDisplayName,
+    senderPhotoUrl: n.senderPhotoUrl,
+    recipeId: n.recipeId,
+    recipeTitle: n.recipeTitle,
+    commentId: n.commentId,
+    message: n.message,
+    read: true,
+    createdAt: n.createdAt,
+  });
+  return next.ok ? next.value : null;
+};
+
 /**
  * Owns the in-memory notifications feed for the current session. The store is
  * idle until a screen first calls `load`. `refreshUnread` keeps the badge count
  * current without fetching the whole feed (used by the app-wide poller).
- * `markAllRead` performs an optimistic update; on failure the feed is reloaded
- * so the source of truth always wins.
+ * `markAllRead` / `markOneRead` perform optimistic updates; on failure the feed
+ * is reloaded so the source of truth always wins.
  */
 export const configureNotificationsStore = (
   deps: NotificationsStoreDeps,
@@ -51,20 +68,8 @@ export const configureNotificationsStore = (
         return;
       }
       const optimisticItems = current.items.reduce<Notification[]>((acc, n) => {
-        const next = Notification.create({
-          id: n.id,
-          type: n.type,
-          senderId: n.senderId,
-          senderDisplayName: n.senderDisplayName,
-          senderPhotoUrl: n.senderPhotoUrl,
-          recipeId: n.recipeId,
-          recipeTitle: n.recipeTitle,
-          commentId: n.commentId,
-          message: n.message,
-          read: true,
-          createdAt: n.createdAt,
-        });
-        if (next.ok) acc.push(next.value);
+        const next = asRead(n);
+        if (next !== null) acc.push(next);
         return acc;
       }, []);
       set({
@@ -76,6 +81,25 @@ export const configureNotificationsStore = (
         unreadCount: 0,
       });
       const result = await deps.markAllRead.execute();
+      if (!result.ok) {
+        await get().load();
+      }
+    },
+    markOneRead: async (id: string) => {
+      const current = get().state;
+      if (current.status !== 'loaded') return;
+      const target = current.items.find((n) => n.id === id);
+      if (target === undefined || target.read) return;
+      const optimisticItems = current.items.map((n) => {
+        if (n.id !== id) return n;
+        return asRead(n) ?? n;
+      });
+      const nextUnread = Math.max(0, current.unreadCount - 1);
+      set({
+        state: { ...current, items: optimisticItems, unreadCount: nextUnread },
+        unreadCount: nextUnread,
+      });
+      const result = await deps.markOneRead.execute(id);
       if (!result.ok) {
         await get().load();
       }

@@ -56,6 +56,7 @@ import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { configureLikesStore } from '@application/likes/configure-likes-store';
 import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import { MarkOneReadUseCase } from '@application/notifications/mark-one-read-use-case';
 import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { configureUserProfileStore } from '@application/user-profile/configure-user-profile-store';
@@ -153,9 +154,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const markAllReadUseCase = container.resolve<MarkAllReadUseCase>(
     TOKENS.MarkAllReadUseCase,
   );
+  const markOneReadUseCase = container.resolve<MarkOneReadUseCase>(
+    TOKENS.MarkOneReadUseCase,
+  );
   const notificationsStore = configureNotificationsStore({
     listNotifications: listNotificationsUseCase,
     markAllRead: markAllReadUseCase,
+    markOneRead: markOneReadUseCase,
   });
   const getUserProfileUseCase = container.resolve<GetUserProfileUseCase>(
     TOKENS.GetUserProfileUseCase,
