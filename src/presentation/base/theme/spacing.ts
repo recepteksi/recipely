@@ -99,7 +99,7 @@ export const sizes = {
   heroPaddingTop: 76,
   // Mobile collapsing home header + Filter/Sort FAB (June 2026 redesign).
   homeHeaderMax: 132,
-  homeHeaderMin: ValueConstants.zero,
+  homeHeaderMin: 0,
   homeTitleShrink: 96,
   // Android pull-to-refresh spinner offset for the home feed. Android's
   // SwipeRefreshLayout rests the circle at `offset + 64dp(target) - diameter`,
