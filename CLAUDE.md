@@ -140,10 +140,17 @@ blocking.
    are split into sub-components in the same feature folder. No nested classes, no deep nesting (> 2 levels).
 
 5. **No magic values** — hex codes, pixel numbers, and string keys are forbidden outside constants files:
+   - Named literals (`''`, `0`, `,`, shared regexes, locale codes) → `@core/constants`
    - API endpoints / limits → `src/infrastructure/constants/api.ts`
    - Storage keys → `src/infrastructure/constants/storage.ts`
    - Spacing / radii / font sizes / icon sizes → `src/presentation/base/theme/spacing.ts`
    - Colours → `src/presentation/base/theme/colors.ts` / `themes.ts`
+
+   **`@core/constants` is the default for structural literals.** New code writes
+   `CharConstants.empty` instead of `''` and `ValueConstants.zero` instead of a standalone `0`
+   (`useState(CharConstants.empty)`, `items.length === ValueConstants.zero`, `arr[ValueConstants.zero]`).
+   A regex used by more than one file goes in `RegexConstants` rather than being re-declared.
+   Full rules, exemptions and the type-widening rationale: `architecture.md` §5.
 
 6. **StyleSheet.create() for static styles** — inline style objects are forbidden for static values.
    Dynamic portions may be inline; combine with `[styles.base, { color: dynamic }]`.

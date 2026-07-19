@@ -340,6 +340,10 @@ Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated c
 
 | Constant type | File |
 |---------------|------|
+| Empty string, separators (`,`, `.`, `/`, `\n`) | `src/core/constants/char-constants.ts` |
+| Structural numbers (`0`, `1`, `2`, `-1`) | `src/core/constants/value-constants.ts` |
+| Regexes shared by more than one file | `src/core/constants/regex-constants.ts` |
+| Locale codes (`en`, `tr`) | `src/core/constants/locale-constants.ts` |
 | API endpoints, page sizes, timeouts | `src/infrastructure/constants/api.ts` |
 | Storage keys | `src/infrastructure/constants/storage.ts` |
 | Spacing, radii, font sizes, icon/avatar sizes | `src/presentation/base/theme/spacing.ts` |
@@ -362,6 +366,70 @@ const styles = StyleSheet.create({
   card:  { backgroundColor: '#F5F5F5' },
 });
 ```
+
+#### `@core/constants` — named literals (default for all new code)
+
+`src/core/constants/` homes literals whose meaning is **structural**, not visual. It imports
+nothing (core may only import `@core`), so every layer may consume it — always through the
+barrel, never a deep path.
+
+```ts
+import { CharConstants, ValueConstants, RegexConstants } from '@core/constants';
+
+// ✅ correct
+const [name, setName] = useState(CharConstants.empty);
+if (items.length === ValueConstants.zero) return null;
+const first = parts[ValueConstants.zero];
+const padding = ValueConstants.zero;
+
+// ❌ wrong — bare structural literals
+const [name, setName] = useState('');
+if (items.length === 0) return null;
+```
+
+**What does NOT belong here** — putting a measurement in `ValueConstants` is a review finding:
+
+- Design measurements (spacing, radii, font/icon sizes, opacity) → `theme/spacing.ts`.
+  `sizes.homeHeaderMin` stays a bare `0` because it is a measurement sitting beside `132` and `96`.
+- API limits, page sizes, timeouts → `infrastructure/constants/api.ts`.
+- Arbitrary numbers. `ValueConstants` holds `zero`/`one`/`two`/`minusOne` only — never add `20`.
+- Feature-local regexes (ingredient parsing, route matching) stay next to the code that owns them.
+  Only a pattern that would otherwise be **re-declared in two files** is promoted to `RegexConstants`.
+
+#### Two invariants that will break the build if ignored
+
+**1. `CharConstants` / `ValueConstants` values are deliberately widened** — written `'' as string`
+and `0 as number` inside the `as const` object. These assertions are **not** redundant and must
+never be "cleaned up". Without them the properties get literal types (`''`, `0`), which infects
+every call site relying on widening: `useState(ValueConstants.zero)` infers `useState<0>`, so any
+later `setX(someNumber)` fails to compile. This hit ~42 sites during the original migration.
+
+`LocaleConstants` and `RegexConstants` intentionally keep their literal types — the `'en' | 'tr'`
+unions and narrowing depend on them. Do not widen those.
+
+**2. No `g` or `y` flag in `RegexConstants`.** The patterns are shared module-level instances;
+a global/sticky RegExp carries `lastIndex` between calls, so two unrelated call sites would
+silently corrupt each other's matches. A pattern needing `g` is constructed per use.
+
+#### Exemption — literal sequences
+
+When a number's meaning comes from its **position among neighbours** rather than from being zero,
+leave the whole sequence bare. Naming only the `0` destroys the pattern that made the line readable:
+
+```ts
+// ✅ correct — the sequence reads as a unit
+vibrationPattern: [0, 500, 300, 500, 300, 500],
+locations={[0, 0.45, 0.8, 1]}
+hex.slice(0, 2), hex.slice(2, 4), hex.slice(4, 6)
+
+// ❌ wrong — half-named sequence
+vibrationPattern: [ValueConstants.zero, 500, 300, 500, 300, 500],
+hex.slice(ValueConstants.zero, 2), hex.slice(2, 4)
+```
+
+This covers coordinate arrays, ranges, gradient stops, animation input/output ranges and
+`slice`/`substring` bounds. Structural zeros — `length === 0`, `Math.max(0, n)`, `[0]` indexing,
+defaults — are **not** exempt and use `ValueConstants.zero`.
 
 ---
 
