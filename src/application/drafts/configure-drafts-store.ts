@@ -63,5 +63,6 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): DraftsStore => {
       }
       return result.value;
     },
+    clear: () => set({ drafts: [], listState: { status: 'idle' }, latestDraft: null }),
   }));
 };

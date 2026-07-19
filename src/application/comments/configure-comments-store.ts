@@ -22,5 +22,6 @@ export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): Com
     addComment: createAddCommentAction(set, addComment),
     deleteComment: createDeleteCommentAction(set, deleteComment),
     toggleLike: createToggleLikeAction(set, get, likeComment, unlikeComment),
+    clear: () => set({ byRecipe: {} }),
   }));
 };

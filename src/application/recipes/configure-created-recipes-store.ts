@@ -154,5 +154,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     resetUpdateState: () => set({ updateState: { status: 'idle' } }),
     resetDeleteState: () => set({ deleteState: { status: 'idle' } }),
     clearAiDraft: () => set({ aiDraft: null }),
+    clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),
   }));
 };

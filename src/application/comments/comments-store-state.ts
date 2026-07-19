@@ -14,4 +14,6 @@ export interface CommentsStoreState {
    * toggle is rejected — the optimistic rollback alone is easy to miss.
    */
   toggleLike(recipeId: string, commentId: string): Promise<Result<void, Failure>>;
+  /** Drops every cached comment thread. Called when the session ends. */
+  clear(): void;
 }

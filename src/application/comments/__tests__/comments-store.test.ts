@@ -196,3 +196,16 @@ describe('commentsStore.toggleLike — missing comment', () => {
     expect(unlikeCalls).toHaveLength(0);
   });
 });
+
+describe('commentsStore.clear', () => {
+  // Regression: cached threads survived sign-out / account deletion, so a
+  // deleted account's comments stayed on screen until a manual refresh.
+  it('drops every cached recipe thread so the next visit re-fetches', async () => {
+    const { store } = await seededStore({ seed: [makeComment({ id: 'c1' })] });
+    expect(store.getState().byRecipe[RECIPE_ID]).toBeDefined();
+
+    store.getState().clear();
+
+    expect(store.getState().byRecipe).toEqual({});
+  });
+});
