@@ -36,11 +36,11 @@ import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
-import type { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import type { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import type { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import type { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import type { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
+import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
+import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
+import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
+import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';

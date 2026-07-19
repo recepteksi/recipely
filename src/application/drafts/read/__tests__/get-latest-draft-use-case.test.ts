@@ -1,5 +1,5 @@
 import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe-draft-repository';
-import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
+import { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';

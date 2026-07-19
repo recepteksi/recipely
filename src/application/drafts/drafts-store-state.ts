@@ -1,8 +1,8 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { DraftsListState } from '@application/drafts/drafts-list-state';
-import type { UpsertDraftStoreInput } from '@application/drafts/upsert-draft-store-input';
+import type { DraftsListState } from '@application/drafts/list/drafts-list-state';
+import type { UpsertDraftStoreInput } from '@application/drafts/write/upsert-draft-store-input';
 
 export interface DraftsStoreState {
   drafts: readonly RecipeDraft[];
