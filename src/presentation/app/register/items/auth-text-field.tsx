@@ -22,6 +22,7 @@ export interface AuthTextFieldProps {
   keyboardType?: KeyboardTypeOptions;
   returnKeyType?: ReturnKeyTypeOptions;
   secureTextEntry?: boolean;
+  maxLength?: number;
   onSubmitEditing?: () => void;
   rightSlot?: React.ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
@@ -43,6 +44,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
       keyboardType,
       returnKeyType,
       secureTextEntry,
+      maxLength,
       onSubmitEditing,
       rightSlot,
       containerStyle,
@@ -76,6 +78,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
           keyboardType={keyboardType}
           returnKeyType={returnKeyType}
           secureTextEntry={secureTextEntry}
+          maxLength={maxLength}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onSubmitEditing={onSubmitEditing}

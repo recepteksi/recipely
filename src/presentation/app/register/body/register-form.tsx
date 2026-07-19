@@ -14,6 +14,7 @@ import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/password-rules';
 import { computeStrength } from '@presentation/app/register/model/compute-strength';
+import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -101,6 +102,7 @@ export const RegisterForm = (): React.JSX.Element => {
         onChangeText={setName}
         autoCapitalize="words"
         returnKeyType="next"
+        maxLength={DISPLAY_NAME_MAX}
         onSubmitEditing={() => emailRef.current?.focus()}
       />
 
