@@ -3,6 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeSummaryProps {
   id: string;
@@ -35,10 +36,10 @@ export class RecipeSummary extends Entity<RecipeSummaryProps> {
   }
 
   static create(props: RecipeSummaryProps): Result<RecipeSummary, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
     }
-    if (props.name.trim().length === 0) {
+    if (props.name.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
     }
     return ok(new RecipeSummary(props));

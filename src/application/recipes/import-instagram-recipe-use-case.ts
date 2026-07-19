@@ -5,6 +5,7 @@ import type { Recipe } from '@domain/recipes/recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 
 import type { ImportInstagramRecipeInput } from '@application/recipes/import-instagram-recipe-input';
+import { ValueConstants } from '@core/constants';
 
 const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
 
@@ -26,7 +27,7 @@ export class ImportInstagramRecipeUseCase {
 
   execute(input: ImportInstagramRecipeInput): Promise<Result<Recipe, Failure>> {
     const trimmed = input.url.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === ValueConstants.zero) {
       return Promise.resolve(
         fail(
           new ValidationFailure(

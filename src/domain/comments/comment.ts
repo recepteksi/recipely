@@ -2,6 +2,7 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import { ValueConstants } from '@core/constants';
 
 export interface CommentProps {
   id: string;
@@ -25,16 +26,16 @@ export class Comment extends Entity<CommentProps> {
   }
 
   static create(props: CommentProps): Result<Comment, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment id must be non-empty', 'id'));
     }
-    if (props.body.trim().length === 0) {
+    if (props.body.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment body must be non-empty', 'body'));
     }
-    if (props.authorId.trim().length === 0) {
+    if (props.authorId.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment authorId must be non-empty', 'authorId'));
     }
-    if (props.recipeId.trim().length === 0) {
+    if (props.recipeId.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment recipeId must be non-empty', 'recipeId'));
     }
     return ok(new Comment(props));
@@ -81,7 +82,7 @@ export class Comment extends Entity<CommentProps> {
     const nextLiked = !this.props.likedByMe;
     const nextCount = nextLiked
       ? this.props.likeCount + 1
-      : Math.max(0, this.props.likeCount - 1);
+      : Math.max(ValueConstants.zero, this.props.likeCount - 1);
     return new Comment({
       ...this.props,
       likedByMe: nextLiked,

@@ -7,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media-item';
+import { ValueConstants } from '@core/constants';
 
 export interface MediaPickerProps {
   media: readonly MediaItem[];
@@ -37,10 +38,10 @@ export const MediaPicker = ({
 
   const addPhotos = useCallback(async () => {
     const items = await pickImages();
-    if (items.length > 0) onAdd(items);
+    if (items.length > ValueConstants.zero) onAdd(items);
   }, [onAdd]);
 
-  if (media.length === 0) {
+  if (media.length === ValueConstants.zero) {
     return (
       <Pressable
         onPress={addPhotos}
@@ -72,15 +73,15 @@ export const MediaPicker = ({
           style={[
             styles.tile,
             {
-              borderColor: i === 0 ? colors.primary : colors.cardBorder,
-              borderWidth: i === 0 ? 2 : 1,
+              borderColor: i === ValueConstants.zero ? colors.primary : colors.cardBorder,
+              borderWidth: i === ValueConstants.zero ? 2 : 1,
               backgroundColor: colors.skeleton,
             },
           ]}
         >
           <Image source={{ uri: m.url }} style={styles.tileMedia} resizeMode="cover" />
 
-          {i === 0 ? (
+          {i === ValueConstants.zero ? (
             <View style={[styles.coverBadge, { backgroundColor: colors.primary }]}>
               <ThemedText
                 variant="caption"
@@ -100,7 +101,7 @@ export const MediaPicker = ({
             <Ionicons name="close" size={14} color={colors.onOverlay} />
           </Pressable>
 
-          {i !== 0 ? (
+          {i !== ValueConstants.zero ? (
             <Pressable
               onPress={() => onSetCover(i)}
               accessibilityRole="button"

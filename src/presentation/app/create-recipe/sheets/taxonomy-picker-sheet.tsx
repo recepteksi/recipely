@@ -14,6 +14,7 @@ import { CUISINE_EMOJI } from '@presentation/app/create-recipe/model/cuisine-emo
 import { CATEGORY_EMOJI } from '@presentation/app/create-recipe/model/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';
 import type { Catalog } from '@presentation/app/create-recipe/model/catalog';
+import { ValueConstants } from '@core/constants';
 
 /**
  * `kind` selects which catalog (cuisine vs category) is shown. The emitted
@@ -57,13 +58,13 @@ const useCatalog = (kind: 'cuisine' | 'category'): Catalog => {
     const ready = status === 'ready';
     if (kind === 'cuisine') {
       const items =
-        ready && cuisines.length > 0
+        ready && cuisines.length > ValueConstants.zero
           ? cuisines
           : localItems(CUISINE_KEY_VALUES, CUISINE_EMOJI, tr.cuisineNames);
       return { items, title: tr.createRecipe.pickCuisineTitle };
     }
     const items =
-      ready && categories.length > 0
+      ready && categories.length > ValueConstants.zero
         ? categories
         : localItems(RECIPE_CATEGORY_VALUES, CATEGORY_EMOJI, tr.categoryNames);
     return { items, title: tr.createRecipe.pickCategoryTitle };

@@ -8,6 +8,7 @@ import { useEditableRecipe } from '@presentation/app/create-recipe/hooks/use-edi
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Assembles the create/edit recipe view model from the focused sub-hooks:
@@ -24,7 +25,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const recipeId = typeof params.recipeId === 'string' ? params.recipeId : undefined;
   const draftId = typeof params.draftId === 'string' ? params.draftId : undefined;
   const importUrl = typeof params.importUrl === 'string' ? params.importUrl : undefined;
-  const isEditMode = recipeId !== undefined && recipeId.length > 0;
+  const isEditMode = recipeId !== undefined && recipeId.length > ValueConstants.zero;
 
   const existingRecipe = isEditMode ? createdRecipesStore((s) => s.findById)(recipeId) : undefined;
 

@@ -3,6 +3,7 @@ import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { buildCommonHeaders } from '@infrastructure/network/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { CharConstants } from '@core/constants';
 
 /**
  * Builds the axios request interceptor that attaches the common headers (JWT
@@ -53,14 +54,14 @@ export const buildRequestInterceptor = (
     // Encrypt body for POST/PUT/PATCH. For requests with no data send an empty
     // encrypted envelope so the backend's decryptBody middleware accepts it.
     const methodsWithBody = ['POST', 'PUT', 'PATCH'];
-    if (methodsWithBody.includes(config.method?.toUpperCase() ?? '')) {
+    if (methodsWithBody.includes(config.method?.toUpperCase() ?? CharConstants.empty)) {
       const bodyData = config.data ?? {};
       // WHY: backend's decryptBody middleware expects plaintext `{ data: <T> }`
       // (mirroring the response side). Wrap before encrypt so it is symmetric.
       config.data = encryptEnvelope({ data: bodyData }, aesKey);
     }
     if (options.enableLogging) {
-      console.log(`[HTTP →] ${config.method?.toUpperCase()} ${config.baseURL ?? ''}${config.url ?? ''}`);
+      console.log(`[HTTP →] ${config.method?.toUpperCase()} ${config.baseURL ?? CharConstants.empty}${config.url ?? CharConstants.empty}`);
     }
     return config;
   };

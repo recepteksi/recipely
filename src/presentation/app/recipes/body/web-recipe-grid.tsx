@@ -14,6 +14,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 const GRID_GAP = spacing.lg2;
 /** Skeleton rows shown in the grid area while the list (re)loads. */
@@ -124,7 +125,7 @@ export const WebRecipeGrid = ({
         <ThemedText style={[styles.filterLabel, { color: colors.text }]}>
           {t().recipes.filter}
         </ThemedText>
-        {activeFilterCount > 0 ? (
+        {activeFilterCount > ValueConstants.zero ? (
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
             <ThemedText
               style={[styles.filterBadgeText, { color: colors.primaryText }]}
@@ -165,7 +166,7 @@ export const WebRecipeGrid = ({
             </View>
           ))}
         </View>
-      ) : recipes.length === 0 ? (
+      ) : recipes.length === ValueConstants.zero ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
             <Ionicons name="search" size={sizes.iconXl} color={colors.textMuted} />
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   empty: {
     borderWidth: 1.5,

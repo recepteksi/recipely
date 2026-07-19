@@ -8,13 +8,14 @@ import { CATEGORY_EMOJI } from '@presentation/app/create-recipe/model/category-e
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';
 import type { TaxonomyLabel } from '@presentation/app/recipes/shared/model/taxonomy-label';
 import type { UseTaxonomyLabelResult } from '@presentation/app/recipes/shared/model/use-taxonomy-label-result';
+import { ValueConstants } from '@core/constants';
 
 const toMap = (items: readonly TaxonomyItem[]): Map<string, TaxonomyItem> =>
   new Map(items.map((item) => [item.key, item]));
 
 /** First non-empty value, treating `undefined`/`''` as a miss. */
 const firstNonEmpty = (...values: (string | undefined)[]): string | undefined =>
-  values.find((v) => v !== undefined && v.length > 0);
+  values.find((v) => v !== undefined && v.length > ValueConstants.zero);
 
 /**
  * Resolves a recipe's cuisine/category `key` to a localized name + emoji,

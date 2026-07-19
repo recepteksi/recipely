@@ -1,5 +1,6 @@
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 /** Toggles a cuisine key in a filters set (adds if absent, removes if present). */
 export const toggleCuisine = (f: UiFilters, cuisine: string): UiFilters => ({
@@ -41,7 +42,7 @@ export const removeDifficulty = (f: UiFilters, difficulty: Difficulty): UiFilter
 });
 
 /** Clears the max-time filter. */
-export const removeMaxTime = (f: UiFilters): UiFilters => ({ ...f, maxTime: 0 });
+export const removeMaxTime = (f: UiFilters): UiFilters => ({ ...f, maxTime: ValueConstants.zero });
 
 /**
  * Quick-toggles a cuisine from the web cuisine grid: the 'ALL' sentinel clears
@@ -65,4 +66,4 @@ export const setDifficultyQuick = (f: UiFilters, difficulty: Difficulty | null):
 
 /** Sum of applied filters, used for the active-filter badge/count. */
 export const countActiveFilters = (f: UiFilters): number =>
-  f.cuisines.length + f.categories.length + f.difficulties.length + (f.maxTime > 0 ? 1 : 0);
+  f.cuisines.length + f.categories.length + f.difficulties.length + (f.maxTime > ValueConstants.zero ? 1 : ValueConstants.zero);

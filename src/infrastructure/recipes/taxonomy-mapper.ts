@@ -1,5 +1,6 @@
 import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
 import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy-item-dto';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Maps one raw taxonomy DTO to a domain `TaxonomyItem`, or `null` when the
@@ -12,13 +13,13 @@ export function toTaxonomyItem(dto: TaxonomyItemDto | null | undefined): Taxonom
   if (dto === null || dto === undefined) {
     return null;
   }
-  if (typeof dto.key !== 'string' || dto.key.length === 0) {
+  if (typeof dto.key !== 'string' || dto.key.length === ValueConstants.zero) {
     return null;
   }
   return {
     key: dto.key,
-    name: typeof dto.name === 'string' ? dto.name : '',
-    emoji: typeof dto.emoji === 'string' ? dto.emoji : '',
+    name: typeof dto.name === 'string' ? dto.name : CharConstants.empty,
+    emoji: typeof dto.emoji === 'string' ? dto.emoji : CharConstants.empty,
   };
 }
 

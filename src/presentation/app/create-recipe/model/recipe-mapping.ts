@@ -4,6 +4,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { RecipeCategory } from '@domain/recipes/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const DEFAULT_PREP = 15;
 const DEFAULT_COOK = 20;
@@ -11,15 +12,15 @@ const DEFAULT_SERVINGS = 4;
 
 /** A pristine, empty editable model for "start from blank". */
 export const emptyEditable = (): EditableRecipe => ({
-  name: '',
+  name: CharConstants.empty,
   cuisine: null,
   category: RecipeCategory.MainCourse,
   difficulty: Difficulty.Easy,
   prepTimeMinutes: DEFAULT_PREP,
   cookTimeMinutes: DEFAULT_COOK,
   servings: DEFAULT_SERVINGS,
-  ingredients: [''],
-  instructions: [''],
+  ingredients: [CharConstants.empty],
+  instructions: [CharConstants.empty],
   media: [],
 });
 
@@ -31,7 +32,7 @@ export const emptyEditable = (): EditableRecipe => ({
  */
 const draftCuisine = (text: string): string | null => {
   const trimmed = text.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return trimmed.length > ValueConstants.zero ? trimmed : null;
 };
 
 /** Seeds the editable model from a generated/loaded `Recipe`. */
@@ -43,12 +44,12 @@ export const recipeToEditable = (
   cuisine: recipe.cuisine,
   category: recipe.category,
   difficulty: recipe.difficulty,
-  prepTimeMinutes: recipe.prepTimeMinutes > 0 ? recipe.prepTimeMinutes : DEFAULT_PREP,
-  cookTimeMinutes: recipe.cookTimeMinutes > 0 ? recipe.cookTimeMinutes : DEFAULT_COOK,
-  servings: recipe.servings > 0 ? recipe.servings : DEFAULT_SERVINGS,
-  ingredients: recipe.ingredients.length > 0 ? [...recipe.ingredients] : [''],
-  instructions: recipe.instructions.length > 0 ? [...recipe.instructions] : [''],
-  media: recipe.media.length > 0 ? [...recipe.media] : [...prevMedia],
+  prepTimeMinutes: recipe.prepTimeMinutes > ValueConstants.zero ? recipe.prepTimeMinutes : DEFAULT_PREP,
+  cookTimeMinutes: recipe.cookTimeMinutes > ValueConstants.zero ? recipe.cookTimeMinutes : DEFAULT_COOK,
+  servings: recipe.servings > ValueConstants.zero ? recipe.servings : DEFAULT_SERVINGS,
+  ingredients: recipe.ingredients.length > ValueConstants.zero ? [...recipe.ingredients] : [CharConstants.empty],
+  instructions: recipe.instructions.length > ValueConstants.zero ? [...recipe.instructions] : [CharConstants.empty],
+  media: recipe.media.length > ValueConstants.zero ? [...recipe.media] : [...prevMedia],
 });
 
 const isDifficulty = (value: string | undefined): value is Difficulty =>
@@ -73,11 +74,11 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
     cookTimeMinutes: snapshot.cookTimeMinutes ?? base.cookTimeMinutes,
     servings: snapshot.servings ?? base.servings,
     ingredients:
-      snapshot.ingredients && snapshot.ingredients.length > 0
+      snapshot.ingredients && snapshot.ingredients.length > ValueConstants.zero
         ? [...snapshot.ingredients]
         : base.ingredients,
     instructions:
-      snapshot.instructions && snapshot.instructions.length > 0
+      snapshot.instructions && snapshot.instructions.length > ValueConstants.zero
         ? [...snapshot.instructions]
         : base.instructions,
     media,
@@ -87,13 +88,13 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
 /** Projects the editable model to the wire `DraftRecipeSnapshot`. */
 export const editableToSnapshot = (recipe: EditableRecipe): DraftRecipeSnapshot => ({
   name: recipe.name,
-  cuisine: recipe.cuisine ?? '',
+  cuisine: recipe.cuisine ?? CharConstants.empty,
   difficulty: recipe.difficulty,
   prepTimeMinutes: recipe.prepTimeMinutes,
   cookTimeMinutes: recipe.cookTimeMinutes,
   servings: recipe.servings,
-  ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > 0),
-  instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > 0),
+  ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
+  instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
   media: recipe.media
     .filter((m) => m.type === 'image')
     .map((m) => ({ type: m.type, url: m.url })),
@@ -101,6 +102,6 @@ export const editableToSnapshot = (recipe: EditableRecipe): DraftRecipeSnapshot 
 
 /** True when the model has any user-meaningful content worth saving as a draft. */
 export const editableHasContent = (recipe: EditableRecipe): boolean =>
-  recipe.name.trim().length > 0 ||
-  recipe.ingredients.some((s) => s.trim().length > 0) ||
-  recipe.instructions.some((s) => s.trim().length > 0);
+  recipe.name.trim().length > ValueConstants.zero ||
+  recipe.ingredients.some((s) => s.trim().length > ValueConstants.zero) ||
+  recipe.instructions.some((s) => s.trim().length > ValueConstants.zero);

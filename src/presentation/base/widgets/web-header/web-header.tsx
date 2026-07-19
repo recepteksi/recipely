@@ -11,6 +11,7 @@ import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
+import { ValueConstants } from '@core/constants';
 
 const HEADER_HEIGHT = 68;
 
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
   },
   searchWrap: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     alignItems: 'center',
     justifyContent: 'center',
   },

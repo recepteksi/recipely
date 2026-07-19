@@ -11,6 +11,7 @@ import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
+import { CharConstants } from '@core/constants';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -70,7 +71,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       <ConfirmSheet
         visible={vm.saveError !== null}
         title={t().createRecipe.saveErrorTitle}
-        message={vm.saveError?.message ?? ''}
+        message={vm.saveError?.message ?? CharConstants.empty}
         confirmLabel={t().common.retry}
         onConfirm={vm.onConfirmSaveError}
         onClose={vm.onCloseSaveError}
@@ -79,7 +80,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         severity="danger"
         visible={vm.saveIssue !== null}
         title={t().createRecipe.saveErrorTitle}
-        message={vm.saveIssue ?? ''}
+        message={vm.saveIssue ?? CharConstants.empty}
         primaryLabel={t().common.ok}
         onPrimary={vm.onCloseSaveIssue}
         onClose={vm.onCloseSaveIssue}

@@ -7,6 +7,7 @@ import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { FakeRecipeDraftRepositoryConfig } from '@application/__fixtures__/fake-recipe-draft-repository-config';
 import type { ListDraftsCall } from '@application/__fixtures__/list-drafts-call';
+import { ValueConstants } from '@core/constants';
 
 /**
  * In-memory test double for `IRecipeDraftRepository`. Returns pre-configured
@@ -15,14 +16,14 @@ import type { ListDraftsCall } from '@application/__fixtures__/list-drafts-call'
  */
 export class FakeRecipeDraftRepository implements IRecipeDraftRepository {
   lastListCall: ListDraftsCall | null = null;
-  listCallCount = 0;
-  getLatestCallCount = 0;
+  listCallCount = ValueConstants.zero;
+  getLatestCallCount = ValueConstants.zero;
   lastGetDraftId: string | null = null;
-  getDraftCallCount = 0;
+  getDraftCallCount = ValueConstants.zero;
   lastUpsertInput: UpsertDraftInput | null = null;
-  upsertCallCount = 0;
+  upsertCallCount = ValueConstants.zero;
   lastDeleteId: string | null = null;
-  deleteCallCount = 0;
+  deleteCallCount = ValueConstants.zero;
 
   constructor(private readonly config: FakeRecipeDraftRepositoryConfig = {}) {}
 

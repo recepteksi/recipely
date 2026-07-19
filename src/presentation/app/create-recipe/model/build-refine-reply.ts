@@ -4,13 +4,15 @@
  * paragraph. Empty/whitespace-only strings count as absent; when no summary
  * arrived (older backend) the caller-provided i18n fallback takes its place.
  */
+import { ValueConstants } from '@core/constants';
+
 export const buildRefineReply = (
   refined: { summary?: string; suggestion?: string },
   fallback: string,
 ): string => {
   const summary = refined.summary?.trim();
   const suggestion = refined.suggestion?.trim();
-  const lead = summary !== undefined && summary.length > 0 ? summary : fallback;
-  if (suggestion !== undefined && suggestion.length > 0) return `${lead}\n\n${suggestion}`;
+  const lead = summary !== undefined && summary.length > ValueConstants.zero ? summary : fallback;
+  if (suggestion !== undefined && suggestion.length > ValueConstants.zero) return `${lead}\n\n${suggestion}`;
   return lead;
 };

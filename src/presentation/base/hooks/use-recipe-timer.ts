@@ -8,9 +8,10 @@ import {
 } from '@presentation/base/timers/timer-controls';
 import type { UseRecipeTimerParams } from '@presentation/base/hooks/use-recipe-timer-params';
 import type { RecipeTimerState } from '@presentation/base/hooks/recipe-timer-state';
+import { ValueConstants } from '@core/constants';
 
 const remainingFromEnd = (endTimeMs: number): number =>
-  Math.max(0, Math.round((endTimeMs - Date.now()) / 1000));
+  Math.max(ValueConstants.zero, Math.round((endTimeMs - Date.now()) / 1000));
 
 /**
  * Drives a single persistent recipe timer: subscribes to the shared timer
@@ -28,8 +29,8 @@ export const useRecipeTimer = ({
 
   const isActive = entry !== undefined;
   const isPaused = entry?.isPaused ?? false;
-  const endTimeMs = entry?.endTimeMs ?? 0;
-  const remainingMsOnPause = entry?.remainingMsOnPause ?? 0;
+  const endTimeMs = entry?.endTimeMs ?? ValueConstants.zero;
+  const remainingMsOnPause = entry?.remainingMsOnPause ?? ValueConstants.zero;
 
   const [remainingSeconds, setRemainingSeconds] = useState<number>(() => {
     if (!isActive) return minutes * 60;
@@ -62,7 +63,7 @@ export const useRecipeTimer = ({
     const tick = (): void => {
       const r = remainingFromEnd(endTimeMs);
       setRemainingSeconds(r);
-      if (r === 0) clearTick();
+      if (r === ValueConstants.zero) clearTick();
     };
     tick();
     intervalRef.current = setInterval(tick, 1000);
@@ -80,7 +81,7 @@ export const useRecipeTimer = ({
   return {
     isActive,
     isPaused,
-    isDone: isActive && remainingSeconds === 0,
+    isDone: isActive && remainingSeconds === ValueConstants.zero,
     remainingSeconds,
     start,
     stop,

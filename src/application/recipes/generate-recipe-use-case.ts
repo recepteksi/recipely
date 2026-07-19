@@ -4,6 +4,7 @@ import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure'
 import type { Recipe } from '@domain/recipes/recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { GenerateRecipeInput } from '@application/recipes/generate-recipe-input';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Generates a recipe from a free-text AI prompt. Returns a `ValidationFailure`
@@ -16,7 +17,7 @@ export class GenerateRecipeUseCase {
 
   execute(input: GenerateRecipeInput): Promise<Result<Recipe, Failure>> {
     const trimmed = input.prompt.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === ValueConstants.zero) {
       return Promise.resolve(
         fail(new ValidationFailure('Prompt is required', undefined, ErrorMessageKey.promptRequired)),
       );

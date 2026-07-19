@@ -4,6 +4,7 @@ import { TOKENS } from '@core/di/tokens';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
 import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/recipe-author-input';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Resolves the public profile of a recipe's author for the detail-screen author
@@ -30,7 +31,7 @@ export const useRecipeAuthor = ({
       setState({ status: 'loading' });
       return;
     }
-    if (ownerId === null || ownerId.length === 0) {
+    if (ownerId === null || ownerId.length === ValueConstants.zero) {
       setState({ status: 'unavailable' });
       return;
     }

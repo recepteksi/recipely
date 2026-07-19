@@ -18,6 +18,7 @@ import { t, useLocale } from '@presentation/i18n';
 import { spacing, sizes } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/recipe-filters';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
@@ -56,12 +57,12 @@ export const useRecipeList = (): UseRecipeListResult => {
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
   const language = useLocale();
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(CharConstants.empty);
 
-  const scrollY = useSharedValue(0);
-  const headerTranslateY = useSharedValue(0);
-  const lastScrollY = useSharedValue(0);
-  const headerHidden = useSharedValue(0);
+  const scrollY = useSharedValue(ValueConstants.zero);
+  const headerTranslateY = useSharedValue(ValueConstants.zero);
+  const lastScrollY = useSharedValue(ValueConstants.zero);
+  const headerHidden = useSharedValue(ValueConstants.zero);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -70,16 +71,16 @@ export const useRecipeList = (): UseRecipeListResult => {
       if (reduceMotion) return;
       const delta = y - lastScrollY.value;
       if (y <= sizes.homeHeaderMax) {
-        if (headerHidden.value !== 0) {
-          headerHidden.value = 0;
-          headerTranslateY.value = withTiming(0, HEADER_TIMING);
+        if (headerHidden.value !== ValueConstants.zero) {
+          headerHidden.value = ValueConstants.zero;
+          headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
         }
-      } else if (delta > 0 && headerHidden.value !== 1) {
+      } else if (delta > ValueConstants.zero && headerHidden.value !== 1) {
         headerHidden.value = 1;
         headerTranslateY.value = withTiming(-sizes.homeHeaderMax, HEADER_TIMING);
-      } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== 0) {
-        headerHidden.value = 0;
-        headerTranslateY.value = withTiming(0, HEADER_TIMING);
+      } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
+        headerHidden.value = ValueConstants.zero;
+        headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
       }
       lastScrollY.value = y;
     },
@@ -87,14 +88,14 @@ export const useRecipeList = (): UseRecipeListResult => {
     onMomentumEnd: () => {
       if (reduceMotion) return;
       const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
-      headerHidden.value = hide ? 1 : 0;
-      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : 0, HEADER_TIMING);
+      headerHidden.value = hide ? 1 : ValueConstants.zero;
+      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
     },
     onEndDrag: () => {
       if (reduceMotion) return;
       const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
-      headerHidden.value = hide ? 1 : 0;
-      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : 0, HEADER_TIMING);
+      headerHidden.value = hide ? 1 : ValueConstants.zero;
+      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
     },
   });
 
@@ -120,10 +121,10 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey): RecipeFilters => ({
-      ...(f.cuisines.length > 0 ? { cuisines: f.cuisines } : {}),
-      ...(f.categories.length > 0 ? { categories: f.categories } : {}),
-      ...(f.difficulties.length > 0 ? { difficulties: f.difficulties } : {}),
-      ...(f.maxTime > 0 ? { maxTime: f.maxTime } : {}),
+      ...(f.cuisines.length > ValueConstants.zero ? { cuisines: f.cuisines } : {}),
+      ...(f.categories.length > ValueConstants.zero ? { categories: f.categories } : {}),
+      ...(f.difficulties.length > ValueConstants.zero ? { difficulties: f.difficulties } : {}),
+      ...(f.maxTime > ValueConstants.zero ? { maxTime: f.maxTime } : {}),
       sort: SORT_TO_FILTER[sort],
     }),
     [],
@@ -227,12 +228,12 @@ export const useRecipeList = (): UseRecipeListResult => {
   };
 
   const effectiveSearch = isWebShell ? webSearchQuery : search;
-  const isSearching = effectiveSearch.trim().length > 0;
+  const isSearching = effectiveSearch.trim().length > ValueConstants.zero;
 
   const filteredRecipes = useMemo(() => {
     if (state.status !== 'loaded') return [];
     const query = effectiveSearch.trim().toLowerCase();
-    if (query.length === 0) return state.recipes;
+    if (query.length === ValueConstants.zero) return state.recipes;
     return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
   }, [state, effectiveSearch]);
 
@@ -245,7 +246,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     gridColumns,
     sortBy,
     filters,
-    activeCuisineLabel: filters.cuisines.length > 0 ? cuisineLabel(filters.cuisines[0]).name : null,
+    activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
     unreadCount,
     scrollY,
     headerTranslateY,

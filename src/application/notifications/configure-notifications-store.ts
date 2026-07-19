@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
 import type { NotificationsStore } from '@application/notifications/notifications-store';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Owns the in-memory notifications feed for the current session. The store is
@@ -15,7 +16,7 @@ export const configureNotificationsStore = (
 ): NotificationsStore => {
   return create<NotificationsStoreState>((set, get) => ({
     state: { status: 'idle' },
-    unreadCount: 0,
+    unreadCount: ValueConstants.zero,
     load: async () => {
       set({ state: { status: 'loading' } });
       const result = await deps.listNotifications.execute();
@@ -44,7 +45,7 @@ export const configureNotificationsStore = (
       const current = get().state;
       if (current.status !== 'loaded') {
         // List not loaded — still clear the badge optimistically and persist.
-        set({ unreadCount: 0 });
+        set({ unreadCount: ValueConstants.zero });
         const earlyResult = await deps.markAllRead.execute();
         if (!earlyResult.ok) await get().refreshUnread();
         return;
@@ -54,9 +55,9 @@ export const configureNotificationsStore = (
         state: {
           ...current,
           items: optimisticItems,
-          unreadCount: 0,
+          unreadCount: ValueConstants.zero,
         },
-        unreadCount: 0,
+        unreadCount: ValueConstants.zero,
       });
       const result = await deps.markAllRead.execute();
       if (!result.ok) {
@@ -69,7 +70,7 @@ export const configureNotificationsStore = (
       const target = current.items.find((n) => n.id === id);
       if (target === undefined || target.read) return;
       const optimisticItems = current.items.map((n) => (n.id === id ? n.asRead() : n));
-      const nextUnread = Math.max(0, current.unreadCount - 1);
+      const nextUnread = Math.max(ValueConstants.zero, current.unreadCount - 1);
       set({
         state: { ...current, items: optimisticItems, unreadCount: nextUnread },
         unreadCount: nextUnread,
@@ -79,6 +80,6 @@ export const configureNotificationsStore = (
         await get().load();
       }
     },
-    clear: () => set({ state: { status: 'idle' }, unreadCount: 0 }),
+    clear: () => set({ state: { status: 'idle' }, unreadCount: ValueConstants.zero }),
   }));
 };

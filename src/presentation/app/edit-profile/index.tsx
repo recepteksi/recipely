@@ -10,6 +10,7 @@ import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
+import { CharConstants } from '@core/constants';
 
 export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -58,7 +59,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
         severity="danger"
         visible={vm.errorDialog !== null}
         title={t().errors.genericTitle}
-        message={vm.errorDialog ?? ''}
+        message={vm.errorDialog ?? CharConstants.empty}
         primaryLabel={t().common.ok}
         onPrimary={vm.onCloseErrorDialog}
         onClose={vm.onCloseErrorDialog}

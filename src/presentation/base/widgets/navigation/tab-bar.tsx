@@ -8,6 +8,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
+import { CharConstants } from '@core/constants';
 
 export interface TabBarProps {
   active: TabBarKey;
@@ -46,7 +47,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
       {tabs.map((tab) => {
         const isActive = active === tab.key;
         const tint = isActive ? colors.tabBarActive : colors.tabBarInactive;
-        const filledIcon = (tab.icon.replace('-outline', '') as keyof typeof Ionicons.glyphMap);
+        const filledIcon = (tab.icon.replace('-outline', CharConstants.empty) as keyof typeof Ionicons.glyphMap);
         return (
           <Pressable
             key={tab.key}

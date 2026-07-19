@@ -3,6 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
+import { ValueConstants } from '@core/constants';
 
 export interface NotificationProps {
   id: string;
@@ -28,7 +29,7 @@ export class Notification extends Entity<NotificationProps> {
   }
 
   static create(props: NotificationProps): Result<Notification, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Notification id must be non-empty', 'id'));
     }
     return ok(new Notification(props));

@@ -8,6 +8,7 @@ import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-rec
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/use-recipe-save-args';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Handles publishing a new recipe or updating an existing one, including the
@@ -59,8 +60,8 @@ export const useRecipeSave = ({
   };
 
   const hasRequiredText = (): boolean => {
-    const nameEmpty = recipe.name.trim().length === 0;
-    const ingredientsEmpty = recipe.ingredients.every((s) => s.trim().length === 0);
+    const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
+    const ingredientsEmpty = recipe.ingredients.every((s) => s.trim().length === ValueConstants.zero);
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;
@@ -77,7 +78,7 @@ export const useRecipeSave = ({
     if (!hasRequiredText()) return;
     // WHY: the backend create endpoint requires a cover image URL, so a recipe
     // cannot be published without at least one photo.
-    if (recipe.media.filter((m) => m.type === 'image').length === 0) {
+    if (recipe.media.filter((m) => m.type === 'image').length === ValueConstants.zero) {
       setSaveIssue(t().createRecipe.noImage);
       return;
     }

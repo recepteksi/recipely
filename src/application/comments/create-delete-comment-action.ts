@@ -3,6 +3,7 @@ import { UnknownFailure } from '@core/failure';
 import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import { mergeRecipeComments } from '@application/comments/merge-recipe-comments';
+import { ValueConstants } from '@core/constants';
 
 type SetState = StoreApi<CommentsStoreState>['setState'];
 
@@ -28,7 +29,7 @@ export const createDeleteCommentAction = (
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, (existing) => ({
           items: existing.items.filter((c) => c.id !== commentId),
-          total: Math.max(0, existing.total - 1),
+          total: Math.max(ValueConstants.zero, existing.total - 1),
           error: null,
         })),
       }));

@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeMetaCardProps {
   prepTimeMinutes: number;
@@ -34,7 +35,7 @@ export const RecipeMetaCard = ({
 
   const segments: { key: string; node: React.JSX.Element }[] = [];
 
-  if (prepTimeMinutes > 0) {
+  if (prepTimeMinutes > ValueConstants.zero) {
     segments.push({
       key: 'prep',
       node: (
@@ -50,7 +51,7 @@ export const RecipeMetaCard = ({
       ),
     });
   }
-  if (cookTimeMinutes > 0) {
+  if (cookTimeMinutes > ValueConstants.zero) {
     segments.push({
       key: 'cook',
       node: (
@@ -79,7 +80,7 @@ export const RecipeMetaCard = ({
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
       {segments.map((seg, i) => (
         <Fragment key={seg.key}>
-          {i > 0 ? <View style={[styles.divider, { backgroundColor: colors.border }]} /> : null}
+          {i > ValueConstants.zero ? <View style={[styles.divider, { backgroundColor: colors.border }]} /> : null}
           {seg.node}
         </Fragment>
       ))}

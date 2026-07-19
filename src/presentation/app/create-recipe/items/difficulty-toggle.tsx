@@ -3,6 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface DifficultyToggleProps {
   value: Difficulty;
@@ -30,7 +31,7 @@ export const DifficultyToggle = ({
             style={[
               styles.segment,
               {
-                borderLeftWidth: index > 0 ? 1 : 0,
+                borderLeftWidth: index > ValueConstants.zero ? 1 : ValueConstants.zero,
                 borderLeftColor: colors.border,
                 backgroundColor: active ? colors.primary : 'transparent',
               },

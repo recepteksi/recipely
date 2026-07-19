@@ -6,6 +6,7 @@ import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
+import { ValueConstants } from '@core/constants';
 
 export interface CuisineStripProps {
   selectedCuisines: string[];
@@ -32,7 +33,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
     const node = scrollRef.current?.getScrollableNode() as unknown as HTMLElement | undefined;
     if (!node) return;
     const onWheel = (event: WheelEvent): void => {
-      if (event.deltaY === 0) return;
+      if (event.deltaY === ValueConstants.zero) return;
       event.preventDefault();
       node.scrollLeft += event.deltaY;
     };

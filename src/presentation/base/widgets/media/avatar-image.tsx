@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@presentation/base/theme/use-theme';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AvatarImageProps {
   uri?: string;
@@ -10,10 +11,10 @@ export interface AvatarImageProps {
 
 const initialsFor = (name: string): string => {
   const trimmed = name.trim();
-  if (trimmed.length === 0) return '?';
+  if (trimmed.length === ValueConstants.zero) return '?';
   const parts = trimmed.split(/\s+/);
-  const first = parts[0]?.[0] ?? '';
-  const second = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
+  const first = parts[ValueConstants.zero]?.[ValueConstants.zero] ?? CharConstants.empty;
+  const second = parts.length > 1 ? (parts[parts.length - 1]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;
   return (first + second).toUpperCase();
 };
 
@@ -22,7 +23,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
   const colors = useTheme().colors;
   const borderRadius = size / 2;
 
-  if (uri !== undefined && uri.length > 0) {
+  if (uri !== undefined && uri.length > ValueConstants.zero) {
     return (
       <Image source={{ uri }} style={{ width: size, height: size, borderRadius }} />
     );
@@ -33,7 +34,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
   return (
     <LinearGradient
       colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-      start={{ x: 0, y: 0 }}
+      start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
       end={{ x: 1, y: 1 }}
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >

@@ -1,6 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
+import { RegexConstants, ValueConstants } from '@core/constants';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { failureFromResponse } from '@infrastructure/network/failure-from-response';
@@ -27,7 +28,7 @@ export const uploadMultipart = async <T>(
   formData: FormData,
   onProgress?: (event: UploadProgressEvent) => void,
 ): Promise<Result<T, Failure>> => {
-  const fullUrl = /^https?:\/\//i.test(url)
+  const fullUrl = RegexConstants.absoluteHttpUrl.test(url)
     ? url
     : `${options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
   const commonHeaders = await buildCommonHeaders(options);
@@ -100,7 +101,7 @@ export const uploadMultipart = async <T>(
       // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
       // unreadable file URI, cleartext blocked). Surface as NetworkFailure with
       // the status (0 == no response) so the UI can show something concrete.
-      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || 0})`)));
+      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || ValueConstants.zero})`)));
     };
 
     xhr.ontimeout = (): void => {

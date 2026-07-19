@@ -1,5 +1,6 @@
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { ValueConstants } from '@core/constants';
 
 // Web Firebase config is read from EXPO_PUBLIC_FIREBASE_* env vars at build
 // time. Firebase web config strings are technically public (they identify the
@@ -37,8 +38,8 @@ export const getFirebaseApp = (): FirebaseApp | null => {
     return null;
   }
   const existing = getApps();
-  appInstance = existing.length > 0
-    ? existing[0]!
+  appInstance = existing.length > ValueConstants.zero
+    ? existing[ValueConstants.zero]!
     : initializeApp(firebaseConfig as Record<string, string>);
   return appInstance;
 };

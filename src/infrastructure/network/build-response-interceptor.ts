@@ -2,6 +2,7 @@ import type { AxiosResponse } from 'axios';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { isEnvelope } from '@infrastructure/network/is-envelope';
 import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { CharConstants } from '@core/constants';
 
 /**
  * Builds the axios response interceptor that decrypts AES-GCM envelopes back
@@ -23,7 +24,7 @@ export const buildResponseInterceptor = (
       }
     }
     if (options.enableLogging) {
-      console.log(`[HTTP ←] ${response.status} ${response.config.url ?? ''}`);
+      console.log(`[HTTP ←] ${response.status} ${response.config.url ?? CharConstants.empty}`);
     }
     return response;
   };

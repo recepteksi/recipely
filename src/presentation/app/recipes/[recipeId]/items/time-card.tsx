@@ -7,6 +7,7 @@ import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface TimeCardProps {
   label: string;
@@ -70,7 +71,7 @@ export const TimeCard = ({
           iconColor={colors.onOverlay}
           label={t().timer.start}
           onPress={() => void timer.start()}
-          disabled={minutes <= 0}
+          disabled={minutes <= ValueConstants.zero}
         />
       ) : isDone ? (
         <ControlButton

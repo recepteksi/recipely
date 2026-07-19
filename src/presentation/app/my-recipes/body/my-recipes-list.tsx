@@ -10,6 +10,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
 
@@ -63,7 +64,7 @@ export const MyRecipesList = ({
   );
 
   if (tab === 'drafts') {
-    if (drafts.length === 0) {
+    if (drafts.length === ValueConstants.zero) {
       return (
         <ScrollView
           style={styles.list}
@@ -98,7 +99,7 @@ export const MyRecipesList = ({
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === ValueConstants.zero) {
     return (
       <ScrollView
         style={styles.list}
@@ -172,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   gridContent: {
-    paddingHorizontal: 0,
+    paddingHorizontal: ValueConstants.zero,
     paddingTop: spacing.md,
     gap: GRID_GAP,
   },

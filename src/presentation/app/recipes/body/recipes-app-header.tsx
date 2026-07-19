@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipesAppHeaderProps {
   onNotificationsPress: () => void;
@@ -33,17 +34,17 @@ export const RecipesAppHeader = ({
         style={[styles.bell, { backgroundColor: colors.surface }]}
         accessibilityRole="button"
         accessibilityLabel={
-          unreadCount > 0
+          unreadCount > ValueConstants.zero
             ? `${t().notifications.title}, ${unreadCount}`
             : t().notifications.title
         }
       >
         <Ionicons
-          name={unreadCount > 0 ? 'notifications' : 'notifications-outline'}
+          name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
           size={sizes.iconMd}
           color={colors.text}
         />
-        {unreadCount > 0 ? (
+        {unreadCount > ValueConstants.zero ? (
           <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
             <ThemedText style={styles.badgeText}>{badgeText}</ThemedText>
           </View>
@@ -77,8 +78,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: ValueConstants.zero,
+    right: ValueConstants.zero,
     minWidth: sizes.notifBadge,
     height: sizes.notifBadge,
     paddingHorizontal: spacing.xs,

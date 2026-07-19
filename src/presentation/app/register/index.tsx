@@ -11,6 +11,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const AUTH_CARD_MAX_WIDTH = 520;
 
@@ -35,7 +36,7 @@ export const RegisterScreen = (): React.JSX.Element => {
         <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: 1, y: 1 }}
             style={styles.splitHero}
           >
@@ -70,7 +71,7 @@ export const RegisterScreen = (): React.JSX.Element => {
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
         />
@@ -107,9 +108,9 @@ const styles = StyleSheet.create({
   },
   gradient: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     height: sizes.gradientHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
@@ -155,8 +156,8 @@ const styles = StyleSheet.create({
   cardSplit: {
     width: '100%',
     maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: 0,
-    marginTop: 0,
+    marginHorizontal: ValueConstants.zero,
+    marginTop: ValueConstants.zero,
   },
 });
 

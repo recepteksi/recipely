@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Image, type ImageStyle, type StyleProp } from 'react-native';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeImageProps {
   /** Remote recipe / media URI. Empty, missing, or failed shows the placeholder. */
@@ -34,7 +35,7 @@ export const RecipeImage = ({
     setFailed(false);
   }, [uri]);
 
-  const hasImage = typeof uri === 'string' && uri.trim().length > 0;
+  const hasImage = typeof uri === 'string' && uri.trim().length > ValueConstants.zero;
 
   if (!hasImage || failed) {
     return <RecipePlaceholder label={placeholderLabel} compact={placeholderCompact} />;

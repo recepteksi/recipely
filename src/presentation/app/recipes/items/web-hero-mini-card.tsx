@@ -8,6 +8,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/web-hero-constants';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 export interface WebHeroMiniCardProps {
   recipe: RecipeSummary;
@@ -35,8 +36,8 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
       />
       <LinearGradient
         colors={[HERO_OVERLAY_FADE, HERO_OVERLAY_DEEP]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
+        end={{ x: ValueConstants.zero, y: 1 }}
         style={styles.gradient}
       />
       <View style={[styles.rankBadge, { backgroundColor: colors.onOverlay }]}>
@@ -75,19 +76,19 @@ const styles = StyleSheet.create({
   },
   image: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
+    bottom: ValueConstants.zero,
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
   gradient: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     height: '60%',
   },
   rankBadge: {
@@ -106,9 +107,9 @@ const styles = StyleSheet.create({
   },
   content: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     padding: spacing.md,
     gap: spacing.xs,
   },

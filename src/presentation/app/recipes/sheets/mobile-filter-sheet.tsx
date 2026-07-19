@@ -13,6 +13,7 @@ import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy
 import { t } from '@presentation/i18n';
 import { spacing } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface MobileFilterSheetProps {
   visible: boolean;
@@ -58,7 +59,7 @@ export const MobileFilterSheet = ({
       title={t().recipes.filter}
       onClose={onClose}
       rightAction={
-        activeFilterCount > 0
+        activeFilterCount > ValueConstants.zero
           ? { label: t().recipes.clearFilters, onPress: onReset }
           : undefined
       }
@@ -136,7 +137,7 @@ export const MobileFilterSheet = ({
           {TIME_OPTIONS.map((m) => (
             <SelectChip
               key={m}
-              label={m === 0 ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
+              label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
               selected={pendingFilters.maxTime === m}
               onToggle={() => onSetMaxTime(m)}
             />

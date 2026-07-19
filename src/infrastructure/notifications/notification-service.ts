@@ -5,6 +5,7 @@ import {
   TIMER_COMPLETE,
   DISMISS_ALARM_ACTION,
 } from '@domain/notifications/timer-notification-keys';
+import { ValueConstants } from '@core/constants';
 
 // WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
 // module load time. ES `import` is hoisted before any code, so suppression
@@ -36,7 +37,7 @@ const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
 // alarm. Reminder notifications caused repeated dings every 2 min which
 // felt like spam rather than an alarm. User dismisses via the alarm screen
 // or the "Kapat" action on the single notification.
-const REMINDER_COUNT = 0;
+const REMINDER_COUNT = ValueConstants.zero;
 
 /**
  * Schedules and cancels local timer-completion notifications via the platform
@@ -83,7 +84,7 @@ export class NotificationService implements INotificationService {
           // res/raw) → silent channel. Passing `true` is a TypeScript error.
           // So the only correct way for default sound is to omit the key.
           enableVibrate: true,
-          vibrationPattern: [0, 500, 300, 500, 300, 500],
+          vibrationPattern: [ValueConstants.zero, 500, 300, 500, 300, 500],
           // Route audio through the Alarm volume stream so it rings loudly
           // even when notification volume is turned down.
           audioAttributes: {

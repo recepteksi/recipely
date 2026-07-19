@@ -6,6 +6,7 @@ import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/m
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/create-recipe-field-key';
 import type { Recipe } from '@domain/recipes/recipe';
+import { CharConstants } from '@core/constants';
 
 /**
  * Owns the editable recipe form state (fields, ingredients, steps, media) plus
@@ -50,14 +51,14 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        ingredients: r.ingredients.length <= 1 ? [''] : r.ingredients.filter((_, idx) => idx !== i),
+        ingredients: r.ingredients.length <= 1 ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
       }));
       clearFieldError('ingredients');
     },
     [clearFieldError],
   );
   const onAddIngredient = useCallback((): void => {
-    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, ''] }));
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
   const onChangeStep = useCallback(
@@ -71,14 +72,14 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        instructions: r.instructions.length <= 1 ? [''] : r.instructions.filter((_, idx) => idx !== i),
+        instructions: r.instructions.length <= 1 ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
       }));
       clearFieldError('instructions');
     },
     [clearFieldError],
   );
   const onAddStep = useCallback((): void => {
-    setRecipe((r) => ({ ...r, instructions: [...r.instructions, ''] }));
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, CharConstants.empty] }));
     clearFieldError('instructions');
   }, [clearFieldError]);
 

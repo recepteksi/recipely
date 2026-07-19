@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Native push registration. Android: `expo-notifications` (already in the
@@ -30,7 +31,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     if (status !== 'granted') return;
 
     const token = await Notifications.getDevicePushTokenAsync();
-    if (typeof token.data !== 'string' || token.data.length === 0) return;
+    if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return;
 
     const result = await register(token.data, 'android');
     if (!result.ok) {

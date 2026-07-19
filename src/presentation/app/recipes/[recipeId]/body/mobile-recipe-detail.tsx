@@ -10,6 +10,7 @@ import { spacing, radii } from '@presentation/base/theme';
 import type { Recipe } from '@domain/recipes/recipe';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import { ValueConstants } from '@core/constants';
 
 export interface MobileRecipeDetailProps {
   recipe: Recipe;
@@ -60,7 +61,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           recipeId={recipeId}
           liked={props.liked}
           likeCount={props.likeCount}
-          commentTotal={commentState?.total ?? 0}
+          commentTotal={commentState?.total ?? ValueConstants.zero}
           authorState={props.authorState}
           onToggleLike={props.onToggleLike}
         />

@@ -13,6 +13,7 @@ import { SearchBar } from '@presentation/app/recipes/items/search-bar';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
@@ -56,13 +57,13 @@ export const CollapsingHomeHeader = ({
   const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
 
   const bandStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: reduceMotion ? 0 : headerTranslateY.value }],
+    transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.value }],
   }));
 
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
       ? 1
-      : interpolate(scrollY.value, [0, sizes.homeTitleShrink], [1, 0.82], Extrapolation.CLAMP);
+      : interpolate(scrollY.value, [ValueConstants.zero, sizes.homeTitleShrink], [1, 0.82], Extrapolation.CLAMP);
     return { transform: [{ scale }] };
   });
 
@@ -71,8 +72,8 @@ export const CollapsingHomeHeader = ({
       ? 1
       : interpolate(
           scrollY.value,
-          [0, sizes.homeTitleShrink * 0.5],
-          [1, 0],
+          [ValueConstants.zero, sizes.homeTitleShrink * 0.5],
+          [1, ValueConstants.zero],
           Extrapolation.CLAMP,
         ),
   }));
@@ -108,17 +109,17 @@ export const CollapsingHomeHeader = ({
           style={[styles.bell, { backgroundColor: colors.surface }]}
           accessibilityRole="button"
           accessibilityLabel={
-            unreadCount > 0
+            unreadCount > ValueConstants.zero
               ? `${t().notifications.title}, ${unreadCount}`
               : t().notifications.title
           }
         >
           <Ionicons
-            name={unreadCount > 0 ? 'notifications' : 'notifications-outline'}
+            name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
             size={sizes.iconMd}
             color={colors.text}
           />
-          {unreadCount > 0 ? (
+          {unreadCount > ValueConstants.zero ? (
             <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
               <ThemedText style={styles.badgeText}>{badgeText}</ThemedText>
             </View>
@@ -143,8 +144,8 @@ const styles = StyleSheet.create({
     // than a static 0 — absolutely-positioned children ignore their parent
     // SafeAreaView's top padding, so this must be set explicitly per-render.
     position: 'absolute',
-    left: 0,
-    right: 0,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     height: sizes.homeHeaderMax,
     zIndex: 20,
     paddingHorizontal: spacing.lg,
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: ValueConstants.zero,
+    right: ValueConstants.zero,
     minWidth: sizes.notifBadge,
     height: sizes.notifBadge,
     paddingHorizontal: spacing.xs,

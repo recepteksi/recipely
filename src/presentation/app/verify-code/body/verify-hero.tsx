@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface VerifyHeroProps {
   isLandscapeShell: boolean;
@@ -26,7 +27,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
         <ThemedText variant="body" style={[styles.heroSubtitle, { color: colors.onOverlay }]}>
           {t().verify.subtitle}
         </ThemedText>
-        {email.length > 0 ? (
+        {email.length > ValueConstants.zero ? (
           <ThemedText variant="body" style={[styles.heroEmail, { color: colors.onOverlay }]}>
             {email}
           </ThemedText>
