@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
+import { RequestPasswordResetUseCase } from '@application/auth/password-reset/request-password-reset-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 

@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
+import { UploadAvatarUseCase } from '@application/auth/profile/upload-avatar-use-case';
 import { NetworkFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSession } from '@domain/auth/auth-session';
@@ -12,8 +12,8 @@ const buildSession = (): AuthSession => {
   const user = User.create({
     id: 'u1',
     email: email.value,
-    displayName: 'New Name',
-    bio: 'New bio',
+    displayName: 'U',
+    photoUrl: 'https://cdn.recipely.net/avatars/new.png',
   });
   if (!user.ok) throw new Error();
   const session = AuthSession.create({
@@ -26,13 +26,13 @@ const buildSession = (): AuthSession => {
   return session.value;
 };
 
-describe('UpdateProfileUseCase', () => {
+describe('UploadAvatarUseCase', () => {
   it('returns the updated session the repository resolves on success', async () => {
     const session = buildSession();
-    const repo = new FakeAuthRepository({ updateProfileResult: ok(session) });
-    const useCase = new UpdateProfileUseCase(repo);
+    const repo = new FakeAuthRepository({ uploadAvatarResult: ok(session) });
+    const useCase = new UploadAvatarUseCase(repo);
 
-    const result = await useCase.execute({ displayName: 'New Name', bio: 'New bio' });
+    const result = await useCase.execute('file:///tmp/a.png', 'a.png', 'image/png');
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value).toBe(session);
@@ -40,10 +40,10 @@ describe('UpdateProfileUseCase', () => {
 
   it('propagates an UnauthorizedFailure from the repository unchanged', async () => {
     const failure = new UnauthorizedFailure('No active session to update');
-    const repo = new FakeAuthRepository({ updateProfileResult: fail(failure) });
-    const useCase = new UpdateProfileUseCase(repo);
+    const repo = new FakeAuthRepository({ uploadAvatarResult: fail(failure) });
+    const useCase = new UploadAvatarUseCase(repo);
 
-    const result = await useCase.execute({ displayName: 'New Name' });
+    const result = await useCase.execute('file:///tmp/a.png', 'a.png', 'image/png');
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.failure).toBe(failure);
@@ -51,28 +51,30 @@ describe('UpdateProfileUseCase', () => {
 
   it('propagates a NetworkFailure from the repository unchanged', async () => {
     const failure = new NetworkFailure('offline');
-    const repo = new FakeAuthRepository({ updateProfileResult: fail(failure) });
-    const useCase = new UpdateProfileUseCase(repo);
+    const repo = new FakeAuthRepository({ uploadAvatarResult: fail(failure) });
+    const useCase = new UploadAvatarUseCase(repo);
 
-    const result = await useCase.execute({ bio: 'New bio' });
+    const result = await useCase.execute('file:///tmp/a.png', 'a.png', 'image/png');
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.failure).toBe(failure);
   });
 
-  it('forwards the input fields to the repository unchanged', async () => {
+  it('delegates the fileUri, fileName and mimeType to the repository unchanged', async () => {
     const session = buildSession();
-    const calls: { displayName?: string; bio?: string }[] = [];
+    const calls: { fileUri: string; fileName: string; mimeType: string }[] = [];
     const repo = new (class extends FakeAuthRepository {
-      override updateProfile(input: { displayName?: string; bio?: string }) {
-        calls.push(input);
+      override uploadAvatar(fileUri: string, fileName: string, mimeType: string) {
+        calls.push({ fileUri, fileName, mimeType });
         return Promise.resolve(ok(session));
       }
     })();
-    const useCase = new UpdateProfileUseCase(repo);
+    const useCase = new UploadAvatarUseCase(repo);
 
-    await useCase.execute({ displayName: 'New Name', bio: 'New bio' });
+    await useCase.execute('file:///tmp/pic.jpg', 'pic.jpg', 'image/jpeg');
 
-    expect(calls).toEqual([{ displayName: 'New Name', bio: 'New bio' }]);
+    expect(calls).toEqual([
+      { fileUri: 'file:///tmp/pic.jpg', fileName: 'pic.jpg', mimeType: 'image/jpeg' },
+    ]);
   });
 });

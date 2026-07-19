@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
+import { ResetPasswordUseCase } from '@application/auth/password-reset/reset-password-use-case';
 import { NotFoundFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 

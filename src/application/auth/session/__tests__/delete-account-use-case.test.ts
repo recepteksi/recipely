@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
+import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 

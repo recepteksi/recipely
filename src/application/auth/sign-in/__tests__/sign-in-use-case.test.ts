@@ -1,5 +1,5 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { SignInUseCase } from '@application/auth/sign-in-use-case';
+import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSession } from '@domain/auth/auth-session';
