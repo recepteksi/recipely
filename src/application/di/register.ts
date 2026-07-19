@@ -182,6 +182,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     recipeDetailStore.getState().clear();
     notificationsStore.getState().clear();
     createdRecipesStore.getState().clear();
+    draftsStore.getState().clear();
     userProfileStore.getState().reset();
   };
   const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });

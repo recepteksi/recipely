@@ -13,4 +13,6 @@ export interface DraftsStoreState {
   upsertDraft: (input: UpsertDraftStoreInput) => Promise<RecipeDraft | null>;
   deleteDraft: (id: string) => Promise<Result<void, Failure>>;
   getDraft: (id: string) => Promise<RecipeDraft | null>;
+  /** Drops the signed-in user's drafts and resume card. Called when the session ends. */
+  clear: () => void;
 }
