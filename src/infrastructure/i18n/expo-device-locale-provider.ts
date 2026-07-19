@@ -1,5 +1,6 @@
 import { getLocales } from 'expo-localization';
 import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Reads the device's preferred language via `expo-localization`. The value is
@@ -9,6 +10,6 @@ import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provide
  */
 export class ExpoDeviceLocaleProvider implements IDeviceLocaleProvider {
   getDeviceLocale(): string {
-    return getLocales()[0]?.languageCode ?? '';
+    return getLocales()[ValueConstants.zero]?.languageCode ?? CharConstants.empty;
   }
 }

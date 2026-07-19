@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeAuthorCardProps {
   authorName: string;
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   },
   textColumn: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   eyebrow: {
     fontSize: fontSizes.micro,
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   pill: {
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
     borderRadius: radii.round,
     paddingVertical: spacing.xs2,
     paddingHorizontal: spacing.md,

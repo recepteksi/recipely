@@ -3,6 +3,7 @@ import { TIMERS_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import type { TimerEntry } from '@application/timers/timer-entry';
 import type { TimerStoreState } from '@application/timers/timer-store-state';
+import { ValueConstants } from '@core/constants';
 
 const persist = async (timers: Record<string, TimerEntry>): Promise<void> => {
   await getKeyValueStore().setItem(TIMERS_STORAGE_KEY, JSON.stringify(timers));
@@ -44,7 +45,7 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
   pause: async (id) => {
     const entry = get().timers[id];
     if (!entry || entry.isPaused) return;
-    const remainingMsOnPause = Math.max(0, entry.endTimeMs - Date.now());
+    const remainingMsOnPause = Math.max(ValueConstants.zero, entry.endTimeMs - Date.now());
     const updated: TimerEntry = { ...entry, isPaused: true, remainingMsOnPause };
     const timers = { ...get().timers, [id]: updated };
     set({ timers });

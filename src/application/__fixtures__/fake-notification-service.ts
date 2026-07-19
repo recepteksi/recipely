@@ -1,5 +1,6 @@
 import type { INotificationService } from '@domain/notifications/i-notification-service';
 import type { ScheduleTimerCompleteCall } from '@application/__fixtures__/schedule-timer-complete-call';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Recording test double for `INotificationService`. It performs no real
@@ -8,8 +9,8 @@ import type { ScheduleTimerCompleteCall } from '@application/__fixtures__/schedu
  * are public so a test can arrange the return values it needs.
  */
 export class FakeNotificationService implements INotificationService {
-  initCount = 0;
-  requestPermissionsCount = 0;
+  initCount = ValueConstants.zero;
+  requestPermissionsCount = ValueConstants.zero;
   scheduleCalls: ScheduleTimerCompleteCall[] = [];
   cancelCalls: string[][] = [];
 

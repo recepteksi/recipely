@@ -1,5 +1,6 @@
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { RecipeMediaUpload } from '@domain/recipes/recipe-media-upload';
+import { ValueConstants } from '@core/constants';
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: 'image/jpeg',
@@ -15,7 +16,7 @@ const MIME_BY_EXT: Record<string, string> = {
  */
 export const toMediaUpload = (item: MediaItem): RecipeMediaUpload => {
   const ext = item.url.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const safeExt = ext.length > 0 && ext.length <= 4 ? ext : 'jpg';
+  const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
   return {
     uri: item.url,
     fileName: `recipe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`,

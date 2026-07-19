@@ -13,6 +13,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 
@@ -25,14 +26,14 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const { authStore } = useStores();
   const requestPasswordReset = authStore((s) => s.requestPasswordReset);
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(CharConstants.empty);
   const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | undefined>(undefined);
 
   const handleSend = async (): Promise<void> => {
-    if (email.trim().length === 0) return;
+    if (email.trim().length === ValueConstants.zero) return;
     setSendError(undefined);
     setLoading(true);
     const ok = await requestPasswordReset(email.trim());
@@ -86,7 +87,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: 1, y: 1 }}
             style={styles.splitHero}
           >
@@ -122,7 +123,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
         />
@@ -157,9 +158,9 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
   gradient: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     height: 280,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
@@ -234,9 +235,9 @@ const styles = StyleSheet.create({
   cardSplit: {
     width: '100%',
     maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: 0,
-    marginTop: 0,
-    marginBottom: 0,
+    marginHorizontal: ValueConstants.zero,
+    marginTop: ValueConstants.zero,
+    marginBottom: ValueConstants.zero,
   },
 });
 

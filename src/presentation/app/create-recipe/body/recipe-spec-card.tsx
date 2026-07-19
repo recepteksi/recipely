@@ -8,6 +8,7 @@ import { t } from '@presentation/i18n';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
+import { ValueConstants } from '@core/constants';
 
 const SERVINGS_MIN = 1;
 const SERVINGS_MAX = 50;
@@ -64,7 +65,7 @@ export const RecipeSpecCard = ({
           suffix={t().createRecipe.minShort}
           decreaseLabel={t().createRecipe.prep}
           increaseLabel={t().createRecipe.prep}
-          onDecrement={() => onChangePrep(Math.max(0, recipe.prepTimeMinutes - TIME_STEP))}
+          onDecrement={() => onChangePrep(Math.max(ValueConstants.zero, recipe.prepTimeMinutes - TIME_STEP))}
           onIncrement={() => onChangePrep(recipe.prepTimeMinutes + TIME_STEP)}
         />
       </SpecRow>
@@ -74,7 +75,7 @@ export const RecipeSpecCard = ({
           suffix={t().createRecipe.minShort}
           decreaseLabel={t().createRecipe.cook}
           increaseLabel={t().createRecipe.cook}
-          onDecrement={() => onChangeCook(Math.max(0, recipe.cookTimeMinutes - TIME_STEP))}
+          onDecrement={() => onChangeCook(Math.max(ValueConstants.zero, recipe.cookTimeMinutes - TIME_STEP))}
           onIncrement={() => onChangeCook(recipe.cookTimeMinutes + TIME_STEP)}
         />
       </SpecRow>

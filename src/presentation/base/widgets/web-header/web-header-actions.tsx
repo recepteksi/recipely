@@ -5,6 +5,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const NOTIF_BTN_SIZE = 38;
 const AVATAR_SIZE = 36;
@@ -70,11 +71,11 @@ export const WebHeaderActions = ({
         ]}
       >
         <Ionicons
-          name={unreadCount > 0 ? 'notifications' : 'notifications-outline'}
+          name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
           size={18}
           color={colors.text}
         />
-        {unreadCount > 0 ? (
+        {unreadCount > ValueConstants.zero ? (
           <View
             style={[
               styles.badge,

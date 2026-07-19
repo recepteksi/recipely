@@ -13,6 +13,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { DEFAULT_TOAST_DURATION_MS } from '@presentation/base/feedback/toast-model';
 import type { ToastItem } from '@presentation/base/feedback/toast-item';
+import { ValueConstants } from '@core/constants';
 
 const ENTER_OFFSET = 16;
 const EXIT_DURATION_MS = 160;
@@ -41,11 +42,11 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
   const { scheme } = useTheme();
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
-  const anim = useRef(new Animated.Value(0)).current;
+  const anim = useRef(new Animated.Value(ValueConstants.zero)).current;
 
   const dismiss = useCallback(() => {
     Animated.timing(anim, {
-      toValue: 0,
+      toValue: ValueConstants.zero,
       duration: EXIT_DURATION_MS,
       useNativeDriver: true,
     }).start(() => onDismiss(item.id));
@@ -59,7 +60,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       tension: 80,
     }).start();
     const duration = item.durationMs ?? DEFAULT_TOAST_DURATION_MS;
-    if (duration <= 0) return;
+    if (duration <= ValueConstants.zero) return;
     const timer = setTimeout(dismiss, duration);
     return () => clearTimeout(timer);
   }, [anim, item.durationMs, dismiss]);
@@ -79,7 +80,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
           backgroundColor: toastBackground(scheme),
           opacity: anim,
           transform: [
-            { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [ENTER_OFFSET, 0] }) },
+            { translateY: anim.interpolate({ inputRange: [ValueConstants.zero, 1], outputRange: [ENTER_OFFSET, ValueConstants.zero] }) },
           ],
         },
       ]}

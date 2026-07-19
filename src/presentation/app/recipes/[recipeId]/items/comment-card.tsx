@@ -16,6 +16,7 @@ import { spacing, radii, sizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
+import { ValueConstants } from '@core/constants';
 
 export interface CommentCardProps {
   body: string;
@@ -58,13 +59,13 @@ export const CommentCard = ({
   nodeRef,
 }: CommentCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const flash = useSharedValue(0);
+  const flash = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
     if (!highlighted) return;
     flash.value = withSequence(
       withTiming(1, { duration: FLASH_IN_MS }),
-      withDelay(FLASH_HOLD_MS, withTiming(0, { duration: FLASH_OUT_MS })),
+      withDelay(FLASH_HOLD_MS, withTiming(ValueConstants.zero, { duration: FLASH_OUT_MS })),
     );
   }, [highlighted, flash]);
 
@@ -73,10 +74,10 @@ export const CommentCard = ({
   const flashStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       flash.value,
-      [0, 1],
+      [ValueConstants.zero, 1],
       [colors.cardBackground, colors.primaryLight],
     ),
-    borderColor: interpolateColor(flash.value, [0, 1], [colors.cardBorder, colors.primary]),
+    borderColor: interpolateColor(flash.value, [ValueConstants.zero, 1], [colors.cardBorder, colors.primary]),
   }));
 
   return (

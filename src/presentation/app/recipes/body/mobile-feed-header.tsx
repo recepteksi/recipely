@@ -8,6 +8,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface MobileFeedHeaderProps {
   filters: UiFilters;
@@ -48,7 +49,7 @@ export const MobileFeedHeader = ({
         <ThemedText variant="caption" muted>
           {resultCount} {t().recipes.results}
         </ThemedText>
-        {activeFilterCount > 0 ? (
+        {activeFilterCount > ValueConstants.zero ? (
           <Pressable
             onPress={onResetFilters}
             accessibilityRole="button"

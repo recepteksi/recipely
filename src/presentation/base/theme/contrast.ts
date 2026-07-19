@@ -1,16 +1,16 @@
-const HEX_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 
 const parseHex = (hex: string): { r: number; g: number; b: number } => {
-  if (!HEX_PATTERN.test(hex)) {
+  if (!RegexConstants.hexColor.test(hex)) {
     throw new Error(`Invalid hex color: ${hex}`);
   }
   const body = hex.slice(1);
   const expanded =
     body.length === 3
-      ? body.split('').map((c) => c + c).join('')
-      : body.slice(0, 6);
+      ? body.split(CharConstants.empty).map((c) => c + c).join(CharConstants.empty)
+      : body.slice(ValueConstants.zero, 6);
   return {
-    r: parseInt(expanded.slice(0, 2), 16),
+    r: parseInt(expanded.slice(ValueConstants.zero, 2), 16),
     g: parseInt(expanded.slice(2, 4), 16),
     b: parseInt(expanded.slice(4, 6), 16),
   };

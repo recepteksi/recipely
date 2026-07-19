@@ -17,6 +17,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { GeneratingVariant } from '@presentation/app/create-recipe/model/generating-variant';
+import { ValueConstants } from '@core/constants';
 
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
@@ -39,15 +40,15 @@ export const GeneratingView = ({
   variant = 'generate',
 }: GeneratingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const spin = useSharedValue(0);
-  const breathe = useSharedValue(0);
+  const spin = useSharedValue(ValueConstants.zero);
+  const breathe = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
     spin.value = withRepeat(withTiming(1, { duration: 4500, easing: Easing.linear }), -1);
     breathe.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+        withTiming(ValueConstants.zero, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
     );
@@ -106,7 +107,7 @@ export const GeneratingView = ({
         <Animated.View style={coreStyle}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: 1, y: 1 }}
             style={[styles.core, shadows.lg]}
           >
@@ -139,7 +140,7 @@ export const GeneratingView = ({
                   {
                     backgroundColor: done ? colors.primary : 'transparent',
                     borderColor: active ? colors.primary : colors.border,
-                    borderWidth: done ? 0 : 1.5,
+                    borderWidth: done ? ValueConstants.zero : 1.5,
                   },
                 ]}
               >
@@ -166,8 +167,8 @@ export const GeneratingView = ({
         <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
+            end={{ x: 1, y: ValueConstants.zero }}
             style={[styles.progressFill, { width: `${progress * 100}%` }]}
           />
         </View>

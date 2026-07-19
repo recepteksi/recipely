@@ -14,6 +14,7 @@ import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-
 import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
 import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
 import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
+import { ValueConstants } from '@core/constants';
 
 /**
  * In-memory test double for `IRecipeRepository`. Returns pre-configured
@@ -24,11 +25,11 @@ import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-c
 export class FakeRecipeRepository implements IRecipeRepository {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
-  generateCallCount = 0;
+  generateCallCount = ValueConstants.zero;
   lastImportInstagramCall: ImportInstagramRecipeCall | null = null;
-  importInstagramCallCount = 0;
+  importInstagramCallCount = ValueConstants.zero;
   lastRefineCall: RefineRecipeCall | null = null;
-  refineCallCount = 0;
+  refineCallCount = ValueConstants.zero;
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 

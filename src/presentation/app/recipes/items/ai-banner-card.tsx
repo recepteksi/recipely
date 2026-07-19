@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface AiBannerCardProps {
   onPress: () => void;
@@ -26,7 +27,7 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
     >
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-        start={{ x: 0, y: 0 }}
+        start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
         end={{ x: 1, y: 1 }}
         style={[styles.card, { borderColor: colors.primary }]}
       >

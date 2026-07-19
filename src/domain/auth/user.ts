@@ -3,6 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Email } from '@domain/common/email';
+import { ValueConstants } from '@core/constants';
 
 export interface UserProps {
   id: string;
@@ -22,10 +23,10 @@ export class User extends Entity<UserProps> {
   }
 
   static create(props: UserProps): Result<User, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('User id must be non-empty', 'id'));
     }
-    if (props.displayName.trim().length === 0) {
+    if (props.displayName.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('User displayName must be non-empty', 'displayName'));
     }
     return ok(new User(props));

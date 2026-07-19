@@ -23,6 +23,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, sizes } from '@presentation/base/theme';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeListBodyProps {
   vm: UseRecipeListResult;
@@ -88,7 +89,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           onChangeSort={vm.onChangeSort}
           onOpenFilter={vm.onOpenFilter}
           activeFilterCount={vm.activeFilterCount}
-          activeDifficulty={vm.filters.difficulties[0] ?? null}
+          activeDifficulty={vm.filters.difficulties[ValueConstants.zero] ?? null}
           onDifficultyChange={vm.onDifficultyChange}
           gridColumns={gridColumns}
           onOpenRecipe={vm.onOpenRecipe}
@@ -101,7 +102,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     body = <LoadingSkeleton />;
   } else if (isSearching) {
     body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={vm.onOpenRecipe} />;
-  } else if (filteredRecipes.length === 0) {
+  } else if (filteredRecipes.length === ValueConstants.zero) {
     body = (
       // A plain View accepts no pull gesture, and an empty list is exactly when
       // a user reaches for one — the ScrollView (with flexGrow content) gives
@@ -122,10 +123,10 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       >
         <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
-          {vm.activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
+          {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
         <View style={styles.retryButton}>
-          {vm.activeFilterCount > 0 ? (
+          {vm.activeFilterCount > ValueConstants.zero ? (
             <PrimaryButton label={t().recipes.clearFilters} onPress={vm.onResetFilters} />
           ) : (
             <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
@@ -183,7 +184,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   }
 
   const isMobileLoadedFeed =
-    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > 0;
+    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > ValueConstants.zero;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   separator: {
     height: spacing.md,

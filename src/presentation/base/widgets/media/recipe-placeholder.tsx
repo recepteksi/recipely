@@ -5,6 +5,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { fontSizes, spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const WASH_OPACITY = 0.16;
 const TEXTURE_OPACITY = 0.6;
@@ -44,7 +45,7 @@ export const RecipePlaceholder = ({
     <View style={[styles.root, { backgroundColor: colors.skeleton }, style]}>
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-        start={{ x: 0, y: 0 }}
+        start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
         end={{ x: 1, y: 1 }}
         style={[StyleSheet.absoluteFill, styles.wash]}
       />
@@ -57,12 +58,12 @@ export const RecipePlaceholder = ({
             patternUnits="userSpaceOnUse"
             patternTransform="rotate(45)"
           >
-            <Line x1={0} y1={0} x2={0} y2={TEXTURE_GAP} stroke={colors.cardBorder} strokeWidth={1} />
+            <Line x1={ValueConstants.zero} y1={ValueConstants.zero} x2={ValueConstants.zero} y2={TEXTURE_GAP} stroke={colors.cardBorder} strokeWidth={1} />
           </Pattern>
         </Defs>
         <Rect width="100%" height="100%" fill="url(#rcpDiag)" />
       </Svg>
-      <View style={[styles.motif, { gap: compact ? 0 : spacing.xs }]}>
+      <View style={[styles.motif, { gap: compact ? ValueConstants.zero : spacing.xs }]}>
         <RecipelyLogo size={size} monochrome mono={colors.primary} />
         {!compact && label ? (
           <ThemedText variant="caption" style={[styles.label, { color: colors.primary }]}>

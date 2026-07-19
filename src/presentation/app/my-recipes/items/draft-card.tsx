@@ -8,6 +8,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import { ValueConstants } from '@core/constants';
 
 export interface DraftCardProps {
   draft: RecipeDraft;
@@ -22,14 +23,14 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
   const colors = useTheme().colors;
   const name = draft.snapshot.name?.trim();
   const cover = draft.snapshot.media?.find((m) => m.type === 'image');
-  const ingredientCount = (draft.snapshot.ingredients ?? []).filter((x) => x.trim().length > 0).length;
+  const ingredientCount = (draft.snapshot.ingredients ?? []).filter((x) => x.trim().length > ValueConstants.zero).length;
 
   return (
     <Pressable
       onPress={onOpen}
       style={[styles.root, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }, shadows.sm]}
       accessibilityRole="button"
-      accessibilityLabel={name !== undefined && name.length > 0 ? name : t().drafts.untitled}
+      accessibilityLabel={name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
     >
       <View style={[styles.thumb, { backgroundColor: colors.skeleton }]}>
         <RecipeImage uri={cover?.url} style={styles.thumbImage} placeholderCompact />
@@ -42,7 +43,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
           </ThemedText>
         </View>
         <ThemedText variant="body" style={styles.name} numberOfLines={1}>
-          {name !== undefined && name.length > 0 ? name : t().drafts.untitled}
+          {name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
         </ThemedText>
         <ThemedText variant="caption" muted>
           {ingredientCount} {t().drafts.items} · {formatTimeAgo(draft.updatedAt)}

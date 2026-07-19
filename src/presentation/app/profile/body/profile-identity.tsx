@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 const AVATAR_FRAME = 112;
 const AVATAR_INNER = 106;
@@ -70,12 +71,12 @@ export const ProfileIdentity = ({
       <ThemedText variant="title" style={styles.displayName}>
         {displayName}
       </ThemedText>
-      {handle.length > 0 ? (
+      {handle.length > ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.handle}>
           @{handle}
         </ThemedText>
       ) : null}
-      {bio.length > 0 ? (
+      {bio.length > ValueConstants.zero ? (
         <ThemedText variant="body" style={styles.bioText}>
           {bio}
         </ThemedText>

@@ -1,4 +1,5 @@
 import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Builds the JSON body for `PATCH /recipes/:id` from the scalar fields of an
@@ -23,7 +24,7 @@ export const buildUpdateRecipeBody = (
   if (input.tags !== undefined) body['tags'] = input.tags;
   if (
     input.mealType !== undefined &&
-    Object.values(input.mealType).some((arr) => arr.length > 0)
+    Object.values(input.mealType).some((arr) => arr.length > ValueConstants.zero)
   ) {
     body['mealType'] = input.mealType;
   }

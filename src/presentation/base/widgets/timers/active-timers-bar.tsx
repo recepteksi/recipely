@@ -6,6 +6,7 @@ import { TimerChip } from '@presentation/base/widgets/timers/timer-chip';
 import { timerStore } from '@application/timers/timer-store';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Matches the single-recipe detail route (`/recipes/:recipeId`) so this bar
@@ -37,7 +38,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
     (entry) => entry.recipeId !== currentRecipeId,
   );
 
-  if (entries.length === 0) return null;
+  if (entries.length === ValueConstants.zero) return null;
 
   return (
     <View

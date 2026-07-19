@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { spacing, sizes } from '@presentation/base/theme';
 import { Toast } from '@presentation/base/feedback/toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
+import { ValueConstants } from '@core/constants';
 
 const MAX_WIDTH = 460;
 
@@ -16,7 +17,7 @@ export const ToastHost = (): React.JSX.Element | null => {
   const dismiss = toastStore((s) => s.dismiss);
   const insets = useSafeAreaInsets();
 
-  if (toasts.length === 0) return null;
+  if (toasts.length === ValueConstants.zero) return null;
 
   return (
     <View

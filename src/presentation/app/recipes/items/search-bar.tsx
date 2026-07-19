@@ -2,6 +2,7 @@ import { StyleSheet, TextInput, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface SearchBarProps {
   value: string;
@@ -25,8 +26,8 @@ export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps):
         autoCapitalize="none"
         autoCorrect={false}
       />
-      {value.length > 0 ? (
-        <Pressable onPress={() => onChangeText('')} hitSlop={8}>
+      {value.length > ValueConstants.zero ? (
+        <Pressable onPress={() => onChangeText(CharConstants.empty)} hitSlop={8}>
           <Ionicons name="close-circle" size={18} color={colors.textMuted} />
         </Pressable>
       ) : null}

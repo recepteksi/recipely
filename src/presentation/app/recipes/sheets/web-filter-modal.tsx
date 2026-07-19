@@ -12,6 +12,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { fontSizes, radii, shadows, sizes, spacing } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface WebFilterModalProps {
   visible: boolean;
@@ -54,7 +55,7 @@ export const WebFilterModal = ({
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
 
   const applyLabel =
-    resultCount > 0 ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
+    resultCount > ValueConstants.zero ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -159,7 +160,7 @@ export const WebFilterModal = ({
                 {TIME_OPTIONS.map((m) => (
                   <WebFilterChip
                     key={m}
-                    label={m === 0 ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
+                    label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
                     active={pending.maxTime === m}
                     onToggle={() => onSetMaxTime(m)}
                   />

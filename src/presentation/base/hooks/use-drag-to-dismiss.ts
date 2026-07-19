@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Animated, PanResponder } from 'react-native';
 import { shouldDismissDrag } from '@presentation/base/utils/should-dismiss-drag';
 import type { UseDragToDismissResult } from '@presentation/base/hooks/use-drag-to-dismiss-result';
+import { ValueConstants } from '@core/constants';
 
 const SNAP_BACK_DURATION_MS = 200;
 
@@ -19,17 +20,17 @@ const SNAP_BACK_DURATION_MS = 200;
  * dismissed mid-drag re-opens from a clean position.
  */
 export const useDragToDismiss = (onClose: () => void, visible: boolean): UseDragToDismissResult => {
-  const translateY = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(ValueConstants.zero)).current;
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
-    if (visible) translateY.setValue(0);
+    if (visible) translateY.setValue(ValueConstants.zero);
   }, [visible, translateY]);
 
   const snapBack = (): void => {
     Animated.timing(translateY, {
-      toValue: 0,
+      toValue: ValueConstants.zero,
       duration: SNAP_BACK_DURATION_MS,
       useNativeDriver: false,
     }).start();
@@ -43,7 +44,7 @@ export const useDragToDismiss = (onClose: () => void, visible: boolean): UseDrag
           translateY.stopAnimation();
         },
         onPanResponderMove: (_event, gestureState) => {
-          translateY.setValue(Math.max(0, gestureState.dy));
+          translateY.setValue(Math.max(ValueConstants.zero, gestureState.dy));
         },
         onPanResponderRelease: (_event, gestureState) => {
           if (shouldDismissDrag(gestureState)) {

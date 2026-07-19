@@ -3,6 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { User } from '@domain/auth/user';
+import { ValueConstants } from '@core/constants';
 
 export interface AuthSessionProps {
   id: string;
@@ -23,10 +24,10 @@ export class AuthSession extends Entity<AuthSessionProps> {
   }
 
   static create(props: AuthSessionProps): Result<AuthSession, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Session id must be non-empty', 'id'));
     }
-    if (props.accessToken.trim().length === 0) {
+    if (props.accessToken.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('accessToken must be non-empty', 'accessToken'));
     }
     if (Number.isNaN(props.expiresAt.getTime())) {

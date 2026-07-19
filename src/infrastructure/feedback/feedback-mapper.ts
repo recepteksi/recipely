@@ -1,6 +1,7 @@
 import { DEFAULT_FEEDBACK_CATEGORY } from '@domain/feedback/feedback-category';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackRequestDto } from '@infrastructure/feedback/feedback-dto';
+import { CharConstants } from '@core/constants';
 
 /**
  * Maps a `FeedbackSubmission` (use-case input) to the `FeedbackRequestDto`
@@ -14,7 +15,7 @@ export const toFeedbackRequestDto = (input: FeedbackSubmission): FeedbackRequest
     category: DEFAULT_FEEDBACK_CATEGORY,
     message: input.message,
   };
-  if (trimmedSubject !== '') {
+  if (trimmedSubject !== CharConstants.empty) {
     dto.subject = trimmedSubject;
   }
   return dto;

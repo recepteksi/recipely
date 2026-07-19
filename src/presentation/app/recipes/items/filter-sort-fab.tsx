@@ -13,6 +13,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 /** Scroll distance past the resting header over which the FAB collapses to a circle. */
 const MORPH_DISTANCE = 64;
@@ -42,23 +43,23 @@ export const FilterSortFab = ({
   const colors = useTheme().colors;
   // Natural extended width, measured once so the morph interpolates to the real
   // localized label width rather than a guessed constant.
-  const [extendedWidth, setExtendedWidth] = useState(0);
+  const [extendedWidth, setExtendedWidth] = useState(ValueConstants.zero);
   // Natural label width, measured once so the morph can collapse the label's
   // occupied space to 0 (not just fade it) and keep the icon centered.
-  const [labelWidth, setLabelWidth] = useState(0);
+  const [labelWidth, setLabelWidth] = useState(ValueConstants.zero);
 
   const label = t().recipes.filtersAndSort;
-  const accessibilityLabel = activeCount > 0 ? `${label}, ${activeCount}` : label;
+  const accessibilityLabel = activeCount > ValueConstants.zero ? `${label}, ${activeCount}` : label;
   const badgeText = activeCount > 9 ? '9+' : String(activeCount);
 
   const onMeasure = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > 0 && extendedWidth === 0) setExtendedWidth(w);
+    if (w > ValueConstants.zero && extendedWidth === ValueConstants.zero) setExtendedWidth(w);
   };
 
   const onMeasureLabel = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > 0 && labelWidth === 0) setLabelWidth(w);
+    if (w > ValueConstants.zero && labelWidth === ValueConstants.zero) setLabelWidth(w);
   };
 
   const morphRange: [number, number] = [
@@ -67,7 +68,7 @@ export const FilterSortFab = ({
   ];
 
   const containerStyle = useAnimatedStyle(() => {
-    if (reduceMotion || extendedWidth === 0) return {};
+    if (reduceMotion || extendedWidth === ValueConstants.zero) return {};
     const width = interpolate(
       scrollY.value,
       morphRange,
@@ -81,10 +82,10 @@ export const FilterSortFab = ({
   // same scroll range, so the icon ends up perfectly centered in the circle
   // instead of being pushed off-screen by the still-laid-out label.
   const labelStyle = useAnimatedStyle(() => {
-    if (reduceMotion || labelWidth === 0) {
+    if (reduceMotion || labelWidth === ValueConstants.zero) {
       return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
     }
-    const progress = interpolate(scrollY.value, morphRange, [1, 0], Extrapolation.CLAMP);
+    const progress = interpolate(scrollY.value, morphRange, [1, ValueConstants.zero], Extrapolation.CLAMP);
     return {
       opacity: progress,
       width: labelWidth * progress,
@@ -128,7 +129,7 @@ export const FilterSortFab = ({
         </Animated.View>
       </Pressable>
 
-      {activeCount > 0 ? (
+      {activeCount > ValueConstants.zero ? (
         <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
           <ThemedText style={styles.badgeText} numberOfLines={1}>
             {badgeText}

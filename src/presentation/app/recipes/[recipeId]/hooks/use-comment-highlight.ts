@@ -6,6 +6,7 @@ import { spacing } from '@presentation/base/theme';
 import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
 import type { UseCommentHighlightArgs } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-args';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Upper bound on `loadMore` calls while hunting for a deep-linked comment. The
@@ -54,7 +55,7 @@ export const useCommentHighlight = ({
   scrollViewRef,
 }: UseCommentHighlightArgs): UseCommentHighlightResult => {
   const params = useLocalSearchParams<{ commentId?: string }>();
-  const targetId = typeof params.commentId === 'string' && params.commentId.length > 0
+  const targetId = typeof params.commentId === 'string' && params.commentId.length > ValueConstants.zero
     ? params.commentId
     : null;
 
@@ -62,12 +63,12 @@ export const useCommentHighlight = ({
   const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
   const nodeRef = useRef<CommentNode | null>(null);
   // Bumped when the target card mounts, so the scroll effect re-runs with a node.
-  const [nodeVersion, setNodeVersion] = useState(0);
-  const attemptsRef = useRef(0);
+  const [nodeVersion, setNodeVersion] = useState(ValueConstants.zero);
+  const attemptsRef = useRef(ValueConstants.zero);
   const lastCountRef = useRef(-1);
   const flashedRef = useRef(false);
   const scrollDoneRef = useRef(false);
-  const scrollAttemptsRef = useRef(0);
+  const scrollAttemptsRef = useRef(ValueConstants.zero);
   const lastYRef = useRef<number | null>(null);
 
   const registerTargetNode = useCallback((node: CommentNode | null): void => {
@@ -81,16 +82,16 @@ export const useCommentHighlight = ({
   useEffect(() => {
     flashedRef.current = false;
     scrollDoneRef.current = false;
-    scrollAttemptsRef.current = 0;
+    scrollAttemptsRef.current = ValueConstants.zero;
     lastYRef.current = null;
-    attemptsRef.current = 0;
+    attemptsRef.current = ValueConstants.zero;
     lastCountRef.current = -1;
     setHighlightedCommentId(null);
   }, [targetId, recipeId]);
 
   // Paging: walk forward until the target lands in `items` or the walk is spent.
   useEffect(() => {
-    if (targetId === null || recipeId.length === 0) return;
+    if (targetId === null || recipeId.length === ValueConstants.zero) return;
     if (commentState === undefined) return;
     if (commentState.isLoading || commentState.isLoadingMore) return;
     if (commentState.items.some((c) => c.id === targetId)) return;
@@ -141,7 +142,7 @@ export const useCommentHighlight = ({
         // react-native-web routing `animated: true` through
         // `node.scroll({ behavior: 'smooth' })`, which silently does nothing in
         // browsers with smooth scrolling turned off.
-        scrollViewRef.current?.scrollTo({ y: Math.max(0, y - SCROLL_OFFSET), animated: false });
+        scrollViewRef.current?.scrollTo({ y: Math.max(ValueConstants.zero, y - SCROLL_OFFSET), animated: false });
       },
       () => {
         // Measurement failed (card unmounted mid-measure): keep the highlight,

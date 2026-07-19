@@ -3,6 +3,7 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure, type Failure } from '@core/failure';
 import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
+import { CharConstants } from '@core/constants';
 
 /**
  * Submits user feedback via the Help & Feedback form.
@@ -14,7 +15,7 @@ export class SubmitFeedbackUseCase {
   constructor(private readonly repo: IFeedbackRepository) {}
 
   async execute(input: FeedbackSubmission): Promise<Result<void, Failure>> {
-    if (input.message.trim() === '') {
+    if (input.message.trim() === CharConstants.empty) {
       return fail(new ValidationFailure('Message is required', 'message'));
     }
 

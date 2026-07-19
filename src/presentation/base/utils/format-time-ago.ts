@@ -1,4 +1,5 @@
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Formats a past date as a short relative "time ago" string in the active
@@ -7,7 +8,7 @@ import { t } from '@presentation/i18n';
  */
 export const formatTimeAgo = (date: Date): string => {
   const r = t().relativeTime;
-  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+  const seconds = Math.max(ValueConstants.zero, Math.floor((Date.now() - date.getTime()) / 1000));
   if (seconds < 60) return r.justNow;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return r.minutesAgo.replace('{n}', String(minutes));

@@ -5,6 +5,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface WebMyRecipesHeaderProps {
   onCreate: () => void;
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     gap: spacing.xs,
   },
   title: {
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     height: sizes.heroActionBtn,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
   createLabel: {
     fontWeight: '700',

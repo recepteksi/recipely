@@ -7,6 +7,7 @@ import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import type { AvatarUpload } from '@presentation/app/profile/model/avatar-upload';
 import type { PickSource } from '@presentation/app/profile/model/pick-source';
+import { ValueConstants } from '@core/constants';
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: 'image/jpeg',
@@ -26,7 +27,7 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
 /** Derives a multipart-friendly `fileName`/`mimeType` from a picked asset uri. */
 const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
   const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const safeExt = ext.length > 0 && ext.length <= 4 ? ext : 'jpg';
+  const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
   return {
     fileName: `avatar-${Date.now()}.${safeExt}`,
     mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
@@ -63,7 +64,7 @@ export const useAvatarUpload = (): AvatarUpload => {
         source === 'camera'
           ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS)
           : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
-      const asset = result.canceled ? undefined : result.assets[0];
+      const asset = result.canceled ? undefined : result.assets[ValueConstants.zero];
       if (asset === undefined) return;
 
       const { fileName, mimeType } = toUploadMeta(asset.uri);
@@ -104,7 +105,7 @@ export const useAvatarUpload = (): AvatarUpload => {
           cancelButtonIndex: 2,
         },
         (index) => {
-          if (index === 0) void launch('camera');
+          if (index === ValueConstants.zero) void launch('camera');
           else if (index === 1) void launch('library');
         },
       );

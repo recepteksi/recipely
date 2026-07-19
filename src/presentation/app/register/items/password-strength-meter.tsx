@@ -3,6 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface PasswordStrengthMeterProps {
   strength: number;
@@ -18,7 +19,7 @@ export const PasswordStrengthMeter = ({ strength }: PasswordStrengthMeterProps):
   return (
     <View style={styles.strengthWrap}>
       <View style={styles.strengthSegments}>
-        {[0, 1, 2, 3].map((i) => (
+        {[ValueConstants.zero, 1, 2, 3].map((i) => (
           <View
             key={i}
             style={[

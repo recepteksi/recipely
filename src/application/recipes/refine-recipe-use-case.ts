@@ -4,6 +4,7 @@ import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure'
 import type { RefinedRecipe } from '@domain/recipes/refined-recipe';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { RefineRecipeInput } from '@application/recipes/refine-recipe-input';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Refines an in-progress recipe against a free-text instruction, returning a
@@ -19,7 +20,7 @@ export class RefineRecipeUseCase {
 
   execute(input: RefineRecipeInput): Promise<Result<RefinedRecipe, Failure>> {
     const trimmed = input.instruction.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === ValueConstants.zero) {
       return Promise.resolve(
         fail(
           new ValidationFailure(

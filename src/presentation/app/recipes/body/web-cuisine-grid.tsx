@@ -7,6 +7,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 /** Window width (px) below which cuisine tiles shrink so ≥4 fit per row. */
 const TILE_SHRINK_WIDTH = 500;
@@ -61,7 +62,7 @@ export const WebCuisineGrid = ({ selectedCuisines, onToggle }: WebCuisineGridPro
     <View style={styles.section}>
       <WebSectionHead title={t().recipes.browseCuisines} sub={t().recipes.filterByCuisine} />
       <View style={styles.grid}>
-        {tile(ALL_KEY, t().recipes.cuisineAll, ALL_EMOJI, selectedCuisines.length === 0)}
+        {tile(ALL_KEY, t().recipes.cuisineAll, ALL_EMOJI, selectedCuisines.length === ValueConstants.zero)}
         {cuisineKeys.map((key) => {
           const { name, emoji } = cuisineLabel(key);
           return tile(key, name, emoji, selectedCuisines.includes(key));

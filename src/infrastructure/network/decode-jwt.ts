@@ -2,6 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { JwtClaims } from '@infrastructure/network/jwt-claims';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 // WHY: avoid pulling in a dep (jwt-decode) just to split and base64-parse the payload.
 // We never verify signature on-device — the backend does that on every authed request.
@@ -32,8 +33,8 @@ const base64UrlDecode = (input: string): string => {
   const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
    
   const binary = atob(padded);
-  let out = '';
-  for (let i = 0; i < binary.length; i++) {
+  let out = CharConstants.empty;
+  for (let i = ValueConstants.zero; i < binary.length; i++) {
     out += `%${binary.charCodeAt(i).toString(16).padStart(2, '0')}`;
   }
   return decodeURIComponent(out);

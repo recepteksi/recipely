@@ -1,5 +1,6 @@
 import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
 import { appendFilePart } from '@infrastructure/network/append-file-part';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Builds the multipart `FormData` for `POST /recipes/with-media`.
@@ -37,7 +38,7 @@ export const buildCreateRecipeFormData = async (
   if (input.tags) {
     formData.append('tags', JSON.stringify(input.tags));
   }
-  if (input.mealType && Object.values(input.mealType).some((arr) => arr.length > 0)) {
+  if (input.mealType && Object.values(input.mealType).some((arr) => arr.length > ValueConstants.zero)) {
     formData.append('mealType', JSON.stringify(input.mealType));
   }
   if (input.isPublished !== undefined) {

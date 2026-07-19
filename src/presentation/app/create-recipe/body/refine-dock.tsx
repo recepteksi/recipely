@@ -14,6 +14,7 @@ import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
+import { ValueConstants } from '@core/constants';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];
@@ -46,14 +47,14 @@ export const RefineDock = ({
   bottomInset,
 }: RefineDockProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const canSend = chatInput.trim().length > 0 && !refining;
+  const canSend = chatInput.trim().length > ValueConstants.zero && !refining;
   // WHY: `KeyboardAvoidingView` (in the parent screen) already pads its content
   // up flush with the keyboard's top edge once shown — that alone clears the
   // home indicator area too, since the keyboard occludes it. Adding the fixed
   // `bottomInset` (needed only while the keyboard is hidden) on top of that
   // padding left a visible gap between the input and the keyboard.
   const keyboardVisible = useKeyboardVisible();
-  const resolvedBottomInset = keyboardVisible ? 0 : bottomInset;
+  const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
 
   const submitFreeText = (): void => {
     if (!canSend) return;
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: fontSizes.medium,
-    paddingVertical: 0,
+    paddingVertical: ValueConstants.zero,
   },
   sendBtn: {
     width: sizes.iconBtn,

@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { MAX_VISIBLE_TOASTS } from '@presentation/base/feedback/toast-model';
 import type { ToastStoreState } from '@presentation/base/feedback/toast-store-state';
+import { ValueConstants } from '@core/constants';
 
-let counter = 0;
+let counter = ValueConstants.zero;
 const nextId = (): string => {
   counter += 1;
   return `toast-${Date.now()}-${counter}`;

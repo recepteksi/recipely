@@ -5,10 +5,11 @@ import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import type { Breakpoint } from '@presentation/base/responsive/breakpoint';
 import type { Orientation } from '@presentation/base/responsive/orientation';
 import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';
+import { ValueConstants } from '@core/constants';
 
 const DEFAULT_VALUE: LayoutContextValue = {
-  width: 0,
-  height: 0,
+  width: ValueConstants.zero,
+  height: ValueConstants.zero,
   aspectRatio: 1,
   orientation: 'portrait',
   breakpoint: 'mobile',
@@ -51,7 +52,7 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
     const orientation: Orientation = width >= height ? 'landscape' : 'portrait';
     const isWebShell = Platform.OS === 'web' && width >= BREAKPOINTS.desktop;
     const isCompact = breakpoint === 'mobile';
-    const aspectRatio = height === 0 ? 1 : width / height;
+    const aspectRatio = height === ValueConstants.zero ? 1 : width / height;
     return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isCompact };
   }, [gated, width, height]);
 

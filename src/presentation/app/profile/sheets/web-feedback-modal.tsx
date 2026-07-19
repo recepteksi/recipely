@@ -8,6 +8,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { radii, shadows, sizes, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebFeedbackModalProps {
   visible: boolean;
@@ -27,13 +28,13 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
   const error = feedbackStore((s) => s.error);
   const reset = feedbackStore((s) => s.reset);
 
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
+  const [subject, setSubject] = useState(CharConstants.empty);
+  const [message, setMessage] = useState(CharConstants.empty);
   const [sent, setSent] = useState(false);
 
   // UI deliberately requires `subject` too, even though the domain treats it as
   // optional — keep both guards in sync if this is ever loosened.
-  const canSend = subject.trim().length > 0 && message.trim().length > 0;
+  const canSend = subject.trim().length > ValueConstants.zero && message.trim().length > ValueConstants.zero;
 
   const handleSend = async (): Promise<void> => {
     const ok = await submit({ subject, message });
@@ -42,8 +43,8 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
 
   const handleClose = (): void => {
     reset();
-    setSubject('');
-    setMessage('');
+    setSubject(CharConstants.empty);
+    setMessage(CharConstants.empty);
     setSent(false);
     onClose();
   };

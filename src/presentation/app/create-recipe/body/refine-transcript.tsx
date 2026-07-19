@@ -7,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import { ValueConstants } from '@core/constants';
 
 export interface RefineTranscriptProps {
   chatHistory: readonly ChatMessage[];
@@ -24,7 +25,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
       <View style={styles.transcriptHeader}>
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={styles.assistantBadge}
         >

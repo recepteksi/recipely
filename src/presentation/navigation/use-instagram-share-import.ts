@@ -2,15 +2,16 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const INSTAGRAM_HOST = 'instagram.com';
 
 /** Pulls the first Instagram URL out of an incoming share's text/webUrl. */
 const extractInstagramUrl = (text?: string | null, webUrl?: string | null): string | null => {
-  const candidates = [webUrl ?? '', text ?? ''];
+  const candidates = [webUrl ?? CharConstants.empty, text ?? CharConstants.empty];
   for (const candidate of candidates) {
     const match = candidate.match(/https?:\/\/\S+/);
-    const url = match?.[0] ?? candidate.trim();
+    const url = match?.[ValueConstants.zero] ?? candidate.trim();
     if (url.toLowerCase().includes(INSTAGRAM_HOST)) return url;
   }
   return null;

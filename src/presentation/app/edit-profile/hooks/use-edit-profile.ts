@@ -7,6 +7,7 @@ import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-uplo
 import { t } from '@presentation/i18n';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Orchestrates the edit-profile form: seeds the display name / bio from the
@@ -23,8 +24,8 @@ export const useEditProfile = (): UseEditProfileResult => {
   const updateProfile = authStore((s) => s.updateProfile);
 
   const user = authState.status === 'authenticated' ? authState.session.user : null;
-  const initialDisplayName = user?.displayName ?? '';
-  const initialBio = user?.bio ?? '';
+  const initialDisplayName = user?.displayName ?? CharConstants.empty;
+  const initialBio = user?.bio ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;
 
   const [displayName, setDisplayName] = useState(initialDisplayName);
@@ -32,7 +33,7 @@ export const useEditProfile = (): UseEditProfileResult => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const canSave = displayName.trim().length > 0;
+  const canSave = displayName.trim().length > ValueConstants.zero;
   const dirty = displayName !== initialDisplayName || bio !== initialBio;
   const showNameError = dirty && !canSave;
   const bioAtLimit = bio.length >= BIO_MAX;

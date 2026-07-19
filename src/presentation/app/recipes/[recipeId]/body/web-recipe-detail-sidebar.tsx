@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
+import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailSidebarProps {
   recipe: Recipe;
@@ -26,22 +27,22 @@ export const WebRecipeDetailSidebar = ({
   const checkedCount = checkedIngredients.filter(Boolean).length;
 
   const gram = (value: number | undefined): string =>
-    value !== undefined && value > 0 ? `${String(value)}${strings.nutrition.g}` : EMPTY_MACRO;
+    value !== undefined && value > ValueConstants.zero ? `${String(value)}${strings.nutrition.g}` : EMPTY_MACRO;
 
   const macros = [
     {
       label: strings.nutrition.calories,
-      value: recipe.caloriesPerServing > 0 ? String(recipe.caloriesPerServing) : EMPTY_MACRO,
+      value: recipe.caloriesPerServing > ValueConstants.zero ? String(recipe.caloriesPerServing) : EMPTY_MACRO,
     },
     { label: strings.nutrition.protein, value: gram(recipe.nutrition?.protein) },
     { label: strings.nutrition.carbs, value: gram(recipe.nutrition?.carbs) },
     { label: strings.nutrition.fat, value: gram(recipe.nutrition?.fat) },
   ];
   const hasNutrition =
-    recipe.caloriesPerServing > 0 ||
-    (recipe.nutrition?.protein ?? 0) > 0 ||
-    (recipe.nutrition?.carbs ?? 0) > 0 ||
-    (recipe.nutrition?.fat ?? 0) > 0;
+    recipe.caloriesPerServing > ValueConstants.zero ||
+    (recipe.nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
+    (recipe.nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
+    (recipe.nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero;
 
   const metaRows = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
@@ -105,7 +106,7 @@ export const WebRecipeDetailSidebar = ({
             key={meta.label}
             style={[
               styles.metaRow,
-              i > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border } : null,
+              i > ValueConstants.zero ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border } : null,
             ]}
           >
             <View style={styles.metaLabel}>

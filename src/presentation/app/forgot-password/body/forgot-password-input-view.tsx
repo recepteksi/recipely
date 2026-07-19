@@ -6,6 +6,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 interface InputViewProps {
   email: string;
@@ -70,7 +71,7 @@ export const InputView = ({
           label={loading ? t().forgotPassword.sending : t().forgotPassword.send}
           onPress={onSend}
           loading={loading}
-          disabled={email.trim().length === 0}
+          disabled={email.trim().length === ValueConstants.zero}
         />
       </View>
 

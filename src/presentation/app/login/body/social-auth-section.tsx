@@ -4,6 +4,7 @@ import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface SocialAuthSectionProps {
   disabled: boolean;
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     height: 1,
   },
   dividerLabel: {
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
   signUpRow: {
     flexDirection: 'row',

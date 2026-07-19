@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
+import { ValueConstants } from '@core/constants';
 
 export interface SpecRowProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -24,7 +25,7 @@ export const SpecRow = ({ icon, label, last, error, children }: SpecRowProps): R
         styles.root,
         {
           borderBottomColor: colors.border,
-          borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
+          borderBottomWidth: last ? ValueConstants.zero : StyleSheet.hairlineWidth,
           backgroundColor: hasError ? colors.dangerLight : undefined,
         },
       ]}

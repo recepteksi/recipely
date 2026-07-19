@@ -5,6 +5,7 @@ import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { MediaItem } from '@domain/recipes/media-item';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -16,9 +17,9 @@ import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item
  */
 export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
   const media: MediaItem[] =
-    dto.media && dto.media.length > 0
+    dto.media && dto.media.length > ValueConstants.zero
       ? dto.media.map((m) => ({ type: m.type, url: m.url }))
-      : dto.image.trim().length > 0
+      : dto.image.trim().length > ValueConstants.zero
         ? [{ type: 'image', url: dto.image }]
         : [];
 
@@ -33,7 +34,7 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     prepTimeMinutes: dto.prepTimeMinutes,
     cookTimeMinutes: dto.cookTimeMinutes,
     servings: dto.servings ?? 1,
-    caloriesPerServing: dto.caloriesPerServing ?? 0,
+    caloriesPerServing: dto.caloriesPerServing ?? ValueConstants.zero,
     nutrition: dto.nutrition,
     image: dto.image,
     media,
@@ -41,11 +42,11 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
     tags: dto.tags,
     mealType: dto.mealType,
     ownerId: dto.ownerId,
-    likeCount: dto.likeCount ?? 0,
+    likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
-    viewCount: dto.viewCount ?? 0,
+    viewCount: dto.viewCount ?? ValueConstants.zero,
     moderationStatus: dto.moderationStatus,
-    commentCount: dto.commentCount ?? 0,
+    commentCount: dto.commentCount ?? ValueConstants.zero,
   });
 };
 
@@ -66,9 +67,9 @@ export const toRecipeSummary = (
     totalTimeMinutes: dto.totalTimeMinutes,
     rating: dto.rating,
     moderationStatus: dto.moderationStatus,
-    likeCount: dto.likeCount ?? 0,
+    likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
-    commentCount: dto.commentCount ?? 0,
-    viewCount: dto.viewCount ?? 0,
+    commentCount: dto.commentCount ?? ValueConstants.zero,
+    viewCount: dto.viewCount ?? ValueConstants.zero,
   });
 };

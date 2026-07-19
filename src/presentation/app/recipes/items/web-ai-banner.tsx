@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface WebAiBannerProps {
   onPress: () => void;
@@ -25,8 +26,8 @@ export const WebAiBanner = ({ onPress }: WebAiBannerProps): React.JSX.Element =>
     >
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+        start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
+        end={{ x: 1, y: ValueConstants.zero }}
         style={[styles.card, { borderColor: colors.gradientBorder }]}
       >
         <View pointerEvents="none" style={styles.decor}>
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
   textBlock: {
     flex: 1,
@@ -96,18 +97,18 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '800',
     fontSize: fontSizes.subtitle,
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: ValueConstants.zero, height: 1 },
     textShadowRadius: 6,
   },
   subtitle: {
     fontWeight: '400',
     fontSize: fontSizes.medium,
     opacity: 0.9,
-    textShadowOffset: { width: 0, height: 1 },
+    textShadowOffset: { width: ValueConstants.zero, height: 1 },
     textShadowRadius: 4,
   },
   startChip: {
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,

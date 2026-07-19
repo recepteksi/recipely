@@ -14,6 +14,7 @@ import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media-item';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -24,7 +25,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const router = useRouter();
   const pathname = usePathname();
   const params = useLocalSearchParams<{ recipeId: string }>();
-  const recipeId = typeof params.recipeId === 'string' ? params.recipeId : '';
+  const recipeId = typeof params.recipeId === 'string' ? params.recipeId : CharConstants.empty;
 
   const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
@@ -75,7 +76,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [commentInput, setCommentInput] = useState('');
+  const [commentInput, setCommentInput] = useState(CharConstants.empty);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
@@ -111,10 +112,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
 
   const handleAddComment = useCallback(async () => {
     const trimmed = commentInput.trim();
-    if (trimmed.length === 0) return;
+    if (trimmed.length === ValueConstants.zero) return;
     const ok = await commentsStore.getState().addComment(recipeId, trimmed);
     if (ok) {
-      setCommentInput('');
+      setCommentInput(CharConstants.empty);
       setSubmitError(null);
     } else {
       // WHY: the store records the real failure on its `error` field rather than
@@ -163,7 +164,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     localRecipe !== undefined ? ({ status: 'loaded' as const, recipe: localRecipe }) : networkState;
 
   useEffect(() => {
-    if (!isLocal && recipeId.length > 0 && (networkState === undefined || networkState.status === 'idle')) {
+    if (!isLocal && recipeId.length > ValueConstants.zero && (networkState === undefined || networkState.status === 'idle')) {
       void load(recipeId);
     }
   }, [isLocal, recipeId, networkState, load]);
@@ -196,23 +197,23 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [isOwner, isLocal, createdRecipesStore]);
 
-  const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : 0;
-  const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : 0;
+  const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : ValueConstants.zero;
+  const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : ValueConstants.zero;
 
   useEffect(() => {
-    if (ingredientCount > 0) {
+    if (ingredientCount > ValueConstants.zero) {
       setCheckedIngredients(new Array(ingredientCount).fill(false) as boolean[]);
     }
   }, [ingredientCount]);
 
   useEffect(() => {
-    if (instructionCount > 0) {
+    if (instructionCount > ValueConstants.zero) {
       setCompletedSteps(new Array(instructionCount).fill(false) as boolean[]);
     }
   }, [instructionCount]);
 
   const onRetry = useCallback(() => {
-    if (recipeId.length > 0) {
+    if (recipeId.length > ValueConstants.zero) {
       void load(recipeId);
     }
   }, [recipeId, load]);
@@ -245,11 +246,11 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const recipe = current.status === 'loaded' ? current.recipe : null;
   const images = recipe !== null ? recipe.media.filter((m) => m.type === 'image') : [];
   const media: readonly MediaItem[] =
-    recipe === null ? [] : images.length > 0 ? images : [{ type: 'image', url: recipe.image }];
-  const firstImageUrl = recipe === null ? '' : images[0]?.url ?? recipe.image;
-  const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : '';
+    recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: 'image', url: recipe.image }];
+  const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
+  const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
-  const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? 0;
+  const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
   return {
     recipeId,

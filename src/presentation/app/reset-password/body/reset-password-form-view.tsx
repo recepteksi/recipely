@@ -6,6 +6,7 @@ import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 interface FormViewProps {
   newPassword: string;
@@ -140,7 +141,7 @@ export const FormView = ({
           label={loading ? t().resetPassword.submitting : t().resetPassword.submit}
           onPress={onSubmit}
           loading={loading}
-          disabled={newPassword.length === 0 || confirmPassword.length === 0 || loading}
+          disabled={newPassword.length === ValueConstants.zero || confirmPassword.length === ValueConstants.zero || loading}
         />
       </View>
 

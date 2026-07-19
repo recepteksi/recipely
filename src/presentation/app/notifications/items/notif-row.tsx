@@ -6,18 +6,19 @@ import { spacing, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
   switch (n.kind) {
-    case 'comment': return `${labels.commented} ${n.recipeName ?? ''}`;
-    case 'like': return `${labels.liked} ${n.recipeName ?? ''}`;
-    case 'favorite': return `${labels.saved} ${n.recipeName ?? ''}`;
+    case 'comment': return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
+    case 'like': return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
+    case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
     case 'ai_done': return labels.aiDoneLabel;
-    case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? ''}`;
-    case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? ''}`;
+    case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
+    case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;
-    case 'generic': return n.recipeName ?? '';
+    case 'generic': return n.recipeName ?? CharConstants.empty;
   }
 };
 
@@ -48,7 +49,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
         styles.row,
         {
           backgroundColor: item.read ? colors.cardBackground : colors.chipBackground,
-          borderLeftWidth: item.read ? 0 : 3,
+          borderLeftWidth: item.read ? ValueConstants.zero : 3,
           borderLeftColor: colors.primary,
           opacity: pressed && tappable ? PRESSED_OPACITY : 1,
         },
@@ -75,7 +76,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
           </ThemedText>
         ) : null}
         <ThemedText variant="caption" muted style={styles.timestamp}>
-          {item.daysAgo === 0
+          {item.daysAgo === ValueConstants.zero
             ? t().notifications.today
             : t().notifications.daysShort.replace('{n}', String(item.daysAgo))}
         </ThemedText>
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
   rowBody: { flex: 1, gap: spacing.xxs },
   actionLine: { fontSize: fontSizes.body, lineHeight: 20 },
@@ -112,6 +113,6 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     marginTop: spacing.sm,
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
 });
