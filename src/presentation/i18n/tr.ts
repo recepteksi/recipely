@@ -712,6 +712,7 @@ export const tr: Translations = {
     modOk: 'tarifinizi onayladı:',
     modPending: 'inceleme bekliyor:',
     followed: 'sizi takip etti',
+    markOneHint: 'Bu bildirimi okundu olarak işaretler',
   },
   profile: {
     editProfile: 'Profili düzenle',

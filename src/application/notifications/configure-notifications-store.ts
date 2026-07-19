@@ -1,25 +1,7 @@
 import { create } from 'zustand';
-import { Notification } from '@domain/notifications/notification';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
 import type { NotificationsStore } from '@application/notifications/notifications-store';
-
-const asRead = (n: Notification): Notification | null => {
-  const next = Notification.create({
-    id: n.id,
-    type: n.type,
-    senderId: n.senderId,
-    senderDisplayName: n.senderDisplayName,
-    senderPhotoUrl: n.senderPhotoUrl,
-    recipeId: n.recipeId,
-    recipeTitle: n.recipeTitle,
-    commentId: n.commentId,
-    message: n.message,
-    read: true,
-    createdAt: n.createdAt,
-  });
-  return next.ok ? next.value : null;
-};
 
 /**
  * Owns the in-memory notifications feed for the current session. The store is
@@ -67,11 +49,7 @@ export const configureNotificationsStore = (
         if (!earlyResult.ok) await get().refreshUnread();
         return;
       }
-      const optimisticItems = current.items.reduce<Notification[]>((acc, n) => {
-        const next = asRead(n);
-        if (next !== null) acc.push(next);
-        return acc;
-      }, []);
+      const optimisticItems = current.items.map((n) => n.asRead());
       set({
         state: {
           ...current,
@@ -90,10 +68,7 @@ export const configureNotificationsStore = (
       if (current.status !== 'loaded') return;
       const target = current.items.find((n) => n.id === id);
       if (target === undefined || target.read) return;
-      const optimisticItems = current.items.map((n) => {
-        if (n.id !== id) return n;
-        return asRead(n) ?? n;
-      });
+      const optimisticItems = current.items.map((n) => (n.id === id ? n.asRead() : n));
       const nextUnread = Math.max(0, current.unreadCount - 1);
       set({
         state: { ...current, items: optimisticItems, unreadCount: nextUnread },

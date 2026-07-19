@@ -63,8 +63,9 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     });
   }, []);
 
-  // Register the device's push token once the user is authenticated (no-op on
-  // native; web registers via the Firebase JS SDK when configured).
+  // Register the device's push token once the user is authenticated (Android
+  // via expo-notifications' FCM token, web via the Firebase JS SDK when
+  // configured; iOS is still a no-op pending a native messaging module).
   useEffect(() => {
     let registered = false;
     const maybeRegister = (): void => {

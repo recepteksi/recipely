@@ -55,6 +55,11 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
       accessibilityLabel={`${item.actor} ${actionText(item)}`}
+      // A target-less unread row's only action is "mark read" — say so, since
+      // the label alone gives assistive tech no cue what activating it does.
+      accessibilityHint={
+        item.target === null && !item.read ? t().notifications.markOneHint : undefined
+      }
     >
       <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
         <Ionicons name={meta.icon} size={20} color={meta.color} />

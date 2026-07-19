@@ -713,6 +713,7 @@ export const en = {
     modOk: 'approved your recipe',
     modPending: 'review pending for',
     followed: 'followed you',
+    markOneHint: 'Marks this notification as read',
   },
   profile: {
     editProfile: 'Edit profile',
