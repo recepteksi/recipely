@@ -1,6 +1,6 @@
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import { DEFAULT_CODE_TTL_SECONDS } from '@infrastructure/constants/api';
-import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
+import type { RegistrationChallengeDto } from '@infrastructure/auth/registration/registration-challenge-dto';
 
 /**
  * Maps a registration challenge DTO to its domain value. Prefers the backend's
