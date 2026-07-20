@@ -30,6 +30,7 @@ export const LoginForm = (): React.JSX.Element => {
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const passwordRef = useRef<TextInput>(null);
 
@@ -95,6 +96,7 @@ export const LoginForm = (): React.JSX.Element => {
           ref={passwordRef}
           style={[
             styles.input,
+            styles.passwordInput,
             {
               backgroundColor: colors.inputBackground,
               color: colors.text,
@@ -106,12 +108,26 @@ export const LoginForm = (): React.JSX.Element => {
           placeholderTextColor={colors.textMuted}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
+          autoCapitalize="none"
           returnKeyType="done"
           onFocus={() => setFocusField('password')}
           onBlur={() => setFocusField(null)}
           onSubmitEditing={handleSignIn}
         />
+        <Pressable
+          onPress={() => setShowPassword((visible) => !visible)}
+          hitSlop={8}
+          style={styles.eyeButton}
+          accessibilityRole="button"
+          accessibilityLabel={showPassword ? t().login.hidePassword : t().login.showPassword}
+        >
+          <MaterialCommunityIcons
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={18}
+            color={colors.textMuted}
+          />
+        </Pressable>
       </View>
 
       {errorMessage ? (
@@ -177,6 +193,17 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,
     fontSize: fontSizes.body,
+  },
+  passwordInput: {
+    paddingRight: sizes.iconBtn + spacing.sm,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: spacing.sm,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   error: {
     marginTop: spacing.md,
