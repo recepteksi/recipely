@@ -13,6 +13,25 @@ persistent team `recipely-team` (`~/.claude/teams/recipely-team/config.json`) �
 Skip the team only for genuinely trivial one-liners (a typo, a version bump, a single-line
 config edit, a copy tweak). When in doubt, delegate.
 
+### Token economy (mandatory — maximum work per token)
+
+Every agent spawn starts cold and re-derives context; that is the expensive path. Rules:
+
+1. **Explore once, brief completely.** The lead does (or delegates ONE) exploration pass,
+   then hands each implementer a self-contained brief: exact file paths, verified APIs,
+   the precise changes wanted. An agent prompt that forces re-discovery is a bug.
+2. **Minimum spawns.** One implementer agent per task, and only when the change is large
+   or genuinely parallel. Small/medium edits, i18n additions, test updates, and gate runs
+   are done inline by the lead — no spawn.
+3. **`test-developer` only for new harnesses or large suites.** Routine specs are written
+   inline by whoever holds the context (lead or the same implementer, in the same spawn).
+4. **`code-reviewer`: one pass, diff-scoped.** Point it at `git diff dev...HEAD` at the
+   end; still blocking, but never multiple review rounds for style nits the gates catch.
+5. **`ui-designer` only for a genuinely new visual surface**, not for reusing existing
+   widgets/specs.
+6. **No polling, no repetition.** Background agents notify on completion; don't re-ask,
+   re-list, or re-read what is already in context.
+
 ### Roster
 
 | Agent | Owns |
@@ -27,6 +46,9 @@ config edit, a copy tweak). When in doubt, delegate.
 
 - **Feature** → (`ui-designer` first if it has a visual surface) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer`
 - **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test) → `code-reviewer`
+
+Both pipelines are subject to **Token economy** above: stages collapse into the lead or
+into a single implementer whenever the context is already in hand.
 
 Match each agent's tool capabilities to the work: read-only agents for research/review,
 full-capability agents for implementation. Run agents in parallel when their files don't overlap.
@@ -118,10 +140,22 @@ blocking.
    are split into sub-components in the same feature folder. No nested classes, no deep nesting (> 2 levels).
 
 5. **No magic values** — hex codes, pixel numbers, and string keys are forbidden outside constants files:
+   - Named literals (`''`, `0`, `,`, shared regexes, locale codes) → `@core/constants`
+   - UI counts, animation ranges, gradient stops → `@presentation/base/constants`
    - API endpoints / limits → `src/infrastructure/constants/api.ts`
    - Storage keys → `src/infrastructure/constants/storage.ts`
    - Spacing / radii / font sizes / icon sizes → `src/presentation/base/theme/spacing.ts`
    - Colours → `src/presentation/base/theme/colors.ts` / `themes.ts`
+
+   **`@core/constants` is the default for structural literals.** New code writes
+   `CharConstants.empty` instead of `''` and `ValueConstants.zero` instead of a standalone `0`
+   (`useState(CharConstants.empty)`, `items.length === ValueConstants.zero`, `arr[ValueConstants.zero]`).
+   A regex used by more than one file goes in `RegexConstants` rather than being re-declared.
+   **Raw number sequences (`[0, 500, 300]`, gradient stops, animation ranges) are forbidden in
+   components** — name the whole array in a constants file, never half-substitute it. UI values go
+   in `@presentation/base/constants`, not core; values needed by infrastructure go in
+   `src/infrastructure/constants/` (presentation is unreachable from there).
+   Full rules and the type-widening rationale: `architecture.md` §5.
 
 6. **StyleSheet.create() for static styles** — inline style objects are forbidden for static values.
    Dynamic portions may be inline; combine with `[styles.base, { color: dynamic }]`.
@@ -150,6 +184,14 @@ blocking.
     only one page lives in that page's folder. Types extracted from a page file go to that page's `model/`;
     in `base/*` they become a sibling file. New routes are always `app/<segment>/index.tsx` — a flat
     `app/<segment>.tsx` will NOT register.
+
+14b. **Feature folders below presentation** — `domain/` / `application/` / `infrastructure/` feature
+    folders are grouped **by capability**, not left flat and not grouped by kind: `recipes/create/`,
+    `recipes/list/`, `recipes/taxonomy/` — never `recipes/use-cases/` or `recipes/stores/`. Each
+    capability folder holds its use case + state + store + deps + DTOs and its own `__tests__/`.
+    What the aggregate root owns (the entity, its repository interface, the main mapper) stays at
+    the feature root. Capability names match across layers. No per-capability barrel — imports stay
+    explicit deep paths. Split a feature folder once it passes ~a dozen files. See `architecture.md` §13a.
 
 15. **Imports** — always the `@layer/...` alias (`@presentation/...`, `@domain/...`, …). Relative `./`
     imports are allowed only inside barrel `index.ts` files. Layer line: presentation → application/domain/core,

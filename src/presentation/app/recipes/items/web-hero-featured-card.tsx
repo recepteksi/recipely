@@ -14,6 +14,8 @@ import {
   HERO_OVERLAY_FADE,
 } from '@presentation/app/recipes/model/web-hero-constants';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
+import { HeroGradientConstants } from '@presentation/base/constants';
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummary;
@@ -42,9 +44,9 @@ export const WebHeroFeaturedCard = ({
       />
       <LinearGradient
         colors={[HERO_OVERLAY_DEEP, HERO_OVERLAY_MID, HERO_OVERLAY_FADE, HERO_OVERLAY_FADE]}
-        locations={[0, 0.45, 0.8, 1]}
-        start={{ x: 0.15, y: 1 }}
-        end={{ x: 0.85, y: 0 }}
+        locations={HeroGradientConstants.locations}
+        start={HeroGradientConstants.start}
+        end={HeroGradientConstants.end}
         style={styles.gradient}
       />
       {/* Full-bleed open overlay rendered BEFORE content so it sits below it
@@ -109,26 +111,26 @@ const styles = StyleSheet.create({
   },
   image: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
+    bottom: ValueConstants.zero,
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
   gradient: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
+    bottom: ValueConstants.zero,
   },
   content: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     padding: spacing.xxxl,
     gap: spacing.md,
   },
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: fontSizes.hero * 1.04,
     letterSpacing: -1,
-    textShadowOffset: { width: 0, height: 2 },
+    textShadowOffset: { width: ValueConstants.zero, height: 2 },
     textShadowRadius: 8,
   },
   metaRow: {

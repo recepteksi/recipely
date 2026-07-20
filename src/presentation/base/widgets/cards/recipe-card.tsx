@@ -12,6 +12,8 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
+import { ValueConstants } from '@core/constants';
+import { PresentationValueConstants } from '@presentation/base/constants';
 
 export interface RecipeCardProps {
   name: string;
@@ -32,7 +34,7 @@ export interface RecipeCardProps {
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags = [],
-  likeCount = 0, likedByMe = false,
+  likeCount = ValueConstants.zero, likedByMe = false,
   onPress, onLike, hoverEffect = false,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -113,8 +115,10 @@ export const RecipeCard = ({
         <ThemedText variant="subtitle" numberOfLines={1}>{name}</ThemedText>
         <View style={styles.bottomRow}>
           <View style={styles.tagsRow}>
-            {tags.length > 0
-              ? tags.slice(0, 2).map((tag) => (
+            {tags.length > ValueConstants.zero
+              ? tags
+                  .slice(ValueConstants.zero, PresentationValueConstants.recipeCardTagLimit)
+                  .map((tag) => (
                   <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
                     <ThemedText variant="caption" style={{ color: colors.chipText }}>{tag}</ThemedText>
                   </View>
@@ -152,7 +156,7 @@ export const RecipeCard = ({
                     size={16}
                     color={likedByMe ? colors.likeActive : colors.textMuted}
                   />
-                  {likeCount > 0 ? (
+                  {likeCount > ValueConstants.zero ? (
                     <ThemedText variant="caption" muted style={styles.likeCount}>
                       {likeCount}
                     </ThemedText>

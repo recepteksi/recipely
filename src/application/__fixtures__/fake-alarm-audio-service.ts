@@ -1,4 +1,5 @@
 import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Recording test double for `IAlarmAudioService`. It plays no audio but tracks
@@ -7,8 +8,8 @@ import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
  * audio subsystem.
  */
 export class FakeAlarmAudioService implements IAlarmAudioService {
-  startCount = 0;
-  stopCount = 0;
+  startCount = ValueConstants.zero;
+  stopCount = ValueConstants.zero;
   isPlaying = false;
 
   start(): Promise<void> {

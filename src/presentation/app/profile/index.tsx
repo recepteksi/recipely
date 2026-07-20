@@ -5,10 +5,13 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, sizes } from '@presentation/base/theme';
 import { useProfile } from '@presentation/app/profile/hooks/use-profile';
+import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
+import { t } from '@presentation/i18n';
 import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity';
 import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -20,7 +23,7 @@ export const ProfileScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={{
-          paddingTop: isWebShell ? 0 : insets.top + spacing.sm,
+          paddingTop: isWebShell ? ValueConstants.zero : insets.top + spacing.sm,
           // Mobile: the root TabBar (hosted in _layout) sits below the page,
           // so only breathing room is needed; web keeps its former whitespace.
           paddingBottom: isWebShell ? sizes.tabBarHeight + spacing.xxl : spacing.xxl,
@@ -47,6 +50,16 @@ export const ProfileScreen = (): React.JSX.Element => {
           </View>
         </ResponsiveContainer>
       </ScrollView>
+
+      <FeedbackDialog
+        severity="danger"
+        visible={vm.uploadError !== null}
+        title={t().errors.genericTitle}
+        message={vm.uploadError ?? CharConstants.empty}
+        primaryLabel={t().common.ok}
+        onPrimary={vm.onDismissUploadError}
+        onClose={vm.onDismissUploadError}
+      />
     </View>
   );
 };

@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -17,12 +17,13 @@ import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-hea
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
-import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, sizes } from '@presentation/base/theme';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeListBodyProps {
   vm: UseRecipeListResult;
@@ -88,7 +89,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           onChangeSort={vm.onChangeSort}
           onOpenFilter={vm.onOpenFilter}
           activeFilterCount={vm.activeFilterCount}
-          activeDifficulty={vm.filters.difficulties[0] ?? null}
+          activeDifficulty={vm.filters.difficulties[ValueConstants.zero] ?? null}
           onDifficultyChange={vm.onDifficultyChange}
           gridColumns={gridColumns}
           onOpenRecipe={vm.onOpenRecipe}
@@ -101,7 +102,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     body = <LoadingSkeleton />;
   } else if (isSearching) {
     body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={vm.onOpenRecipe} />;
-  } else if (filteredRecipes.length === 0) {
+  } else if (filteredRecipes.length === ValueConstants.zero) {
     body = (
       // A plain View accepts no pull gesture, and an empty list is exactly when
       // a user reaches for one — the ScrollView (with flexGrow content) gives
@@ -122,10 +123,10 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       >
         <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
-          {vm.activeFilterCount > 0 ? t().recipes.noResults : t().recipes.empty}
+          {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
         <View style={styles.retryButton}>
-          {vm.activeFilterCount > 0 ? (
+          {vm.activeFilterCount > ValueConstants.zero ? (
             <PrimaryButton label={t().recipes.clearFilters} onPress={vm.onResetFilters} />
           ) : (
             <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
@@ -160,13 +161,20 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         refreshControl={
           // `progressViewOffset` drops the spinner below the collapsing header
           // band, which is absolutely positioned and opaque over the list — the
-          // spinner would otherwise render behind it and be invisible.
+          // spinner would otherwise render behind it and be invisible. iOS
+          // applies the value as a raw frame shift, so the full band height is
+          // right; Android's SwipeRefreshLayout rests the circle lower (see
+          // homeRefreshOffsetAndroid) and needs the smaller value to tuck the
+          // spinner under the band instead of floating it over the AI banner.
           // `tintColor` is iOS-only and `colors` is Android-only; both are
           // needed for the spinner to follow the theme on each platform.
           <RefreshControl
             refreshing={vm.isPullRefreshing}
             onRefresh={vm.onRefresh}
-            progressViewOffset={sizes.homeHeaderMax}
+            progressViewOffset={Platform.select({
+              android: sizes.homeRefreshOffsetAndroid,
+              default: sizes.homeHeaderMax,
+            })}
             tintColor={colors.textMuted}
             colors={[colors.primary]}
           />
@@ -176,7 +184,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   }
 
   const isMobileLoadedFeed =
-    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > 0;
+    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > ValueConstants.zero;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -244,7 +252,7 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   separator: {
     height: spacing.md,

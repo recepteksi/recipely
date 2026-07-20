@@ -69,9 +69,10 @@ const WebShellChrome = (): React.JSX.Element | null => {
 
 /**
  * The one and only mobile TabBar, hosted below the Stack so screen
- * transitions animate the content area while the bar itself never moves.
- * Visibility and the active tab are pathname-driven; the TabBar widget
- * additionally hides itself on the web-shell breakpoint.
+ * transitions animate the content area above it. Visibility and the active
+ * tab are pathname-driven: on tab-less routes (detail pages, create flows,
+ * auth screens, …) the bar does not render at all — no collapse animation.
+ * The TabBar widget additionally hides itself on the web-shell breakpoint.
  */
 const RootTabBar = (): React.JSX.Element | null => {
   const state = useTabBarState();

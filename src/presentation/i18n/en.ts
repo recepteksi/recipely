@@ -6,6 +6,7 @@ export const en = {
     empty: 'Nothing here yet.',
     search: 'Search',
     cancel: 'Cancel',
+    ok: 'OK',
     of: 'of',
     clear: 'Clear',
     close: 'Close',
@@ -166,6 +167,21 @@ export const en = {
       title: "Let's start over",
       body: 'We have no pending sign-up for this email anymore. Enter your details again.',
       short: 'Sign-up expired — start over',
+    },
+    invalidMediaType: {
+      title: "We can't use that file",
+      body: 'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) can be uploaded. Pick a different file.',
+      short: 'Only images (jpeg, png, gif, webp) and videos (mp4, webm, mov) can be uploaded',
+    },
+    invalidImageType: {
+      title: "We can't use that image",
+      body: 'Only images (jpeg, png, gif, webp) can be uploaded. Pick a different file.',
+      short: 'Only images (jpeg, png, gif, webp) can be uploaded',
+    },
+    fileTooLarge: {
+      title: 'That file is too big',
+      body: 'The file you picked is over the upload limit. Choose a smaller file and try again.',
+      short: 'The file is too large — choose a smaller one',
     },
     accountDeleted: {
       title: 'This account was deleted',
@@ -477,6 +493,13 @@ export const en = {
     selectCategory: 'Select category',
     pickCuisineTitle: 'Choose a cuisine',
     pickCategoryTitle: 'Choose a category',
+    successTitle: 'Recipe saved',
+    successPublished: 'Your recipe is now published and visible on My Recipes.',
+    successUpdated: 'Your changes have been saved.',
+    viewRecipe: 'View recipe',
+    successDone: 'Done',
+    nameRequired: 'Add a recipe name.',
+    ingredientsRequired: 'Add at least one ingredient.',
   },
   cuisineNames: {
     TURKISH: 'Turkish',
@@ -530,7 +553,6 @@ export const en = {
     setCover: 'Set cover',
     remove: 'Remove photo',
     more: 'Add more',
-    takePhoto: 'Take a photo',
   },
   timer: {
     done: 'Done',
@@ -691,6 +713,7 @@ export const en = {
     modOk: 'approved your recipe',
     modPending: 'review pending for',
     followed: 'followed you',
+    markOneHint: 'Marks this notification as read',
   },
   profile: {
     editProfile: 'Edit profile',

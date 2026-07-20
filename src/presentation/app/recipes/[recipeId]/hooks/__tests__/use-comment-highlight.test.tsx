@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import type { ScrollView } from 'react-native';
 import { Comment } from '@domain/comments/comment';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { spacing } from '@presentation/base/theme';

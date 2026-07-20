@@ -31,16 +31,16 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Comment, type CommentProps } from '@domain/comments/comment';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
-import { defaultRecipeState } from '@application/comments/default-recipe-comments-state';
-import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
+import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
+import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { CommentsStore } from '@application/comments/comments-store';
-import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
-import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
-import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
+import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
+import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
+import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
-import type { RecipeDetailStoreState } from '@application/recipes/recipe-detail-store-state';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';
@@ -149,6 +149,7 @@ const makeStores = (commentsStore: CommentsStore): Stores => {
     load: jest.fn(),
     replace: jest.fn(),
     remove: jest.fn(),
+    clear: jest.fn(),
   }));
 
   const authStore = create<AuthStoreState>(
@@ -253,6 +254,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
       addComment: jest.fn().mockResolvedValue(false),
       deleteComment: jest.fn(),
       toggleLike: jest.fn(),
+      clear: jest.fn(),
     })) as unknown as CommentsStore;
 
     const { latest } = driveHook(commentsStore);

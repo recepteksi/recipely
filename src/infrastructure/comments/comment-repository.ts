@@ -4,9 +4,10 @@ import type { Failure } from '@core/failure';
 import { Comment } from '@domain/comments/comment';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import type { CommentPage } from '@domain/comments/comment-page';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/comment-dto';
 import type { CommentPageDto } from '@infrastructure/comments/comment-page-dto';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Implements `ICommentRepository` against the Recipely backend. Supports
@@ -95,7 +96,7 @@ function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
     createdAt: new Date(dto.createdAt),
     authorDisplayName: dto.authorDisplayName,
     authorPhotoUrl: dto.authorPhotoUrl,
-    likeCount: dto.likeCount ?? 0,
+    likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
   });
 }

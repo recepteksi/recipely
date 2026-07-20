@@ -8,6 +8,7 @@ export const tr: Translations = {
     empty: 'Henüz bir şey yok.',
     search: 'Ara',
     cancel: 'İptal',
+    ok: 'Tamam',
     of: '/',
     clear: 'Temizle',
     close: 'Kapat',
@@ -165,6 +166,21 @@ export const tr: Translations = {
       title: 'Baştan başlayalım',
       body: 'Bu e-posta için bekleyen bir kayıt kalmadı. Bilgilerini yeniden gir.',
       short: 'Kaydın süresi doldu — baştan başla',
+    },
+    invalidMediaType: {
+      title: 'Bu dosyayı kullanamıyoruz',
+      body: 'Yalnızca görsel (jpeg, png, gif, webp) ve video (mp4, webm, mov) yüklenebilir. Başka bir dosya seç.',
+      short: 'Yalnızca görsel (jpeg, png, gif, webp) ve video (mp4, webm, mov) yüklenebilir',
+    },
+    invalidImageType: {
+      title: 'Bu görseli kullanamıyoruz',
+      body: 'Yalnızca görsel (jpeg, png, gif, webp) yüklenebilir. Başka bir dosya seç.',
+      short: 'Yalnızca görsel (jpeg, png, gif, webp) yüklenebilir',
+    },
+    fileTooLarge: {
+      title: 'Bu dosya çok büyük',
+      body: 'Seçtiğin dosya yükleme sınırının üzerinde. Daha küçük bir dosya seçip tekrar dene.',
+      short: 'Dosya çok büyük — daha küçüğünü seç',
     },
     accountDeleted: {
       title: 'Bu hesap silinmiş',
@@ -476,6 +492,13 @@ export const tr: Translations = {
     selectCategory: 'Kategori seç',
     pickCuisineTitle: 'Bir mutfak seç',
     pickCategoryTitle: 'Bir kategori seç',
+    successTitle: 'Tarif kaydedildi',
+    successPublished: 'Tarifin yayınlandı, artık Tariflerim\'de görünüyor.',
+    successUpdated: 'Değişikliklerin kaydedildi.',
+    viewRecipe: 'Tarifi gör',
+    successDone: 'Tamam',
+    nameRequired: 'Tarife bir ad ver.',
+    ingredientsRequired: 'En az bir malzeme ekle.',
   },
   cuisineNames: {
     TURKISH: 'Türk',
@@ -529,7 +552,6 @@ export const tr: Translations = {
     setCover: 'Kapak yap',
     remove: 'Fotoğrafı kaldır',
     more: 'Ekle',
-    takePhoto: 'Fotoğraf çek',
   },
   timer: {
     done: 'Bitti',
@@ -690,6 +712,7 @@ export const tr: Translations = {
     modOk: 'tarifinizi onayladı:',
     modPending: 'inceleme bekliyor:',
     followed: 'sizi takip etti',
+    markOneHint: 'Bu bildirimi okundu olarak işaretler',
   },
   profile: {
     editProfile: 'Profili düzenle',

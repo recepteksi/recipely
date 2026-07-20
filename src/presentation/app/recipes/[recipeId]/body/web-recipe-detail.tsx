@@ -14,8 +14,9 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
-import type { MediaItem } from '@domain/recipes/media-item';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { MediaItem } from '@domain/recipes/media/media-item';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailProps {
   recipe: Recipe;
@@ -66,7 +67,7 @@ const stickyColumn = stickyBase as ViewStyle;
 export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { width } = useLayout();
-  const [activeImage, setActiveImage] = useState(0);
+  const [activeImage, setActiveImage] = useState(ValueConstants.zero);
   const { recipe, recipeId, media } = props;
   const twoColumn = width >= sizes.webDetailTwoColMin;
   const activeUrl = media[activeImage]?.url ?? recipe.image;
@@ -204,12 +205,12 @@ const styles = StyleSheet.create({
   },
   mainColumn: {
     flex: 1.7,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     gap: spacing.xl,
   },
   sideColumn: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   hero: {
     aspectRatio: HERO_ASPECT,

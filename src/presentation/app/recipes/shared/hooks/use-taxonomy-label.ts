@@ -2,19 +2,20 @@ import { useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { useLocale } from '@presentation/i18n/use-locale';
-import type { TaxonomyItem } from '@domain/recipes/taxonomy-item';
+import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_EMOJI } from '@presentation/app/create-recipe/model/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/app/create-recipe/model/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';
 import type { TaxonomyLabel } from '@presentation/app/recipes/shared/model/taxonomy-label';
 import type { UseTaxonomyLabelResult } from '@presentation/app/recipes/shared/model/use-taxonomy-label-result';
+import { ValueConstants } from '@core/constants';
 
 const toMap = (items: readonly TaxonomyItem[]): Map<string, TaxonomyItem> =>
   new Map(items.map((item) => [item.key, item]));
 
 /** First non-empty value, treating `undefined`/`''` as a miss. */
 const firstNonEmpty = (...values: (string | undefined)[]): string | undefined =>
-  values.find((v) => v !== undefined && v.length > 0);
+  values.find((v) => v !== undefined && v.length > ValueConstants.zero);
 
 /**
  * Resolves a recipe's cuisine/category `key` to a localized name + emoji,

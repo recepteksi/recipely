@@ -4,6 +4,7 @@ import { MobileFilterSheet } from '@presentation/app/recipes/sheets/mobile-filte
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { countActiveFilters } from '@presentation/app/recipes/model/filter-mutations';
+import { ValueConstants } from '@core/constants';
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const vm = useRecipeList();
@@ -33,7 +34,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         visible={vm.isWebShell && vm.sheetOpen === 'filter'}
         pending={vm.pendingFilters}
         resultCount={vm.filteredRecipes.length}
-        hasActiveFilters={countActiveFilters(vm.pendingFilters) > 0}
+        hasActiveFilters={countActiveFilters(vm.pendingFilters) > ValueConstants.zero}
         onToggleCuisine={vm.onTogglePendingCuisine}
         onToggleCategory={vm.onTogglePendingCategory}
         onToggleDifficulty={vm.onTogglePendingDifficulty}

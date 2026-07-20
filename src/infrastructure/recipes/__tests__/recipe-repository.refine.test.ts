@@ -3,12 +3,13 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 const validDto: RecipeDto = {
@@ -65,8 +66,33 @@ const makeHttp = (
   return { http: stub, calls };
 };
 
+// The wire response flattens the AI commentary on top of the recipe DTO fields.
+const refinedDto: RefineRecipeResponseDto = {
+  ...validDto,
+  summary: 'Doubled the garlic and added chili flakes.',
+  suggestion: 'A splash of pasta water binds the sauce.',
+};
+
 describe('RecipeRepository.refineRecipe', () => {
-  it('returns ok(Recipe) mapped from the RecipeDto when the call succeeds', async () => {
+  it('returns ok(RefinedRecipe) with the mapped Recipe and the flattened summary/suggestion', async () => {
+    const { http } = makeHttp(ok(refinedDto));
+    const repo = new RecipeRepository(http);
+
+    const r = await repo.refineRecipe(snapshot, 'add more garlic');
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.recipe).toBeInstanceOf(Recipe);
+      expect(r.value.recipe.name).toBe('Refined Spicy Pasta');
+      expect(r.value.recipe.cuisine).toBe(CuisineKey.Italian);
+      expect(r.value.summary).toBe('Doubled the garlic and added chili flakes.');
+      expect(r.value.suggestion).toBe('A splash of pasta water binds the sauce.');
+    }
+  });
+
+  // An older backend answers with the bare RecipeDto — no summary/suggestion
+  // keys at all. The recipe must still map; the commentary is simply absent.
+  it('maps a response without summary/suggestion (older backend) to undefined fields', async () => {
     const { http } = makeHttp(ok(validDto));
     const repo = new RecipeRepository(http);
 
@@ -74,9 +100,10 @@ describe('RecipeRepository.refineRecipe', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value).toBeInstanceOf(Recipe);
-      expect(r.value.name).toBe('Refined Spicy Pasta');
-      expect(r.value.cuisine).toBe(CuisineKey.Italian);
+      expect(r.value.recipe).toBeInstanceOf(Recipe);
+      expect(r.value.recipe.name).toBe('Refined Spicy Pasta');
+      expect(r.value.summary).toBeUndefined();
+      expect(r.value.suggestion).toBeUndefined();
     }
   });
 

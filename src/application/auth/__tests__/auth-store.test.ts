@@ -1,20 +1,21 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { configureAuthStore } from '@application/auth/configure-auth-store';
-import { GetSessionUseCase } from '@application/auth/get-session-use-case';
-import { SignInUseCase } from '@application/auth/sign-in-use-case';
-import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
-import { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
-import { ResendRegistrationCodeUseCase } from '@application/auth/resend-registration-code-use-case';
-import { SignOutUseCase } from '@application/auth/sign-out-use-case';
-import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
-import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
-import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
-import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
-import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
-import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
-import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
+import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
+import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
+import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
+import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
+import { ResendRegistrationCodeUseCase } from '@application/auth/registration/resend-registration-code-use-case';
+import { SignOutUseCase } from '@application/auth/session/sign-out-use-case';
+import { SignInWithGoogleUseCase } from '@application/auth/sign-in/sign-in-with-google-use-case';
+import { SignInWithAppleUseCase } from '@application/auth/sign-in/sign-in-with-apple-use-case';
+import { RequestPasswordResetUseCase } from '@application/auth/password-reset/request-password-reset-use-case';
+import { ResetPasswordUseCase } from '@application/auth/password-reset/reset-password-use-case';
+import { UploadAvatarUseCase } from '@application/auth/profile/upload-avatar-use-case';
+import { UpdateProfileUseCase } from '@application/auth/profile/update-profile-use-case';
+import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { configureSavedRecipesStore } from '@application/recipes/configure-saved-recipes-store';
+import { configureSavedRecipesStore } from '@application/recipes/saved/configure-saved-recipes-store';
+import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSession } from '@domain/auth/auth-session';
@@ -41,8 +42,11 @@ const fakeLoadFavorites: LoadFavoritesUseCase = {
   execute: () => Promise.resolve(ok(new Set<string>())),
 } as unknown as LoadFavoritesUseCase;
 
-const makeStore = (repo: FakeAuthRepository) => {
-  const savedRecipesStore = configureSavedRecipesStore();
+const makeStore = (
+  repo: FakeAuthRepository,
+  overrides: { savedRecipesStore?: SavedRecipesStore; clearSessionCaches?: () => void } = {},
+) => {
+  const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore();
   return configureAuthStore({
     signIn: new SignInUseCase(repo),
     requestRegistration: new RequestRegistrationUseCase(repo),
@@ -59,6 +63,9 @@ const makeStore = (repo: FakeAuthRepository) => {
     uploadAvatar: new UploadAvatarUseCase(repo),
     updateProfile: new UpdateProfileUseCase(repo),
     deleteAccount: new DeleteAccountUseCase(repo),
+    clearSessionCaches:
+      overrides.clearSessionCaches ??
+      (() => savedRecipesStore.getState().setSavedIds(new Set<string>())),
   });
 };
 
@@ -178,6 +185,32 @@ describe('auth-store', () => {
     await store.getState().signOut();
 
     expect(store.getState().state.status).toBe('unauthenticated');
+  });
+
+  // Regression: session caches (comments, likes, details, …) survived an
+  // account switch, so a deleted account's comments stayed visible until a
+  // manual refresh.
+  it('signOut clears the session caches on success', async () => {
+    const clearSessionCaches = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ signOutResult: ok(undefined) }), {
+      clearSessionCaches,
+    });
+
+    await store.getState().signOut();
+
+    expect(clearSessionCaches).toHaveBeenCalledTimes(1);
+  });
+
+  it('signOut keeps the session caches when the sign-out fails', async () => {
+    const clearSessionCaches = jest.fn();
+    const store = makeStore(
+      new FakeAuthRepository({ signOutResult: fail(new NetworkFailure('offline')) }),
+      { clearSessionCaches },
+    );
+
+    await store.getState().signOut();
+
+    expect(clearSessionCaches).not.toHaveBeenCalled();
   });
 
   it('hydrate returns authenticated when a valid session exists', async () => {
@@ -327,23 +360,7 @@ describe('auth-store', () => {
       });
       const signOutSpy = jest.spyOn(repo, 'signOut');
       const savedRecipesStore = configureSavedRecipesStore();
-      const store = configureAuthStore({
-        signIn: new SignInUseCase(repo),
-        requestRegistration: new RequestRegistrationUseCase(repo),
-        verifyRegistration: new VerifyRegistrationUseCase(repo),
-        resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
-        signOut: new SignOutUseCase(repo),
-        getSession: new GetSessionUseCase(repo),
-        loadFavorites: fakeLoadFavorites,
-        savedRecipesStore,
-        signInWithGoogle: new SignInWithGoogleUseCase(repo),
-        signInWithApple: new SignInWithAppleUseCase(repo),
-        requestPasswordReset: new RequestPasswordResetUseCase(repo),
-        resetPassword: new ResetPasswordUseCase(repo),
-        uploadAvatar: new UploadAvatarUseCase(repo),
-        updateProfile: new UpdateProfileUseCase(repo),
-        deleteAccount: new DeleteAccountUseCase(repo),
-      });
+      const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
       savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));
@@ -427,23 +444,7 @@ describe('auth-store', () => {
         deleteAccountResult: ok(undefined),
       });
       const savedRecipesStore = configureSavedRecipesStore();
-      const store = configureAuthStore({
-        signIn: new SignInUseCase(repo),
-        requestRegistration: new RequestRegistrationUseCase(repo),
-        verifyRegistration: new VerifyRegistrationUseCase(repo),
-        resendRegistrationCode: new ResendRegistrationCodeUseCase(repo),
-        signOut: new SignOutUseCase(repo),
-        getSession: new GetSessionUseCase(repo),
-        loadFavorites: fakeLoadFavorites,
-        savedRecipesStore,
-        signInWithGoogle: new SignInWithGoogleUseCase(repo),
-        signInWithApple: new SignInWithAppleUseCase(repo),
-        requestPasswordReset: new RequestPasswordResetUseCase(repo),
-        resetPassword: new ResetPasswordUseCase(repo),
-        uploadAvatar: new UploadAvatarUseCase(repo),
-        updateProfile: new UpdateProfileUseCase(repo),
-        deleteAccount: new DeleteAccountUseCase(repo),
-      });
+      const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
       savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));

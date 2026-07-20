@@ -1,6 +1,7 @@
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init.web';
+import { ValueConstants } from '@core/constants';
 
 // Web push needs a VAPID key (Firebase Console → Cloud Messaging → Web Push
 // certificates) and a `firebase-messaging-sw.js` service worker served from the
@@ -33,7 +34,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     if (permission !== 'granted') return;
 
     const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });
-    if (token.length === 0) return;
+    if (token.length === ValueConstants.zero) return;
 
     const result = await register(token, 'web');
     if (!result.ok) {

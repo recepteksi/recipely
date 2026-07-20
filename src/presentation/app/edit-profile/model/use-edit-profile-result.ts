@@ -13,4 +13,7 @@ export interface UseEditProfileResult {
   isSaving: boolean;
   onSave: () => void;
   onBack: () => void;
+  /** Localized message for the save/avatar failure dialog; null when there is none. */
+  errorDialog: string | null;
+  onCloseErrorDialog: () => void;
 }

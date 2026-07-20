@@ -34,20 +34,20 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
-import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
-import { isRecipeListRefreshing } from '@application/recipes/is-recipe-list-refreshing';
-import type { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
-import type { RecipeListStore } from '@application/recipes/recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
+import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved-recipes-store-state';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import { NetworkFailure } from '@core/failure';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 jest.mock('expo-router', () => ({
@@ -143,7 +143,10 @@ interface RenderSnapshot {
   isStoreRefreshing: boolean;
 }
 
-describe('useRecipeList — pull-to-refresh spinner', () => {
+// The suite also covers load-parameter regressions: the initial load and the
+// filter reset must send the same `sort` as every other refetch path, or the
+// backend's fallback ordering makes the list reshuffle on the first focus refetch.
+describe('useRecipeList — pull-to-refresh spinner and load parameters', () => {
   let renders: RenderSnapshot[] = [];
   let vm: ReturnType<typeof useRecipeList>;
 
@@ -325,6 +328,50 @@ describe('useRecipeList — pull-to-refresh spinner', () => {
     });
 
     expect(vm.isPullRefreshing).toBe(false);
+  });
+
+  it('sends the advertised default sort on the initial load', async () => {
+    // Regression: a bare `load()` on mount fell back to the backend's default
+    // ordering (createdAt desc) while the header showed "popular" — so the
+    // focus refetch (which does send sort=popular) visibly reshuffled the list
+    // the first time the user came back from a recipe detail.
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    expect(execute).toHaveBeenCalledWith(expect.objectContaining({ sort: 'popular' }));
+  });
+
+  it('keeps the active sort but clears filters when filters are reset', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+    act(() => {
+      vm.onChangeSort('rating');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r3')])));
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r4')])));
+    act(() => {
+      vm.onResetFilters();
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const lastCall = execute.mock.calls.at(-1)?.[0];
+    expect(lastCall).toEqual(expect.objectContaining({ sort: 'rating' }));
+    expect(lastCall).not.toHaveProperty('cuisines');
   });
 
   it('clears isPullRefreshing and leaks no unhandled rejection when the load rejects', async () => {

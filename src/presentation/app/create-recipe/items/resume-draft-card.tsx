@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface ResumeDraftCardProps {
   draftName: string | undefined;
@@ -13,7 +14,7 @@ export interface ResumeDraftCardProps {
 /** "Resume your draft" card shown on the prompt phase when a draft exists. */
 export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const name = draftName !== undefined && draftName.length > 0 ? draftName : t().drafts.untitled;
+  const name = draftName !== undefined && draftName.length > ValueConstants.zero ? draftName : t().drafts.untitled;
 
   return (
     <Pressable

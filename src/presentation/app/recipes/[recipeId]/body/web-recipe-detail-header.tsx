@@ -9,6 +9,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Recipe } from '@domain/recipes/recipe';
+import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: Recipe;
@@ -54,7 +55,7 @@ export const WebRecipeDetailHeader = ({
     <View style={styles.row}>
       <View style={styles.left}>
         <View style={styles.chipRow}>
-          {recipe.cuisine.length > 0 ? (
+          {recipe.cuisine.length > ValueConstants.zero ? (
             <View style={[styles.chip, { backgroundColor: colors.chipBackground }]}>
               <ThemedText variant="caption" style={[styles.chipText, { color: colors.chipText }]}>
                 {cuisineLabel(recipe.cuisine).name}
@@ -85,7 +86,7 @@ export const WebRecipeDetailHeader = ({
               </ThemedText>
             </View>
           ) : null}
-          {recipe.rating > 0 ? (
+          {recipe.rating > ValueConstants.zero ? (
             <View style={styles.statItem}>
               <Ionicons name="star" size={sizes.iconSm} color={colors.starFilled} />
               <ThemedText variant="body" style={[styles.statText, { color: colors.text }]}>
@@ -111,7 +112,7 @@ export const WebRecipeDetailHeader = ({
               {String(likeCount)}
             </ThemedText>
           </Pressable>
-          {recipe.viewCount > 0 ? (
+          {recipe.viewCount > ValueConstants.zero ? (
             <View style={styles.statItem}>
               <Ionicons name="eye-outline" size={sizes.iconMd} color={colors.textMuted} />
               <ThemedText variant="body" style={[styles.statText, { color: colors.textMuted }]}>
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   },
   left: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     gap: spacing.md,
   },
   chipRow: {

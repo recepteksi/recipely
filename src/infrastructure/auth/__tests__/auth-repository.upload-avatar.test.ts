@@ -7,7 +7,7 @@ import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 
 const userDto: RecipelyUserDto = {

@@ -1,12 +1,12 @@
 import { type Container } from '@core/di/container';
 import { TOKENS } from '@core/di/tokens';
-import { HttpClient } from '@infrastructure/network/http-client';
-import type { HttpClientOptions } from '@infrastructure/network/http-client-options';
+import { HttpClient } from '@infrastructure/network/http/http-client';
+import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy-repository';
-import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
+import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
+import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
@@ -19,8 +19,9 @@ import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { NotificationRepository } from '@infrastructure/notifications/notification-repository';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
-import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
-import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
+import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
+import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
 import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
@@ -173,6 +174,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.MarkAllReadUseCase, () => {
     const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
     return new MarkAllReadUseCase(repo);
+  });
+
+  container.register(TOKENS.MarkOneReadUseCase, () => {
+    const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
+    return new MarkOneReadUseCase(repo);
   });
 
   container.register(TOKENS.RegisterDeviceTokenUseCase, () => {

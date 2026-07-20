@@ -17,7 +17,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       // out either way; the routing decision is driven by the store status.
       await deps.signOut.execute();
       set({ state: { status: 'unauthenticated' } });
-      deps.savedRecipesStore.getState().setSavedIds(new Set());
+      deps.clearSessionCaches();
     },
 
     hydrate: async () => {
@@ -101,6 +101,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'unauthenticated' } });
+      deps.clearSessionCaches();
     },
 
     signInWithGoogle: async () => {
@@ -171,7 +172,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return result.failure;
       }
       set({ state: { status: 'unauthenticated' } });
-      deps.savedRecipesStore.getState().setSavedIds(new Set());
+      deps.clearSessionCaches();
       return null;
     },
   }));

@@ -5,6 +5,7 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-upload';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import type { UseProfileResult } from '@presentation/app/profile/model/use-profile-result';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Orchestrates the profile screen: exposes the signed-in user's identity
@@ -14,7 +15,7 @@ import type { UseProfileResult } from '@presentation/app/profile/model/use-profi
  */
 export const useProfile = (): UseProfileResult => {
   const router = useRouter();
-  const { pickAndUpload, isUploading } = useAvatarUpload();
+  const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore, userProfileStore, savedRecipesStore } = useStores();
   const authState = authStore((s) => s.state);
@@ -24,11 +25,11 @@ export const useProfile = (): UseProfileResult => {
 
   const user = authState.status === 'authenticated' ? authState.session.user : null;
   const userId = user?.id;
-  const displayName = user?.displayName ?? '';
-  const email = user?.email.value ?? '';
+  const displayName = user?.displayName ?? CharConstants.empty;
+  const email = user?.email.value ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;
-  const handle = email.split('@')[0];
-  const bio = user?.bio?.trim() ?? '';
+  const handle = email.split('@')[ValueConstants.zero];
+  const bio = user?.bio?.trim() ?? CharConstants.empty;
 
   useEffect(() => {
     if (userId !== undefined && profileState.status === 'idle') {
@@ -72,5 +73,7 @@ export const useProfile = (): UseProfileResult => {
     onPickAvatar: () => void pickAndUpload(),
     onEditProfile: () => router.push('/edit-profile'),
     stats,
+    uploadError,
+    onDismissUploadError,
   };
 };

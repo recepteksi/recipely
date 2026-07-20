@@ -69,4 +69,6 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
 
       return result;
     },
+
+    clear: () => set({ byRecipe: {} }),
   }));

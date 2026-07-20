@@ -3,11 +3,12 @@ import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'rea
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/theme-context';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /** Fixed safe-area metrics so layout-dependent components render deterministically. */
 const SAFE_AREA_METRICS = {
-  frame: { x: 0, y: 0, width: 320, height: 640 },
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+  frame: { x: ValueConstants.zero, y: ValueConstants.zero, width: 320, height: 640 },
+  insets: { top: ValueConstants.zero, left: ValueConstants.zero, right: ValueConstants.zero, bottom: ValueConstants.zero },
 } as const;
 
 /**
@@ -33,9 +34,9 @@ export const textContent = (root: ReactTestInstance): string[] =>
   root
     .findAllByType('Text')
     .map((node: ReactTestInstance) =>
-      node.children.filter((child): child is string => typeof child === 'string').join(''),
+      node.children.filter((child): child is string => typeof child === 'string').join(CharConstants.empty),
     )
-    .filter((text: string) => text.length > 0);
+    .filter((text: string) => text.length > ValueConstants.zero);
 
 /** The single instance whose `accessibilityRole` matches, e.g. a pressable button. */
 export const byRole = (root: ReactTestInstance, role: string): ReactTestInstance =>

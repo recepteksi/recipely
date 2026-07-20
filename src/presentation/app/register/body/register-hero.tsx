@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface RegisterHeroProps {
   isLandscapeShell: boolean;
@@ -33,8 +34,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   heroLandscape: {
-    paddingTop: 0,
-    paddingBottom: 0,
+    paddingTop: ValueConstants.zero,
+    paddingBottom: ValueConstants.zero,
     maxWidth: 460,
   },
   title: {

@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/parse-ingredient';
+import { ValueConstants } from '@core/constants';
 
 export interface IngredientCardProps {
   raw: string;
@@ -19,7 +20,7 @@ export const IngredientCard = ({
 }: IngredientCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { qty, name } = parseIngredient(raw);
-  const display = name.length > 0 ? name : raw;
+  const display = name.length > ValueConstants.zero ? name : raw;
 
   return (
     <Pressable
@@ -48,7 +49,7 @@ export const IngredientCard = ({
         ) : null}
       </View>
 
-      {qty.length > 0 ? (
+      {qty.length > ValueConstants.zero ? (
         <View style={[styles.qtyChip, { backgroundColor: colors.chipBackground }]}>
           <ThemedText
             variant="caption"

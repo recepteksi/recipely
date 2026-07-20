@@ -2,9 +2,10 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeProps {
   id: string;
@@ -45,13 +46,13 @@ export class Recipe extends Entity<RecipeProps> {
   }
 
   static create(props: RecipeProps): Result<Recipe, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
     }
-    if (props.name.trim().length === 0) {
+    if (props.name.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
     }
-    if (props.caloriesPerServing < 0) {
+    if (props.caloriesPerServing < ValueConstants.zero) {
       return fail(new ValidationFailure('Calories must be non-negative', 'caloriesPerServing'));
     }
     if (props.servings < 1) {

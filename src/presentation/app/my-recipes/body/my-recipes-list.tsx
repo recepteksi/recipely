@@ -2,7 +2,6 @@ import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-na
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
-import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { WebRecipeCard } from '@presentation/app/recipes/items/web-recipe-card';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
@@ -11,6 +10,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
 
@@ -25,7 +25,6 @@ export interface MyRecipesListProps {
   onOpenRecipe: (id: string) => void;
   onOpenDraft: (id: string) => void;
   onDeleteDraft: (id: string) => void;
-  onCreate: () => void;
   isRefreshing: boolean;
   onRefresh: () => void;
 }
@@ -49,7 +48,6 @@ export const MyRecipesList = ({
   onOpenRecipe,
   onOpenDraft,
   onDeleteDraft,
-  onCreate,
   isRefreshing,
   onRefresh,
 }: MyRecipesListProps): React.JSX.Element => {
@@ -66,7 +64,7 @@ export const MyRecipesList = ({
   );
 
   if (tab === 'drafts') {
-    if (drafts.length === 0) {
+    if (drafts.length === ValueConstants.zero) {
       return (
         <ScrollView
           style={styles.list}
@@ -101,7 +99,7 @@ export const MyRecipesList = ({
     );
   }
 
-  if (items.length === 0) {
+  if (items.length === ValueConstants.zero) {
     return (
       <ScrollView
         style={styles.list}
@@ -117,11 +115,6 @@ export const MyRecipesList = ({
           <ThemedText variant="body" muted style={styles.emptyText}>
             {tab === 'saved' ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
           </ThemedText>
-          {tab === 'created' ? (
-            <View style={styles.emptyAction}>
-              <PrimaryButton label={t().myRecipes.createNew} onPress={onCreate} />
-            </View>
-          ) : null}
         </View>
       </ScrollView>
     );
@@ -180,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   gridContent: {
-    paddingHorizontal: 0,
+    paddingHorizontal: ValueConstants.zero,
     paddingTop: spacing.md,
     gap: GRID_GAP,
   },
@@ -200,10 +193,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-  },
-  emptyAction: {
-    marginTop: spacing.sm,
-    width: '100%',
-    maxWidth: 240,
   },
 });

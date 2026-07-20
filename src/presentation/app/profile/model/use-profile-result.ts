@@ -10,4 +10,7 @@ export interface UseProfileResult {
   onPickAvatar: () => void;
   onEditProfile: () => void;
   stats: ProfileStatsState;
+  /** Localized message for the avatar upload-failure dialog; null when there is none. */
+  uploadError: string | null;
+  onDismissUploadError: () => void;
 }

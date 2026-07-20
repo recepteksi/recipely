@@ -2,10 +2,12 @@ import { useCallback, useState } from 'react';
 import { ActionSheetIOS, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { showSuccessToast, showToast } from '@presentation/base/feedback/show-toast';
+import { showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import type { AvatarUpload } from '@presentation/app/profile/model/avatar-upload';
 import type { PickSource } from '@presentation/app/profile/model/pick-source';
+import { ValueConstants } from '@core/constants';
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: 'image/jpeg',
@@ -25,7 +27,7 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
 /** Derives a multipart-friendly `fileName`/`mimeType` from a picked asset uri. */
 const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
   const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const safeExt = ext.length > 0 && ext.length <= 4 ? ext : 'jpg';
+  const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
   return {
     fileName: `avatar-${Date.now()}.${safeExt}`,
     mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
@@ -35,14 +37,17 @@ const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
 /**
  * Drives the "change profile photo" flow: source choice (camera vs. library),
  * permission checks, the image picker, and the auth-store `uploadAvatar` call.
- * Surfaces every failure as a toast so the user never gets a silent dead end.
- * On web the camera option is skipped (unreliable there) and the library opens
- * directly. The avatar itself re-renders from the session the store updates.
+ * Surfaces every failure through `uploadError`, which the owning screen shows
+ * as a dialog — a toast can be missed, and the user must never get a silent
+ * dead end. On web the camera option is skipped (unreliable there) and the
+ * library opens directly. The avatar re-renders from the session the store
+ * updates.
  */
 export const useAvatarUpload = (): AvatarUpload => {
   const { authStore } = useStores();
   const uploadAvatar = authStore((s) => s.uploadAvatar);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const launch = useCallback(
     async (source: PickSource): Promise<void> => {
@@ -51,7 +56,7 @@ export const useAvatarUpload = (): AvatarUpload => {
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        showToast({ severity: 'danger', message: t().profile.photoPermissionDenied });
+        setUploadError(t().profile.photoPermissionDenied);
         return;
       }
 
@@ -59,7 +64,7 @@ export const useAvatarUpload = (): AvatarUpload => {
         source === 'camera'
           ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS)
           : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
-      const asset = result.canceled ? undefined : result.assets[0];
+      const asset = result.canceled ? undefined : result.assets[ValueConstants.zero];
       if (asset === undefined) return;
 
       const { fileName, mimeType } = toUploadMeta(asset.uri);
@@ -67,7 +72,9 @@ export const useAvatarUpload = (): AvatarUpload => {
       try {
         const failure = await uploadAvatar(asset.uri, fileName, mimeType);
         if (failure !== null) {
-          showToast({ severity: 'danger', message: t().profile.photoUploadFailed });
+          // Prefer the precise catalogue copy (e.g. "only images … can be
+          // uploaded") over the generic screen fallback; both are localized.
+          setUploadError(failureKeyMessage(failure) ?? t().profile.photoUploadFailed);
           return;
         }
         showSuccessToast(t().profile.photoUploadSuccess);
@@ -98,7 +105,7 @@ export const useAvatarUpload = (): AvatarUpload => {
           cancelButtonIndex: 2,
         },
         (index) => {
-          if (index === 0) void launch('camera');
+          if (index === ValueConstants.zero) void launch('camera');
           else if (index === 1) void launch('library');
         },
       );
@@ -112,5 +119,10 @@ export const useAvatarUpload = (): AvatarUpload => {
     ]);
   }, [isUploading, launch]);
 
-  return { pickAndUpload, isUploading };
+  return {
+    pickAndUpload,
+    isUploading,
+    uploadError,
+    onDismissUploadError: () => setUploadError(null),
+  };
 };

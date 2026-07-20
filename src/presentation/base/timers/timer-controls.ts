@@ -1,5 +1,6 @@
 import { timerStore } from '@application/timers/timer-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
+import { ValueConstants } from '@core/constants';
 
 /** Starts a timer: schedules all alarm notifications and persists the entry. */
 export const startTimer = async (
@@ -8,7 +9,7 @@ export const startTimer = async (
   recipeName: string,
   minutes: number,
 ): Promise<void> => {
-  if (minutes <= 0) return;
+  if (minutes <= ValueConstants.zero) return;
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * 60);
   const endTimeMs = Date.now() + durationSeconds * 1000;
@@ -20,7 +21,7 @@ export const startTimer = async (
     durationSeconds,
     endTimeMs,
     isPaused: false,
-    remainingMsOnPause: 0,
+    remainingMsOnPause: ValueConstants.zero,
     completionNotifIds,
   });
 };

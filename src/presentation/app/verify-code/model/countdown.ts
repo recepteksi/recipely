@@ -1,12 +1,14 @@
+import { ValueConstants } from '@core/constants';
+
 export const SECOND_MS = 1000;
 const SECONDS_PER_MINUTE = 60;
 
 /** Whole seconds until `iso`, floored at 0. Empty/invalid → 0. */
 export const computeRemaining = (iso: string): number => {
-  if (iso.length === 0) return 0;
+  if (iso.length === ValueConstants.zero) return ValueConstants.zero;
   const ms = new Date(iso).getTime();
-  if (Number.isNaN(ms)) return 0;
-  return Math.max(0, Math.round((ms - Date.now()) / SECOND_MS));
+  if (Number.isNaN(ms)) return ValueConstants.zero;
+  return Math.max(ValueConstants.zero, Math.round((ms - Date.now()) / SECOND_MS));
 };
 
 /** Formats a second count as `M:SS`. */

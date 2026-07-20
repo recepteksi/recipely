@@ -8,6 +8,7 @@ import {
 } from '@domain/notifications/timer-notification-keys';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
 import type * as NotificationsType from 'expo-notifications';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
@@ -23,8 +24,8 @@ const checkForCompletedTimers = (): void => {
   for (const entry of Object.values(timers)) {
     if (entry.isPaused) continue;
     if (triggeredAlarms.has(entry.id)) continue;
-    const remaining = Math.max(0, Math.round((entry.endTimeMs - Date.now()) / 1000));
-    if (remaining === 0) {
+    const remaining = Math.max(ValueConstants.zero, Math.round((entry.endTimeMs - Date.now()) / 1000));
+    if (remaining === ValueConstants.zero) {
       triggeredAlarms.add(entry.id);
       alarmStore.getState().trigger(entry.id, entry.recipeName);
     }
@@ -38,7 +39,7 @@ const handleNotificationResponse = (
   const data = response.notification.request.content.data as Record<string, unknown> | undefined;
   if (data?.['type'] !== TIMER_COMPLETE) return;
   const timerId = typeof data['timerId'] === 'string' ? data['timerId'] : 'unknown';
-  const recipeName = typeof data['recipeName'] === 'string' ? data['recipeName'] : '';
+  const recipeName = typeof data['recipeName'] === 'string' ? data['recipeName'] : CharConstants.empty;
 
   if (response.actionIdentifier === DISMISS_ALARM_ACTION) {
     // User tapped "Kapat" on the notification — stop the timer and cancel

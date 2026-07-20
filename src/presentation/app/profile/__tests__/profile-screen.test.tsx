@@ -20,7 +20,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { ProfileScreen } from '@presentation/app/profile';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
-import type { SavedRecipesStoreState } from '@application/recipes/saved-recipes-store-state';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import { AuthSession } from '@domain/auth/auth-session';
 import { User } from '@domain/auth/user';
 import { Email } from '@domain/common/email';
@@ -31,7 +31,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@presentation/app/profile/hooks/use-avatar-upload', () => ({
-  useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false })),
+  useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false, uploadError: null, onDismissUploadError: jest.fn() })),
 }));
 
 jest.mock('@presentation/app/profile/body/profile-settings-sections', () => ({

@@ -1,8 +1,9 @@
 import { createContext, useMemo, useState, type ReactNode } from 'react';
 import type { WebShellStateValue } from '@presentation/base/responsive/web-shell-state-value';
+import { CharConstants } from '@core/constants';
 
 export const WebShellStateContext = createContext<WebShellStateValue>({
-  searchQuery: '',
+  searchQuery: CharConstants.empty,
   setSearchQuery: () => {},
 });
 
@@ -18,7 +19,7 @@ export interface WebShellStateProviderProps {
 export const WebShellStateProvider = ({
   children,
 }: WebShellStateProviderProps): React.JSX.Element => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(CharConstants.empty);
   const value = useMemo<WebShellStateValue>(
     () => ({ searchQuery, setSearchQuery }),
     [searchQuery],

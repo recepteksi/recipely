@@ -22,6 +22,7 @@ import type { NotifKind } from '@presentation/app/notifications/model/notif-kind
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import type { SectionData } from '@presentation/app/notifications/model/section-data';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
+import { ValueConstants } from '@core/constants';
 
 const KNOWN_KINDS = new Set<NotifKind>([
   'comment',
@@ -39,7 +40,7 @@ const resolveKind = (raw: string): NotifKind => {
 
 const daysSince = (createdAt: Date): number => {
   const ms = Date.now() - createdAt.getTime();
-  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+  return Math.max(ValueConstants.zero, Math.floor(ms / (1000 * 60 * 60 * 24)));
 };
 
 const toNotifItem = (n: Notification): NotifItem => ({
@@ -56,14 +57,14 @@ const toNotifItem = (n: Notification): NotifItem => ({
 
 const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
   const visible = filter === 'unread' ? items.filter((n) => !n.read) : items;
-  const today = visible.filter((n) => n.daysAgo === 0);
+  const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
   const yesterday = visible.filter((n) => n.daysAgo === 1);
   const earlier = visible.filter((n) => n.daysAgo > 1);
   const sections: SectionData[] = [];
   const labels = t().notifications;
-  if (today.length > 0) sections.push({ title: labels.today, data: today });
-  if (yesterday.length > 0) sections.push({ title: labels.yesterday, data: yesterday });
-  if (earlier.length > 0) sections.push({ title: labels.earlier, data: earlier });
+  if (today.length > ValueConstants.zero) sections.push({ title: labels.today, data: today });
+  if (yesterday.length > ValueConstants.zero) sections.push({ title: labels.yesterday, data: yesterday });
+  if (earlier.length > ValueConstants.zero) sections.push({ title: labels.earlier, data: earlier });
   return sections;
 };
 
@@ -77,18 +78,15 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const state = notificationsStore((s) => s.state);
   const load = notificationsStore((s) => s.load);
   const markAllRead = notificationsStore((s) => s.markAllRead);
+  const markOneRead = notificationsStore((s) => s.markOneRead);
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  // Opening the screen is itself an acknowledgement: load the latest feed, then
-  // mark everything read so the bell badge clears. Runs once per mount.
+  // Load the latest feed once per mount. Notifications stay unread until the
+  // user taps them individually or presses the explicit "mark all read" button —
+  // opening the screen alone never clears the badge.
   useEffect(() => {
-    void (async () => {
-      await load();
-      if (notificationsStore.getState().unreadCount > 0) {
-        await markAllRead();
-      }
-    })();
+    void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -98,18 +96,23 @@ export const NotificationsScreen = (): React.JSX.Element => {
   }, [state]);
 
   const unreadCount =
-    state.status === 'loaded' ? state.unreadCount : 0;
+    state.status === 'loaded' ? state.unreadCount : ValueConstants.zero;
   const sections = buildSections(items, filter);
 
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
-  const tap = (target: NotificationTarget): void => {
+  const openTarget = (target: NotificationTarget): void => {
     const path = `/recipes/${encodeURIComponent(target.recipeId)}`;
     router.push(
       (target.kind === 'comment'
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
         : path) as Href,
     );
+  };
+
+  const tap = (item: NotifItem): void => {
+    if (!item.read) void markOneRead(item.id);
+    if (item.target !== null) openTarget(item.target);
   };
 
   return (
@@ -127,7 +130,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().notifications.title}
         </ThemedText>
-        {unreadCount > 0 ? (
+        {unreadCount > ValueConstants.zero ? (
           <Pressable
             onPress={() => { void markAllRead(); }}
             style={styles.markReadBtn}

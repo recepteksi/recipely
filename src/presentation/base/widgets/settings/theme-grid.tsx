@@ -7,6 +7,7 @@ import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/themes'
 import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface ThemeGridProps {
   selectedThemeId: ThemeId;
@@ -50,7 +51,7 @@ export const ThemeGrid = ({
             <View>
               <LinearGradient
                 colors={[variant.primaryGradientStart, variant.primaryGradientEnd]}
-                start={{ x: 0, y: 0 }}
+                start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
                 end={{ x: 1, y: 1 }}
                 style={[
                   styles.swatch,

@@ -15,6 +15,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 const MIN_PASSWORD_LENGTH = 8;
@@ -26,13 +27,13 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const isLandscapeShell = isWebShell && orientation === 'landscape';
 
   const { token } = useLocalSearchParams<{ token?: string }>();
-  const tokenValue = typeof token === 'string' ? token.trim() : '';
+  const tokenValue = typeof token === 'string' ? token.trim() : CharConstants.empty;
 
   const { authStore } = useStores();
   const resetPassword = authStore((s) => s.resetPassword);
 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState(CharConstants.empty);
+  const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [focusField, setFocusField] = useState<string | null>(null);
@@ -89,7 +90,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
 
   let cardBody: React.JSX.Element;
 
-  if (tokenValue.length === 0) {
+  if (tokenValue.length === ValueConstants.zero) {
     cardBody = (
       <InvalidLinkView onBack={() => router.replace('/login')} />
     );
@@ -126,7 +127,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: 1, y: 1 }}
             style={styles.splitHero}
           >
@@ -162,7 +163,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
         />
@@ -197,9 +198,9 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
   gradient: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     height: 280,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
@@ -274,9 +275,9 @@ const styles = StyleSheet.create({
   cardSplit: {
     width: '100%',
     maxWidth: AUTH_CARD_MAX_WIDTH,
-    marginHorizontal: 0,
-    marginTop: 0,
-    marginBottom: 0,
+    marginHorizontal: ValueConstants.zero,
+    marginTop: ValueConstants.zero,
+    marginBottom: ValueConstants.zero,
   },
 });
 

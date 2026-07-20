@@ -14,6 +14,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 const VISIBLE_MS = 1400;
 const FADE_MS = 400;
@@ -33,7 +34,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
 
   const dismiss = useCallback((): void => {
     Animated.timing(opacity, {
-      toValue: 0,
+      toValue: ValueConstants.zero,
       duration: FADE_MS,
       easing: Easing.out(Easing.quad),
       useNativeDriver: Platform.OS !== 'web',
@@ -62,7 +63,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={styles.fill}
         >

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface IngredientRowProps {
   value: string;
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: sizes.iconBtn,
     fontSize: fontSizes.body,
-    paddingVertical: 0,
+    paddingVertical: ValueConstants.zero,
   },
   removeBtn: {
     width: sizes.iconBtnSm,

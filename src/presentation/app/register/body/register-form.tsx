@@ -14,6 +14,8 @@ import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/password-rules';
 import { computeStrength } from '@presentation/app/register/model/compute-strength';
+import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -28,10 +30,10 @@ export const RegisterForm = (): React.JSX.Element => {
   const state = authStore((s) => s.state);
   const register = authStore((s) => s.register);
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [name, setName] = useState(CharConstants.empty);
+  const [email, setEmail] = useState(CharConstants.empty);
+  const [password, setPassword] = useState(CharConstants.empty);
+  const [confirm, setConfirm] = useState(CharConstants.empty);
   const [agree, setAgree] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
@@ -41,18 +43,18 @@ export const RegisterForm = (): React.JSX.Element => {
   const confirmRef = useRef<TextInput>(null);
 
   const emailValid = EMAIL_RE.test(email);
-  const passwordsMatch = password.length > 0 && password === confirm;
+  const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
   const strength = useMemo(() => computeStrength(password), [password]);
 
   const canSubmit =
-    name.trim().length > 0 &&
+    name.trim().length > ValueConstants.zero &&
     emailValid &&
     password.length >= MIN_PASSWORD &&
     password === confirm &&
     agree;
 
   const handleRegister = useCallback(async () => {
-    if (name.trim().length === 0) {
+    if (name.trim().length === ValueConstants.zero) {
       setLocalError(t().register.errorName);
       return;
     }
@@ -101,6 +103,7 @@ export const RegisterForm = (): React.JSX.Element => {
         onChangeText={setName}
         autoCapitalize="words"
         returnKeyType="next"
+        maxLength={DISPLAY_NAME_MAX}
         onSubmitEditing={() => emailRef.current?.focus()}
       />
 
@@ -116,7 +119,7 @@ export const RegisterForm = (): React.JSX.Element => {
         onSubmitEditing={() => passwordRef.current?.focus()}
         containerStyle={styles.fieldSpacing}
         rightSlot={
-          email.length > 0 ? (
+          email.length > ValueConstants.zero ? (
             <Ionicons
               name={emailValid ? 'checkmark-circle' : 'close-circle'}
               size={18}
@@ -149,7 +152,7 @@ export const RegisterForm = (): React.JSX.Element => {
         }
       />
 
-      {password.length > 0 ? <PasswordStrengthMeter strength={strength} /> : null}
+      {password.length > ValueConstants.zero ? <PasswordStrengthMeter strength={strength} /> : null}
 
       <AuthTextField
         ref={confirmRef}
@@ -163,7 +166,7 @@ export const RegisterForm = (): React.JSX.Element => {
         onSubmitEditing={() => { void handleRegister(); }}
         containerStyle={styles.fieldSpacing}
         rightSlot={
-          confirm.length > 0 ? (
+          confirm.length > ValueConstants.zero ? (
             <Ionicons
               name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
               size={18}

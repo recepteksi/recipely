@@ -2,7 +2,7 @@ import { NetworkFailure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 
 interface RequestCall {

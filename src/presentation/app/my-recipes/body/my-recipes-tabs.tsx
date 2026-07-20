@@ -3,6 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface MyRecipesTabsProps {
   tabs: readonly { key: Tab; label: string; count: number }[];
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 'auto',
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     height: sizes.iconBtn,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: fontSizes.small,
     flexShrink: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   countPill: {
     minWidth: sizes.iconMd,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink: ValueConstants.zero,
   },
   countText: {
     fontWeight: '700',

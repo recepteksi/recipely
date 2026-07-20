@@ -6,11 +6,10 @@ import type { VariantSemantics } from '@presentation/base/theme/variant-semantic
 import type { Palette } from '@presentation/base/theme/palette';
 import type { DarkArgs } from '@presentation/base/theme/dark-args';
 import type { LightArgs } from '@presentation/base/theme/light-args';
-
-const HEX6 = /^#[0-9a-fA-F]{6}$/;
+import { RegexConstants, ValueConstants } from '@core/constants';
 
 const parseRgb = (hex: string): [number, number, number] => {
-  if (!HEX6.test(hex)) {
+  if (!RegexConstants.hexColor6.test(hex)) {
     throw new Error(`themes.ts mixHex requires #RRGGBB, got: ${hex}`);
   }
   return [
@@ -21,7 +20,7 @@ const parseRgb = (hex: string): [number, number, number] => {
 };
 
 const toHex2 = (n: number): string => {
-  const clamped = Math.max(0, Math.min(255, Math.round(n)));
+  const clamped = Math.max(ValueConstants.zero, Math.min(255, Math.round(n)));
   return clamped.toString(16).padStart(2, '0');
 };
 

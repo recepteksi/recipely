@@ -12,6 +12,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Recipe } from '@domain/recipes/recipe';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeOverviewProps {
   recipe: Recipe;
@@ -41,18 +42,18 @@ export const RecipeOverview = ({
 
   const nutrition = recipe.nutrition;
   const hasNutrition =
-    recipe.caloriesPerServing > 0 ||
-    (nutrition?.protein ?? 0) > 0 ||
-    (nutrition?.carbs ?? 0) > 0 ||
-    (nutrition?.fat ?? 0) > 0 ||
-    (nutrition?.fiber ?? 0) > 0;
+    recipe.caloriesPerServing > ValueConstants.zero ||
+    (nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.fiber ?? ValueConstants.zero) > ValueConstants.zero;
 
   return (
     <>
       <ThemedText variant="title">{recipe.name}</ThemedText>
 
       <View style={styles.captionRow}>
-        {recipe.cuisine.length > 0 ? (
+        {recipe.cuisine.length > ValueConstants.zero ? (
           <View style={styles.captionItem}>
             <Ionicons name="globe-outline" size={sizes.iconCaption} color={colors.textMuted} />
             <ThemedText style={[styles.captionText, { color: colors.textMuted }]}>
@@ -60,7 +61,7 @@ export const RecipeOverview = ({
             </ThemedText>
           </View>
         ) : null}
-        {recipe.rating > 0 ? (
+        {recipe.rating > ValueConstants.zero ? (
           <View style={styles.captionItem}>
             <Ionicons name="star" size={sizes.iconCaption} color={colors.starFilled} />
             <ThemedText style={[styles.captionRating, { color: colors.text }]}>
@@ -86,7 +87,7 @@ export const RecipeOverview = ({
             {String(likeCount)}
           </ThemedText>
         </Pressable>
-        {recipe.viewCount > 0 ? (
+        {recipe.viewCount > ValueConstants.zero ? (
           <View style={styles.statItem}>
             <Ionicons name="eye-outline" size={sizes.iconSm} color={colors.textMuted} />
             <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
@@ -94,7 +95,7 @@ export const RecipeOverview = ({
             </ThemedText>
           </View>
         ) : null}
-        {commentTotal > 0 ? (
+        {commentTotal > ValueConstants.zero ? (
           <View style={styles.statItem}>
             <Ionicons name="chatbubble-outline" size={sizes.iconSm} color={colors.textMuted} />
             <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
@@ -146,7 +147,7 @@ export const RecipeOverview = ({
         </>
       ) : null}
 
-      {recipe.tags.length > 0 ? (
+      {recipe.tags.length > ValueConstants.zero ? (
         <View style={styles.tagsRow}>
           {recipe.tags.map((tag) => (
             <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>

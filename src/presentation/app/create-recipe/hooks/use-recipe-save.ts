@@ -2,12 +2,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
-import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
 import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-recipe/model/build-recipe-input';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/use-recipe-save-args';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Handles publishing a new recipe or updating an existing one, including the
@@ -20,7 +21,6 @@ export const useRecipeSave = ({
   isEditMode,
   activeDraftId,
   setFieldErrors,
-  setMissingMessage,
 }: UseRecipeSaveArgs) => {
   const router = useRouter();
   const { createdRecipesStore, draftsStore } = useStores();
@@ -28,11 +28,17 @@ export const useRecipeSave = ({
   const updateState = createdRecipesStore((s) => s.updateState);
 
   const [saveError, setSaveError] = useState<{ message: string; mode: 'publish' | 'update' } | null>(null);
+  const [saveIssue, setSaveIssue] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<
+    { mode: 'publish'; recipeId: string } | { mode: 'update' } | null
+  >(null);
 
-  // WHY: a `ValidationFailure` carries a per-field breakdown that binds to inputs
-  // (red border + inline message) in addition to a toast; entries with no input
-  // still reach the user via a toast. Non-validation failures get a blocking
-  // dialog with a retry action so a failed save can never go unnoticed.
+  // WHY: every rejected save surfaces as a dialog — a positional banner/toast can
+  // sit off-screen on a long scrolling editor, and a dialog cannot be missed. A
+  // `ValidationFailure` additionally binds its per-field breakdown to inputs
+  // (red border + inline message). The dialog copy comes from the localized
+  // key/code tiers, NEVER from the backend's raw `message` (which may be
+  // unlocalised English). Non-validation failures get the retry dialog instead.
   const surfaceSaveFailure = useCallback(
     (failure: Failure, mode: 'publish' | 'update'): void => {
       if (!(failure instanceof ValidationFailure)) {
@@ -40,43 +46,53 @@ export const useRecipeSave = ({
         setSaveError({ message: failureToastMessage(failure), mode });
         return;
       }
-      showErrorToast(failure);
-      const parsed = mapFieldErrorsToInputs(failure.fieldErrors);
-      setFieldErrors(parsed);
-      if (parsed.unmatched.length > 0) {
-        showDangerToast(parsed.unmatched.join(' '));
-      }
+      setFieldErrors(mapFieldErrorsToInputs(failure.fieldErrors));
+      setSaveIssue(failureKeyMessage(failure) ?? failureToastMessage(failure));
     },
     [setFieldErrors],
   );
 
+  // Clears the previous rejection dialog and every inline field error at the
+  // start of a save attempt so it doesn't linger over a fresh submission.
+  const clearSaveFeedback = (): void => {
+    setSaveIssue(null);
+    setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
+  };
+
   const hasRequiredText = (): boolean => {
-    const cleanIngredients = recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > 0);
-    if (recipe.name.trim().length === 0 || cleanIngredients.length === 0) {
-      setMissingMessage(t().createRecipe.missing);
+    const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
+    const ingredientsEmpty = recipe.ingredients.every((s) => s.trim().length === ValueConstants.zero);
+    if (nameEmpty || ingredientsEmpty) {
+      const fields: CreateRecipeFieldErrors['fields'] = {};
+      if (nameEmpty) fields.name = t().createRecipe.nameRequired;
+      if (ingredientsEmpty) fields.ingredients = t().createRecipe.ingredientsRequired;
+      setFieldErrors({ fields, unmatched: [] });
+      setSaveIssue(t().createRecipe.missing);
       return false;
     }
     return true;
   };
 
   const handlePublish = useCallback(async (): Promise<void> => {
+    clearSaveFeedback();
     if (!hasRequiredText()) return;
     // WHY: the backend create endpoint requires a cover image URL, so a recipe
     // cannot be published without at least one photo.
-    if (recipe.media.filter((m) => m.type === 'image').length === 0) {
-      setMissingMessage(t().createRecipe.noImage);
+    if (recipe.media.filter((m) => m.type === 'image').length === ValueConstants.zero) {
+      setSaveIssue(t().createRecipe.noImage);
       return;
     }
-    setMissingMessage(null);
-    setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
     await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
     const state = createdRecipesStore.getState().createState;
     if (state.status === 'success') {
+      // Capture the new recipe's id before the store state is reset so the
+      // success dialog can deep-link straight to its detail page.
+      const newRecipeId = state.recipe.id;
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
       // Best-effort cleanup of the working draft now that it's published.
       await draftsStore.getState().deleteDraft(activeDraftId);
-      router.replace('/my-recipes');
+      setSaveSuccess({ mode: 'publish', recipeId: newRecipeId });
       return;
     }
     if (state.status === 'error') {
@@ -84,17 +100,17 @@ export const useRecipeSave = ({
       createdRecipesStore.getState().resetCreateState();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, createdRecipesStore, draftsStore, activeDraftId, router, surfaceSaveFailure]);
+  }, [recipe, createdRecipesStore, draftsStore, activeDraftId, surfaceSaveFailure]);
 
   const handleUpdate = useCallback(async (): Promise<void> => {
-    if (recipeId === undefined || !hasRequiredText()) return;
-    setMissingMessage(null);
-    setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
+    if (recipeId === undefined) return;
+    clearSaveFeedback();
+    if (!hasRequiredText()) return;
     await createdRecipesStore.getState().updateRecipe(recipeId, buildUpdateInput(recipe, getLocale()));
     const state = createdRecipesStore.getState().updateState;
     if (state.status === 'success') {
       createdRecipesStore.getState().resetUpdateState();
-      router.back();
+      setSaveSuccess({ mode: 'update' });
       return;
     }
     if (state.status === 'error') {
@@ -102,12 +118,31 @@ export const useRecipeSave = ({
       createdRecipesStore.getState().resetUpdateState();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, recipeId, createdRecipesStore, router, surfaceSaveFailure]);
+  }, [recipe, recipeId, createdRecipesStore, surfaceSaveFailure]);
 
   const onSave = useCallback((): void => {
     if (isEditMode) void handleUpdate();
     else void handlePublish();
   }, [isEditMode, handleUpdate, handlePublish]);
+
+  // Primary action: publish → open the new recipe; update → return to the editor's caller.
+  const onSuccessPrimary = useCallback((): void => {
+    const success = saveSuccess;
+    setSaveSuccess(null);
+    if (success?.mode === 'publish') {
+      router.replace({ pathname: '/recipes/[recipeId]', params: { recipeId: success.recipeId } });
+    } else {
+      router.back();
+    }
+  }, [saveSuccess, router]);
+
+  // Dismiss / secondary "Done": publish → My Recipes; update → back. Also the backdrop close.
+  const onCloseSuccess = useCallback((): void => {
+    const mode = saveSuccess?.mode;
+    setSaveSuccess(null);
+    if (mode === 'publish') router.replace('/my-recipes');
+    else router.back();
+  }, [saveSuccess, router]);
 
   const headerTitle = useMemo(
     () => (isEditMode ? t().createRecipe.editorTitle : t().createRecipe.previewTitle),
@@ -135,5 +170,10 @@ export const useRecipeSave = ({
       void (mode === 'update' ? handleUpdate() : handlePublish());
     },
     onCloseSaveError: () => setSaveError(null),
+    saveIssue,
+    onCloseSaveIssue: () => setSaveIssue(null),
+    saveSuccess,
+    onSuccessPrimary,
+    onCloseSuccess,
   };
 };

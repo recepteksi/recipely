@@ -2,17 +2,19 @@ import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
-import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { Recipe } from '@domain/recipes/recipe';
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
 import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
 import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
+import { ValueConstants } from '@core/constants';
 
 /**
  * In-memory test double for `IRecipeRepository`. Returns pre-configured
@@ -23,11 +25,11 @@ import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-c
 export class FakeRecipeRepository implements IRecipeRepository {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
-  generateCallCount = 0;
+  generateCallCount = ValueConstants.zero;
   lastImportInstagramCall: ImportInstagramRecipeCall | null = null;
-  importInstagramCallCount = 0;
+  importInstagramCallCount = ValueConstants.zero;
   lastRefineCall: RefineRecipeCall | null = null;
-  refineCallCount = 0;
+  refineCallCount = ValueConstants.zero;
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
@@ -83,11 +85,11 @@ export class FakeRecipeRepository implements IRecipeRepository {
   refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RefinedRecipe, Failure>> {
     this.lastRefineCall = { currentRecipe, instruction };
     this.refineCallCount += 1;
     return Promise.resolve(
-      this.config.refineRecipeResult ?? ok(undefined as unknown as Recipe),
+      this.config.refineRecipeResult ?? ok(undefined as unknown as RefinedRecipe),
     );
   }
 

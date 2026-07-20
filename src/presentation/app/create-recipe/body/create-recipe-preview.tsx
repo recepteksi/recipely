@@ -5,6 +5,7 @@ import { RefineDock } from '@presentation/app/create-recipe/body/refine-dock';
 import { CreateRecipeHeader } from '@presentation/app/create-recipe/body/create-recipe-header';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
+import { ValueConstants } from '@core/constants';
 
 export interface CreateRecipePreviewProps {
   vm: UseCreateRecipeResult;
@@ -35,8 +36,8 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
         <View style={[styles.refiningTrack, { backgroundColor: colors.border }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
+            end={{ x: 1, y: ValueConstants.zero }}
             style={styles.refiningFill}
           />
         </View>
@@ -45,7 +46,6 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
       <View style={styles.content}>
         <RecipePreviewEditor
           recipe={vm.recipe}
-          missingMessage={vm.missingMessage}
           fieldErrors={vm.fieldErrors}
           onChangeName={(v) => vm.onUpdateField('name', v)}
           onChangeCuisine={(v) => vm.onUpdateField('cuisine', v)}
@@ -83,7 +83,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
         canRegenerate={vm.canRegenerate}
         onRegenerate={vm.onRegenerate}
         onSubmit={vm.onSubmitRefine}
-        bottomInset={vm.isWebShell ? 0 : vm.insets.bottom}
+        bottomInset={vm.isWebShell ? ValueConstants.zero : vm.insets.bottom}
       />
     </>
   );

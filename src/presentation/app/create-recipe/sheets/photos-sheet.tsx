@@ -5,7 +5,7 @@ import { MediaPicker } from '@presentation/app/create-recipe/items/media-picker'
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 export interface PhotosSheetProps {
   visible: boolean;

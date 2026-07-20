@@ -7,6 +7,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { useLocale } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 /** Window width (px) below which the hero collapses to the featured card only. */
 const STACK_WIDTH = 700;
@@ -109,11 +110,11 @@ const styles = StyleSheet.create({
   },
   featured: {
     flex: 1.9,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
   },
   mini: {
     flex: 1,
-    minWidth: 0,
+    minWidth: ValueConstants.zero,
     flexDirection: 'column',
     gap: spacing.sm2,
   },

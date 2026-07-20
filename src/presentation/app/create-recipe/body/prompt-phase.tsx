@@ -10,6 +10,7 @@ import { t } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import { ValueConstants } from '@core/constants';
 
 export interface PromptPhaseProps {
   insets: EdgeInsets;
@@ -38,7 +39,7 @@ export const PromptPhase = ({
   onResumeDraft,
 }: PromptPhaseProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const canGenerate = prompt.trim().length > 0;
+  const canGenerate = prompt.trim().length > ValueConstants.zero;
   const ideaChips = t().createRecipe.ideaChips;
   const draftName = latestDraft?.snapshot.name?.trim();
 
@@ -66,7 +67,7 @@ export const PromptPhase = ({
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={{ x: 0, y: 0 }}
+          start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: 1, y: 1 }}
           style={[styles.hero, shadows.md]}
         >
@@ -132,7 +133,7 @@ export const PromptPhase = ({
         >
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={{ x: 0, y: 0 }}
+            start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: 1, y: 1 }}
             style={styles.ctaInner}
           >

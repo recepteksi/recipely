@@ -3,6 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
+import { ValueConstants } from '@core/constants';
 
 export interface NotificationProps {
   id: string;
@@ -28,7 +29,7 @@ export class Notification extends Entity<NotificationProps> {
   }
 
   static create(props: NotificationProps): Result<Notification, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Notification id must be non-empty', 'id'));
     }
     return ok(new Notification(props));
@@ -92,5 +93,14 @@ export class Notification extends Entity<NotificationProps> {
       return { kind: 'recipe', recipeId: this.props.recipeId };
     }
     return null;
+  }
+
+  /**
+   * Returns a copy of this notification with `read: true` (or `this` when
+   * already read). Copies stay valid by construction, so no `Result` needed.
+   */
+  asRead(): Notification {
+    if (this.props.read) return this;
+    return new Notification({ ...this.props, read: true });
   }
 }

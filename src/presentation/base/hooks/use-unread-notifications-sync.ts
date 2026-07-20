@@ -4,9 +4,11 @@ import type { AuthStore } from '@application/auth/auth-store';
 import type { NotificationsStore } from '@application/notifications/notifications-store';
 
 // How often to re-poll the unread count while the app is in the foreground.
-// Push delivery would make this redundant, but polling keeps the bell badge
-// climbing without any native push dependency.
-const POLL_INTERVAL_MS = 60_000;
+// System pushes (Android/web) alert the user, but nothing feeds them back into
+// this in-app badge — the poll is the badge's freshness source on every
+// platform, so it stays reasonably tight. Each tick requests limit=1, so the
+// cost per poll is minimal.
+const POLL_INTERVAL_MS = 30_000;
 
 /**
  * Keeps the notification bell badge fresh app-wide: refreshes the unread count

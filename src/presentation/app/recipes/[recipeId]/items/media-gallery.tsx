@@ -16,7 +16,8 @@ import { MediaSlide } from '@presentation/app/recipes/[recipeId]/items/media-sli
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
+import { ValueConstants } from '@core/constants';
 
 export interface MediaGalleryProps {
   media: readonly MediaItem[];
@@ -39,7 +40,7 @@ export const MediaGallery = ({
   height = sizes.heroImageHeight,
 }: MediaGalleryProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(ValueConstants.zero);
   const [width, setWidth] = useState(() => Dimensions.get('window').width);
   const listRef = useRef<FlatList<MediaItem>>(null);
 
@@ -50,19 +51,19 @@ export const MediaGallery = ({
 
   const onLayout = (e: LayoutChangeEvent): void => {
     const next = Math.round(e.nativeEvent.layout.width);
-    if (next > 0 && next !== width) setWidth(next);
+    if (next > ValueConstants.zero && next !== width) setWidth(next);
   };
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
     const x = e.nativeEvent.contentOffset.x;
     const idx = Math.round(x / width);
-    if (idx !== active && idx >= 0 && idx < media.length) {
+    if (idx !== active && idx >= ValueConstants.zero && idx < media.length) {
       setActive(idx);
     }
   };
 
   const goTo = (idx: number): void => {
-    if (idx < 0 || idx >= media.length) return;
+    if (idx < ValueConstants.zero || idx >= media.length) return;
     listRef.current?.scrollToIndex({ index: idx, animated: true });
     setActive(idx);
   };
@@ -97,7 +98,7 @@ export const MediaGallery = ({
         scrollEventThrottle={16}
       />
 
-      {showArrows && active > 0 ? (
+      {showArrows && active > ValueConstants.zero ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.previousPhoto}
@@ -172,8 +173,8 @@ const styles = StyleSheet.create({
   dotsRow: {
     position: 'absolute',
     bottom: spacing.md,
-    left: 0,
-    right: 0,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     flexDirection: 'row',
     justifyContent: 'center',
     gap: spacing.xs,
@@ -185,8 +186,8 @@ const styles = StyleSheet.create({
   counterWrap: {
     position: 'absolute',
     top: spacing.md,
-    left: 0,
-    right: 0,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
     alignItems: 'center',
   },
   counter: {

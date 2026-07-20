@@ -7,7 +7,8 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeCommentsSectionProps {
   commentState: RecipeCommentsState | undefined;
@@ -54,7 +55,7 @@ export const RecipeCommentsSection = ({
 
       {commentState?.isLoading ? (
         <ActivityIndicator size="small" color={colors.primary} style={styles.commentsLoader} />
-      ) : !commentState || commentState.items.length === 0 ? (
+      ) : !commentState || commentState.items.length === ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.commentsEmpty}>
           {t().comments.empty}
         </ThemedText>
@@ -114,7 +115,7 @@ export const RecipeCommentsSection = ({
         />
         <Pressable
           onPress={onAddComment}
-          disabled={commentState?.isSubmitting === true || commentInput.trim().length === 0}
+          disabled={commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero}
           accessibilityRole="button"
           accessibilityLabel={t().comments.send}
           style={({ pressed }) => [
@@ -122,7 +123,7 @@ export const RecipeCommentsSection = ({
             {
               backgroundColor: colors.primary,
               opacity:
-                pressed || commentState?.isSubmitting === true || commentInput.trim().length === 0
+                pressed || commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero
                   ? 0.6
                   : 1,
             },

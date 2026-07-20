@@ -16,9 +16,11 @@ import {
   recipeToEditable,
   snapshotToEditable,
 } from '@presentation/app/create-recipe/model/recipe-mapping';
+import { buildRefineReply } from '@presentation/app/create-recipe/model/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { Phase } from '@presentation/app/create-recipe/model/phase';
 import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/use-recipe-generation-args';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
@@ -45,12 +47,12 @@ export const useRecipeGeneration = ({
 
   const [phase, setPhase] = useState<Phase>(isEditMode ? 'preview' : 'prompt');
   const [importing, setImporting] = useState(false);
-  const [genStep, setGenStep] = useState(0);
-  const [prompt, setPrompt] = useState('');
+  const [genStep, setGenStep] = useState(ValueConstants.zero);
+  const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const originalPrompt = useRef('');
+  const originalPrompt = useRef(CharConstants.empty);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState('');
+  const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
 
@@ -82,7 +84,7 @@ export const useRecipeGeneration = ({
   // Drive the generating checklist while the backend works.
   useEffect(() => {
     if (phase !== 'generating') return;
-    setGenStep(0);
+    setGenStep(ValueConstants.zero);
     const id = setInterval(() => {
       setGenStep((s) => Math.min(GEN_STEP_COUNT - 1, s + 1));
     }, GEN_STEP_INTERVAL_MS);
@@ -101,7 +103,7 @@ export const useRecipeGeneration = ({
   const runGenerate = useCallback(
     async (text: string): Promise<void> => {
       const trimmed = text.trim();
-      if (trimmed.length === 0) return;
+      if (trimmed.length === ValueConstants.zero) return;
       originalPrompt.current = trimmed;
       setGenerateError(null);
       setPhase('generating');
@@ -153,7 +155,7 @@ export const useRecipeGeneration = ({
   const runImport = useCallback(
     async (url: string): Promise<void> => {
       const trimmed = url.trim();
-      if (trimmed.length === 0) return;
+      if (trimmed.length === ValueConstants.zero) return;
       setImporting(true);
       setPhase('generating');
       await createdRecipesStore.getState().importInstagram(trimmed);
@@ -194,14 +196,15 @@ export const useRecipeGeneration = ({
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
       const trimmed = instruction.trim();
-      if (trimmed.length === 0 || refining) return;
-      setChatInput('');
+      if (trimmed.length === ValueConstants.zero || refining) return;
+      setChatInput(CharConstants.empty);
       setChatExpanded(true);
       setChatHistory((h) => [...h, { role: 'user', content: trimmed }]);
-      const result = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
-      if (result !== null) {
-        setRecipe((prev) => recipeToEditable(result, prev.media));
-        setChatHistory((h) => [...h, { role: 'assistant', content: t().createRecipe.aiUpdated }]);
+      const refined = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
+      if (refined !== null) {
+        setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
+        const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
+        setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
         createdRecipesStore.getState().resetRefineState();
         return;
       }
@@ -229,14 +232,14 @@ export const useRecipeGeneration = ({
   }, []);
 
   const onAppendChip = useCallback((chip: string): void => {
-    setPrompt((p) => (p.trim().length === 0 ? chip : `${p}, ${chip.toLowerCase()}`));
+    setPrompt((p) => (p.trim().length === ValueConstants.zero ? chip : `${p}, ${chip.toLowerCase()}`));
     setGenerateError(null);
   }, []);
 
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
-    originalPrompt.current = '';
+    originalPrompt.current = CharConstants.empty;
     setPhase('preview');
   }, [setRecipe]);
 
@@ -295,7 +298,7 @@ export const useRecipeGeneration = ({
     chatExpanded,
     onExpandChat: () => setChatExpanded(true),
     onCollapseChat: () => setChatExpanded(false),
-    canRegenerate: originalPrompt.current.length > 0,
+    canRegenerate: originalPrompt.current.length > ValueConstants.zero,
     onRegenerate: () => void runGenerate(originalPrompt.current),
     onSubmitRefine: (instruction: string) => void handleRefine(instruction),
     exitOpen,

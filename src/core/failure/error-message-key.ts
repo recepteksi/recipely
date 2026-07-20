@@ -41,6 +41,11 @@ export const ErrorMessageKey = {
   codeCooldown: 'errors.too_many_requests.code_cooldown',
   registrationExpired: 'errors.not_found.pending_registration',
 
+  // Media upload
+  invalidMediaType: 'errors.validation.invalid_media_type',
+  invalidImageType: 'errors.validation.invalid_image_type',
+  fileTooLarge: 'errors.validation.file_too_large',
+
   // Session / password reset
   accountDeleted: 'errors.unauthorized.account_deleted',
   resetLinkInvalid: 'errors.not_found.reset_token',

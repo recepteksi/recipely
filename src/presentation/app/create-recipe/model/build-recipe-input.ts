@@ -1,12 +1,13 @@
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import { toMediaUpload } from '@presentation/app/create-recipe/model/to-media-upload';
 import { DIFFICULTY_LABELS } from '@presentation/app/create-recipe/model/difficulty-tag-labels';
+import { ValueConstants } from '@core/constants';
 
 const cleanLines = (lines: readonly string[]): string[] =>
-  lines.map((s) => s.trim()).filter((s) => s.length > 0);
+  lines.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero);
 
 /** Builds the create-recipe API payload from the editor state for a given locale. */
 export const buildCreateInput = (recipe: EditableRecipe, locale: string): CreateRecipeInput => {
@@ -46,7 +47,7 @@ export const buildUpdateInput = (recipe: EditableRecipe, locale: string): Update
     prepTimeMinutes: recipe.prepTimeMinutes,
     cookTimeMinutes: recipe.cookTimeMinutes,
     servings: recipe.servings,
-    ...(images.length > 0 ? { media: images.map(toMediaUpload) } : {}),
+    ...(images.length > ValueConstants.zero ? { media: images.map(toMediaUpload) } : {}),
     tags: { [locale]: [DIFFICULTY_LABELS[recipe.difficulty]] },
     mealType: { [locale]: [] },
     isPublished: true,

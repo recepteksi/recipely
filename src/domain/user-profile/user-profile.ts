@@ -2,6 +2,7 @@ import { Entity } from '@core/entity/entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import { ValueConstants } from '@core/constants';
 
 export interface UserProfileProps {
   id: string;
@@ -24,10 +25,10 @@ export class UserProfile extends Entity<UserProfileProps> {
   }
 
   static create(props: UserProfileProps): Result<UserProfile, ValidationFailure> {
-    if (props.id.trim().length === 0) {
+    if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('UserProfile id must be non-empty', 'id'));
     }
-    if (props.displayName.trim().length === 0) {
+    if (props.displayName.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('UserProfile displayName must be non-empty', 'displayName'));
     }
     return ok(new UserProfile(props));

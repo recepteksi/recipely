@@ -3,59 +3,60 @@ import { TOKENS } from '@core/di/tokens';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
-import { SignInUseCase } from '@application/auth/sign-in-use-case';
-import { RequestRegistrationUseCase } from '@application/auth/request-registration-use-case';
-import { VerifyRegistrationUseCase } from '@application/auth/verify-registration-use-case';
-import { ResendRegistrationCodeUseCase } from '@application/auth/resend-registration-code-use-case';
-import { SignOutUseCase } from '@application/auth/sign-out-use-case';
-import { GetSessionUseCase } from '@application/auth/get-session-use-case';
-import { SignInWithGoogleUseCase } from '@application/auth/sign-in-with-google-use-case';
-import { SignInWithAppleUseCase } from '@application/auth/sign-in-with-apple-use-case';
-import { RequestPasswordResetUseCase } from '@application/auth/request-password-reset-use-case';
-import { ResetPasswordUseCase } from '@application/auth/reset-password-use-case';
-import { UploadAvatarUseCase } from '@application/auth/upload-avatar-use-case';
-import { UpdateProfileUseCase } from '@application/auth/update-profile-use-case';
-import { DeleteAccountUseCase } from '@application/auth/delete-account-use-case';
-import { ListRecipesUseCase } from '@application/recipes/list-recipes-use-case';
-import { ListTrendingRecipesUseCase } from '@application/recipes/list-trending-recipes-use-case';
-import { GetRecipeUseCase } from '@application/recipes/get-recipe-use-case';
-import { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
-import { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
-import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
-import { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
-import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
-import { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
+import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
+import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
+import { ResendRegistrationCodeUseCase } from '@application/auth/registration/resend-registration-code-use-case';
+import { SignOutUseCase } from '@application/auth/session/sign-out-use-case';
+import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
+import { SignInWithGoogleUseCase } from '@application/auth/sign-in/sign-in-with-google-use-case';
+import { SignInWithAppleUseCase } from '@application/auth/sign-in/sign-in-with-apple-use-case';
+import { RequestPasswordResetUseCase } from '@application/auth/password-reset/request-password-reset-use-case';
+import { ResetPasswordUseCase } from '@application/auth/password-reset/reset-password-use-case';
+import { UploadAvatarUseCase } from '@application/auth/profile/upload-avatar-use-case';
+import { UpdateProfileUseCase } from '@application/auth/profile/update-profile-use-case';
+import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
+import { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
+import { ListTrendingRecipesUseCase } from '@application/recipes/trending/list-trending-recipes-use-case';
+import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
+import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
+import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
+import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
+import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
+import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
+import { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
+import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
+import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
+import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
-import { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
-import { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
+import { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
+import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureAuthStore } from '@application/auth/configure-auth-store';
-import { configureRecipeListStore } from '@application/recipes/configure-recipe-list-store';
-import { configureTrendingRecipesStore } from '@application/recipes/configure-trending-recipes-store';
-import { configureRecipeDetailStore } from '@application/recipes/configure-recipe-detail-store';
-import { configureSavedRecipesStore } from '@application/recipes/configure-saved-recipes-store';
-import { configureCreatedRecipesStore } from '@application/recipes/configure-created-recipes-store';
-import { LoadTaxonomyUseCase } from '@application/recipes/load-taxonomy-use-case';
-import { configureTaxonomyStore } from '@application/recipes/configure-taxonomy-store';
+import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { configureTrendingRecipesStore } from '@application/recipes/trending/configure-trending-recipes-store';
+import { configureRecipeDetailStore } from '@application/recipes/detail/configure-recipe-detail-store';
+import { configureSavedRecipesStore } from '@application/recipes/saved/configure-saved-recipes-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
+import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
+import { configureTaxonomyStore } from '@application/recipes/taxonomy/configure-taxonomy-store';
 import { configureFavoritesStore } from '@application/favorites/configure-favorites-store';
-import { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
-import { AddCommentUseCase } from '@application/comments/add-comment-use-case';
-import { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
-import { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
+import { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
+import { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
+import { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
+import { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { configureLikesStore } from '@application/likes/configure-likes-store';
-import { ListNotificationsUseCase } from '@application/notifications/list-notifications-use-case';
-import { MarkAllReadUseCase } from '@application/notifications/mark-all-read-use-case';
+import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
+import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
+import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
 import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { configureUserProfileStore } from '@application/user-profile/configure-user-profile-store';
@@ -110,7 +111,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore();
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
@@ -154,9 +154,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const markAllReadUseCase = container.resolve<MarkAllReadUseCase>(
     TOKENS.MarkAllReadUseCase,
   );
+  const markOneReadUseCase = container.resolve<MarkOneReadUseCase>(
+    TOKENS.MarkOneReadUseCase,
+  );
   const notificationsStore = configureNotificationsStore({
     listNotifications: listNotificationsUseCase,
     markAllRead: markAllReadUseCase,
+    markOneRead: markOneReadUseCase,
   });
   const getUserProfileUseCase = container.resolve<GetUserProfileUseCase>(
     TOKENS.GetUserProfileUseCase,
@@ -172,6 +176,21 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // WHY: built after every session-scoped store exists so sign-out / account
+  // deletion / session expiry can wipe all of them in one place — a cache that
+  // survives an account switch shows the previous user's data (stale comments,
+  // likes, notifications) until a manual refresh.
+  const clearSessionCaches = (): void => {
+    savedRecipesStore.getState().setSavedIds(new Set());
+    commentsStore.getState().clear();
+    likesStore.getState().clear();
+    recipeDetailStore.getState().clear();
+    notificationsStore.getState().clear();
+    createdRecipesStore.getState().clear();
+    draftsStore.getState().clear();
+    userProfileStore.getState().reset();
+  };
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
   return {
     authStore,
     recipeListStore,

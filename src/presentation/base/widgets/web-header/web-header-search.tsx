@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebHeaderSearchProps {
   value: string;
@@ -42,9 +43,9 @@ export const WebHeaderSearch = ({
         style={[styles.input, { color: colors.text }]}
         autoCorrect={false}
       />
-      {value.length > 0 ? (
+      {value.length > ValueConstants.zero ? (
         <Pressable
-          onPress={() => onChange('')}
+          onPress={() => onChange(CharConstants.empty)}
           accessibilityRole="button"
           accessibilityLabel={ariaClear}
           style={styles.clearBtn}

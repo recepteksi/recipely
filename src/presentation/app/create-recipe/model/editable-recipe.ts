@@ -1,4 +1,4 @@
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
 /**

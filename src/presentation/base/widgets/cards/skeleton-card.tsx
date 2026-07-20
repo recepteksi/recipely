@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export const SkeletonCard = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -13,7 +14,7 @@ export const SkeletonCard = (): React.JSX.Element => {
         { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
       ]}
     >
-      <SkeletonLoader width="100%" height={sizes.cardImageHeight} borderRadius={0} />
+      <SkeletonLoader width="100%" height={sizes.cardImageHeight} borderRadius={ValueConstants.zero} />
       <View style={styles.body}>
         <SkeletonLoader width="60%" height={18} borderRadius={radii.sm} />
         <View style={styles.row}>

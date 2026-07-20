@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
-import type { MediaItem } from '@domain/recipes/media-item';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import { emptyEditable, recipeToEditable } from '@presentation/app/create-recipe/model/recipe-mapping';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/create-recipe-field-key';
 import type { Recipe } from '@domain/recipes/recipe';
+import { CharConstants } from '@core/constants';
 
 /**
  * Owns the editable recipe form state (fields, ingredients, steps, media) plus
@@ -18,7 +19,6 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
       ? recipeToEditable(existingRecipe, [...existingRecipe.media])
       : emptyEditable(),
   );
-  const [missingMessage, setMissingMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<CreateRecipeFieldErrors>(NO_CREATE_RECIPE_FIELD_ERRORS);
   const [photosOpen, setPhotosOpen] = useState(false);
 
@@ -51,14 +51,14 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        ingredients: r.ingredients.length <= 1 ? [''] : r.ingredients.filter((_, idx) => idx !== i),
+        ingredients: r.ingredients.length <= 1 ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
       }));
       clearFieldError('ingredients');
     },
     [clearFieldError],
   );
   const onAddIngredient = useCallback((): void => {
-    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, ''] }));
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
   const onChangeStep = useCallback(
@@ -72,14 +72,14 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        instructions: r.instructions.length <= 1 ? [''] : r.instructions.filter((_, idx) => idx !== i),
+        instructions: r.instructions.length <= 1 ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
       }));
       clearFieldError('instructions');
     },
     [clearFieldError],
   );
   const onAddStep = useCallback((): void => {
-    setRecipe((r) => ({ ...r, instructions: [...r.instructions, ''] }));
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, CharConstants.empty] }));
     clearFieldError('instructions');
   }, [clearFieldError]);
 
@@ -103,8 +103,6 @@ export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode
   return {
     recipe,
     setRecipe,
-    missingMessage,
-    setMissingMessage,
     fieldErrors,
     setFieldErrors,
     onUpdateField,

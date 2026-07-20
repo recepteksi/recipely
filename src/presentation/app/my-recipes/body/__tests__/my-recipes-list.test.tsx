@@ -21,8 +21,8 @@ import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
@@ -81,7 +81,6 @@ const baseProps = (): MyRecipesListProps => ({
   onOpenRecipe: jest.fn(),
   onOpenDraft: jest.fn(),
   onDeleteDraft: jest.fn(),
-  onCreate: jest.fn(),
   isRefreshing: false,
   onRefresh: jest.fn(),
 });

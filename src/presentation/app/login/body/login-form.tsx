@@ -10,6 +10,7 @@ import { SocialAuthSection } from '@presentation/app/login/body/social-auth-sect
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -26,16 +27,16 @@ export const LoginForm = (): React.JSX.Element => {
   const signInWithGoogle = authStore((s) => s.signInWithGoogle);
   const signInWithApple = authStore((s) => s.signInWithApple);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(CharConstants.empty);
+  const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<string | null>(null);
 
   const passwordRef = useRef<TextInput>(null);
 
-  const fieldsEmpty = email.trim().length === 0 || password.trim().length === 0;
+  const fieldsEmpty = email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero;
 
   const handleSignIn = useCallback(() => {
-    if (email.trim().length === 0 || password.trim().length === 0) {
+    if (email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero) {
       return;
     }
     void signIn(email, password);

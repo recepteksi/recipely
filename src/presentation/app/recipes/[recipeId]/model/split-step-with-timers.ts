@@ -1,4 +1,5 @@
 import type { TextPart } from '@presentation/base/widgets/text/text-part';
+import { ValueConstants } from '@core/constants';
 
 const DURATION_UNIT = 'minutes?|mins?|dakika|dk';
 // Alternation, tried in order at every match position: a "45-50 minutes"
@@ -13,8 +14,8 @@ const TIME_RE = new RegExp(
 /** Splits an instruction step into plain-text and inline-timer parts. */
 export const splitStepWithTimers = (text: string): TextPart[] => {
   const out: TextPart[] = [];
-  let last = 0;
-  TIME_RE.lastIndex = 0;
+  let last = ValueConstants.zero;
+  TIME_RE.lastIndex = ValueConstants.zero;
   let match: RegExpExecArray | null = TIME_RE.exec(text);
   while (match !== null) {
     if (match.index > last) {
@@ -23,18 +24,18 @@ export const splitStepWithTimers = (text: string): TextPart[] => {
     if (match[1] !== undefined) {
       // A range ("45-50 minutes") isn't a single actionable duration — keep
       // it as plain text rather than badge-ify a partial, misleading match.
-      out.push({ kind: 'text', value: match[0] });
+      out.push({ kind: 'text', value: match[ValueConstants.zero] });
     } else {
       const minutes = parseFloat(match[2]);
-      out.push({ kind: 'timer', value: match[0], minutes });
+      out.push({ kind: 'timer', value: match[ValueConstants.zero], minutes });
     }
-    last = match.index + match[0].length;
+    last = match.index + match[ValueConstants.zero].length;
     match = TIME_RE.exec(text);
   }
   if (last < text.length) {
     out.push({ kind: 'text', value: text.slice(last) });
   }
-  if (out.length === 0) {
+  if (out.length === ValueConstants.zero) {
     out.push({ kind: 'text', value: text });
   }
   return out;

@@ -2,6 +2,7 @@ import { gcm } from '@noble/ciphers/aes.js';
 import { randomBytes } from '@noble/ciphers/utils.js';
 import type { Envelope } from '@infrastructure/crypto/envelope';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
+import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
@@ -11,19 +12,19 @@ const AUTH_TAG_BYTES = 16;
  * use as an AES-256-GCM key. Throws if the input is not exactly 64 hex chars.
  */
 export function keyFromHex(hex: string): Uint8Array {
-  if (!/^[0-9a-fA-F]{64}$/.test(hex)) {
+  if (!RegexConstants.sha256Hex.test(hex)) {
     throw new Error('AES key must be 64 hex chars (32 bytes)');
   }
   const out = new Uint8Array(32);
-  for (let i = 0; i < 32; i++) {
+  for (let i = ValueConstants.zero; i < 32; i++) {
     out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
   }
   return out;
 }
 
 function toBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
+  let binary = CharConstants.empty;
+  for (let i = ValueConstants.zero; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]!);
   }
   // RN/Expo provide a global `btoa`. fall back to Buffer for tests under jest-expo.
@@ -35,7 +36,7 @@ function fromBase64(b64: string): Uint8Array {
   if (typeof globalThis.atob === 'function') {
     const binary = globalThis.atob(b64);
     const out = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+    for (let i = ValueConstants.zero; i < binary.length; i++) out[i] = binary.charCodeAt(i);
     return out;
   }
   return new Uint8Array(Buffer.from(b64, 'base64'));

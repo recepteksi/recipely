@@ -8,6 +8,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeSearchOverlayProps {
   /** Already name-filtered recipes for the current query (see `recipe-list-screen`'s `filteredRecipes`). */
@@ -40,7 +41,7 @@ export const RecipeSearchOverlay = ({
           {recipes.length} {t().recipes.results}
         </ThemedText>
       </View>
-      {recipes.length === 0 ? (
+      {recipes.length === ValueConstants.zero ? (
         <View style={styles.empty}>
           <Ionicons name="search" size={48} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyTitle}>

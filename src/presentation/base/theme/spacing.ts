@@ -1,3 +1,4 @@
+
 export const spacing = {
   xxs: 2,
   xs: 4,
@@ -60,6 +61,10 @@ export const sizes = {
   avatarMd: 56,
   avatarLg: 80,
   badgeSm: 28,
+  // Circular severity disc behind the icon in the FeedbackDialog.
+  feedbackDisc: 64,
+  // Width cap of the centered FeedbackDialog card (phone-sized on tablets/web).
+  dialogMaxWidth: 400,
   notifBadge: 18,
   // Line height that keeps the unread count vertically centered inside the
   // 18px notifBadge circle (14px inner box after the 2px border).
@@ -95,6 +100,11 @@ export const sizes = {
   homeHeaderMax: 132,
   homeHeaderMin: 0,
   homeTitleShrink: 96,
+  // Android pull-to-refresh spinner offset for the home feed. Android's
+  // SwipeRefreshLayout rests the circle at `offset + 64dp(target) - diameter`,
+  // so passing homeHeaderMax directly parks it ~60dp below the band, floating
+  // over the AI banner; this value tucks its resting spot just under the band.
+  homeRefreshOffsetAndroid: 92,
   fab: 56,
   fabExtendedHeight: 48,
   // Web home (WebRecipesPage) redesign (Jun 2026).

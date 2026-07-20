@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 
 export interface CommentsStoreState {
   byRecipe: Record<string, RecipeCommentsState>;
@@ -14,4 +14,6 @@ export interface CommentsStoreState {
    * toggle is rejected — the optimistic rollback alone is easy to miss.
    */
   toggleLike(recipeId: string, commentId: string): Promise<Result<void, Failure>>;
+  /** Drops every cached comment thread. Called when the session ends. */
+  clear(): void;
 }

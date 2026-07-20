@@ -10,6 +10,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { computeRemaining, formatCountdown, SECOND_MS } from '@presentation/app/verify-code/model/countdown';
+import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 
 const CODE_LENGTH = 6;
 
@@ -32,7 +33,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const verifyRegistration = authStore((s) => s.verifyRegistration);
   const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(CharConstants.empty);
   const [focused, setFocused] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const [resending, setResending] = useState(false);
@@ -44,12 +45,12 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
 
   useEffect(() => {
     setRemaining(computeRemaining(expiresAt));
-    if (expiresAt.length === 0) return;
+    if (expiresAt.length === ValueConstants.zero) return;
     const id = setInterval(() => setRemaining(computeRemaining(expiresAt)), SECOND_MS);
     return () => clearInterval(id);
   }, [expiresAt]);
 
-  const codeValid = code.length === CODE_LENGTH && /^\d+$/.test(code);
+  const codeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
   const isLoading = state.status === 'loading';
   const remoteError =
     state.status === 'error'
@@ -71,10 +72,10 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   }, [codeValid, verifyRegistration, email, code]);
 
   // Resend is locked until the current code expires.
-  const canResend = remaining <= 0 && !resending;
+  const canResend = remaining <= ValueConstants.zero && !resending;
 
   const handleResend = useCallback(async () => {
-    if (remaining > 0 || resending) return;
+    if (remaining > ValueConstants.zero || resending) return;
     setResending(true);
     setResent(false);
     const challenge = await resendRegistrationCode(email);
@@ -99,7 +100,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         placeholder={t().verify.codePlaceholder}
         placeholderTextColor={colors.textMuted}
         value={code}
-        onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, CODE_LENGTH))}
+        onChangeText={(v) => setCode(v.replace(/\D/g, CharConstants.empty).slice(ValueConstants.zero, CODE_LENGTH))}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
@@ -133,7 +134,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
       </View>
 
       <View style={styles.expiryRow}>
-        {remaining > 0 ? (
+        {remaining > ValueConstants.zero ? (
           <ThemedText variant="caption" muted>
             {t().verify.expiresIn} {formatCountdown(remaining)}
           </ThemedText>

@@ -6,6 +6,7 @@ import { t } from '@presentation/i18n';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { NutritionTile } from '@presentation/app/recipes/[recipeId]/items/nutrition-tile';
 import type { NutritionTileProps } from '@presentation/app/recipes/[recipeId]/items/nutrition-tile';
+import { ValueConstants } from '@core/constants';
 
 export interface NutritionCardProps {
   caloriesPerServing: number;
@@ -19,11 +20,11 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
   const strings = t().nutrition;
 
   const hasData =
-    caloriesPerServing > 0 ||
-    (nutrition?.protein ?? 0) > 0 ||
-    (nutrition?.carbs ?? 0) > 0 ||
-    (nutrition?.fat ?? 0) > 0 ||
-    (nutrition?.fiber ?? 0) > 0;
+    caloriesPerServing > ValueConstants.zero ||
+    (nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero ||
+    (nutrition?.fiber ?? ValueConstants.zero) > ValueConstants.zero;
 
   if (!hasData) return null;
 
@@ -38,7 +39,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.protein,
-      value: nutrition?.protein ?? 0,
+      value: nutrition?.protein ?? ValueConstants.zero,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
@@ -46,7 +47,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.carbs,
-      value: nutrition?.carbs ?? 0,
+      value: nutrition?.carbs ?? ValueConstants.zero,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
@@ -54,7 +55,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.fat,
-      value: nutrition?.fat ?? 0,
+      value: nutrition?.fat ?? ValueConstants.zero,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
@@ -62,7 +63,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
   ];
 
-  const fiberValue = nutrition?.fiber ?? 0;
+  const fiberValue = nutrition?.fiber ?? ValueConstants.zero;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
@@ -77,7 +78,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
           <NutritionTile key={tile.label} {...tile} />
         ))}
       </View>
-      {fiberValue > 0 ? (
+      {fiberValue > ValueConstants.zero ? (
         <View style={[styles.fiberRow, { borderTopColor: colors.border }]}>
           <ThemedText variant="caption" style={{ color: colors.text }}>
             {strings.fiberValue.replace('{value}', String(fiberValue))}

@@ -1,5 +1,5 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { MediaDto } from '@infrastructure/recipes/media-dto';
+import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
 
 // Wire shape returned by the Recipely backend for a single recipe.
 // Keep in sync with recipely-backend `application/recipes/dtos/recipe.dto.ts`.

@@ -31,27 +31,27 @@ import { act } from 'react-test-renderer';
 import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { Recipe } from '@domain/recipes/recipe';
-import { CuisineKey } from '@domain/recipes/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/recipe-category';
+import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
+import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
-import { GenerateRecipeUseCase } from '@application/recipes/generate-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/configure-created-recipes-store';
+import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
-import type { CreateRecipeUseCase } from '@application/recipes/create-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/list-my-recipes-use-case';
-import { RefineRecipeUseCase } from '@application/recipes/refine-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import-instagram-recipe-use-case';
-import type { UpdateRecipeUseCase } from '@application/recipes/update-recipe-use-case';
-import type { DeleteRecipeUseCase } from '@application/recipes/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/recipe-detail-store';
-import type { ListDraftsUseCase } from '@application/drafts/list-drafts-use-case';
-import type { GetLatestDraftUseCase } from '@application/drafts/get-latest-draft-use-case';
-import type { GetDraftUseCase } from '@application/drafts/get-draft-use-case';
-import type { UpsertDraftUseCase } from '@application/drafts/upsert-draft-use-case';
-import type { DeleteDraftUseCase } from '@application/drafts/delete-draft-use-case';
+import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
+import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
+import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
+import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
+import type { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
+import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
+import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
+import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
+import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
+import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
+import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
+import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
+import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -168,6 +168,15 @@ const refineUnusable = (): FakeRecipeRepositoryConfig => ({
 
 const generated = (): FakeRecipeRepositoryConfig => ({
   generateRecipeResult: ok(makeRecipe()),
+});
+
+// Refine succeeded and the AI narrated what it changed: the RefinedRecipe read
+// model carries the preview recipe plus optional `summary` / `suggestion`.
+const refineSucceeded = (
+  commentary: { summary?: string; suggestion?: string } = {},
+): FakeRecipeRepositoryConfig => ({
+  generateRecipeResult: ok(makeRecipe()),
+  refineRecipeResult: ok({ recipe: makeRecipe(), ...commentary }),
 });
 
 // The generate flow never touches these — stubs that satisfy the stores'
@@ -415,10 +424,11 @@ describe('useRecipeGeneration.runGenerate — chat transcript on failure', () =>
 
 // ─── the same regression, on the refine path ─────────────────────────────────
 //
-// `refineRecipe` returns `Recipe | null`, so the failure is collapsed at the store
-// boundary. The hook has to read it back off `refineState` — otherwise a refused
-// instruction and an unusable AI response, the exact pair the messageKey channel
-// exists to separate, both read as one flat "couldn't do that" in the transcript.
+// `refineRecipe` returns `RefinedRecipe | null`, so the failure is collapsed at
+// the store boundary. The hook has to read it back off `refineState` — otherwise
+// a refused instruction and an unusable AI response, the exact pair the
+// messageKey channel exists to separate, both read as one flat "couldn't do
+// that" in the transcript.
 
 const lastBubble = (history: readonly { content: string }[]): string =>
   history[history.length - 1]?.content ?? '';
@@ -465,6 +475,54 @@ describe('useRecipeGeneration.handleRefine — an unusable AI response', () => {
     await refine('make it spicier');
 
     expect(lastBubble(latest().chatHistory)).not.toContain('unexpected response');
+  });
+});
+
+// ─── the successful refine must speak in the AI's own words ──────────────────
+//
+// The backend now narrates each refinement (`summary` + `suggestion` on the
+// RefinedRecipe read model). The assistant bubble must carry that narration —
+// the canned "Updated!" survives only for an older backend that sends neither.
+
+describe('useRecipeGeneration.handleRefine — success with AI commentary', () => {
+  it('puts the summary in the assistant bubble instead of the canned aiUpdated copy', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe('Doubled the garlic.');
+  });
+
+  it('joins summary and suggestion with a blank line', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.', suggestion: 'Roast it first.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe('Doubled the garlic.\n\nRoast it first.');
+  });
+
+  it('falls back to the aiUpdated copy when the response has no summary', async () => {
+    const { latest, generate, refine } = driveHook(refineSucceeded());
+    await generate();
+    await refine('add more garlic');
+
+    expect(lastBubble(latest().chatHistory)).toBe(en.createRecipe.aiUpdated);
+  });
+
+  it('does not mark the commentary bubble as an error and raises no toast', async () => {
+    const { latest, generate, refine } = driveHook(
+      refineSucceeded({ summary: 'Doubled the garlic.' }),
+    );
+    await generate();
+    await refine('add more garlic');
+
+    expect(latest().chatHistory[latest().chatHistory.length - 1]?.error).toBeUndefined();
+    expect(showErrorToast).not.toHaveBeenCalled();
+    expect(showDangerToast).not.toHaveBeenCalled();
   });
 });
 

@@ -6,7 +6,8 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
-import type { RecipeCommentsState } from '@application/comments/recipe-comments-state';
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;
@@ -41,15 +42,15 @@ export const WebRecipeDetailComments = ({
   commentHighlight,
 }: WebRecipeDetailCommentsProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const total = commentState?.total ?? 0;
+  const total = commentState?.total ?? ValueConstants.zero;
   const items = commentState?.items ?? [];
   const canLoadMore = commentState !== undefined && items.length < commentState.total;
-  const submitDisabled = commentState?.isSubmitting === true || commentInput.trim().length === 0;
+  const submitDisabled = commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero;
 
   return (
     <View style={styles.section}>
       <ThemedText style={[styles.heading, { color: colors.text }]}>
-        {total > 0 ? `${t().comments.title} · ${String(total)}` : t().comments.title}
+        {total > ValueConstants.zero ? `${t().comments.title} · ${String(total)}` : t().comments.title}
       </ThemedText>
 
       <View style={styles.inputRow}>
@@ -87,7 +88,7 @@ export const WebRecipeDetailComments = ({
 
       {commentState?.isLoading === true ? (
         <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
-      ) : items.length === 0 ? (
+      ) : items.length === ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.empty}>
           {t().comments.empty}
         </ThemedText>

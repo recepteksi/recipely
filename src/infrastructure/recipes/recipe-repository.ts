@@ -4,12 +4,13 @@ import type { Failure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-import type { CreateRecipeInput } from '@domain/recipes/create-recipe-input';
-import type { CreateRecipeProgressCallback } from '@domain/recipes/create-recipe-progress-callback';
-import type { RecipeFilters } from '@domain/recipes/recipe-filters';
-import type { UpdateRecipeInput } from '@domain/recipes/update-recipe-input';
+import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
+import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
+import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
+import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { HttpClient } from '@infrastructure/network/http-client';
+import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
 import {
   AI_REQUEST_TIMEOUT_MS,
   IMPORT_REQUEST_TIMEOUT_MS,
@@ -18,12 +19,13 @@ import {
   TRENDING_RECIPES_LIMIT,
 } from '@infrastructure/constants/api';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
-import { buildCreateRecipeFormData } from '@infrastructure/recipes/build-create-recipe-form-data';
-import { buildUpdateRecipeBody } from '@infrastructure/recipes/build-update-recipe-body';
-import { uploadRecipeMedia } from '@infrastructure/recipes/upload-recipe-media';
+import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
+import { buildUpdateRecipeBody } from '@infrastructure/recipes/update/build-update-recipe-body';
+import { uploadRecipeMedia } from '@infrastructure/recipes/media/upload-recipe-media';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles
@@ -187,16 +189,18 @@ export class RecipeRepository implements IRecipeRepository {
     return this.mapRecipe(result.value);
   }
 
-  // WHY: like generateRecipe, refine returns a NOT-persisted preview Recipe and
-  // the locale rides Accept-Language (kept off the body to avoid two sources of
+  // WHY: like generateRecipe, refine returns a NOT-persisted preview recipe —
+  // wrapped in a RefinedRecipe read model because the wire response flattens
+  // the AI's `summary` / `suggestion` on top of the recipe DTO fields. The
+  // locale rides Accept-Language (kept off the body to avoid two sources of
   // truth). The current in-progress recipe is sent as a DraftRecipeSnapshot. The
   // per-request `timeout` override is required for the same reason as generate —
   // the synchronous Gemini call routinely exceeds the default 10s JSON timeout.
   async refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
-  ): Promise<Result<Recipe, Failure>> {
-    const result = await this.http.request<RecipeDto>({
+  ): Promise<Result<RefinedRecipe, Failure>> {
+    const result = await this.http.request<RefineRecipeResponseDto>({
       method: 'POST',
       url: '/recipes/refine',
       data: { currentRecipe, instruction },
@@ -205,7 +209,15 @@ export class RecipeRepository implements IRecipeRepository {
     if (!result.ok) {
       return result;
     }
-    return this.mapRecipe(result.value);
+    const mapped = this.mapRecipe(result.value);
+    if (!mapped.ok) {
+      return mapped;
+    }
+    return ok({
+      recipe: mapped.value,
+      summary: result.value.summary,
+      suggestion: result.value.suggestion,
+    });
   }
 
   private mapRecipe(dto: RecipeDto): Result<Recipe, Failure> {

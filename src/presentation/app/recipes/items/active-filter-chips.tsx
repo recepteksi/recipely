@@ -8,6 +8,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
+import { ValueConstants } from '@core/constants';
 
 export interface ActiveFilterChipsProps {
   filters: UiFilters;
@@ -35,9 +36,9 @@ export const ActiveFilterChips = ({
   const nonCuisineFilterCount =
     filters.categories.length +
     filters.difficulties.length +
-    (filters.maxTime > 0 ? 1 : 0);
+    (filters.maxTime > ValueConstants.zero ? 1 : ValueConstants.zero);
 
-  if (nonCuisineFilterCount === 0) return null;
+  if (nonCuisineFilterCount === ValueConstants.zero) return null;
 
   return (
     <ScrollView
@@ -73,7 +74,7 @@ export const ActiveFilterChips = ({
           <Ionicons name="close-circle" size={14} color={colors.primary} />
         </Pressable>
       ))}
-      {filters.maxTime > 0 ? (
+      {filters.maxTime > ValueConstants.zero ? (
         <Pressable
           onPress={onRemoveMaxTime}
           style={[styles.activeChip, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '40' }]}

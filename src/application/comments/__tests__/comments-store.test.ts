@@ -1,9 +1,9 @@
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
-import type { ListCommentsUseCase } from '@application/comments/list-comments-use-case';
-import type { AddCommentUseCase } from '@application/comments/add-comment-use-case';
-import type { DeleteCommentUseCase } from '@application/comments/delete-comment-use-case';
-import type { LikeCommentUseCase } from '@application/comments/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/unlike-comment-use-case';
+import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
+import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
+import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
+import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
+import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -194,5 +194,18 @@ describe('commentsStore.toggleLike — missing comment', () => {
     expect(result.ok).toBe(true);
     expect(likeCalls).toHaveLength(0);
     expect(unlikeCalls).toHaveLength(0);
+  });
+});
+
+describe('commentsStore.clear', () => {
+  // Regression: cached threads survived sign-out / account deletion, so a
+  // deleted account's comments stayed on screen until a manual refresh.
+  it('drops every cached recipe thread so the next visit re-fetches', async () => {
+    const { store } = await seededStore({ seed: [makeComment({ id: 'c1' })] });
+    expect(store.getState().byRecipe[RECIPE_ID]).toBeDefined();
+
+    store.getState().clear();
+
+    expect(store.getState().byRecipe).toEqual({});
   });
 });

@@ -19,10 +19,10 @@ import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-tax
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
-  missingMessage: string | null;
   /** Per-field backend validation messages, keyed by input — highlights the offending fields. */
   fieldErrors?: CreateRecipeFieldErrors['fields'];
   onChangeName: (value: string) => void;
@@ -44,7 +44,6 @@ export interface RecipePreviewEditorProps {
 /** Inline live editor of every recipe field shown in the preview phase. */
 export const RecipePreviewEditor = ({
   recipe,
-  missingMessage,
   fieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS.fields,
   onChangeName,
   onChangeCuisine,
@@ -67,8 +66,8 @@ export const RecipePreviewEditor = ({
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === 'image');
-  const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > 0).length;
-  const stepCount = recipe.instructions.filter((s) => s.trim().length > 0).length;
+  const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > ValueConstants.zero).length;
+  const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
     <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
@@ -172,12 +171,6 @@ export const RecipePreviewEditor = ({
             />
           ))}
         </EditableItemsSection>
-
-        {missingMessage !== null ? (
-          <ThemedText variant="caption" style={[styles.missing, { color: colors.danger }]}>
-            {missingMessage}
-          </ThemedText>
-        ) : null}
       </View>
 
       <TaxonomyPickerSheet
@@ -234,14 +227,11 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.title,
     fontWeight: '800',
     letterSpacing: -0.4,
-    padding: 0,
+    padding: ValueConstants.zero,
   },
   taxonomyRow: {
     flexDirection: 'row',
     gap: spacing.sm,
     marginTop: spacing.md,
-  },
-  missing: {
-    textAlign: 'center',
   },
 });
