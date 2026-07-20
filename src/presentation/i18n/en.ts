@@ -228,6 +228,8 @@ export const en = {
     signInWithApple: 'Continue with Apple',
     forgot: 'Forgot password?',
     forgotPassword: 'Forgot password',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     continueAsGuest: 'Continue without an account',
   },
   recipes: {

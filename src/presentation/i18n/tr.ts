@@ -227,6 +227,8 @@ export const tr: Translations = {
     signInWithApple: 'Apple ile devam et',
     forgot: 'Şifrenizi mi unuttunuz?',
     forgotPassword: 'Şifre sıfırla',
+    showPassword: 'Şifreyi göster',
+    hidePassword: 'Şifreyi gizle',
     continueAsGuest: 'Üye olmadan devam et',
   },
   recipes: {
