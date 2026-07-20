@@ -2,9 +2,9 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/api';
-import { generateNonce, hashNonce } from '@infrastructure/auth/nonce-generator';
-import type { GoogleSigninMod } from '@infrastructure/auth/google-signin-mod';
-import type { FirebaseAuthMod } from '@infrastructure/auth/firebase-auth-mod';
+import { generateNonce, hashNonce } from '@infrastructure/auth/social/nonce-generator';
+import type { GoogleSigninMod } from '@infrastructure/auth/social/google-signin-mod';
+import type { FirebaseAuthMod } from '@infrastructure/auth/social/firebase-auth-mod';
 import * as AppleAuthentication from 'expo-apple-authentication';
 
 // WHY: static imports of @react-native-google-signin and @react-native-firebase/auth

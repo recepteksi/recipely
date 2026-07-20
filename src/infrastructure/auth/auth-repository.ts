@@ -18,18 +18,18 @@ import {
 } from '@infrastructure/constants/api';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
-import type { RecipelyAuthSessionDto } from '@infrastructure/auth/recipely-auth-session-dto';
+import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
-import type { RegistrationChallengeDto } from '@infrastructure/auth/registration-challenge-dto';
+import type { RegistrationChallengeDto } from '@infrastructure/auth/registration/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import {
   acquireAppleFirebaseToken,
   acquireGoogleFirebaseToken,
-} from '@infrastructure/auth/social-auth-provider';
-import { toChallenge } from '@infrastructure/auth/to-challenge';
-import { expiresAtFromToken } from '@infrastructure/auth/expires-at-from-token';
-import { rebuildSessionWithUser } from '@infrastructure/auth/rebuild-session-with-user';
+} from '@infrastructure/auth/social/social-auth-provider';
+import { toChallenge } from '@infrastructure/auth/registration/to-challenge';
+import { expiresAtFromToken } from '@infrastructure/auth/session/expires-at-from-token';
+import { rebuildSessionWithUser } from '@infrastructure/auth/session/rebuild-session-with-user';
 
 /**
  * Implements `IAuthRepository` against the Recipely backend (email/password)
