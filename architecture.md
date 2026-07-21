@@ -170,6 +170,11 @@ Implements domain interfaces with concrete I/O.
 - **DTOs** — One interface per file (`RecipeDto`, `RecipesListDto`, …).
 - **Mappers** — Pure functions (`toRecipe`, `toUser`) that convert DTOs to domain entities, returning
   `Result`. Mappers are stateless and have no dependencies, so plain exported functions are idiomatic.
+  They are typed to the shared function-type contracts in `@core/mapper`: a reconstituting DTO→domain
+  mapper is a `Mapper<TDto, TDomain, TFailure>` (returns `Result`); a total input→request-DTO mapper is a
+  `RequestMapper<TInput, TDto>` (returns the DTO directly). These are **type aliases, not base classes** —
+  mappers never become classes, and infallible field-copy transformers that fit neither contract stay
+  plain functions.
 - **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).

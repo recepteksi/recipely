@@ -1,5 +1,5 @@
-import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
+import type { ValidationFailure } from '@core/failure';
+import type { Mapper } from '@core/mapper/mapper';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
@@ -15,7 +15,7 @@ import { ValueConstants } from '@core/constants';
  * that into a `[{ url: '' }]` item would defeat the create flow's add-photo
  * guard, so an empty cover maps to an empty gallery instead.
  */
-export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ValidationFailure> => {
+export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto) => {
   const media: MediaItem[] =
     dto.media && dto.media.length > ValueConstants.zero
       ? dto.media.map((m) => ({ type: m.type, url: m.url }))
@@ -54,9 +54,9 @@ export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ValidationFailure
  * Maps a lean `RecipeListItemDto` (list/my-recipes/trending endpoints) into a
  * domain `RecipeSummaryEntity` entity.
  */
-export const toRecipeSummary = (
-  dto: RecipeListItemDto,
-): Result<RecipeSummaryEntity, ValidationFailure> => {
+export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, ValidationFailure> = (
+  dto,
+) => {
   return RecipeSummaryEntity.create({
     id: dto.id,
     name: dto.name,
