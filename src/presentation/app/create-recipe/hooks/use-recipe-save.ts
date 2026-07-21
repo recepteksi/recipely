@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
@@ -9,6 +9,7 @@ import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presenta
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/use-recipe-save-args';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Handles publishing a new recipe or updating an existing one, including the
@@ -130,7 +131,7 @@ export const useRecipeSave = ({
     const success = saveSuccess;
     setSaveSuccess(null);
     if (success?.mode === 'publish') {
-      router.replace({ pathname: '/recipes/[recipeId]', params: { recipeId: success.recipeId } });
+      router.replace(RoutePaths.recipeDetail(success.recipeId) as Href);
     } else {
       router.back();
     }
@@ -140,7 +141,7 @@ export const useRecipeSave = ({
   const onCloseSuccess = useCallback((): void => {
     const mode = saveSuccess?.mode;
     setSaveSuccess(null);
-    if (mode === 'publish') router.replace('/my-recipes');
+    if (mode === 'publish') router.replace(RoutePaths.myRecipes);
     else router.back();
   }, [saveSuccess, router]);
 

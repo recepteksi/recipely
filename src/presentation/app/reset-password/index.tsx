@@ -16,6 +16,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 const MIN_PASSWORD_LENGTH = 8;
@@ -92,11 +93,11 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
 
   if (tokenValue.length === ValueConstants.zero) {
     cardBody = (
-      <InvalidLinkView onBack={() => router.replace('/login')} />
+      <InvalidLinkView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else if (succeeded) {
     cardBody = (
-      <SuccessView onBack={() => router.replace('/login')} />
+      <SuccessView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else {
     cardBody = (
@@ -116,7 +117,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         loading={loading}
         error={error}
         onSubmit={() => { void handleSubmit(); }}
-        onBack={() => router.replace('/login')}
+        onBack={() => router.replace(RoutePaths.login)}
       />
     );
   }
@@ -169,7 +170,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         />
 
         <Pressable
-          onPress={() => router.replace('/login')}
+          onPress={() => router.replace(RoutePaths.login)}
           style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
           accessibilityRole="button"
           accessibilityLabel={t().resetPassword.backToLogin}

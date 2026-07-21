@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
@@ -9,6 +9,7 @@ import { formatTimer } from '@presentation/base/utils/format-timer';
 import type { TimerEntry } from '@application/timers/timer-entry';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { RoutePaths } from '@presentation/base/constants';
 
 interface TimerChipProps {
   entry: TimerEntry;
@@ -27,7 +28,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
   const { remainingSeconds, isPaused, isDone } = timer;
 
   const handleTap = useCallback(() => {
-    router.push(`/recipes/${entry.recipeId}`);
+    router.push(RoutePaths.recipeDetail(entry.recipeId) as Href);
   }, [entry.recipeId, router]);
 
   const timeLabel = isDone

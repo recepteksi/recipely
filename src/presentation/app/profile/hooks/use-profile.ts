@@ -6,6 +6,7 @@ import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-uplo
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import type { UseProfileResult } from '@presentation/app/profile/model/use-profile-result';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Orchestrates the profile screen: exposes the signed-in user's identity
@@ -71,7 +72,7 @@ export const useProfile = (): UseProfileResult => {
     photoUri,
     isUploading,
     onPickAvatar: () => void pickAndUpload(),
-    onEditProfile: () => router.push('/edit-profile'),
+    onEditProfile: () => router.push(RoutePaths.editProfile),
     stats,
     uploadError,
     onDismissUploadError,

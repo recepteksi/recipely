@@ -23,6 +23,7 @@ import type { NotifItem } from '@presentation/app/notifications/model/notif-item
 import type { SectionData } from '@presentation/app/notifications/model/section-data';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const KNOWN_KINDS = new Set<NotifKind>([
   'comment',
@@ -102,7 +103,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
   const openTarget = (target: NotificationTarget): void => {
-    const path = `/recipes/${encodeURIComponent(target.recipeId)}`;
+    const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
       (target.kind === 'comment'
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`

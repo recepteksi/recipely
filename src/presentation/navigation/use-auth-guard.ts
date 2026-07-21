@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
@@ -67,6 +68,6 @@ export const useAuthGuard = (): void => {
     // is always worth preserving as a post-login redirect target. Cast: the
     // dynamic redirect param can't be statically verified against expo-router's
     // typed-routes union.
-    router.replace(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+    router.replace(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [status, pathname, router]);
 };

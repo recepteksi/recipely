@@ -17,6 +17,7 @@ import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/passwor
 import { computeStrength } from '@presentation/app/register/model/compute-strength';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -80,7 +81,7 @@ export const RegisterForm = (): React.JSX.Element => {
     const result = await register(email, password, name);
     if (result.ok) {
       router.push({
-        pathname: '/verify-code',
+        pathname: RoutePaths.verifyCode,
         params: {
           email: result.value.email,
           expiresAt: result.value.expiresAt,

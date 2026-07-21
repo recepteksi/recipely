@@ -12,6 +12,7 @@ import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-
 import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const HEADER_HEIGHT = 68;
 
@@ -65,14 +66,14 @@ export const WebHeader = (): React.JSX.Element => {
   const displayName = user?.displayName ?? 'Recipely User';
   const avatarUri = user?.photoUrl ?? undefined;
 
-  const goRecipes = (): void => router.replace('/recipes');
+  const goRecipes = (): void => router.replace(RoutePaths.recipes);
   const goTab = (key: WebHeaderTabKey): void => {
-    if (key === 'recipes') router.replace('/recipes');
-    else router.replace('/my-recipes');
+    if (key === 'recipes') router.replace(RoutePaths.recipes);
+    else router.replace(RoutePaths.myRecipes);
   };
-  const goCreate = (): void => router.push('/create-recipe');
-  const goNotifs = (): void => router.push('/notifications');
-  const goProfile = (): void => router.replace('/profile');
+  const goCreate = (): void => router.push(RoutePaths.createRecipe);
+  const goNotifs = (): void => router.push(RoutePaths.notifications);
+  const goProfile = (): void => router.replace(RoutePaths.profile);
 
   // Search input only appears on the Recipes listing — that's where the recipe
   // list reads `useWebShellState().searchQuery` and folds it into its filter.
