@@ -14,10 +14,10 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import {
   AI_REQUEST_TIMEOUT_MS,
   IMPORT_REQUEST_TIMEOUT_MS,
-  RECIPE_TRENDING_PATH,
   RECIPES_PAGE_SIZE,
   TRENDING_RECIPES_LIMIT,
 } from '@infrastructure/constants/api';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
@@ -48,7 +48,7 @@ export class RecipeRepository implements IRecipeRepository {
 
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
-      url: '/recipes',
+      url: ApiRoutes.recipes.root,
       params,
     });
     if (!result.ok) {
@@ -60,7 +60,7 @@ export class RecipeRepository implements IRecipeRepository {
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
-      url: RECIPE_TRENDING_PATH,
+      url: ApiRoutes.recipes.trending,
       params: { limit: limit ?? TRENDING_RECIPES_LIMIT },
     });
     if (!result.ok) {
@@ -72,7 +72,7 @@ export class RecipeRepository implements IRecipeRepository {
   async listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
-      url: '/me/recipes',
+      url: ApiRoutes.me.recipes,
       params: { page: 1, pageSize: 20 },
     });
     if (!result.ok) {
@@ -84,7 +84,7 @@ export class RecipeRepository implements IRecipeRepository {
   async getRecipe(id: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'GET',
-      url: `/recipes/${encodeURIComponent(id)}`,
+      url: ApiRoutes.recipes.byId(id),
     });
     if (!result.ok) {
       return result;
@@ -98,7 +98,7 @@ export class RecipeRepository implements IRecipeRepository {
   ): Promise<Result<Recipe, Failure>> {
     const formData = await buildCreateRecipeFormData(input);
     const result = await this.http.uploadMultipart<RecipeDto>(
-      '/recipes/with-media',
+      ApiRoutes.recipes.withMedia,
       formData,
       onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
     );
@@ -130,7 +130,7 @@ export class RecipeRepository implements IRecipeRepository {
 
     const result = await this.http.request<RecipeDto>({
       method: 'PATCH',
-      url: `/recipes/${encodeURIComponent(id)}`,
+      url: ApiRoutes.recipes.byId(id),
       data: body,
     });
     if (!result.ok) {
@@ -142,7 +142,7 @@ export class RecipeRepository implements IRecipeRepository {
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'DELETE',
-      url: `/recipes/${encodeURIComponent(id)}`,
+      url: ApiRoutes.recipes.byId(id),
     });
     if (!result.ok) {
       return result;
@@ -159,7 +159,7 @@ export class RecipeRepository implements IRecipeRepository {
   async generateRecipe(prompt: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
-      url: '/recipes/generate',
+      url: ApiRoutes.recipes.generate,
       data: { prompt },
       timeout: AI_REQUEST_TIMEOUT_MS,
     });
@@ -179,7 +179,7 @@ export class RecipeRepository implements IRecipeRepository {
   async importInstagramRecipe(url: string): Promise<Result<Recipe, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
-      url: '/recipes/import',
+      url: ApiRoutes.recipes.import,
       data: { url },
       timeout: IMPORT_REQUEST_TIMEOUT_MS,
     });
@@ -202,7 +202,7 @@ export class RecipeRepository implements IRecipeRepository {
   ): Promise<Result<RefinedRecipe, Failure>> {
     const result = await this.http.request<RefineRecipeResponseDto>({
       method: 'POST',
-      url: '/recipes/refine',
+      url: ApiRoutes.recipes.refine,
       data: { currentRecipe, instruction },
       timeout: AI_REQUEST_TIMEOUT_MS,
     });
