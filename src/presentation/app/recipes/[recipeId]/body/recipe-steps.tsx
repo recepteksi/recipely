@@ -7,10 +7,10 @@ import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/inst
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 
 export interface RecipeStepsProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   isOwner: boolean;
   isWebShell: boolean;

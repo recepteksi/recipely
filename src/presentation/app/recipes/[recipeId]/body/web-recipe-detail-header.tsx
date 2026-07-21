@@ -8,11 +8,11 @@ import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/mod
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailHeaderProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;

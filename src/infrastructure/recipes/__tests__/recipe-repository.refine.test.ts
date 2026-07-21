@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
@@ -82,7 +82,7 @@ describe('RecipeRepository.refineRecipe', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value.recipe).toBeInstanceOf(Recipe);
+      expect(r.value.recipe).toBeInstanceOf(RecipeEntity);
       expect(r.value.recipe.name).toBe('Refined Spicy Pasta');
       expect(r.value.recipe.cuisine).toBe(CuisineKey.Italian);
       expect(r.value.summary).toBe('Doubled the garlic and added chili flakes.');
@@ -100,7 +100,7 @@ describe('RecipeRepository.refineRecipe', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value.recipe).toBeInstanceOf(Recipe);
+      expect(r.value.recipe).toBeInstanceOf(RecipeEntity);
       expect(r.value.recipe.name).toBe('Refined Spicy Pasta');
       expect(r.value.summary).toBeUndefined();
       expect(r.value.suggestion).toBeUndefined();

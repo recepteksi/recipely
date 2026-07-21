@@ -7,12 +7,12 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeSearchOverlayProps {
   /** Already name-filtered recipes for the current query (see `recipe-list-screen`'s `filteredRecipes`). */
-  recipes: RecipeSummary[];
+  recipes: RecipeSummaryEntity[];
   onOpenRecipe: (id: string) => void;
 }
 

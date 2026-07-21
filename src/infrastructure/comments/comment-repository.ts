@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { Comment } from '@domain/comments/comment';
+import { CommentEntity } from '@domain/comments/comment-entity';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -30,7 +30,7 @@ export class CommentRepository implements ICommentRepository {
     if (!result.ok) {
       return result;
     }
-    const items: Comment[] = [];
+    const items: CommentEntity[] = [];
     for (const dto of result.value.items) {
       const mapped = mapDtoToComment(dto);
       if (!mapped.ok) {
@@ -46,7 +46,7 @@ export class CommentRepository implements ICommentRepository {
     });
   }
 
-  async add(recipeId: string, body: string): Promise<Result<Comment, Failure>> {
+  async add(recipeId: string, body: string): Promise<Result<CommentEntity, Failure>> {
     const result = await this.http.request<CommentDto>({
       method: 'POST',
       url: ApiRoutes.recipes.comments(recipeId),
@@ -88,8 +88,8 @@ export class CommentRepository implements ICommentRepository {
   }
 }
 
-function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
-  return Comment.create({
+function mapDtoToComment(dto: CommentDto): Result<CommentEntity, Failure> {
+  return CommentEntity.create({
     id: dto.id,
     body: dto.body,
     authorId: dto.authorId,

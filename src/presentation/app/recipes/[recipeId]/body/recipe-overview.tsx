@@ -11,11 +11,11 @@ import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-tax
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeOverviewProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   liked: boolean;
   likeCount: number;

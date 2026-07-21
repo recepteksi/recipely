@@ -5,11 +5,11 @@ import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficul
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailSidebarProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
 }

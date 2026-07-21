@@ -1,8 +1,8 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { Recipe } from '@domain/recipes/recipe';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
@@ -36,7 +36,7 @@ import { uploadRecipeMedia } from '@infrastructure/recipes/media/upload-recipe-m
 export class RecipeRepository implements IRecipeRepository {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>> {
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
     const params: Record<string, unknown> = { page: 1, pageSize: RECIPES_PAGE_SIZE };
     if (filters?.search) params['search'] = filters.search;
     if (filters?.cuisines?.length) params['cuisines'] = filters.cuisines.join(',');
@@ -57,7 +57,7 @@ export class RecipeRepository implements IRecipeRepository {
     return mapRecipeSummaries(result.value.items);
   }
 
-  async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummary[], Failure>> {
+  async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: ApiRoutes.recipes.trending,
@@ -69,7 +69,7 @@ export class RecipeRepository implements IRecipeRepository {
     return mapRecipeSummaries(result.value.items);
   }
 
-  async listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
+  async listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: ApiRoutes.me.recipes,
@@ -81,7 +81,7 @@ export class RecipeRepository implements IRecipeRepository {
     return mapRecipeSummaries(result.value.items);
   }
 
-  async getRecipe(id: string): Promise<Result<Recipe, Failure>> {
+  async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'GET',
       url: ApiRoutes.recipes.byId(id),
@@ -95,7 +95,7 @@ export class RecipeRepository implements IRecipeRepository {
   async createRecipe(
     input: CreateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RecipeEntity, Failure>> {
     const formData = await buildCreateRecipeFormData(input);
     const result = await this.http.uploadMultipart<RecipeDto>(
       ApiRoutes.recipes.withMedia,
@@ -112,7 +112,7 @@ export class RecipeRepository implements IRecipeRepository {
     id: string,
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RecipeEntity, Failure>> {
     const body = buildUpdateRecipeBody(input);
 
     // WHY: the backend PATCH /:id accepts a full `media[]` of { type, url } and
@@ -156,7 +156,7 @@ export class RecipeRepository implements IRecipeRepository {
   // truth for the request locale. The per-request `timeout` override is required
   // because the synchronous Gemini call routinely exceeds the client's default
   // 10s JSON timeout, which would abort a request the backend then completes.
-  async generateRecipe(prompt: string): Promise<Result<Recipe, Failure>> {
+  async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: ApiRoutes.recipes.generate,
@@ -176,7 +176,7 @@ export class RecipeRepository implements IRecipeRepository {
   // client's default 10s JSON timeout would abort the request first. The request
   // interceptor only overrides config.timeout for FormData payloads, so this
   // JSON override is honoured untouched.
-  async importInstagramRecipe(url: string): Promise<Result<Recipe, Failure>> {
+  async importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: ApiRoutes.recipes.import,
@@ -220,7 +220,7 @@ export class RecipeRepository implements IRecipeRepository {
     });
   }
 
-  private mapRecipe(dto: RecipeDto): Result<Recipe, Failure> {
+  private mapRecipe(dto: RecipeDto): Result<RecipeEntity, Failure> {
     const mapped = toRecipe(dto);
     if (!mapped.ok) {
       return fail(mapped.failure);

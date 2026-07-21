@@ -11,7 +11,7 @@
 
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
 
 jest.mock('@expo/vector-icons', () => {
@@ -37,8 +37,8 @@ jest.mock('@presentation/app/recipes/items/recipe-list-item', () => {
   };
 });
 
-const buildRecipe = (id: string, name: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name,
     image: '',

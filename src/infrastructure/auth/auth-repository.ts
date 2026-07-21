@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { AuthSession } from '@domain/auth/auth-session';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
@@ -33,7 +33,7 @@ export class AuthRepository implements IAuthRepository {
     private readonly storage: SecureTokenStorage,
   ) {}
 
-  async signIn(email: string, password: string): Promise<Result<AuthSession, Failure>> {
+  async signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.login,
@@ -64,7 +64,7 @@ export class AuthRepository implements IAuthRepository {
   async verifyRegistration(
     email: string,
     code: string,
-  ): Promise<Result<AuthSession, Failure>> {
+  ): Promise<Result<AuthSessionEntity, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.registerVerify,
@@ -90,13 +90,13 @@ export class AuthRepository implements IAuthRepository {
     return ok(toChallenge(email.trim(), result.value));
   }
 
-  async signInWithGoogle(): Promise<Result<AuthSession, Failure>> {
+  async signInWithGoogle(): Promise<Result<AuthSessionEntity, Failure>> {
     const tokenResult = await acquireGoogleFirebaseToken();
     if (!tokenResult.ok) return tokenResult;
     return this.exchangeFirebaseToken(tokenResult.value);
   }
 
-  async signInWithApple(): Promise<Result<AuthSession, Failure>> {
+  async signInWithApple(): Promise<Result<AuthSessionEntity, Failure>> {
     const tokenResult = await acquireAppleFirebaseToken();
     if (!tokenResult.ok) return tokenResult;
     return this.exchangeFirebaseToken(tokenResult.value);
@@ -110,7 +110,7 @@ export class AuthRepository implements IAuthRepository {
     return ok(undefined);
   }
 
-  async getCurrentSession(): Promise<Result<AuthSession | null, Failure>> {
+  async getCurrentSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     return this.storage.loadSession();
   }
 
@@ -142,7 +142,7 @@ export class AuthRepository implements IAuthRepository {
     fileUri: string,
     fileName: string,
     mimeType: string,
-  ): Promise<Result<AuthSession, Failure>> {
+  ): Promise<Result<AuthSessionEntity, Failure>> {
     const formData = new FormData();
     await appendFilePart(formData, 'avatar', { uri: fileUri, fileName, mimeType });
 
@@ -159,7 +159,7 @@ export class AuthRepository implements IAuthRepository {
   async updateProfile(input: {
     displayName?: string;
     bio?: string;
-  }): Promise<Result<AuthSession, Failure>> {
+  }): Promise<Result<AuthSessionEntity, Failure>> {
     const result = await this.http.request<{ user: RecipelyUserDto }>({
       method: 'PATCH',
       url: ApiRoutes.me.profile,
@@ -189,7 +189,7 @@ export class AuthRepository implements IAuthRepository {
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */
-  private async exchangeFirebaseToken(idToken: string): Promise<Result<AuthSession, Failure>> {
+  private async exchangeFirebaseToken(idToken: string): Promise<Result<AuthSessionEntity, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.social,
@@ -199,14 +199,14 @@ export class AuthRepository implements IAuthRepository {
     return this.persistSession(result.value);
   }
 
-  /** Maps a backend session DTO to an `AuthSession` and persists it to storage. */
+  /** Maps a backend session DTO to an `AuthSessionEntity` and persists it to storage. */
   private async persistSession(
     dto: RecipelyAuthSessionDto,
-  ): Promise<Result<AuthSession, Failure>> {
+  ): Promise<Result<AuthSessionEntity, Failure>> {
     const userResult = toUser(dto.user);
     if (!userResult.ok) return userResult;
 
-    const sessionResult = AuthSession.create({
+    const sessionResult = AuthSessionEntity.create({
       id: dto.user.id,
       accessToken: dto.token,
       expiresAt: expiresAtFromToken(dto.token),

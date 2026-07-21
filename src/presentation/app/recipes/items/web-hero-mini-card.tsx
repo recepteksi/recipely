@@ -7,11 +7,11 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/web-hero-constants';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface WebHeroMiniCardProps {
-  recipe: RecipeSummary;
+  recipe: RecipeSummaryEntity;
   /** Rank number rendered in the top-left badge (2 or 3). */
   rank: number;
   onPress: (id: string) => void;

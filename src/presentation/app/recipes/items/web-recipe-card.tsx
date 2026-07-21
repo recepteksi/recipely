@@ -9,13 +9,13 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 const HOVER_LIFT = 1.02;
 const HOVER_DURATION = 160;
 
 export interface WebRecipeCardProps {
-  recipe: RecipeSummary;
+  recipe: RecipeSummaryEntity;
   /** True when the recipe is in the signed-in user's saved set. */
   saved: boolean;
   onOpen: (id: string) => void;

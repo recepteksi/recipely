@@ -29,7 +29,7 @@ import { create } from 'zustand';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Comment, type CommentProps } from '@domain/comments/comment';
+import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
@@ -41,8 +41,8 @@ import type { LikeCommentUseCase } from '@application/comments/like/like-comment
 import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -85,8 +85,8 @@ jest.mock('@presentation/base/hooks/use-scroll-to-end-on-keyboard', () => ({
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
 
-const makeComment = (overrides: Partial<CommentProps> = {}): Comment => {
-  const result = Comment.create({
+const makeComment = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+  const result = CommentEntity.create({
     id: 'c1',
     body: 'Looks delicious!',
     authorId: USER_ID,
@@ -108,11 +108,11 @@ const unwrap = <T,>(result: Result<T, Failure>): T => {
   return result.value;
 };
 
-const buildSession = (userId: string): AuthSession => {
+const buildSession = (userId: string): AuthSessionEntity => {
   const email = unwrap(Email.create('test@example.com'));
-  const user = unwrap(User.create({ id: userId, email, displayName: 'Test User' }));
+  const user = unwrap(UserEntity.create({ id: userId, email, displayName: 'Test User' }));
   return unwrap(
-    AuthSession.create({
+    AuthSessionEntity.create({
       id: 'session-1',
       accessToken: 'access-token',
       expiresAt: new Date(Date.now() + 3_600_000),
@@ -127,7 +127,7 @@ const buildSession = (userId: string): AuthSession => {
  * `createAddCommentAction`, not by the test.
  */
 const makeRealCommentsStore = (
-  execute: jest.Mock<Promise<Result<Comment, Failure>>, [{ recipeId: string; body: string }]>,
+  execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
 ): CommentsStore =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,

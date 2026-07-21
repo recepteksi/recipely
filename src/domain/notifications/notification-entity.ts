@@ -1,4 +1,4 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -23,16 +23,16 @@ export interface NotificationProps {
  * Domain entity representing a backend notification (comment, like, follow,
  * AI completion, etc.). Validates that `id` is non-empty before construction.
  */
-export class Notification extends Entity<NotificationProps> {
+export class NotificationEntity extends BaseEntity<NotificationProps> {
   private constructor(props: NotificationProps) {
     super(props);
   }
 
-  static create(props: NotificationProps): Result<Notification, ValidationFailure> {
+  static create(props: NotificationProps): Result<NotificationEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Notification id must be non-empty', 'id'));
     }
-    return ok(new Notification(props));
+    return ok(new NotificationEntity(props));
   }
 
   get type(): string {
@@ -99,8 +99,8 @@ export class Notification extends Entity<NotificationProps> {
    * Returns a copy of this notification with `read: true` (or `this` when
    * already read). Copies stay valid by construction, so no `Result` needed.
    */
-  asRead(): Notification {
+  asRead(): NotificationEntity {
     if (this.props.read) return this;
-    return new Notification({ ...this.props, read: true });
+    return new NotificationEntity({ ...this.props, read: true });
   }
 }

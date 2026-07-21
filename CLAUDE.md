@@ -120,7 +120,7 @@ folder (asset requires are centralised in `src/infrastructure/constants/assets.t
 - `src/application/` — Use cases, Zustand stores, DI registration, test fixtures.
 - `src/domain/` — Entities, value objects, repository interfaces. Pure TypeScript, no framework deps.
 - `src/infrastructure/` — Repository implementations, DTOs, mappers, HTTP client, storage, constants.
-- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `Entity`, DI container.
+- `src/core/` — `Result<T,F>`, `Failure` hierarchy, `BaseEntity`, DI container.
 
 ### Mandatory coding standards (see `architecture.md` §Coding Standards for full detail)
 
@@ -212,7 +212,7 @@ blocking.
     in the same PR — it never stays in the component (Evans 2003 p.57, Smart UI anti-pattern).
 
 19. **OOP & rich domain** — behavior lives with the data it belongs to: invariants and derivations are
-    entity / value-object methods (the `Recipe.create()` pattern), not helper functions scattered in
+    entity / value-object methods (the `RecipeEntity.create()` pattern), not helper functions scattered in
     stores or components. Encapsulation is mandatory: `private` constructor + static `create(): Result`,
     `private readonly` fields, no public setters. Entities carry only identity-intrinsic state —
     viewer-dependent flags belong in read models, not new entity props (Evans 2003 p.67). A primitive

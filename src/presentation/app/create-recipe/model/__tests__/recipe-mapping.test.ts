@@ -2,7 +2,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { Difficulty } from '@domain/recipes/difficulty';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
 import {
@@ -13,8 +13,8 @@ import {
   snapshotToEditable,
 } from '@presentation/app/create-recipe/model/recipe-mapping';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'Stub Recipe',
     cuisine: CuisineKey.Italian,

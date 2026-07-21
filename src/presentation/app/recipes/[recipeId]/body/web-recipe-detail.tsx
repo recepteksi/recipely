@@ -13,13 +13,13 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;

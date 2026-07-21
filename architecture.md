@@ -25,7 +25,7 @@ src/
     |
   infrastructure/     Repository implementations, DTOs, mappers, network, storage
     |
-  core/               Framework-agnostic building blocks (Result, Failure, Entity, DI)
+  core/               Framework-agnostic building blocks (Result, Failure, BaseEntity, DI)
 ```
 
 ### Dependency Rule
@@ -114,12 +114,12 @@ references are **by id only**.
 
 | Aggregate root | Members / notes |
 |---|---|
-| `Recipe` | Root. `RecipeSummary` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
-| `Comment` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
-| `User` | Root (auth identity). |
-| `UserProfile` | Own root (profile lifecycle independent of auth session); references `User` by id. |
-| `AuthSession` | Root (token lifecycle). |
-| `Notification` | Own root; references related entities by id. |
+| `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
+| `UserEntity` | Root (auth identity). |
+| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. |
+| `AuthSessionEntity` | Root (token lifecycle). |
+| `NotificationEntity` | Own root; references related entities by id. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.
@@ -136,7 +136,7 @@ Framework-agnostic building blocks shared across all layers.
 |--------|---------|
 | `src/core/result/result.ts` | `Result<T, F>` monad (`ok` / `fail`) for typed error handling |
 | `src/core/failure/` | `Failure` base class + individual subclasses (one per file) with barrel `index.ts` |
-| `src/core/entity/entity.ts` | Base `Entity<Props>` with identity equality |
+| `src/core/entity/base-entity.ts` | Base `BaseEntity<Props>` with identity equality |
 | `src/core/di/container.ts` | `Container` class (register/resolve with lazy singletons) |
 | `src/core/di/container-instance.ts` | Singleton `container` instance |
 | `src/core/di/tokens.ts` | DI token symbols |
@@ -145,7 +145,7 @@ Framework-agnostic building blocks shared across all layers.
 
 The heart of the application. Pure TypeScript, no framework dependencies.
 
-- **Entities** — `Recipe`, `AuthSession`, `User`, `Comment` extend `Entity<Props>` with factory `create()`
+- **Entities** — `RecipeEntity`, `AuthSessionEntity`, `UserEntity`, `CommentEntity` extend `BaseEntity<Props>` with factory `create()`
   methods returning `Result`.
 - **Value Objects** — e.g. `Email` (self-validating class with a factory `create()` returning `Result`).
 - **Enums / Literals** — typed string unions in their own files.
@@ -251,11 +251,11 @@ inside `base/*`, the type becomes a sibling file in the same folder. File name =
 declaration it contains.
 
 ```ts
-// ✅ recipe.ts — one entity class
-export class Recipe extends Entity<RecipeProps> { ... }
+// ✅ recipe-entity.ts — one entity class
+export class RecipeEntity extends BaseEntity<RecipeProps> { ... }
 
-// ❌ recipe.ts — two unrelated declarations
-export class Recipe extends Entity<RecipeProps> { ... }
+// ❌ recipe-entity.ts — two unrelated declarations
+export class RecipeEntity extends BaseEntity<RecipeProps> { ... }
 export class RecipeMapper { ... }   // move to recipe-mapper.ts
 ```
 
@@ -274,8 +274,8 @@ where a class would add no value.
 | Use case | `class GetRecipeUseCase { execute(...) }` |
 | Repository | `class RecipeRepository implements IRecipeRepository { ... }` |
 | HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
-| Domain entity | `class Recipe extends Entity<RecipeProps> { ... }` |
-| DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<Recipe, ...> => { ... }` |
+| Domain entity | `class RecipeEntity extends BaseEntity<RecipeProps> { ... }` |
+| DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ...> => { ... }` |
 | Date formatter | `export const formatDate = (d: Date): string => { ... }` |
 
 Never create a class whose only method is a static or standalone transform — use a plain function instead.

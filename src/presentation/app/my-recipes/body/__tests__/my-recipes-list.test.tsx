@@ -20,7 +20,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -40,8 +40,8 @@ jest.mock('@presentation/app/recipes/items/web-recipe-card', () => {
   return { WebRecipeCard: (): React.JSX.Element => <Text>web-recipe-card</Text> };
 });
 
-const makeRecipe = (id: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeRecipe = (id: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -56,7 +56,7 @@ const makeRecipe = (id: string): RecipeSummary => {
     commentCount: 0,
     viewCount: 0,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 

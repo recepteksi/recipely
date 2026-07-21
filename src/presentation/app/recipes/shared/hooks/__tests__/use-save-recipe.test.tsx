@@ -26,8 +26,8 @@ import type { UseSaveRecipeResult } from '@presentation/app/recipes/shared/model
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 
@@ -100,12 +100,12 @@ const unwrap = <T,>(result: { ok: boolean; value?: T }): T => {
   return result.value;
 };
 
-/** Builds a real authenticated `AuthSession` whose user carries the given id. */
-const buildSession = (userId: string): AuthSession => {
+/** Builds a real authenticated `AuthSessionEntity` whose user carries the given id. */
+const buildSession = (userId: string): AuthSessionEntity => {
   const email = unwrap(Email.create('test@example.com'));
-  const user = unwrap(User.create({ id: userId, email, displayName: 'Test User' }));
+  const user = unwrap(UserEntity.create({ id: userId, email, displayName: 'Test User' }));
   return unwrap(
-    AuthSession.create({
+    AuthSessionEntity.create({
       id: 'session-1',
       accessToken: 'access-token',
       expiresAt: new Date(Date.now() + 3_600_000),

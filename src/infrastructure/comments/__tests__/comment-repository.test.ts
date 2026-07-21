@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Comment } from '@domain/comments/comment';
+import { CommentEntity } from '@domain/comments/comment-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
@@ -117,7 +117,7 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       const comment = r.value.items[0];
-      expect(comment).toBeInstanceOf(Comment);
+      expect(comment).toBeInstanceOf(CommentEntity);
       expect(comment.likeCount).toBe(7);
       expect(comment.likedByMe).toBe(true);
     }

@@ -7,13 +7,13 @@ import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/mod
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
 export interface MobileRecipeDetailProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;

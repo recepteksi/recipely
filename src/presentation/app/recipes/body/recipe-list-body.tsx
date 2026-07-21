@@ -22,7 +22,7 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, sizes } from '@presentation/base/theme';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeListBodyProps {
@@ -41,7 +41,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const colors = useTheme().colors;
   const { state, filteredRecipes, isWebShell, isSearching, gridColumns } = vm;
 
-  const renderItem = ({ item }: { item: RecipeSummary }): React.JSX.Element => {
+  const renderItem = ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
     if (gridColumns > 1) {
       return (
         <View style={styles.gridCell}>

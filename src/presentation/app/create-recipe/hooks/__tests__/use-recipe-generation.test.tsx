@@ -30,7 +30,7 @@ import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -76,8 +76,8 @@ jest.mock('expo-router', () => ({
 
 const PROMPT = 'a quick garlic pasta';
 
-const makeRecipe = (): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r-generated',
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,

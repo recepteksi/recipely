@@ -1,4 +1,4 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -27,22 +27,22 @@ export interface RecipeSummaryProps {
  * Lightweight domain entity for list contexts (discover feed, my-recipes,
  * trending). Mirrors the backend's `RecipeListItemDto` split from the full
  * `RecipeDto`. Validates that `id` and `name` are non-empty before
- * construction; use `RecipeSummary.create` to obtain an instance. The full
+ * construction; use `RecipeSummaryEntity.create` to obtain an instance. The full
  * `Recipe` entity remains the detail-only shape and is unaffected by this type.
  */
-export class RecipeSummary extends Entity<RecipeSummaryProps> {
+export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryProps> {
   private constructor(props: RecipeSummaryProps) {
     super(props);
   }
 
-  static create(props: RecipeSummaryProps): Result<RecipeSummary, ValidationFailure> {
+  static create(props: RecipeSummaryProps): Result<RecipeSummaryEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
     }
     if (props.name.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
     }
-    return ok(new RecipeSummary(props));
+    return ok(new RecipeSummaryEntity(props));
   }
 
   get name(): string {

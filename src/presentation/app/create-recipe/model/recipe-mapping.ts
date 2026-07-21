@@ -1,5 +1,5 @@
 import type { MediaItem } from '@domain/recipes/media/media-item';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -37,7 +37,7 @@ const draftCuisine = (text: string): string | null => {
 
 /** Seeds the editable model from a generated/loaded `Recipe`. */
 export const recipeToEditable = (
-  recipe: Recipe,
+  recipe: RecipeEntity,
   prevMedia: readonly MediaItem[],
 ): EditableRecipe => ({
   name: recipe.name,
