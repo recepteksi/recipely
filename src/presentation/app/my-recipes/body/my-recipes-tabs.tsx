@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface MyRecipesTabsProps {
-  tabs: readonly { key: Tab; label: string; count: number }[];
-  active: Tab;
-  onChange: (key: Tab) => void;
+  tabs: readonly { key: TabType; label: string; count: number }[];
+  active: TabType;
+  onChange: (key: TabType) => void;
 }
 
 /** Mobile segmented control for the Saved / Created / Drafts tabs. */

@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import type { Severity } from '@presentation/base/theme/severity';
+import type { SeverityType } from '@presentation/base/theme/severity-type';
 import { spacing } from '@presentation/base/theme';
 
 const DISC_SIZE = 104;
@@ -12,7 +12,7 @@ const ACTION_MAX_WIDTH = 240;
 const BODY_MAX_WIDTH = 260;
 
 export interface ErrorStateProps {
-  severity?: Severity;
+  severity?: SeverityType;
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   body?: string;

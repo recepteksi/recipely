@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { WebRecipeCard } from '@presentation/app/recipes/items/web-recipe-card';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
@@ -15,7 +15,7 @@ import { ValueConstants } from '@core/constants';
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
 
 export interface MyRecipesListProps {
-  tab: Tab;
+  tab: TabType;
   drafts: readonly DraftItem[];
   items: readonly RecipeSummaryEntity[];
   gridColumns: number;

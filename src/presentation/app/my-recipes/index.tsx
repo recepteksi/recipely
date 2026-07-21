@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -36,7 +36,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const drafts = draftsStore((s) => s.drafts);
 
-  const [tab, setTab] = useState<Tab>('saved');
+  const [tab, setTab] = useState<TabType>('saved');
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
@@ -74,7 +74,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const items = tab === 'saved' ? savedRecipes : createdRecipes;
 
-  const tabDefs: readonly { key: Tab; label: string; count: number }[] = [
+  const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
     { key: 'saved', label: t().myRecipes.saved, count: savedRecipes.length },
     { key: 'created', label: t().myRecipes.created, count: createdRecipes.length },
     { key: 'drafts', label: t().myRecipes.drafts, count: drafts.length },
@@ -111,7 +111,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
           {isWebShell ? (
             <View style={styles.webTabsWrap}>
-              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={(key) => setTab(key as Tab)} />
+              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={(key) => setTab(key as TabType)} />
             </View>
           ) : (
             <MyRecipesTabs tabs={tabDefs} active={tab} onChange={setTab} />
