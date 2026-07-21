@@ -38,10 +38,10 @@ const isPublicPath = (pathname: string): boolean =>
   PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname);
 
 /**
- * Redirects to `/login` whenever the session resolves as unauthenticated (or
- * errored) on a route that requires auth — covers both "never logged in" and
- * "signed out". No-ops while the session is still hydrating (`idle`/`loading`)
- * so a valid session is never bounced on a hard reload / deep link.
+ * Redirects to `/login` whenever the session resolves as unauthenticated on a
+ * route that requires auth — covers both "never logged in" and "signed out".
+ * No-ops while the session is still hydrating (`idle`/`loading`) so a valid
+ * session is never bounced on a hard reload / deep link.
  *
  * Public routes are exempt: the exact-match set in {@link PUBLIC_PATHS} plus
  * the recipe-detail dynamic route matched by {@link RECIPE_DETAIL_PATH} (the
@@ -60,7 +60,7 @@ export const useAuthGuard = (): void => {
   const router = useRouter();
 
   useEffect(() => {
-    if (status !== 'unauthenticated' && status !== 'error') return;
+    if (status !== 'unauthenticated') return;
     if (isPublicPath(pathname)) return;
     // `pathname` is guaranteed non-public here — the isPublicPath early return
     // above already handled `/`, `/login`, and the other public routes — so it

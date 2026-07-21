@@ -36,9 +36,9 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
     if (email.trim().length === ValueConstants.zero) return;
     setSendError(undefined);
     setLoading(true);
-    const ok = await requestPasswordReset(email.trim());
+    const failure = await requestPasswordReset(email.trim());
     setLoading(false);
-    if (ok) {
+    if (failure === null) {
       setSent(true);
     } else {
       setSendError(t().forgotPassword.sendError);

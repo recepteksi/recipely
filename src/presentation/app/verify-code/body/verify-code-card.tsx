@@ -29,7 +29,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const isLoading = authStore((s) => s.state.status === 'loading');
   const verifyRegistration = authStore((s) => s.verifyRegistration);
   const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
 
@@ -51,16 +51,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   }, [expiresAt]);
 
   const codeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
-  const isLoading = state.status === 'loading';
-  const remoteError =
-    state.status === 'error'
-      ? authFormMessage(state.failure, {
-          unauthorized: t().verify.invalidCode,
-          validation: t().verify.invalidCode,
-          not_found: t().verify.invalidCode,
-        })
-      : undefined;
-  const errorMessage = localError ?? remoteError;
+  const errorMessage = localError;
 
   const handleVerify = useCallback(async () => {
     if (!codeValid) {
@@ -68,7 +59,16 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
       return;
     }
     setLocalError(undefined);
-    await verifyRegistration(email, code);
+    const failure = await verifyRegistration(email, code);
+    if (failure) {
+      setLocalError(
+        authFormMessage(failure, {
+          unauthorized: t().verify.invalidCode,
+          validation: t().verify.invalidCode,
+          not_found: t().verify.invalidCode,
+        }),
+      );
+    }
   }, [codeValid, verifyRegistration, email, code]);
 
   // Resend is locked until the current code expires.
@@ -78,11 +78,14 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
     if (remaining > ValueConstants.zero || resending) return;
     setResending(true);
     setResent(false);
-    const challenge = await resendRegistrationCode(email);
+    setLocalError(undefined);
+    const result = await resendRegistrationCode(email);
     setResending(false);
-    if (challenge) {
+    if (result.ok) {
       setResent(true);
-      setExpiresAt(challenge.expiresAt);
+      setExpiresAt(result.value.expiresAt);
+    } else {
+      setLocalError(authFormMessage(result.failure, {}));
     }
   }, [remaining, resending, resendRegistrationCode, email]);
 
