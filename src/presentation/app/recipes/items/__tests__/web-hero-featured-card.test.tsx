@@ -1,12 +1,12 @@
 /**
  * `WebHeroFeaturedCard` dropped its author row when it moved to the lean
- * `RecipeSummary` (trending list items have no `ownerId` to resolve an author
+ * `RecipeSummaryEntity` (trending list items have no `ownerId` to resolve an author
  * from) — the card must render fine without ever trying to fetch or show one.
  */
 
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/web-hero-featured-card';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -14,7 +14,7 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
 
-const recipe = RecipeSummary.create({
+const recipe = RecipeSummaryEntity.create({
   id: 'r1',
   name: 'Trending Trending Pasta',
   image: '',
@@ -31,7 +31,7 @@ const recipe = RecipeSummary.create({
 });
 
 describe('WebHeroFeaturedCard — author row removed', () => {
-  it('renders without an author line (no ownerId on RecipeSummary)', () => {
+  it('renders without an author line (no ownerId on RecipeSummaryEntity)', () => {
     if (!recipe.ok) throw new Error('fixture invalid');
     const { root } = renderComponent(
       <WebHeroFeaturedCard recipe={recipe.value} onPress={jest.fn()} />,

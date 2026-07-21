@@ -12,7 +12,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -21,7 +21,7 @@ const GRID_GAP = spacing.lg2;
 const SKELETON_ROWS = 2;
 
 export interface WebRecipeGridProps {
-  recipes: RecipeSummary[];
+  recipes: RecipeSummaryEntity[];
   isSearching: boolean;
   /**
    * True while the recipe list is (re)loading — e.g. after a sort/filter
@@ -72,7 +72,7 @@ export const WebRecipeGrid = ({
       : t().recipes.webAllRecipes;
 
   const renderItem = useCallback(
-    ({ item }: { item: RecipeSummary }): React.JSX.Element => (
+    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
       <View style={styles.gridCell}>
         <WebRecipeCard
           recipe={item}

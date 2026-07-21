@@ -1,4 +1,4 @@
-import { Notification, type NotificationProps } from '@domain/notifications/notification';
+import { NotificationEntity, type NotificationProps } from '@domain/notifications/notification-entity';
 
 const makeProps = (overrides: Partial<NotificationProps> = {}): NotificationProps => ({
   id: 'n1',
@@ -15,15 +15,15 @@ const makeProps = (overrides: Partial<NotificationProps> = {}): NotificationProp
   ...overrides,
 });
 
-const build = (overrides: Partial<NotificationProps> = {}): Notification => {
-  const result = Notification.create(makeProps(overrides));
+const build = (overrides: Partial<NotificationProps> = {}): NotificationEntity => {
+  const result = NotificationEntity.create(makeProps(overrides));
   if (!result.ok) {
     throw new Error('Test setup expected a valid Notification');
   }
   return result.value;
 };
 
-describe('Notification.target', () => {
+describe('NotificationEntity.target', () => {
   it('targets the exact comment when commentId and recipeId are both present', () => {
     const notification = build({
       type: 'comment',
@@ -56,7 +56,7 @@ describe('Notification.target', () => {
   });
 });
 
-describe('Notification — asRead', () => {
+describe('NotificationEntity — asRead', () => {
   it('returns a read copy and leaves the original unchanged', () => {
     const unread = build({ read: false });
 

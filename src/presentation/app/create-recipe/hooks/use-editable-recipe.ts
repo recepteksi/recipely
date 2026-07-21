@@ -5,7 +5,7 @@ import { emptyEditable, recipeToEditable } from '@presentation/app/create-recipe
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/create-recipe-field-key';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CharConstants } from '@core/constants';
 
 /**
@@ -13,7 +13,7 @@ import { CharConstants } from '@core/constants';
  * the per-field validation errors and the "missing required fields" banner, and
  * exposes intent-revealing edit handlers that clear a field's error on change.
  */
-export const useEditableRecipe = (existingRecipe: Recipe | undefined, isEditMode: boolean) => {
+export const useEditableRecipe = (existingRecipe: RecipeEntity | undefined, isEditMode: boolean) => {
   const [recipe, setRecipe] = useState<EditableRecipe>(() =>
     isEditMode && existingRecipe !== undefined
       ? recipeToEditable(existingRecipe, [...existingRecipe.media])

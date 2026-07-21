@@ -16,7 +16,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Notification } from '@domain/notifications/notification';
+import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
@@ -44,7 +44,7 @@ const daysSince = (createdAt: Date): number => {
   return Math.max(ValueConstants.zero, Math.floor(ms / (1000 * 60 * 60 * 24)));
 };
 
-const toNotifItem = (n: Notification): NotifItem => ({
+const toNotifItem = (n: NotificationEntity): NotifItem => ({
   id: n.id,
   kind: resolveKind(n.type),
   actor: n.senderDisplayName ?? 'Recipely',

@@ -1,4 +1,4 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -20,12 +20,12 @@ export interface CommentProps {
  * Domain entity representing a user comment on a recipe. Validates that `id`,
  * `body`, `authorId`, and `recipeId` are all non-empty before construction.
  */
-export class Comment extends Entity<CommentProps> {
+export class CommentEntity extends BaseEntity<CommentProps> {
   private constructor(props: CommentProps) {
     super(props);
   }
 
-  static create(props: CommentProps): Result<Comment, ValidationFailure> {
+  static create(props: CommentProps): Result<CommentEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment id must be non-empty', 'id'));
     }
@@ -38,7 +38,7 @@ export class Comment extends Entity<CommentProps> {
     if (props.recipeId.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Comment recipeId must be non-empty', 'recipeId'));
     }
-    return ok(new Comment(props));
+    return ok(new CommentEntity(props));
   }
 
   get body(): string {
@@ -74,16 +74,16 @@ export class Comment extends Entity<CommentProps> {
   }
 
   /**
-   * Returns a new `Comment` with `likedByMe` flipped and `likeCount` adjusted
+   * Returns a new `CommentEntity` with `likedByMe` flipped and `likeCount` adjusted
    * (+1 when becoming liked, -1 when becoming unliked, clamped at 0). The
    * receiver is left unchanged so callers can keep the original for rollback.
    */
-  withLikeToggled(): Comment {
+  withLikeToggled(): CommentEntity {
     const nextLiked = !this.props.likedByMe;
     const nextCount = nextLiked
       ? this.props.likeCount + 1
       : Math.max(ValueConstants.zero, this.props.likeCount - 1);
-    return new Comment({
+    return new CommentEntity({
       ...this.props,
       likedByMe: nextLiked,
       likeCount: nextCount,

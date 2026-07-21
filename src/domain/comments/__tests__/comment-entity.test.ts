@@ -1,4 +1,4 @@
-import { Comment, type CommentProps } from '@domain/comments/comment';
+import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
 
 const makeProps = (overrides: Partial<CommentProps> = {}): CommentProps => ({
   id: 'c1',
@@ -13,15 +13,15 @@ const makeProps = (overrides: Partial<CommentProps> = {}): CommentProps => ({
   ...overrides,
 });
 
-const build = (overrides: Partial<CommentProps> = {}): Comment => {
-  const result = Comment.create(makeProps(overrides));
+const build = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+  const result = CommentEntity.create(makeProps(overrides));
   if (!result.ok) {
     throw new Error('Test setup expected a valid Comment');
   }
   return result.value;
 };
 
-describe('Comment.withLikeToggled', () => {
+describe('CommentEntity.withLikeToggled', () => {
   it('marks an unliked comment as liked and increments the count', () => {
     const comment = build({ likedByMe: false, likeCount: 5 });
 

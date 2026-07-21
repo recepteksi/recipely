@@ -1,8 +1,8 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import { User } from '@domain/auth/user';
+import { UserEntity } from '@domain/auth/user-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface AuthSessionProps {
@@ -10,20 +10,20 @@ export interface AuthSessionProps {
   accessToken: string;
   refreshToken?: string;
   expiresAt: Date;
-  user: User;
+  user: UserEntity;
 }
 
 /**
  * Domain entity that represents an authenticated user session, bundling the
- * access token, its expiry, and the associated `User`. Validates that `id`,
+ * access token, its expiry, and the associated `UserEntity`. Validates that `id`,
  * `accessToken`, and `expiresAt` are well-formed before construction.
  */
-export class AuthSession extends Entity<AuthSessionProps> {
+export class AuthSessionEntity extends BaseEntity<AuthSessionProps> {
   private constructor(props: AuthSessionProps) {
     super(props);
   }
 
-  static create(props: AuthSessionProps): Result<AuthSession, ValidationFailure> {
+  static create(props: AuthSessionProps): Result<AuthSessionEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Session id must be non-empty', 'id'));
     }
@@ -33,7 +33,7 @@ export class AuthSession extends Entity<AuthSessionProps> {
     if (Number.isNaN(props.expiresAt.getTime())) {
       return fail(new ValidationFailure('expiresAt must be a valid Date', 'expiresAt'));
     }
-    return ok(new AuthSession(props));
+    return ok(new AuthSessionEntity(props));
   }
 
   get accessToken(): string {
@@ -48,7 +48,7 @@ export class AuthSession extends Entity<AuthSessionProps> {
     return this.props.expiresAt;
   }
 
-  get user(): User {
+  get user(): UserEntity {
     return this.props.user;
   }
 

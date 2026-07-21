@@ -1,4 +1,4 @@
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -19,9 +19,9 @@ const validProps = {
   viewCount: 100,
 };
 
-describe('RecipeSummary.create', () => {
+describe('RecipeSummaryEntity.create', () => {
   it('accepts valid props', () => {
-    const r = RecipeSummary.create(validProps);
+    const r = RecipeSummaryEntity.create(validProps);
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -45,15 +45,15 @@ describe('RecipeSummary.create', () => {
     ['id', { ...validProps, id: ' ' }],
     ['name', { ...validProps, name: '' }],
   ])('rejects blank %s', (field, props) => {
-    const r = RecipeSummary.create(props);
+    const r = RecipeSummaryEntity.create(props);
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure.field).toBe(field);
   });
 
   it('entity equality is id-based', () => {
-    const a = RecipeSummary.create(validProps);
-    const b = RecipeSummary.create({ ...validProps, name: 'Different' });
+    const a = RecipeSummaryEntity.create(validProps);
+    const b = RecipeSummaryEntity.create({ ...validProps, name: 'Different' });
 
     if (a.ok && b.ok) expect(a.value.equals(b.value)).toBe(true);
   });

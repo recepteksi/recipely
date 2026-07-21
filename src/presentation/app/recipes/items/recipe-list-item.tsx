@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 export interface RecipeListItemProps {
-  recipe: RecipeSummary;
+  recipe: RecipeSummaryEntity;
   onPress: () => void;
   /** Web-only: enable the hover lift on the underlying `RecipeCard`. */
   hoverEffect?: boolean;

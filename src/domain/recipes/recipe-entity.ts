@@ -1,4 +1,4 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -38,14 +38,14 @@ export interface RecipeProps {
 
 /**
  * Domain entity representing a recipe. Validates that `id` and `name` are
- * non-empty before construction; use `Recipe.create` to obtain an instance.
+ * non-empty before construction; use `RecipeEntity.create` to obtain an instance.
  */
-export class Recipe extends Entity<RecipeProps> {
+export class RecipeEntity extends BaseEntity<RecipeProps> {
   private constructor(props: RecipeProps) {
     super(props);
   }
 
-  static create(props: RecipeProps): Result<Recipe, ValidationFailure> {
+  static create(props: RecipeProps): Result<RecipeEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
     }
@@ -58,7 +58,7 @@ export class Recipe extends Entity<RecipeProps> {
     if (props.servings < 1) {
       return fail(new ValidationFailure('Servings must be at least 1', 'servings'));
     }
-    return ok(new Recipe(props));
+    return ok(new RecipeEntity(props));
   }
 
   get name(): string {

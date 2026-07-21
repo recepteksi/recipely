@@ -1,4 +1,4 @@
-import { Entity } from '@core/entity/entity';
+import { BaseEntity } from '@core/entity/base-entity';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -19,19 +19,19 @@ export interface UserProfileProps {
  * Domain entity representing a public user profile. Validates that `id`
  * and `displayName` are non-empty before construction.
  */
-export class UserProfile extends Entity<UserProfileProps> {
+export class UserProfileEntity extends BaseEntity<UserProfileProps> {
   private constructor(props: UserProfileProps) {
     super(props);
   }
 
-  static create(props: UserProfileProps): Result<UserProfile, ValidationFailure> {
+  static create(props: UserProfileProps): Result<UserProfileEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('UserProfile id must be non-empty', 'id'));
     }
     if (props.displayName.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure('UserProfile displayName must be non-empty', 'displayName'));
     }
-    return ok(new UserProfile(props));
+    return ok(new UserProfileEntity(props));
   }
 
   get displayName(): string {

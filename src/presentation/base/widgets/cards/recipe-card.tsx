@@ -21,7 +21,7 @@ export interface RecipeCardProps {
   cuisine: string;
   difficulty: string;
   rating: number;
-  /** Omitted for lean list/grid contexts (`RecipeSummary` has no tags); the tags row is hidden when absent or empty. */
+  /** Omitted for lean list/grid contexts (`RecipeSummaryEntity` has no tags); the tags row is hidden when absent or empty. */
   tags?: string[];
   likeCount?: number;
   likedByMe?: boolean;

@@ -18,7 +18,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RoutePaths } from '@presentation/base/constants';
 
 const WEB_CONTENT_MAX = 1200;
@@ -67,7 +67,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   }, []);
 
   const savedRecipes = useMemo(() => {
-    const all: readonly RecipeSummary[] =
+    const all: readonly RecipeSummaryEntity[] =
       recipeListState.status === 'loaded' ? recipeListState.recipes : [];
     return all.filter((r) => savedIds.has(r.id));
   }, [recipeListState, savedIds]);

@@ -1,4 +1,4 @@
-import { UserProfile, type UserProfileProps } from '@domain/user-profile/user-profile';
+import { UserProfileEntity, type UserProfileProps } from '@domain/user-profile/user-profile-entity';
 
 const makeProps = (overrides: Partial<UserProfileProps> = {}): UserProfileProps => ({
   id: 'u-1',
@@ -12,23 +12,23 @@ const makeProps = (overrides: Partial<UserProfileProps> = {}): UserProfileProps 
   ...overrides,
 });
 
-describe('UserProfile.create', () => {
+describe('UserProfileEntity.create', () => {
   it('exposes the bio through its getter when present', () => {
-    const result = UserProfile.create(makeProps({ bio: 'Weeknight cook.' }));
+    const result = UserProfileEntity.create(makeProps({ bio: 'Weeknight cook.' }));
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.bio).toBe('Weeknight cook.');
   });
 
   it('preserves a null bio rather than coercing it to a string', () => {
-    const result = UserProfile.create(makeProps({ bio: null }));
+    const result = UserProfileEntity.create(makeProps({ bio: null }));
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.bio).toBeNull();
   });
 
   it('exposes the remaining public profile fields through getters', () => {
-    const result = UserProfile.create(makeProps());
+    const result = UserProfileEntity.create(makeProps());
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -42,7 +42,7 @@ describe('UserProfile.create', () => {
   });
 
   it('returns a ValidationFailure on the id field when id is blank', () => {
-    const result = UserProfile.create(makeProps({ id: '   ' }));
+    const result = UserProfileEntity.create(makeProps({ id: '   ' }));
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -52,7 +52,7 @@ describe('UserProfile.create', () => {
   });
 
   it('returns a ValidationFailure on the displayName field when displayName is empty', () => {
-    const result = UserProfile.create(makeProps({ displayName: '' }));
+    const result = UserProfileEntity.create(makeProps({ displayName: '' }));
 
     expect(result.ok).toBe(false);
     if (!result.ok) {

@@ -1,19 +1,19 @@
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 
-const buildUser = (): User => {
+const buildUser = (): UserEntity => {
   const email = Email.create('u@example.com');
   if (!email.ok) throw new Error('test setup failed');
-  const user = User.create({ id: 'u1', email: email.value, displayName: 'U' });
+  const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'U' });
   if (!user.ok) throw new Error('test setup failed');
   return user.value;
 };
 
-describe('AuthSession.isExpired', () => {
+describe('AuthSessionEntity.isExpired', () => {
   it('is false when expiresAt is in the future', () => {
     const future = new Date(Date.now() + 60_000);
-    const r = AuthSession.create({
+    const r = AuthSessionEntity.create({
       id: 's1',
       accessToken: 'tok',
       expiresAt: future,
@@ -26,7 +26,7 @@ describe('AuthSession.isExpired', () => {
 
   it('is true when expiresAt is in the past', () => {
     const past = new Date(Date.now() - 60_000);
-    const r = AuthSession.create({
+    const r = AuthSessionEntity.create({
       id: 's1',
       accessToken: 'tok',
       expiresAt: past,
@@ -38,7 +38,7 @@ describe('AuthSession.isExpired', () => {
 
   it('treats exact equality as expired (clock-skew-safe)', () => {
     const now = new Date('2026-01-01T00:00:00Z');
-    const r = AuthSession.create({
+    const r = AuthSessionEntity.create({
       id: 's1',
       accessToken: 'tok',
       expiresAt: now,
@@ -49,9 +49,9 @@ describe('AuthSession.isExpired', () => {
   });
 });
 
-describe('AuthSession.create validation', () => {
+describe('AuthSessionEntity.create validation', () => {
   it('rejects empty accessToken', () => {
-    const r = AuthSession.create({
+    const r = AuthSessionEntity.create({
       id: 's1',
       accessToken: '',
       expiresAt: new Date(),

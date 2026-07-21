@@ -9,7 +9,7 @@ import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
@@ -17,7 +17,7 @@ type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
 export interface MyRecipesListProps {
   tab: Tab;
   drafts: readonly DraftItem[];
-  items: readonly RecipeSummary[];
+  items: readonly RecipeSummaryEntity[];
   gridColumns: number;
   isWebShell: boolean;
   isSaved: (id: string) => boolean;
@@ -124,7 +124,7 @@ export const MyRecipesList = ({
     <FlatList
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
-      data={items as RecipeSummary[]}
+      data={items as RecipeSummaryEntity[]}
       keyExtractor={(r) => r.id}
       numColumns={gridColumns}
       renderItem={({ item }) => (

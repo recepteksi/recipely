@@ -1,4 +1,4 @@
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 
 /**
  * Session lifecycle — the only auth state that is genuinely global (the auth
@@ -11,5 +11,5 @@ import type { AuthSession } from '@domain/auth/auth-session';
 export type AuthStatus =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'authenticated'; session: AuthSession }
+  | { status: 'authenticated'; session: AuthSessionEntity }
   | { status: 'unauthenticated' };

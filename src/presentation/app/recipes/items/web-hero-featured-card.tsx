@@ -13,12 +13,12 @@ import {
   HERO_OVERLAY_MID,
   HERO_OVERLAY_FADE,
 } from '@presentation/app/recipes/model/web-hero-constants';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 import { HeroGradientConstants } from '@presentation/base/constants';
 
 export interface WebHeroFeaturedCardProps {
-  recipe: RecipeSummary;
+  recipe: RecipeSummaryEntity;
   onPress: (id: string) => void;
   /** When provided, renders the cosmetic frosted "Save" button. */
   onSave?: (id: string) => void;

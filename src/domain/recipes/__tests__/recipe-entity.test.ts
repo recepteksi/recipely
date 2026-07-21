@@ -1,4 +1,4 @@
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -30,7 +30,7 @@ const validProps = {
 
 describe('Recipe.create', () => {
   it('accepts valid props', () => {
-    const r = Recipe.create(validProps);
+    const r = RecipeEntity.create(validProps);
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -47,15 +47,15 @@ describe('Recipe.create', () => {
     ['id', { ...validProps, id: ' ' }],
     ['name', { ...validProps, name: '' }],
   ])('rejects blank %s', (field, props) => {
-    const r = Recipe.create(props);
+    const r = RecipeEntity.create(props);
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure.field).toBe(field);
   });
 
   it('entity equality is id-based', () => {
-    const a = Recipe.create(validProps);
-    const b = Recipe.create({ ...validProps, name: 'Different' });
+    const a = RecipeEntity.create(validProps);
+    const b = RecipeEntity.create({ ...validProps, name: 'Different' });
 
     if (a.ok && b.ok) expect(a.value.equals(b.value)).toBe(true);
   });
