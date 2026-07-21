@@ -122,6 +122,21 @@ for (const file of files) {
     errors.push(`${file}: type/interface shares a file with runtime code — move ${typeLike.map((d) => `${d.kind} ${d.name}`).join(', ')} to its own file`);
   }
 
+  // --- G: entity naming (CLAUDE.md §21) -------------------------------------
+  // A class extending BaseEntity must be named `*Entity` and live in a
+  // `*-entity.ts` file, so entities are recognizable by name and file alike.
+  const entityRe = /export\s+(?:default\s+)?(?:abstract\s+)?class\s+([A-Za-z0-9_]+)\s+extends\s+BaseEntity\b/g;
+  for (const m of src.matchAll(entityRe)) {
+    const name = m[1];
+    const base = path.basename(file).replace(/\.tsx?$/, '');
+    if (!name.endsWith('Entity')) {
+      errors.push(`${file}: '${name}' extends BaseEntity but is not named '*Entity' (CLAUDE.md §21)`);
+    }
+    if (!base.endsWith('-entity')) {
+      errors.push(`${file}: entity '${name}' must live in a '*-entity.ts' file (CLAUDE.md §21)`);
+    }
+  }
+
   // --- F: Smart-UI size guard (CLAUDE.md §18) --------------------------------
   // A .tsx over 300 lines is a blocking violation: split it into body/items/
   // sheets/hooks/model parts (or a hook) instead of growing the component.
