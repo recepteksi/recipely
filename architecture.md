@@ -580,6 +580,13 @@ Rules:
   `recipe-mapper.ts` in infrastructure.
 - **The same capability name is used across layers.** `create/`, `refine/`, `taxonomy/` and
   `media/` mean the same thing in `domain/`, `application/` and `infrastructure/`.
+- **Capability-internal `dtos/` / `mappers/` subfolders — only at ≥2.** Within a folder
+  (a capability folder or a not-yet-split flat feature root), once it holds **two or more**
+  DTO files, move them into a `dtos/` subfolder; likewise `mappers/` for two or more mappers.
+  A single DTO or mapper stays flat at the folder root — never create a one-file folder. This
+  is by-capability on the outside, by-kind only on the inside, and only when the count earns it
+  (e.g. `infrastructure/recipes/dtos/`, `infrastructure/recipes/taxonomy/dtos/`). Repositories
+  are one-per-feature, so no `repositories/` subfolder.
 - **Tests move with their subject** into that capability's `__tests__/`.
 - **No barrel `index.ts` per capability.** Imports stay explicit deep paths
   (`@application/recipes/list/recipe-list-store`), which keeps the layer graph readable and

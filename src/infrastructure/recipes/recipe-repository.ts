@@ -18,9 +18,9 @@ import {
   TRENDING_RECIPES_LIMIT,
 } from '@infrastructure/constants/api';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
-import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
+import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';

@@ -1,4 +1,4 @@
-import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';
+import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 
 // Recipely paged envelope for drafts. Mirrors the recipes list envelope shape
 // (`{ items, total, page, pageSize }`).

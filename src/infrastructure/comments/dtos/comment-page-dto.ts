@@ -1,4 +1,4 @@
-import type { CommentDto } from '@infrastructure/comments/comment-dto';
+import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 
 export interface CommentPageDto {
   items: CommentDto[];

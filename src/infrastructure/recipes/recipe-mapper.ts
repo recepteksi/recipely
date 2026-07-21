@@ -3,8 +3,8 @@ import { ValidationFailure } from '@core/failure';
 import { Recipe } from '@domain/recipes/recipe';
 import { RecipeSummary } from '@domain/recipes/recipe-summary';
 import type { MediaItem } from '@domain/recipes/media/media-item';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
-import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
 
 /**

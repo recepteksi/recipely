@@ -4,7 +4,7 @@ import type { Result } from '@core/result/result';
 import { Recipe } from '@domain/recipes/recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
