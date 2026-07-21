@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/taxonomy-item-dto';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
 
 const turkish: TaxonomyItemDto = { key: 'TURKISH', name: 'Turkish', emoji: '🇹🇷' };

@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
-import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { toRecipeSummary } from '@infrastructure/recipes/recipe-mapper';
 
 /**

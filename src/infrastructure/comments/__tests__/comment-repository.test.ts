@@ -3,8 +3,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { Comment } from '@domain/comments/comment';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { CommentDto } from '@infrastructure/comments/comment-dto';
-import type { CommentPageDto } from '@infrastructure/comments/comment-page-dto';
+import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
+import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
 
 const validDto: CommentDto = {

@@ -1,4 +1,4 @@
-import type { NotificationItemDto } from '@infrastructure/notifications/notification-item-dto';
+import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 
 export interface NotificationsResponseDto {
   items: NotificationItemDto[];
