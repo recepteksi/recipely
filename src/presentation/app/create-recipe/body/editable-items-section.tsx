@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface EditableItemsSectionProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -48,7 +49,7 @@ export const EditableItemsSection = ({
         style={[
           { gap: listGap },
           error !== undefined
-            ? { borderWidth: 1, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
+            ? { borderWidth: ValueConstants.one, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
             : null,
         ]}
       >
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs2,
     height: sizes.searchBarHeight,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderStyle: 'dashed',
     marginTop: spacing.sm,
   },

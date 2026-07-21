@@ -17,7 +17,7 @@ import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/passwor
 import { computeStrength } from '@presentation/app/register/model/compute-strength';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { RoutePaths } from '@presentation/base/constants';
+import { OpacityConstants, RoutePaths } from '@presentation/base/constants';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -122,7 +122,7 @@ export const RegisterForm = (): React.JSX.Element => {
           email.length > ValueConstants.zero ? (
             <Ionicons
               name={emailValid ? 'checkmark-circle' : 'close-circle'}
-              size={18}
+              size={sizes.iconXxs}
               color={emailValid ? colors.success : colors.danger}
               style={styles.inputStatusIcon}
             />
@@ -166,7 +166,7 @@ export const RegisterForm = (): React.JSX.Element => {
             {confirm.length > ValueConstants.zero ? (
               <Ionicons
                 name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
-                size={18}
+                size={sizes.iconXxs}
                 color={passwordsMatch ? colors.success : colors.danger}
               />
             ) : null}
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   passwordSpacing: {
     marginTop: spacing.md,
-    marginBottom: 6,
+    marginBottom: spacing.xs2,
   },
   inputStatusIcon: {
     position: 'absolute',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   submitDisabled: {
-    opacity: 0.5,
+    opacity: OpacityConstants.disabled,
   },
   submitLabel: {
     fontWeight: '600',

@@ -80,7 +80,7 @@ export const WebRecipeDetailSidebar = ({
                       : { backgroundColor: 'transparent', borderColor: colors.border },
                   ]}
                 >
-                  {checked ? <Ionicons name="checkmark" size={14} color={colors.onSuccess} /> : null}
+                  {checked ? <Ionicons name="checkmark" size={sizes.iconXs} color={colors.onSuccess} /> : null}
                 </View>
                 <ThemedText
                   variant="body"
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     padding: spacing.lg,
   },
   cardHeader: {
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
     width: sizes.checkboxSize,
     height: sizes.checkboxSize,
     borderRadius: radii.sm,
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   metaRow: {
     flexDirection: 'row',
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   tile: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     flexBasis: '45%',
     borderRadius: radii.lg,
     paddingVertical: spacing.md,

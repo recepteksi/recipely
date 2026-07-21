@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -18,7 +19,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
   return (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-        <Ionicons name="mail-unread-outline" size={26} color={colors.onOverlay} />
+        <Ionicons name="mail-unread-outline" size={sizes.heroBadgeIcon} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t().verify.title}
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: 420,
+    maxWidth: sizes.maxContentLg,
   },
   iconBadge: {
     width: sizes.avatarMd,
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: 0.82,
+    opacity: OpacityConstants.subtitle,
     alignItems: 'center',
   },
   heroSubtitle: {

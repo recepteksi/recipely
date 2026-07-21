@@ -65,7 +65,7 @@ export const ProfileScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
   settingsSections: {
     marginTop: spacing.lg,
   },

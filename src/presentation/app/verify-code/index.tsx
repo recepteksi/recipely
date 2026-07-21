@@ -15,7 +15,7 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = sizes.maxContentXl;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -43,7 +43,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
@@ -79,7 +79,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -89,7 +89,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().verify.changeEmail}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
         </Pressable>
 
         <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
@@ -109,8 +109,8 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
+  flex: { flex: ValueConstants.one },
+  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   card: {
     borderRadius: radii.xxl,
@@ -139,20 +139,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

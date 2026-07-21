@@ -6,6 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
@@ -48,7 +49,7 @@ export const PromptPhase = ({
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Pressable
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={[styles.iconBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.cancel}
@@ -68,10 +69,10 @@ export const PromptPhase = ({
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={[styles.hero, shadows.md]}
         >
-          <Ionicons name="sparkles" size={140} color={colors.onOverlay} style={styles.heroBgIcon} />
+          <Ionicons name="sparkles" size={sizes.iconIllustration} color={colors.onOverlay} style={styles.heroBgIcon} />
           <View style={[styles.heroBadge, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
             <Ionicons name="restaurant" size={sizes.iconLg} color={colors.onOverlay} />
           </View>
@@ -127,14 +128,14 @@ export const PromptPhase = ({
         <Pressable
           onPress={onGenerate}
           disabled={!canGenerate}
-          style={[styles.cta, shadows.md, { opacity: canGenerate ? 1 : 0.5 }]}
+          style={[styles.cta, shadows.md, { opacity: canGenerate ? OpacityConstants.full : OpacityConstants.disabled }]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.generate}
         >
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.ctaInner}
           >
             <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primaryText} />
@@ -168,7 +169,7 @@ export const PromptPhase = ({
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     width: sizes.iconBtn,
     height: sizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -203,13 +204,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -spacing.lg,
     top: -spacing.lg,
-    opacity: 0.18,
+    opacity: OpacityConstants.scrim,
   },
   heroBadge: {
     width: sizes.avatarSm,
     height: sizes.avatarSm,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -219,17 +220,17 @@ const styles = StyleSheet.create({
   },
   heroSub: {
     marginTop: spacing.xs,
-    lineHeight: 21,
+    lineHeight: sizes.lineHeightLg,
   },
   promptCard: {
     borderRadius: radii.xl,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     padding: spacing.md,
   },
   promptInput: {
     minHeight: sizes.promptInputMin,
     fontSize: fontSizes.body,
-    lineHeight: 22,
+    lineHeight: sizes.lineHeightXl,
     textAlignVertical: 'top',
   },
   chipRow: {
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     height: sizes.chipHeight,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   ctaInner: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -272,13 +273,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dividerLine: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: StyleSheet.hairlineWidth,
   },
   blankBtn: {
     height: sizes.buttonSmHeight,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },

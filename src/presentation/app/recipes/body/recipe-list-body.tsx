@@ -42,7 +42,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const { state, filteredRecipes, isWebShell, isSearching, gridColumns } = vm;
 
   const renderItem = ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
-    if (gridColumns > 1) {
+    if (gridColumns > ValueConstants.one) {
       return (
         <View style={styles.gridCell}>
           <RecipeListItem recipe={item} onPress={() => vm.onOpenRecipe(item.id)} />
@@ -121,7 +121,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           />
         }
       >
-        <MaterialCommunityIcons name="food-off" size={64} color={colors.textMuted} />
+        <MaterialCommunityIcons name="food-off" size={sizes.iconGiant} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
           {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
@@ -221,19 +221,19 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   bodyContainer: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   bodyTopInset: {
     paddingTop: sizes.homeHeaderMax,
   },
   list: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   listContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   gridCell: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   separator: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   // flexGrow keeps the empty state pullable: the scroll content must fill the
   // viewport so the refresh gesture has a surface even with little rendered.
   center: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,

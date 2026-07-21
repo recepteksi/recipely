@@ -92,7 +92,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
 const styles = StyleSheet.create({
   card: {
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
   },

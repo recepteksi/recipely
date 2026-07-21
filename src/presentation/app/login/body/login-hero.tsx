@@ -2,7 +2,8 @@ import { StyleSheet, View } from 'react-native';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { spacing, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
   },
   heroLandscape: {
     paddingTop: ValueConstants.zero,
-    maxWidth: 420,
+    maxWidth: sizes.maxContentLg,
   },
   appName: {
     marginTop: spacing.md,
@@ -43,6 +44,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     textAlign: 'center',
     paddingHorizontal: spacing.xxl,
-    opacity: 0.8,
+    opacity: OpacityConstants.pressedGentle,
   },
 });

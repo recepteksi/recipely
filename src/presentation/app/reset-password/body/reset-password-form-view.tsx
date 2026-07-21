@@ -51,7 +51,7 @@ export const FormView = ({
       <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={20}
+          size={sizes.iconMd}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -82,7 +82,7 @@ export const FormView = ({
         >
           <Ionicons
             name={showNew ? 'eye-off-outline' : 'eye-outline'}
-            size={20}
+            size={sizes.iconMd}
             color={colors.textMuted}
           />
         </Pressable>
@@ -91,7 +91,7 @@ export const FormView = ({
       <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={20}
+          size={sizes.iconMd}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -124,7 +124,7 @@ export const FormView = ({
         >
           <Ionicons
             name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
-            size={20}
+            size={sizes.iconMd}
             color={colors.textMuted}
           />
         </Pressable>
@@ -167,11 +167,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   input: {
     height: sizes.inputHeight,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.xxxl + spacing.lg,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   eyeBtn: {
     position: 'absolute',
     right: spacing.lg,
-    zIndex: 1,
+    zIndex: ValueConstants.one,
     padding: spacing.xs,
   },
   bannerRow: {

@@ -3,8 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
-const CHANNEL_CHIP_SIZE = 44;
+const CHANNEL_CHIP_SIZE = sizes.channelChip;
 
 export interface ChannelTileProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -22,7 +24,11 @@ export const ChannelTile = ({ icon, label, onPress }: ChannelTileProps): React.J
       onPress={onPress}
       style={({ pressed }) => [
         styles.channelTile,
-        { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.cardBorder,
+          opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full,
+        },
       ]}
     >
       <View style={[styles.channelChip, { backgroundColor: colors.chipBackground }]}>
@@ -37,10 +43,10 @@ export const ChannelTile = ({ icon, label, onPress }: ChannelTileProps): React.J
 
 const styles = StyleSheet.create({
   channelTile: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.xs,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,

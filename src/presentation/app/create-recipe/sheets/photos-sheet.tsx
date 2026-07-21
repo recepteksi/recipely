@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import { ValueConstants } from '@core/constants';
 
 export interface PhotosSheetProps {
   visible: boolean;
@@ -61,7 +62,7 @@ export const PhotosSheet = ({
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   sheet: {
     borderTopLeftRadius: radii.xxl,

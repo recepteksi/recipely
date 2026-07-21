@@ -19,6 +19,7 @@ import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
 import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 export const ProfileSettingsSections = (): React.JSX.Element => {
   const router = useRouter();
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   stackedLabel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,

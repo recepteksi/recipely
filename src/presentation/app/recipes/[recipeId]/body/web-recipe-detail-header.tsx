@@ -10,6 +10,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -63,7 +64,7 @@ export const WebRecipeDetailHeader = ({
             </View>
           ) : null}
           <View
-            style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: 1 }]}
+            style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.cardBorder, borderWidth: ValueConstants.one }]}
           >
             <ThemedText variant="caption" style={[styles.chipText, { color: colors.textMuted }]}>
               {difficultyLabel(recipe.difficulty)}
@@ -131,7 +132,7 @@ export const WebRecipeDetailHeader = ({
             onPress={onEdit}
             style={({ pressed }) => [
               styles.pill,
-              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
             ]}
           >
             <Ionicons name="create-outline" size={sizes.iconSm} color={colors.text} />
@@ -147,7 +148,7 @@ export const WebRecipeDetailHeader = ({
             onPress={onDelete}
             style={({ pressed }) => [
               styles.pill,
-              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
             ]}
           >
             <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
@@ -166,7 +167,7 @@ export const WebRecipeDetailHeader = ({
             isSaved
               ? { backgroundColor: colors.primary, borderColor: colors.primary }
               : { backgroundColor: colors.surface, borderColor: colors.cardBorder },
-            { opacity: pressed || saveDisabled ? 0.75 : 1 },
+            { opacity: pressed || saveDisabled ? OpacityConstants.pressed : OpacityConstants.full },
           ]}
         >
           <Ionicons
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   left: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     gap: spacing.md,
   },
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSizes.webDetailTitle,
     fontWeight: '800',
-    lineHeight: fontSizes.webDetailTitle + 4,
+    lineHeight: fontSizes.webDetailTitle + spacing.xs,
     letterSpacing: -1,
   },
   statsRow: {
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
     height: sizes.searchBarHeight,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   pillLabel: {
     fontWeight: '600',

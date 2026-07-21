@@ -62,11 +62,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   segment: {
-    flexGrow: 1,
-    flexShrink: 1,
+    flexGrow: ValueConstants.one,
+    flexShrink: ValueConstants.one,
     flexBasis: 'auto',
     minWidth: ValueConstants.zero,
     height: sizes.iconBtn,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   segmentLabel: {
     fontWeight: '600',
     fontSize: fontSizes.small,
-    flexShrink: 1,
+    flexShrink: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   countPill: {

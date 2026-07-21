@@ -1,13 +1,14 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
+import { ValueConstants } from '@core/constants';
 
-const STAT_VALUE_SIZE = 18;
-const STAT_VALUE_LINE = 20;
-const STAT_LABEL_SIZE = 10;
+const STAT_VALUE_SIZE = fontSizes.subtitle;
+const STAT_VALUE_LINE = sizes.lineHeightMd;
+const STAT_LABEL_SIZE = fontSizes.tiny;
 const STAT_LABEL_TRACKING = 0.5;
 
 /** Compact-notation display formatter for large stat counts (1.2K, 3.4M). */
@@ -74,7 +75,7 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
             key={stat.label}
             style={[
               styles.statCell,
-              idx < arr.length - 1
+              idx < arr.length - ValueConstants.one
                 ? [styles.statDivider, { borderRightColor: colors.border }]
                 : null,
             ]}
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     padding: spacing.md,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     gap: spacing.xs,
     alignItems: 'center',
   },
@@ -118,16 +119,16 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     marginTop: spacing.lg,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingVertical: spacing.md,
   },
   statCell: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   statDivider: {
-    borderRightWidth: 1,
+    borderRightWidth: ValueConstants.one,
   },
   statValue: {
     fontWeight: '800',

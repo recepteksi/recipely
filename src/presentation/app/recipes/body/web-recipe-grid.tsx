@@ -18,7 +18,7 @@ import { ValueConstants } from '@core/constants';
 
 const GRID_GAP = spacing.lg2;
 /** Skeleton rows shown in the grid area while the list (re)loads. */
-const SKELETON_ROWS = 2;
+const SKELETON_ROWS = ValueConstants.two;
 
 export interface WebRecipeGridProps {
   recipes: RecipeSummaryEntity[];
@@ -186,7 +186,7 @@ export const WebRecipeGrid = ({
           renderItem={renderItem}
           numColumns={gridColumns}
           scrollEnabled={false}
-          columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
+          columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
           contentContainerStyle={styles.gridContent}
         />
       )}
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   // (absolutely positioned inside the head) is not painted over by the cards.
   headRow: {
     position: 'relative',
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   controls: {
     flexDirection: 'row',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     height: sizes.webSortBtn,
     paddingHorizontal: spacing.md,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
   },
   filterLabel: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   segment: {
     flexDirection: 'row',
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
     padding: spacing.xxs,
   },
@@ -269,11 +269,11 @@ const styles = StyleSheet.create({
     gap: GRID_GAP,
   },
   gridCell: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   empty: {
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderStyle: 'dashed',
     borderRadius: radii.xl,
     padding: spacing.xxxl,

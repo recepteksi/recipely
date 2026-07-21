@@ -4,6 +4,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { HERO_SAVE_BG } from '@presentation/app/recipes/model/web-hero-constants';
+import { ValueConstants } from '@core/constants';
 
 export interface WebHeroActionRowProps {
   onView: () => void;
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   saveBtn: {
     height: sizes.heroActionBtn,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',

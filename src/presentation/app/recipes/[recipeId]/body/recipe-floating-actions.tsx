@@ -3,6 +3,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
@@ -34,7 +35,7 @@ export const RecipeFloatingActions = ({
   const colors = useTheme().colors;
 
   return (
-    <View style={[styles.floatingActions, { top: insetsTop + 8 }]}>
+    <View style={[styles.floatingActions, { top: insetsTop + spacing.sm }]}>
       {isOwner ? (
         <Pressable
           accessibilityRole="button"
@@ -61,7 +62,7 @@ export const RecipeFloatingActions = ({
       >
         <MaterialCommunityIcons
           name={likedByMe ? 'heart' : 'heart-outline'}
-          size={20}
+          size={sizes.iconMd}
           color={likedByMe ? colors.likeActive : colors.onOverlay}
         />
       </Pressable>
@@ -70,11 +71,11 @@ export const RecipeFloatingActions = ({
         accessibilityRole="button"
         accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
         disabled={saveDisabled}
-        style={[styles.floatingBtn, { opacity: saveDisabled ? 0.5 : 1, backgroundColor: colors.overlayLight }]}
+        style={[styles.floatingBtn, { opacity: saveDisabled ? OpacityConstants.disabled : OpacityConstants.full, backgroundColor: colors.overlayLight }]}
       >
         <Ionicons
           name={isSaved ? 'bookmark' : 'bookmark-outline'}
-          size={20}
+          size={sizes.iconMd}
           color={saveDisabled ? colors.textMuted : colors.onOverlay}
         />
       </Pressable>

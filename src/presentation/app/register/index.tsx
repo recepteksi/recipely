@@ -14,7 +14,7 @@ import { spacing, radii, sizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = 520;
+const AUTH_CARD_MAX_WIDTH = sizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -38,7 +38,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             <RegisterHero isLandscapeShell={isLandscapeShell} />
@@ -73,7 +73,7 @@ export const RegisterScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -82,7 +82,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           onPress={() => router.back()}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
         </Pressable>
 
         <RegisterHero isLandscapeShell={isLandscapeShell} />
@@ -102,10 +102,10 @@ export const RegisterScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scrollContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
   },
   gradient: {
     position: 'absolute',
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
     width: sizes.iconBtn,
     height: sizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   card: {
     borderRadius: radii.xxl,
@@ -135,20 +135,20 @@ const styles = StyleSheet.create({
     marginTop: -sizes.cardOverlap,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

@@ -20,7 +20,7 @@ import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -179,7 +179,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   header: {
     flexDirection: 'row',
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    flex: 1,
+    flex: ValueConstants.one,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: fontSizes.heading,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   stackedLabel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,

@@ -11,7 +11,7 @@ import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -111,7 +111,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });
 

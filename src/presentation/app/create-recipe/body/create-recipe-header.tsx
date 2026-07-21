@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -49,7 +50,7 @@ export const CreateRecipeHeader = ({
     >
       <Pressable
         onPress={onClose}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.iconBtn}
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.cancel}
@@ -72,14 +73,14 @@ export const CreateRecipeHeader = ({
       <Pressable
         onPress={onSave}
         disabled={isSaving}
-        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? 0.6 : 1 }]}
+        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? OpacityConstants.disabledStrong : OpacityConstants.full }]}
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.save}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.saveInner}
         >
           <ThemedText variant="caption" style={[styles.saveLabel, { color: colors.primaryText }]}>
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   saveInner: {
-    flex: 1,
+    flex: ValueConstants.one,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',

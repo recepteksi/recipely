@@ -59,8 +59,8 @@ const toNotifItem = (n: NotificationEntity): NotifItem => ({
 const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
   const visible = filter === 'unread' ? items.filter((n) => !n.read) : items;
   const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
-  const yesterday = visible.filter((n) => n.daysAgo === 1);
-  const earlier = visible.filter((n) => n.daysAgo > 1);
+  const yesterday = visible.filter((n) => n.daysAgo === ValueConstants.one);
+  const earlier = visible.filter((n) => n.daysAgo > ValueConstants.one);
   const sections: SectionData[] = [];
   const labels = t().notifications;
   if (today.length > ValueConstants.zero) sections.push({ title: labels.today, data: today });
@@ -126,7 +126,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().notifications.title}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.primary} />
+          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.primary} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().notifications.title}
@@ -220,7 +220,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: { flex: 1, textAlign: 'center', fontWeight: '700' },
+  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: '700' },
   markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
   headerSpacer: { width: sizes.iconBtn },
   filterRow: {
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     height: sizes.chipHeight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.8,
   },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + 40 + spacing.md },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + sizes.avatarSm + spacing.md },
   listContent: {},
   empty: {
     padding: spacing.xxxl,

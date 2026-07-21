@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.xl,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   emoji: {
     fontSize: fontSizes.subheading,

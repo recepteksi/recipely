@@ -184,7 +184,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
 const styles = StyleSheet.create({
   codeInput: {
     height: sizes.inputHeight,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.lg,
     fontSize: fontSizes.subtitle,

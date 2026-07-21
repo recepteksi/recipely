@@ -11,7 +11,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { SearchBar } from '@presentation/app/recipes/items/search-bar';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, fontSizes, sizes, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   titles: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xxs,
   },
   titleScaleAnchor: {
@@ -182,12 +182,12 @@ const styles = StyleSheet.create({
     height: sizes.notifBadge,
     paddingHorizontal: spacing.xs,
     borderRadius: sizes.notifBadge / 2,
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: BrandColors.white,
     fontSize: fontSizes.nano,
     fontWeight: '700',
     lineHeight: sizes.notifBadgeLineHeight,

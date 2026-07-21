@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -31,7 +32,7 @@ export const WebMyRecipesHeader = ({ onCreate }: WebMyRecipesHeaderProps): React
         style={({ pressed }) => [
           styles.createBtn,
           shadows.sm,
-          { backgroundColor: colors.primary, opacity: pressed ? 0.88 : 1 },
+          { backgroundColor: colors.primary, opacity: pressed ? OpacityConstants.pressedFaint : OpacityConstants.full },
         ]}
       >
         <Ionicons name="add" size={sizes.iconMd} color={colors.primaryText} />
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   text: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     gap: spacing.xs,
   },

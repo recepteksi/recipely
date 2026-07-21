@@ -137,7 +137,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg2,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: ValueConstants.one,
   },
   closeBtn: {
     width: sizes.webModalCloseBtn,
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: spacing.lg,
-    borderTopWidth: 1,
+    borderTopWidth: ValueConstants.one,
   },
   actionBtn: {
     borderRadius: radii.lg,

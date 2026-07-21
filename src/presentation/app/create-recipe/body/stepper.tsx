@@ -31,7 +31,7 @@ export const Stepper = ({
     >
       <Pressable
         onPress={onDecrement}
-        hitSlop={6}
+        hitSlop={spacing.xs2}
         style={styles.zone}
         accessibilityRole="button"
         accessibilityLabel={decreaseLabel}
@@ -46,7 +46,7 @@ export const Stepper = ({
       </View>
       <Pressable
         onPress={onIncrement}
-        hitSlop={6}
+        hitSlop={spacing.xs2}
         style={styles.zone}
         accessibilityRole="button"
         accessibilityLabel={increaseLabel}
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: sizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     overflow: 'hidden',
   },
   zone: {

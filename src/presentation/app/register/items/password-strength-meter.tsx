@@ -4,6 +4,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { PresentationValueConstants } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 export interface PasswordStrengthMeterProps {
   strength: number;
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   strengthSegment: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: spacing.xs,
     borderRadius: radii.xs,
   },

@@ -5,6 +5,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
 import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/parse-ingredient';
 import { ValueConstants } from '@core/constants';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface IngredientCardProps {
   raw: string;
@@ -32,7 +33,7 @@ export const IngredientCard = ({
         {
           backgroundColor: colors.cardBackground,
           borderColor: colors.cardBorder,
-          opacity: checked ? 0.6 : 1,
+          opacity: checked ? OpacityConstants.disabledStrong : OpacityConstants.full,
         },
       ]}
     >
@@ -45,7 +46,7 @@ export const IngredientCard = ({
         ]}
       >
         {checked ? (
-          <Ionicons name="checkmark" size={14} color={colors.onSuccess} />
+          <Ionicons name="checkmark" size={sizes.iconXs} color={colors.onSuccess} />
         ) : null}
       </View>
 
@@ -84,13 +85,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   checkbox: {
     width: sizes.checkboxSize,
     height: sizes.checkboxSize,
     borderRadius: radii.sm,
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -104,6 +105,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
   },
   name: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });

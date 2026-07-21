@@ -149,7 +149,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   sheet: {
     borderTopLeftRadius: radii.xxl,
@@ -179,13 +179,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   option: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   optionEmoji: {
     fontSize: fontSizes.title,

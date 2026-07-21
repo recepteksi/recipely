@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, fontSizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface WebSectionHeadProps {
   title: string;
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   left: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   title: {
     fontWeight: '800',
