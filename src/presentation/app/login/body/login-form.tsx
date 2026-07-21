@@ -6,6 +6,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
+import type { Failure } from '@presentation/base/types';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
@@ -22,7 +23,7 @@ export const LoginForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const isLoading = authStore((s) => s.state.status === 'loading');
   const signIn = authStore((s) => s.signIn);
   const signInWithGoogle = authStore((s) => s.signInWithGoogle);
   const signInWithApple = authStore((s) => s.signInWithApple);
@@ -31,26 +32,40 @@ export const LoginForm = (): React.JSX.Element => {
   const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  // Page-scoped error: it lives with this screen and dies when it unmounts, so
+  // a failed sign-in never bleeds onto register / other auth screens.
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
   const passwordRef = useRef<TextInput>(null);
 
+  const runSocial = useCallback(
+    async (signInWith: () => Promise<Failure | null>) => {
+      setErrorMessage(undefined);
+      const failure = await signInWith();
+      if (failure) {
+        setErrorMessage(authFormMessage(failure, {}));
+      }
+    },
+    [],
+  );
+
   const fieldsEmpty = email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero;
 
-  const handleSignIn = useCallback(() => {
+  const handleSignIn = useCallback(async () => {
     if (email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero) {
       return;
     }
-    void signIn(email, password);
-  }, [signIn, email, password]);
-
-  const isLoading = state.status === 'loading';
-  const errorMessage =
-    state.status === 'error'
-      ? authFormMessage(state.failure, {
+    setErrorMessage(undefined);
+    const failure = await signIn(email, password);
+    if (failure) {
+      setErrorMessage(
+        authFormMessage(failure, {
           unauthorized: t().login.invalidCredentials,
           validation: t().login.invalidCredentials,
-        })
-      : undefined;
+        }),
+      );
+    }
+  }, [signIn, email, password]);
 
   return (
     <>
@@ -113,7 +128,7 @@ export const LoginForm = (): React.JSX.Element => {
           returnKeyType="done"
           onFocus={() => setFocusField('password')}
           onBlur={() => setFocusField(null)}
-          onSubmitEditing={handleSignIn}
+          onSubmitEditing={() => { void handleSignIn(); }}
         />
         <Pressable
           onPress={() => setShowPassword((visible) => !visible)}
@@ -148,7 +163,7 @@ export const LoginForm = (): React.JSX.Element => {
       </Pressable>
 
       <Pressable
-        onPress={handleSignIn}
+        onPress={() => { void handleSignIn(); }}
         disabled={fieldsEmpty || isLoading}
         style={[
           styles.signInButton,
@@ -167,8 +182,8 @@ export const LoginForm = (): React.JSX.Element => {
 
       <SocialAuthSection
         disabled={isLoading}
-        onGoogle={() => { void signInWithGoogle(); }}
-        onApple={() => { void signInWithApple(); }}
+        onGoogle={() => { void runSocial(signInWithGoogle); }}
+        onApple={() => { void runSocial(signInWithApple); }}
         onSignUp={() => router.push('/register')}
         onGuest={() => router.replace('/recipes')}
       />

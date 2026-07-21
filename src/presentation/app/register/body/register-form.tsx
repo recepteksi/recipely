@@ -28,7 +28,7 @@ export const RegisterForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const isLoading = authStore((s) => s.state.status === 'loading');
   const register = authStore((s) => s.register);
 
   const [name, setName] = useState(CharConstants.empty);
@@ -77,24 +77,21 @@ export const RegisterForm = (): React.JSX.Element => {
       return;
     }
     setLocalError(undefined);
-    const challenge = await register(email, password, name);
-    if (challenge) {
+    const result = await register(email, password, name);
+    if (result.ok) {
       router.push({
         pathname: '/verify-code',
         params: {
-          email: challenge.email,
-          expiresAt: challenge.expiresAt,
+          email: result.value.email,
+          expiresAt: result.value.expiresAt,
         },
       });
+    } else {
+      setLocalError(authFormMessage(result.failure, { conflict: t().register.emailTaken }));
     }
   }, [name, email, emailValid, password, confirm, agree, register, router]);
 
-  const isLoading = state.status === 'loading';
-  const remoteError =
-    state.status === 'error'
-      ? authFormMessage(state.failure, { conflict: t().register.emailTaken })
-      : undefined;
-  const errorMessage = localError ?? remoteError;
+  const errorMessage = localError;
 
   return (
     <>
