@@ -18,7 +18,7 @@ import {
 } from '@presentation/app/create-recipe/model/recipe-mapping';
 import { buildRefineReply } from '@presentation/app/create-recipe/model/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { Phase } from '@presentation/app/create-recipe/model/phase';
+import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/use-recipe-generation-args';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -46,7 +46,7 @@ export const useRecipeGeneration = ({
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<Phase>(isEditMode ? 'preview' : 'prompt');
+  const [phase, setPhase] = useState<PhaseType>(isEditMode ? 'preview' : 'prompt');
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);

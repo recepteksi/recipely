@@ -19,7 +19,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
@@ -105,7 +105,7 @@ const refreshingProp = (overrides: Partial<MyRecipesListProps>): boolean => {
 };
 
 /** The empty-state branches: no items on saved/created, no drafts on drafts. */
-const EMPTY_TABS: readonly Tab[] = ['saved', 'created', 'drafts'];
+const EMPTY_TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
 
 describe('MyRecipesList — RefreshControl wiring', () => {
   // AppThemeProvider hydrates theme/preference from async storage on mount; let

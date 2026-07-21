@@ -8,7 +8,7 @@ import type { ThemeId } from '@presentation/base/theme/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/theme-defaults';
 import type { ThemeColors } from '@presentation/base/theme/theme-colors';
 import type { ThemePreference } from '@presentation/base/theme/theme-preference';
-import type { EffectiveScheme } from '@presentation/base/theme/effective-scheme';
+import type { EffectiveSchemeType } from '@presentation/base/theme/effective-scheme-type';
 import type { ThemeContextValue } from '@presentation/base/theme/theme-context-value';
 
 export const ThemeContext = createContext<ThemeContextValue>({
@@ -81,7 +81,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   const effectiveSystemScheme =
     Platform.OS === 'web' && !hydrated ? 'light' : (systemScheme ?? 'light');
 
-  const scheme: EffectiveScheme =
+  const scheme: EffectiveSchemeType =
     preference === 'system' ? effectiveSystemScheme : preference;
 
   // Memoize to ensure stable reference when themeId/scheme unchanged

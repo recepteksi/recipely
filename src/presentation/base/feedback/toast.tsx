@@ -7,7 +7,7 @@ import {
   toastBackground,
   TOAST_FOREGROUND,
 } from '@presentation/base/theme/error-surfaces';
-import type { Severity } from '@presentation/base/theme/severity';
+import type { SeverityType } from '@presentation/base/theme/severity-type';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -21,7 +21,7 @@ const EXIT_DURATION_MS = 160;
 const ICON_CHIP_SIZE = 26;
 const ICON_CHIP_ALPHA = '26'; // ~15% — tints the chip behind the accent icon.
 
-const SEVERITY_ICON: Record<Severity, keyof typeof Ionicons.glyphMap> = {
+const SEVERITY_ICON: Record<SeverityType, keyof typeof Ionicons.glyphMap> = {
   danger: 'alert-circle',
   warning: 'warning',
   success: 'checkmark-circle',

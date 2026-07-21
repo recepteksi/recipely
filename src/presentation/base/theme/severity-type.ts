@@ -6,4 +6,4 @@
  * - `success` — a confirmation (green); feedback surfaces aren't only for errors
  * - `neutral` — nothing is wrong, there's just nothing here yet (muted)
  */
-export type Severity = 'danger' | 'warning' | 'success' | 'neutral';
+export type SeverityType = 'danger' | 'warning' | 'success' | 'neutral';

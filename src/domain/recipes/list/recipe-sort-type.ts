@@ -1,4 +1,4 @@
-export type RecipeSort =
+export type RecipeSortType =
   | 'popular'
   | 'rating'
   | 'time'
