@@ -619,7 +619,10 @@ A pre-commit hook (Husky + lint-staged) runs automatically on every `git commit`
    - layer-dependency violations (Dependency Rule) beyond the sanctioned exceptions and the shrinking
      `KNOWN_DEBT` list,
    - relative imports (`./`, `../`) outside barrel `index.ts` files — use the `@layer/...` alias,
-   - loose files at the `src/presentation/base/widgets/` root (category folders only).
+   - loose files at the `src/presentation/base/widgets/` root (category folders only),
+   - entity-naming violations (rule G): a class extending `BaseEntity` must be named `*Entity` and live
+     in a `*-entity.ts` file (CLAUDE.md §21). The companion `*Type` suffix for bare type aliases is a
+     judgment call, so it is enforced by `code-reviewer`, not this gate.
 
 No task is "done" until `npm run lint`, `npx tsc --noEmit`, `npx jest`, **and** `npm run check:structure`
 are all green.

@@ -197,7 +197,7 @@ blocking.
     imports are allowed only inside barrel `index.ts` files. Layer line: presentation → application/domain/core,
     never infrastructure (exceptions: `src/infrastructure/constants/*`, `src/presentation/bootstrap/`, `*/di/` wiring).
 
-16. **Structure gate** — `npm run check:structure` enforces rules 1, 8, 14, 15 mechanically and must be
+16. **Structure gate** — `npm run check:structure` enforces rules 1, 8, 14, 15, 21 (entity naming) mechanically and must be
     green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user approval.
 
 17. **Ports over direct infrastructure** — presentation/application consume infrastructure capabilities
@@ -223,6 +223,18 @@ blocking.
     `architecture.md`; a PR adding an entity must update that table. Cross-aggregate references are by
     id only, never object references (Evans 2003 p.89-93).
 
+21. **Naming suffixes** — two conventions keep declarations self-describing:
+    - **Entities** — a class extending `BaseEntity` is named `*Entity` and lives in a `*-entity.ts` file
+      (`RecipeEntity` in `recipe-entity.ts`). **Enforced mechanically** by `check:structure` (rule G).
+      Value objects (`Email`), DTOs and `*Props` interfaces are NOT entities and take no `Entity` suffix.
+    - **Bare type aliases** — a `type` alias that names a bare concept (a union/scalar shape with no
+      existing role word) ends with `Type`: `RecipeSortType`, `PhaseType`, `TabType`. This is **scoped, not
+      blanket** — do NOT suffix aliases that already carry a role word (`*Store`, `*State`, `*Status`,
+      `*Key`, `*Result`, `*Variant`, `*Callback`, …), names already ending in `Type` (`MediaType`), or core
+      primitives (`Result`, `Failure`). Because "bare concept" needs judgment, this half is enforced by
+      `code-reviewer`, not the structure gate. Mappers follow the `Mapper` / `RequestMapper` contracts
+      (architecture.md §Infrastructure), never a base class.
+
 ### Pre-commit quality gate
 
 Husky runs on every `git commit`:
@@ -230,7 +242,7 @@ Husky runs on every `git commit`:
 - **lint-staged** → `eslint --fix` on staged `.ts` / `.tsx` files (blocks on unfixed ESLint errors).
 - **tsc --noEmit** → full project type check (blocks on type errors).
 - **check:structure** → `scripts/check-structure.mjs` (blocks on declaration-per-file, layer, import-style,
-  and widget-placement violations — see `architecture.md` §Pre-Commit Quality Gate).
+  widget-placement, and entity-naming violations — see `architecture.md` §Pre-Commit Quality Gate).
 
 Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
 
