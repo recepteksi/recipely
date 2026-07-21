@@ -4,18 +4,8 @@ import type { Failure } from '@core/failure';
 import { AuthSession } from '@domain/auth/auth-session';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import {
-  AUTH_FORGOT_PASSWORD_PATH,
-  AUTH_LOGIN_PATH,
-  AUTH_REGISTER_PATH,
-  AUTH_REGISTER_RESEND_PATH,
-  AUTH_REGISTER_VERIFY_PATH,
-  AUTH_RESET_PASSWORD_PATH,
-  AUTH_SOCIAL_PATH,
-  AVATAR_UPLOAD_URL,
-  ME_PATH,
-  ME_PROFILE_PATH,
-} from '@infrastructure/constants/api';
+import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
@@ -46,7 +36,7 @@ export class AuthRepository implements IAuthRepository {
   async signIn(email: string, password: string): Promise<Result<AuthSession, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
-      url: AUTH_LOGIN_PATH,
+      url: ApiRoutes.auth.login,
       data: { email: email.trim(), password },
     });
     if (!result.ok) {
@@ -62,7 +52,7 @@ export class AuthRepository implements IAuthRepository {
   ): Promise<Result<RegistrationChallenge, Failure>> {
     const result = await this.http.request<RegistrationChallengeDto>({
       method: 'POST',
-      url: AUTH_REGISTER_PATH,
+      url: ApiRoutes.auth.register,
       data: { email: email.trim(), password, displayName },
     });
     if (!result.ok) {
@@ -77,7 +67,7 @@ export class AuthRepository implements IAuthRepository {
   ): Promise<Result<AuthSession, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
-      url: AUTH_REGISTER_VERIFY_PATH,
+      url: ApiRoutes.auth.registerVerify,
       data: { email: email.trim(), code: code.trim() },
     });
     if (!result.ok) {
@@ -91,7 +81,7 @@ export class AuthRepository implements IAuthRepository {
   ): Promise<Result<RegistrationChallenge, Failure>> {
     const result = await this.http.request<RegistrationChallengeDto>({
       method: 'POST',
-      url: AUTH_REGISTER_RESEND_PATH,
+      url: ApiRoutes.auth.registerResend,
       data: { email: email.trim() },
     });
     if (!result.ok) {
@@ -127,7 +117,7 @@ export class AuthRepository implements IAuthRepository {
   async requestPasswordReset(email: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<void>({
       method: 'POST',
-      url: AUTH_FORGOT_PASSWORD_PATH,
+      url: ApiRoutes.auth.forgotPassword,
       data: { email: email.trim() },
     });
     if (!result.ok) {
@@ -139,7 +129,7 @@ export class AuthRepository implements IAuthRepository {
   async resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<void>({
       method: 'POST',
-      url: AUTH_RESET_PASSWORD_PATH,
+      url: ApiRoutes.auth.resetPassword,
       data: { token, newPassword },
     });
     if (!result.ok) {
@@ -172,7 +162,7 @@ export class AuthRepository implements IAuthRepository {
   }): Promise<Result<AuthSession, Failure>> {
     const result = await this.http.request<{ user: RecipelyUserDto }>({
       method: 'PATCH',
-      url: ME_PROFILE_PATH,
+      url: ApiRoutes.me.profile,
       data: input,
     });
     if (!result.ok) {
@@ -184,7 +174,7 @@ export class AuthRepository implements IAuthRepository {
   async deleteAccount(): Promise<Result<void, Failure>> {
     const result = await this.http.request<void>({
       method: 'DELETE',
-      url: ME_PATH,
+      url: ApiRoutes.me.root,
     });
     // Keep the session on any HTTP/network failure so the user stays signed in
     // and can retry — only clear local credentials once the server confirms.
@@ -202,7 +192,7 @@ export class AuthRepository implements IAuthRepository {
   private async exchangeFirebaseToken(idToken: string): Promise<Result<AuthSession, Failure>> {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
-      url: AUTH_SOCIAL_PATH,
+      url: ApiRoutes.auth.social,
       data: { idToken },
     });
     if (!result.ok) return result;

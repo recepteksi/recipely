@@ -1,5 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Launch redirect. Guest-first: once the session resolves the app always lands
@@ -17,7 +18,7 @@ export const IndexRedirect = (): React.JSX.Element | null => {
     return null;
   }
 
-  return <Redirect href="/recipes" />;
+  return <Redirect href={RoutePaths.recipes} />;
 };
 
 export default IndexRedirect;

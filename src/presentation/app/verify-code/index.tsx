@@ -13,6 +13,7 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 
@@ -31,7 +32,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === 'authenticated') {
-      router.replace('/recipes');
+      router.replace(RoutePaths.recipes);
     }
   }, [state.status, router]);
 

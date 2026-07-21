@@ -21,6 +21,7 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { Phase } from '@presentation/app/create-recipe/model/phase';
 import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/use-recipe-generation-args';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
@@ -245,7 +246,7 @@ export const useRecipeGeneration = ({
 
   const onResumeDraft = useCallback((): void => {
     if (latestDraft === null) return;
-    router.replace({ pathname: '/create-recipe', params: { draftId: latestDraft.id } });
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId: latestDraft.id } });
   }, [latestDraft, router]);
 
   const onClose = useCallback((): void => {

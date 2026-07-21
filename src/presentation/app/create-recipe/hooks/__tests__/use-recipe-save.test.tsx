@@ -240,10 +240,7 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
     act(() => driver.latest().onSuccessPrimary());
 
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: '/recipes/[recipeId]',
-      params: { recipeId: CREATED_ID },
-    });
+    expect(mockReplace).toHaveBeenCalledWith(`/recipes/${CREATED_ID}`);
     expect(driver.latest().saveSuccess).toBeNull();
   });
 

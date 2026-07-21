@@ -12,6 +12,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -152,7 +153,7 @@ export const LoginForm = (): React.JSX.Element => {
       ) : null}
 
       <Pressable
-        onPress={() => router.push('/forgot-password')}
+        onPress={() => router.push(RoutePaths.forgotPassword)}
         style={styles.forgotRow}
         accessibilityRole="button"
         accessibilityLabel={t().login.forgotPassword}
@@ -184,8 +185,8 @@ export const LoginForm = (): React.JSX.Element => {
         disabled={isLoading}
         onGoogle={() => { void runSocial(signInWithGoogle); }}
         onApple={() => { void runSocial(signInWithApple); }}
-        onSignUp={() => router.push('/register')}
-        onGuest={() => router.replace('/recipes')}
+        onSignUp={() => router.push(RoutePaths.register)}
+        onGuest={() => router.replace(RoutePaths.recipes)}
       />
     </>
   );

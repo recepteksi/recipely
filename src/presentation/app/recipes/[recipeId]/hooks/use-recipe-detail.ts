@@ -15,6 +15,7 @@ import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -41,7 +42,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     closePrompt();
     // Cast: the dynamic redirect param can't be statically verified against
     // expo-router's typed-routes union — same pattern as useAuthGuard.
-    router.push(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+    router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
   const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
@@ -286,7 +287,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
     onDeleteComment: (id: string) => void handleDeleteComment(id),
-    onEdit: () => router.push(`/create-recipe?recipeId=${recipeId}`),
+    onEdit: () => router.push(RoutePaths.createRecipeWithDraft(recipeId) as Href),
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

@@ -10,6 +10,7 @@ import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { RoutePaths } from '@presentation/base/constants';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
@@ -37,7 +38,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace('/login');
+    router.replace(RoutePaths.login);
   };
 
   const handleDeleteAccount = async (): Promise<void> => {
@@ -47,7 +48,7 @@ export const SettingsScreen = (): React.JSX.Element => {
     setDeleting(false);
     if (failure === null) {
       setDeleteVisible(false);
-      router.replace('/login');
+      router.replace(RoutePaths.login);
       return;
     }
     // WHY: the session stays intact on failure, so keep the sheet open and show

@@ -19,6 +19,7 @@ import { spacing, sizes } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const RECIPE_CARD_MIN_WIDTH = 320;
 const GRID_GAP = spacing.lg2;
@@ -41,12 +42,12 @@ export const useRecipeList = (): UseRecipeListResult => {
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
-    router.push(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+    router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
   // Guest-gated navigations: the create-recipe / AI-generate routes are auth-only,
   // so intercept the tap and surface the sign-in prompt instead of letting the
   // auth guard bounce the guest to a bare login screen.
-  const onOpenCreate = useCallback(() => requestGate(() => router.push('/create-recipe')), [requestGate, router]);
+  const onOpenCreate = useCallback(() => requestGate(() => router.push(RoutePaths.createRecipe)), [requestGate, router]);
   const { cuisineLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
@@ -192,7 +193,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   useRefreshFailureToast(state.status === 'loaded' ? state.refreshFailure : undefined);
 
   const onOpenRecipe = useCallback(
-    (id: string) => router.push({ pathname: '/recipes/[recipeId]', params: { recipeId: id } }),
+    (id: string) => router.push(RoutePaths.recipeDetail(id) as Href),
     [router],
   );
 
@@ -258,7 +259,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onRefresh,
     onOpenRecipe,
     onOpenCreate,
-    onNotifications: () => router.push('/notifications'),
+    onNotifications: () => router.push(RoutePaths.notifications),
     isSaved,
     onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     onChangeSort: (key: SortKey) => {

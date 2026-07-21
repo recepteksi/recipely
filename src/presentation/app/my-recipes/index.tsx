@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import type { Tab } from '@presentation/app/my-recipes/model/tab';
@@ -19,6 +19,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RoutePaths } from '@presentation/base/constants';
 
 const WEB_CONTENT_MAX = 1200;
 
@@ -80,15 +81,15 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   ];
 
   const openRecipe = (id: string): void => {
-    router.push({ pathname: '/recipes/[recipeId]', params: { recipeId: id } });
+    router.push(RoutePaths.recipeDetail(id) as Href);
   };
 
   const openCreate = (): void => {
-    router.push('/create-recipe');
+    router.push(RoutePaths.createRecipe);
   };
 
   const openDraft = (id: string): void => {
-    router.push({ pathname: '/create-recipe', params: { draftId: id } });
+    router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } });
   };
 
   const deleteDraft = async (id: string): Promise<void> => {
