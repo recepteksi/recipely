@@ -608,6 +608,8 @@ export const tr: Translations = {
     passwordPlaceholder: 'Şifre (en az 8 karakter)',
     confirmPlaceholder: 'Şifreyi onayla',
     signUp: 'Hesap oluştur',
+    showPassword: 'Şifreyi göster',
+    hidePassword: 'Şifreyi gizle',
     haveAccount: 'Zaten hesabınız var mı?',
     signIn: 'Giriş yap',
     weak: 'Zayıf',

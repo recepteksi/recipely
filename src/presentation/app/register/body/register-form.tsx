@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -9,6 +9,7 @@ import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { AuthTextField } from '@presentation/app/register/items/auth-text-field';
 import { PasswordStrengthMeter } from '@presentation/app/register/items/password-strength-meter';
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
+import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -36,6 +37,7 @@ export const RegisterForm = (): React.JSX.Element => {
   const [confirm, setConfirm] = useState(CharConstants.empty);
   const [agree, setAgree] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
 
   const emailRef = useRef<TextInput>(null);
@@ -142,13 +144,9 @@ export const RegisterForm = (): React.JSX.Element => {
         onSubmitEditing={() => confirmRef.current?.focus()}
         containerStyle={styles.passwordSpacing}
         rightSlot={
-          <Pressable onPress={() => setShowPwd((s) => !s)} hitSlop={8} style={styles.eyeButton}>
-            <MaterialCommunityIcons
-              name={showPwd ? 'eye-off-outline' : 'eye-outline'}
-              size={18}
-              color={colors.textMuted}
-            />
-          </Pressable>
+          <View style={styles.eyeButton}>
+            <PasswordEyeToggle visible={showPwd} onToggle={() => setShowPwd((s) => !s)} />
+          </View>
         }
       />
 
@@ -160,20 +158,22 @@ export const RegisterForm = (): React.JSX.Element => {
         placeholder={t().register.confirmPlaceholder}
         value={confirm}
         onChangeText={setConfirm}
-        secureTextEntry={!showPwd}
+        secureTextEntry={!showConfirm}
         autoCapitalize="none"
         returnKeyType="done"
         onSubmitEditing={() => { void handleRegister(); }}
         containerStyle={styles.fieldSpacing}
         rightSlot={
-          confirm.length > ValueConstants.zero ? (
-            <Ionicons
-              name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
-              size={18}
-              color={passwordsMatch ? colors.success : colors.danger}
-              style={styles.inputStatusIcon}
-            />
-          ) : undefined
+          <View style={styles.confirmRight}>
+            {confirm.length > ValueConstants.zero ? (
+              <Ionicons
+                name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
+                size={18}
+                color={passwordsMatch ? colors.success : colors.danger}
+              />
+            ) : null}
+            <PasswordEyeToggle visible={showConfirm} onToggle={() => setShowConfirm((s) => !s)} />
+          </View>
         }
       />
 
@@ -236,6 +236,13 @@ const styles = StyleSheet.create({
     height: sizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  confirmRight: {
+    position: 'absolute',
+    right: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   error: {
     marginTop: spacing.md,
