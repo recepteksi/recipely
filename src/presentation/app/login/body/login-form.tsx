@@ -12,7 +12,7 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { RoutePaths } from '@presentation/base/constants';
+import { RoutePaths, OpacityConstants } from '@presentation/base/constants';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: sizes.inputHeight,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: OpacityConstants.disabled,
   },
   signInLabel: {
     fontWeight: '600',

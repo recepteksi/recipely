@@ -11,6 +11,7 @@ import { TIME_OPTIONS } from '@presentation/app/recipes/model/ui-filter-defaults
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { fontSizes, radii, shadows, sizes, spacing } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -180,7 +181,7 @@ export const WebFilterModal = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg2,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: ValueConstants.one,
   },
   closeBtn: {
     width: sizes.webModalCloseBtn,
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   clearDisabled: {
-    opacity: 0.5,
+    opacity: OpacityConstants.disabled,
   },
   clearLabel: {
     fontWeight: '700',
@@ -240,6 +241,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: spacing.lg,
-    borderTopWidth: 1,
+    borderTopWidth: ValueConstants.one,
   },
 });

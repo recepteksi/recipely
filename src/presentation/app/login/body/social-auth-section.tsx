@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dividerLine: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: 1,
   },
   dividerLabel: {

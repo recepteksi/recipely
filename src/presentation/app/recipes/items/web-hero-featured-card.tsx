@@ -15,7 +15,7 @@ import {
 } from '@presentation/app/recipes/model/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
-import { HeroGradientConstants } from '@presentation/base/constants';
+import { HeroGradientConstants, OpacityConstants } from '@presentation/base/constants';
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummaryEntity;
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   openOverlay: StyleSheet.absoluteFillObject,
   pressed: {
-    opacity: 0.92,
+    opacity: OpacityConstants.nearOpaqueStrong,
   },
   image: {
     position: 'absolute',
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: fontSizes.hero * 1.04,
     letterSpacing: -1,
-    textShadowOffset: { width: ValueConstants.zero, height: 2 },
-    textShadowRadius: 8,
+    textShadowOffset: { width: ValueConstants.zero, height: ValueConstants.two },
+    textShadowRadius: spacing.sm,
   },
   metaRow: {
     flexDirection: 'row',

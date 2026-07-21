@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -28,7 +29,7 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: ValueConstants.one, y: ValueConstants.one }}
         style={[styles.card, { borderColor: colors.primary }]}
       >
         <View pointerEvents="none" style={styles.decor}>
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     gap: spacing.sm,
@@ -72,18 +73,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -spacing.lg,
     top: -spacing.lg,
-    opacity: 0.16,
+    opacity: OpacityConstants.scrimLight,
   },
   iconBadge: {
     width: sizes.chipHeight,
     height: sizes.chipHeight,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontWeight: '700',
     fontSize: fontSizes.medium,
   },

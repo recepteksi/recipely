@@ -3,8 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { spacing, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 interface InvalidLinkViewProps {
   onBack: () => void;
@@ -15,7 +16,7 @@ export const InvalidLinkView = ({ onBack }: InvalidLinkViewProps): React.JSX.Ele
   return (
     <>
       <View style={[styles.successCircle, { backgroundColor: colors.dangerLight }]}>
-        <Ionicons name="alert-circle" size={40} color={colors.danger} />
+        <Ionicons name="alert-circle" size={sizes.iconHuge} color={colors.danger} />
       </View>
 
       <ThemedText variant="subtitle" style={styles.cardTitle}>
@@ -50,9 +51,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   successCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: sizes.statusCircle,
+    height: sizes.statusCircle,
+    borderRadius: sizes.statusCircle / ValueConstants.two,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',

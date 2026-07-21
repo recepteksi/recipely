@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -27,7 +28,7 @@ export const WebAiBanner = ({ onPress }: WebAiBannerProps): React.JSX.Element =>
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: 1, y: ValueConstants.zero }}
+        end={{ x: ValueConstants.one, y: ValueConstants.zero }}
         style={[styles.card, { borderColor: colors.gradientBorder }]}
       >
         <View pointerEvents="none" style={styles.decor}>
@@ -63,13 +64,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   pressed: {
-    opacity: 0.88,
+    opacity: OpacityConstants.pressedFaint,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.xxl,
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.xxl,
@@ -79,33 +80,33 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -spacing.lg,
     right: -spacing.md,
-    opacity: 0.12,
+    opacity: OpacityConstants.scrimFaint,
   },
   iconTile: {
     width: sizes.aiBannerIcon,
     height: sizes.aiBannerIcon,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: ValueConstants.zero,
   },
   textBlock: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xs,
   },
   title: {
     fontWeight: '800',
     fontSize: fontSizes.subtitle,
-    textShadowOffset: { width: ValueConstants.zero, height: 1 },
-    textShadowRadius: 6,
+    textShadowOffset: { width: ValueConstants.zero, height: ValueConstants.one },
+    textShadowRadius: spacing.xs2,
   },
   subtitle: {
     fontWeight: '400',
     fontSize: fontSizes.medium,
-    opacity: 0.9,
-    textShadowOffset: { width: ValueConstants.zero, height: 1 },
-    textShadowRadius: 4,
+    opacity: OpacityConstants.nearOpaque,
+    textShadowOffset: { width: ValueConstants.zero, height: ValueConstants.one },
+    textShadowRadius: spacing.xs,
   },
   startChip: {
     flexShrink: ValueConstants.zero,

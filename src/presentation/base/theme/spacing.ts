@@ -27,6 +27,7 @@ export const radii = {
 
 export const fontSizes = {
   nano: 9,
+  tiny: 10,
   micro: 11,
   sectionLabel: 11.5,
   small: 12,
@@ -47,6 +48,21 @@ export const fontSizes = {
 } as const;
 
 export const sizes = {
+  // Tiny glyph inside a checkbox / badge (smaller than iconSm).
+  iconXs: 14,
+  // Sub-caption glyph (e.g. inline dot / micro-icon).
+  iconNano: 12,
+  // Decorative micro-glyph.
+  iconPico: 10,
+  // Oversized feature / illustration glyph.
+  iconHuge: 40,
+  iconMassive: 48,
+  // Empty-state glyph.
+  iconJumbo: 56,
+  // Large empty-state / feedback glyph.
+  iconGiant: 64,
+  // Full-bleed illustration glyph (empty states, splash marks).
+  iconIllustration: 140,
   iconXxs: 18,
   iconSm: 16,
   // Caption-row inline icons (cuisine globe, rating star) on recipe detail.
@@ -56,40 +72,87 @@ export const sizes = {
   iconXl: 32,
   iconBtn: 36,
   iconBtnSm: 32,
+  // Small circular overlay button on a media tile (remove/close).
+  mediaRemoveBtn: 22,
   floatingBtn: 40,
+  avatarXs: 36,
   avatarSm: 40,
   avatarMd: 56,
   avatarLg: 80,
+  // Profile avatar outer ring frame + its inner avatar.
+  avatarFrame: 112,
+  avatarInner: 106,
+  // Edit-profile avatar frame + inner avatar (slightly smaller ring).
+  editAvatarFrame: 110,
+  editAvatarInner: 104,
+  // Min width of the edit-profile "Save" button.
+  saveBtnMinWidth: 72,
+  // "Edit profile" action button height.
+  editBtnHeight: 42,
+  // Brand logo mark on the auth hero (landscape/large shells).
+  heroLogo: 88,
+  // Max width of the centered auth card (register/login split layout).
+  authCardMaxWidth: 520,
   badgeSm: 28,
   // Circular severity disc behind the icon in the FeedbackDialog.
   feedbackDisc: 64,
   // Width cap of the centered FeedbackDialog card (phone-sized on tablets/web).
   dialogMaxWidth: 400,
+  // Text line-height steps (ascending) for body / caption paragraphs.
+  lineHeightXs: 18,
+  lineHeightSm: 19,
+  lineHeightMd: 20,
+  lineHeightLg: 21,
+  lineHeightXl: 22,
   notifBadge: 18,
   // Line height that keeps the unread count vertically centered inside the
   // 18px notifBadge circle (14px inner box after the 2px border).
   notifBadgeLineHeight: 12,
   chipHeight: 30,
+  // Round icon chip in a share-channel tile.
+  channelChip: 44,
   buttonHeight: 52,
   buttonSmHeight: 48,
   inputHeight: 52,
   cardImageHeight: 180,
+  // Max height of the recipe-editor cover image.
+  coverMaxHeight: 200,
   heroImageHeight: 280,
   heroImageHeightWeb: 440,
   heroSquare: 96,
+  // Draft-card cover thumbnail (square).
+  draftThumb: 72,
+  // Circular success/error status disc on the reset-password views.
+  statusCircle: 72,
   selectorHeight: 34,
   tabBarHeight: 56,
   settingsRowHeight: 52,
+  // Recipe preview thumbnail in the share sheet.
+  shareThumbnail: 52,
   searchBarHeight: 44,
   // Compact single-line form input (Help & Feedback form fields).
   inputHeightSm: 46,
   // Border width for Help & Feedback form inputs.
   inputBorderWidth: 1.5,
+  // Thick accent border (spinner rings, selected tiles).
+  borderThick: 3,
+  // Centered text-block max widths (ascending).
+  maxContentXs: 300,
+  maxContentSm: 320,
+  maxContentMd: 340,
+  maxContentLg: 420,
+  maxContentXl: 460,
+  // Max height of a scrollable dropdown / option list popover.
+  dropdownMaxHeight: 200,
   // Min height of the multiline message field in the Help & Feedback form.
   feedbackMessageMinHeight: 112,
   progressBarHeight: 6,
+  // Thin indeterminate refine-progress bar.
+  progressBarThin: 3,
   dotActiveWidth: 18,
   checkboxSize: 24,
+  // Compact checkbox (terms-agreement consent box).
+  checkboxSm: 22,
   reviewImageHeight: 160,
   textAreaMin: 60,
   promptInputMin: 110,
@@ -111,6 +174,8 @@ export const sizes = {
   heroActionBtn: 50,
   heroMiniMinHeight: 205,
   rankBadge: 26,
+  // Icon inside the circular badge on auth hero headers (verify/reset/forgot).
+  heroBadgeIcon: 26,
   aiBannerIcon: 52,
   sparkleDecor: 80,
   cuisineTileMin: 110,

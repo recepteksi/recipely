@@ -3,9 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
-const EDIT_BTN_HEIGHT = 42;
+const EDIT_BTN_HEIGHT = sizes.editBtnHeight;
 
 export interface ProfileActionsProps {
   onEditProfile: () => void;
@@ -48,7 +50,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editBtn: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -61,6 +63,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: OpacityConstants.pressedSubtle,
   },
 });

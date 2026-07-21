@@ -5,7 +5,7 @@ import { RecipeListItem } from '@presentation/app/recipes/items/recipe-list-item
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
-import { spacing } from '@presentation/base/theme';
+import { spacing, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -43,7 +43,7 @@ export const RecipeSearchOverlay = ({
       </View>
       {recipes.length === ValueConstants.zero ? (
         <View style={styles.empty}>
-          <Ionicons name="search" size={48} color={colors.textMuted} />
+          <Ionicons name="search" size={sizes.iconMassive} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyTitle}>
             {t().recipes.noResults}
           </ThemedText>
@@ -66,14 +66,14 @@ export const RecipeSearchOverlay = ({
 
 const styles = StyleSheet.create({
   panel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   countRow: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   listContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
   },
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     height: spacing.md,
   },
   empty: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,

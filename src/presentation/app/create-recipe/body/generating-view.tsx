@@ -15,6 +15,7 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import type { GeneratingVariant } from '@presentation/app/create-recipe/model/generating-variant';
 import { ValueConstants } from '@core/constants';
@@ -108,7 +109,7 @@ export const GeneratingView = ({
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={[styles.core, shadows.lg]}
           >
             <RecipelyLogo size={LOGO_SIZE} monochrome mono={colors.primaryText} />
@@ -133,14 +134,14 @@ export const GeneratingView = ({
           const done = i < spotlight;
           const active = i === spotlight;
           return (
-            <View key={label} style={[styles.checkRow, { opacity: done || active ? 1 : 0.4 }]}>
+            <View key={label} style={[styles.checkRow, { opacity: done || active ? OpacityConstants.full : OpacityConstants.inactive }]}>
               <View
                 style={[
                   styles.checkBadge,
                   {
                     backgroundColor: done ? colors.primary : 'transparent',
                     borderColor: active ? colors.primary : colors.border,
-                    borderWidth: done ? ValueConstants.zero : 1.5,
+                    borderWidth: done ? ValueConstants.zero : sizes.inputBorderWidth,
                   },
                 ]}
               >
@@ -168,7 +169,7 @@ export const GeneratingView = ({
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: ValueConstants.zero }}
+            end={{ x: ValueConstants.one, y: ValueConstants.zero }}
             style={[styles.progressFill, { width: `${progress * 100}%` }]}
           />
         </View>
@@ -179,7 +180,7 @@ export const GeneratingView = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
@@ -195,8 +196,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: STAGE,
     height: STAGE,
-    borderRadius: STAGE / 2,
-    borderWidth: 3,
+    borderRadius: STAGE / ValueConstants.two,
+    borderWidth: sizes.borderThick,
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
   },
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     alignItems: 'center',
-    maxWidth: 300,
+    maxWidth: sizes.maxContentXs,
   },
   title: {
     textAlign: 'center',
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   },
   checklist: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: sizes.maxContentSm,
     gap: spacing.sm2,
   },
   checkRow: {

@@ -16,12 +16,13 @@ import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/mo
 import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { spacing, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
-const WEB_CONTENT_MAX = 1200;
+const WEB_CONTENT_MAX = sizes.webContentMax;
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -41,9 +42,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
   const gridColumns = useMemo<number>(() => {
-    if (!isWebShell) return 1;
-    const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * 2;
-    return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
+    if (!isWebShell) return ValueConstants.one;
+    const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
+    return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   // Web band + underlined tabs share the list's horizontal inset so they line
   // up with the recipe grid below; top padding clears the web app header.

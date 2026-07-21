@@ -39,7 +39,7 @@ export const StepRow = ({
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: ValueConstants.one, y: ValueConstants.one }}
         style={styles.badge}
       >
         <ThemedText style={[styles.badgeLabel, { color: colors.primaryText }]}>
@@ -58,7 +58,7 @@ export const StepRow = ({
       />
       <Pressable
         onPress={onRemove}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.removeBtn}
         accessibilityRole="button"
         accessibilityLabel={removeLabel}
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   badge: {
     width: sizes.badgeSm,
@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.medium,
-    lineHeight: 21,
+    lineHeight: sizes.lineHeightLg,
     minHeight: sizes.iconBtn,
     paddingVertical: spacing.xs,
     textAlignVertical: 'top',

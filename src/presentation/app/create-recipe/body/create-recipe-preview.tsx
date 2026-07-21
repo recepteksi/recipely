@@ -5,6 +5,7 @@ import { RefineDock } from '@presentation/app/create-recipe/body/refine-dock';
 import { CreateRecipeHeader } from '@presentation/app/create-recipe/body/create-recipe-header';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
 import { useTheme } from '@presentation/base/theme/use-theme';
+import { sizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface CreateRecipePreviewProps {
@@ -37,7 +38,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: ValueConstants.zero }}
+            end={{ x: ValueConstants.one, y: ValueConstants.zero }}
             style={styles.refiningFill}
           />
         </View>
@@ -91,14 +92,14 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
 
 const styles = StyleSheet.create({
   refiningTrack: {
-    height: 3,
+    height: sizes.progressBarThin,
     overflow: 'hidden',
   },
   refiningFill: {
-    height: 3,
+    height: sizes.progressBarThin,
     width: '40%',
   },
   content: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });

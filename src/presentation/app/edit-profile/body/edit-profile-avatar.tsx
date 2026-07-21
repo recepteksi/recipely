@@ -5,11 +5,13 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
-const AVATAR_FRAME = 110;
-const AVATAR_INNER = 104;
-const CAMERA_BTN = 32;
+const AVATAR_FRAME = sizes.editAvatarFrame;
+const AVATAR_INNER = sizes.editAvatarInner;
+const CAMERA_BTN = sizes.iconBtnSm;
 
 export interface EditProfileAvatarProps {
   photoUri: string | undefined;
@@ -56,7 +58,7 @@ export const EditProfileAvatar = ({
           accessibilityRole="button"
           accessibilityLabel={t().profile.changePhoto}
         >
-          <Ionicons name="camera" size={sizes.iconSm - 2} color={colors.primaryText} />
+          <Ionicons name="camera" size={sizes.iconSm - ValueConstants.two} color={colors.primaryText} />
         </Pressable>
       </View>
       <Pressable
@@ -89,31 +91,31 @@ const styles = StyleSheet.create({
   avatarFrame: {
     width: AVATAR_FRAME,
     height: AVATAR_FRAME,
-    borderRadius: AVATAR_FRAME / 2,
-    padding: (AVATAR_FRAME - AVATAR_INNER) / 2,
-    borderWidth: 1,
+    borderRadius: AVATAR_FRAME / ValueConstants.two,
+    padding: (AVATAR_FRAME - AVATAR_INNER) / ValueConstants.two,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: AVATAR_FRAME / 2,
+    borderRadius: AVATAR_FRAME / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cameraBtn: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
+    bottom: -spacing.xxs,
+    right: -spacing.xxs,
     width: CAMERA_BTN,
     height: CAMERA_BTN,
-    borderRadius: CAMERA_BTN / 2,
-    borderWidth: 3,
+    borderRadius: CAMERA_BTN / ValueConstants.two,
+    borderWidth: sizes.borderThick,
     alignItems: 'center',
     justifyContent: 'center',
   },
   disabled: {
-    opacity: 0.6,
+    opacity: OpacityConstants.disabledStrong,
   },
   changePhoto: {
     fontWeight: '700',

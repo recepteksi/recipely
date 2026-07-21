@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface SelectChipProps {
   label: string;
@@ -33,7 +34,7 @@ export const SelectChip = ({
       ]}
     >
       {selected ? (
-        <Ionicons name="checkmark" size={12} color={colors.primaryText} />
+        <Ionicons name="checkmark" size={sizes.iconNano} color={colors.primaryText} />
       ) : null}
       <ThemedText
         variant="caption"
@@ -57,10 +58,10 @@ const styles = StyleSheet.create({
     height: sizes.iconBtn,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   label: {
     fontWeight: '600',

@@ -3,7 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface EditProfileHeaderProps {
   topInset: number;
@@ -77,11 +79,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontWeight: '700',
   },
   saveBtn: {
-    minWidth: 72,
+    minWidth: sizes.saveBtnMinWidth,
     height: sizes.iconBtn,
     paddingHorizontal: spacing.lg,
     borderRadius: sizes.iconBtn / 2,
@@ -89,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveBtnDisabled: {
-    opacity: 0.5,
+    opacity: OpacityConstants.disabled,
   },
   saveBtnLabel: {
     fontWeight: '700',

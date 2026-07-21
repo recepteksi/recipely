@@ -7,6 +7,8 @@ import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/inst
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 
 export interface RecipeStepsProps {
@@ -80,10 +82,10 @@ export const RecipeSteps = ({
               onPress={onEdit}
               style={({ pressed }) => [
                 styles.ghostPill,
-                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
               ]}
             >
-              <Ionicons name="create-outline" size={16} color={colors.text} />
+              <Ionicons name="create-outline" size={sizes.iconSm} color={colors.text} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.text }]}>
                 {t().myRecipes.editRecipe}
               </ThemedText>
@@ -94,10 +96,10 @@ export const RecipeSteps = ({
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ghostPill,
-                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? 0.75 : 1 },
+                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
               ]}
             >
-              <Ionicons name="trash-outline" size={16} color={colors.danger} />
+              <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
                 {t().myRecipes.deleteRecipe}
               </ThemedText>
@@ -114,10 +116,10 @@ export const RecipeSteps = ({
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ownerBtn,
-                { opacity: pressed ? 0.75 : 1, backgroundColor: colors.dangerLight },
+                { opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full, backgroundColor: colors.dangerLight },
               ]}
             >
-              <Ionicons name="trash-outline" size={16} color={colors.danger} />
+              <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
                 {t().myRecipes.deleteRecipe}
               </ThemedText>
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   ownerBtn: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
     height: sizes.searchBarHeight,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   ownerBtnLabel: {
     fontWeight: '600',

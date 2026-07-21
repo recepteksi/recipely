@@ -31,7 +31,7 @@ export const DifficultyToggle = ({
             style={[
               styles.segment,
               {
-                borderLeftWidth: index > ValueConstants.zero ? 1 : ValueConstants.zero,
+                borderLeftWidth: index > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero,
                 borderLeftColor: colors.border,
                 backgroundColor: active ? colors.primary : 'transparent',
               },
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: sizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     overflow: 'hidden',
   },
   segment: {

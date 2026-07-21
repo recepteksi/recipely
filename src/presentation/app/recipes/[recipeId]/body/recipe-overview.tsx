@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   authorSkeletonText: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xs2,
   },
   tagsRow: {

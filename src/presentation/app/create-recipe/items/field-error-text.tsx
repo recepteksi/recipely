@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface FieldErrorTextProps {
   message: string;
@@ -29,6 +30,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs2,
   },
   message: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });

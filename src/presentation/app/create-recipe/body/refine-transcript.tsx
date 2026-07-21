@@ -26,7 +26,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.assistantBadge}
         >
           <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primaryText} />
@@ -41,7 +41,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         </View>
         <Pressable
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={styles.collapseBtn}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.closeAssistant}
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   transcriptHeaderText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   assistantName: {
     fontSize: fontSizes.caption,
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   transcript: {
-    maxHeight: 200,
+    maxHeight: sizes.dropdownMaxHeight,
   },
   transcriptInner: {
     paddingHorizontal: spacing.md,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     fontSize: fontSizes.caption,
-    lineHeight: 19,
+    lineHeight: sizes.lineHeightSm,
   },
   thinking: {
     fontStyle: 'italic',

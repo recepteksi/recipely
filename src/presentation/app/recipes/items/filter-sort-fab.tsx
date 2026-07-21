@@ -10,8 +10,9 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes, BrandColors } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/shadows';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   pressable: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   pressed: {
-    opacity: 0.85,
+    opacity: OpacityConstants.pressedSubtle,
   },
   labelWrapper: {
     overflow: 'hidden',
@@ -178,12 +179,12 @@ const styles = StyleSheet.create({
     height: sizes.notifBadge,
     paddingHorizontal: spacing.xs,
     borderRadius: sizes.notifBadge / 2,
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: BrandColors.white,
     fontSize: fontSizes.nano,
     lineHeight: fontSizes.nano,
     fontWeight: '700',

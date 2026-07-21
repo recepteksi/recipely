@@ -53,7 +53,7 @@ export const MediaPicker = ({
         ]}
       >
         <View style={[styles.dropIconWrap, { backgroundColor: colors.chipBackground }]}>
-          <Ionicons name="camera-outline" size={24} color={colors.primary} />
+          <Ionicons name="camera-outline" size={sizes.iconLg} color={colors.primary} />
         </View>
         <ThemedText variant="body" style={styles.dropTitle}>
           {t().mediaPicker.add}
@@ -74,7 +74,7 @@ export const MediaPicker = ({
             styles.tile,
             {
               borderColor: i === ValueConstants.zero ? colors.primary : colors.cardBorder,
-              borderWidth: i === ValueConstants.zero ? 2 : 1,
+              borderWidth: i === ValueConstants.zero ? ValueConstants.two : ValueConstants.one,
               backgroundColor: colors.skeleton,
             },
           ]}
@@ -98,7 +98,7 @@ export const MediaPicker = ({
             accessibilityLabel={t().mediaPicker.remove}
             style={[styles.removeBtn, { backgroundColor: colors.overlay }]}
           >
-            <Ionicons name="close" size={14} color={colors.onOverlay} />
+            <Ionicons name="close" size={sizes.iconXs} color={colors.onOverlay} />
           </Pressable>
 
           {i !== ValueConstants.zero ? (
@@ -125,7 +125,7 @@ export const MediaPicker = ({
           { borderColor: colors.inputBorder },
         ]}
       >
-        <Ionicons name="add" size={24} color={colors.textMuted} />
+        <Ionicons name="add" size={sizes.iconLg} color={colors.textMuted} />
         <ThemedText variant="caption" muted style={styles.addLabel}>
           {t().mediaPicker.more}
         </ThemedText>
@@ -137,7 +137,7 @@ export const MediaPicker = ({
 const styles = StyleSheet.create({
   dropZone: {
     borderRadius: radii.lg,
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     borderStyle: 'dashed',
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   tile: {
     width: '32%',
-    aspectRatio: 1,
+    aspectRatio: ValueConstants.one,
     borderRadius: radii.md,
     overflow: 'hidden',
     position: 'relative',
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     top: spacing.xs,
     left: spacing.xs,
     paddingHorizontal: spacing.xs2,
-    paddingVertical: 1,
+    paddingVertical: ValueConstants.one,
     borderRadius: radii.xs,
   },
   coverText: {
@@ -191,9 +191,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xs,
     right: spacing.xs,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: sizes.mediaRemoveBtn,
+    height: sizes.mediaRemoveBtn,
+    borderRadius: sizes.mediaRemoveBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addTile: {
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',

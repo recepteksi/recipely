@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface AuthTextFieldProps {
   iconName: React.ComponentProps<typeof Ionicons>['name'];
@@ -57,7 +58,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
 
     return (
       <View style={[styles.inputWrapper, containerStyle]}>
-        <Ionicons name={iconName} size={20} color={colors.textMuted} style={styles.inputIcon} />
+        <Ionicons name={iconName} size={sizes.iconMd} color={colors.textMuted} style={styles.inputIcon} />
         <TextInput
           ref={ref}
           style={[
@@ -97,11 +98,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   input: {
     height: sizes.inputHeight,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     fontSize: fontSizes.body,

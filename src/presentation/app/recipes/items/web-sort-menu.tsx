@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     height: sizes.webSortBtn,
     paddingHorizontal: spacing.md,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
   },
   muted: {
@@ -154,9 +154,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     minWidth: sizes.webSortMenuMinWidth,
     padding: spacing.xs2,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.xl,
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   option: {
     flexDirection: 'row',

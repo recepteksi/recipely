@@ -86,7 +86,7 @@ export const RecipeSpecCard = ({
 const styles = StyleSheet.create({
   specCard: {
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     overflow: 'hidden',
   },
 });

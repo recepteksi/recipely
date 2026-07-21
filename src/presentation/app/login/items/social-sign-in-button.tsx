@@ -1,13 +1,10 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { GoogleLogo } from '@presentation/app/login/items/google-logo';
 import { AppleLogo } from '@presentation/app/login/items/apple-logo';
-import { radii, sizes, fontSizes, spacing } from '@presentation/base/theme';
+import { radii, sizes, fontSizes, spacing, BrandColors } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 
-const GOOGLE_BACKGROUND = '#FFFFFF';
-const GOOGLE_LABEL = '#1F2937';
-const APPLE_BACKGROUND = '#000000';
-const APPLE_LABEL = '#FFFFFF';
-const LOGO_SIZE = 18;
+const LOGO_SIZE = sizes.iconXxs;
 
 export interface SocialSignInButtonProps {
   provider: 'google' | 'apple';
@@ -41,15 +38,17 @@ export const SocialSignInButton = ({
       style={[
         styles.button,
         isGoogle
-          ? { backgroundColor: GOOGLE_BACKGROUND, borderColor, borderWidth: 1.5 }
-          : { backgroundColor: APPLE_BACKGROUND },
+          ? { backgroundColor: BrandColors.white, borderColor, borderWidth: sizes.inputBorderWidth }
+          : { backgroundColor: BrandColors.black },
         disabled ? styles.disabled : null,
       ]}
     >
-      {isGoogle ? <GoogleLogo size={LOGO_SIZE} /> : <AppleLogo size={LOGO_SIZE} color={APPLE_LABEL} />}
+      {isGoogle ? <GoogleLogo size={LOGO_SIZE} /> : <AppleLogo size={LOGO_SIZE} color={BrandColors.white} />}
       {/* Bare Text on purpose: brand surfaces are fixed white/black regardless of theme,
           so the label color must not follow ThemedText's theme-derived color. */}
-      <Text style={[styles.label, { color: isGoogle ? GOOGLE_LABEL : APPLE_LABEL }]}>{label}</Text>
+      <Text style={[styles.label, { color: isGoogle ? BrandColors.googleLabel : BrandColors.white }]}>
+        {label}
+      </Text>
     </Pressable>
   );
 };
@@ -69,6 +68,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   disabled: {
-    opacity: 0.5,
+    opacity: OpacityConstants.disabled,
   },
 });

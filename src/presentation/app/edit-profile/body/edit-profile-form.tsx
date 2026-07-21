@@ -1,9 +1,10 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { BIO_MAX, BIO_MIN_HEIGHT } from '@presentation/app/edit-profile/model/edit-profile-limits';
+import { ValueConstants } from '@core/constants';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 
 export interface EditProfileFormProps {
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     gap: spacing.lg,
   },
   field: {
@@ -99,9 +100,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   input: {
-    height: 46,
+    height: sizes.inputHeightSm,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     paddingHorizontal: spacing.md,
     fontSize: fontSizes.body,
   },

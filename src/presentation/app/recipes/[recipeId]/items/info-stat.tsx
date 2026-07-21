@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 interface InfoStatProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -29,7 +30,7 @@ export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Eleme
 
 const styles = StyleSheet.create({
   stat: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.md,

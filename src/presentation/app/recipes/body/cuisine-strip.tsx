@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderRadius: sizes.avatarMd / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   emoji: {
     fontSize: fontSizes.subheading,

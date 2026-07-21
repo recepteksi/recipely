@@ -17,7 +17,7 @@ import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
 import { ValueConstants } from '@core/constants';
-import { AnimationConstants } from '@presentation/base/constants';
+import { AnimationConstants, OpacityConstants } from '@presentation/base/constants';
 
 export interface CommentCardProps {
   body: string;
@@ -36,9 +36,7 @@ export interface CommentCardProps {
   nodeRef?: (node: CommentNode | null) => void;
 }
 
-const DISABLED_OPACITY = 0.5;
-
-const AVATAR_SIZE = 36;
+const AVATAR_SIZE = sizes.avatarXs;
 
 const FLASH_IN_MS = 220;
 const FLASH_HOLD_MS = 700;
@@ -106,7 +104,7 @@ export const CommentCard = ({
             onPress={onDelete}
             accessibilityRole="button"
             accessibilityLabel={t().comments.delete}
-            hitSlop={8}
+            hitSlop={spacing.sm}
             style={styles.deleteBtn}
           >
             <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
@@ -122,8 +120,8 @@ export const CommentCard = ({
           disabled={!canLike}
           accessibilityRole="button"
           accessibilityLabel={likedByMe ? t().comments.unlike : t().comments.like}
-          hitSlop={8}
-          style={[styles.likeBtn, { opacity: canLike ? 1 : DISABLED_OPACITY }]}
+          hitSlop={spacing.sm}
+          style={[styles.likeBtn, { opacity: canLike ? OpacityConstants.full : OpacityConstants.disabled }]}
         >
           <Ionicons
             name={likedByMe ? 'heart' : 'heart-outline'}
@@ -142,7 +140,7 @@ export const CommentCard = ({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: spacing.xs,
@@ -153,7 +151,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   headerText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   author: {
     fontWeight: '600',

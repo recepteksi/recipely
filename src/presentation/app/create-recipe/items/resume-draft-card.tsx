@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   resumeIcon: {
     width: sizes.floatingBtn,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resumeBody: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   resumeKicker: {
     fontWeight: '700',

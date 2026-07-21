@@ -11,11 +11,12 @@ import { SuccessView } from '@presentation/app/forgot-password/body/forgot-passw
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = sizes.maxContentXl;
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -48,7 +49,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-        <Ionicons name="key-outline" size={isLandscapeShell ? 32 : 26} color={colors.onOverlay} />
+        <Ionicons name="key-outline" size={isLandscapeShell ? sizes.iconXl : sizes.heroBadgeIcon} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t().forgotPassword.title}
@@ -88,7 +89,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             {hero}
@@ -124,7 +125,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -134,7 +135,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().forgotPassword.backToLogin}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
         </Pressable>
 
         {hero}
@@ -154,14 +155,14 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
+  flex: { flex: ValueConstants.one },
+  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: 280,
+    height: sizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -169,24 +170,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: sizes.iconBtn,
+    height: sizes.iconBtn,
+    borderRadius: sizes.iconBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   gradientCenter: {
-    height: 280,
+    height: sizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: sizes.avatarMd,
+    height: sizes.avatarMd,
+    borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: 0.82,
+    opacity: OpacityConstants.subtitle,
   },
   heroSubtitle: {
     textAlign: 'center',
@@ -205,28 +206,28 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -40,
+    marginTop: -sizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: 420,
+    maxWidth: sizes.maxContentLg,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

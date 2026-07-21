@@ -43,7 +43,7 @@ export const ExitSheet = ({
             <LinearGradient
               colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
               start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-              end={{ x: 1, y: 1 }}
+              end={{ x: ValueConstants.one, y: ValueConstants.one }}
               style={styles.primaryInner}
             >
               <ThemedText variant="body" style={[styles.primaryLabel, { color: colors.primaryText }]}>
@@ -81,14 +81,14 @@ export const ExitSheet = ({
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
   card: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: sizes.maxContentMd,
     borderRadius: radii.xxl,
     padding: spacing.xl,
   },
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   body: {
     marginTop: spacing.xs,
     marginBottom: spacing.lg,
-    lineHeight: 21,
+    lineHeight: sizes.lineHeightLg,
   },
   primaryBtn: {
     height: sizes.buttonSmHeight,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   primaryInner: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },

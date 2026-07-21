@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
+import { ValueConstants } from '@core/constants';
 
 export interface SelectTileProps {
   label: string;
@@ -61,11 +62,11 @@ export const SelectTile = ({
 
 const styles = StyleSheet.create({
   wrapper: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   tile: {
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm2,
     gap: spacing.xs,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.subtitle,
   },
   value: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontWeight: '700',
   },
   chevron: {

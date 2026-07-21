@@ -29,7 +29,7 @@ export const InputView = ({
       <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
         <Ionicons
           name="mail-outline"
-          size={20}
+          size={sizes.iconMd}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -97,11 +97,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: ValueConstants.one,
   },
   input: {
     height: sizes.inputHeight,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,

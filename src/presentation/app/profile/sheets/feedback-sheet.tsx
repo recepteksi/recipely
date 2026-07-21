@@ -174,8 +174,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
   },
   iconChip: {
-    width: sizes.iconXl * 2,
-    height: sizes.iconXl * 2,
+    width: sizes.iconXl * ValueConstants.two,
+    height: sizes.iconXl * ValueConstants.two,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

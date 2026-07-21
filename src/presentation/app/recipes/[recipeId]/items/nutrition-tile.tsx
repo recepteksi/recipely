@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface NutritionTileProps {
   label: string;
@@ -23,7 +24,7 @@ export const NutritionTile = ({ label, value, unit, tileColor, valueColor, label
 
 const styles = StyleSheet.create({
   tile: {
-    flex: 1,
+    flex: ValueConstants.one,
     borderRadius: radii.lg,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
@@ -32,17 +33,17 @@ const styles = StyleSheet.create({
   tileValueRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 2,
+    gap: spacing.xxs,
   },
   tileValue: {
     fontSize: fontSizes.heading,
     fontWeight: '700' as const,
-    lineHeight: fontSizes.heading + 4,
+    lineHeight: fontSizes.heading + spacing.xs,
   },
   tileUnit: {
     fontSize: fontSizes.micro,
-    lineHeight: fontSizes.heading + 4,
-    paddingBottom: 1,
+    lineHeight: fontSizes.heading + spacing.xs,
+    paddingBottom: ValueConstants.one,
   },
   tileLabel: {
     fontSize: fontSizes.micro,

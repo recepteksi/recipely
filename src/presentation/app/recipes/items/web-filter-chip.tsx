@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { fontSizes, radii, sizes, spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface WebFilterChipProps {
   label: string;
@@ -69,10 +70,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   grow: {
-    flex: 1,
+    flex: ValueConstants.one,
     justifyContent: 'center',
     paddingVertical: spacing.sm2,
   },

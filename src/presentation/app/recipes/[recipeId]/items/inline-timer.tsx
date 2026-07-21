@@ -33,7 +33,7 @@ export const InlineTimer = ({
         onPress={() => void timer.start()}
         style={[styles.idle, { backgroundColor: colors.chipBackground }]}
       >
-        <Ionicons name="time-outline" size={12} color={colors.primary} />
+        <Ionicons name="time-outline" size={sizes.iconNano} color={colors.primary} />
         <ThemedText variant="caption" style={[styles.idleLabel, { color: colors.primary }]}>
           {String(minutes)} {t().recipes.minutes}
         </ThemedText>
@@ -57,7 +57,7 @@ export const InlineTimer = ({
           onPress={() => void (timer.isPaused ? timer.resume() : timer.pause())}
           style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
         >
-          <Ionicons name={timer.isPaused ? 'play' : 'pause'} size={10} color={colors.primaryText} />
+          <Ionicons name={timer.isPaused ? 'play' : 'pause'} size={sizes.iconPico} color={colors.primaryText} />
         </Pressable>
       ) : null}
       <Pressable
@@ -66,7 +66,7 @@ export const InlineTimer = ({
         onPress={() => void timer.stop()}
         style={[styles.activeBtn, { backgroundColor: colors.gradientBorder }]}
       >
-        <Ionicons name="close" size={12} color={done ? colors.success : colors.primaryText} />
+        <Ionicons name="close" size={sizes.iconNano} color={done ? colors.success : colors.primaryText} />
       </Pressable>
     </View>
   );

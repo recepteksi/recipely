@@ -16,7 +16,7 @@ export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps):
 
   return (
     <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
-      <Ionicons name="search" size={18} color={colors.textMuted} style={styles.icon} />
+      <Ionicons name="search" size={sizes.iconXxs} color={colors.textMuted} style={styles.icon} />
       <TextInput
         style={[styles.input, { color: colors.text }]}
         value={value}
@@ -27,8 +27,8 @@ export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps):
         autoCorrect={false}
       />
       {value.length > ValueConstants.zero ? (
-        <Pressable onPress={() => onChangeText(CharConstants.empty)} hitSlop={8}>
-          <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+        <Pressable onPress={() => onChangeText(CharConstants.empty)} hitSlop={spacing.sm}>
+          <Ionicons name="close-circle" size={sizes.iconXxs} color={colors.textMuted} />
         </Pressable>
       ) : null}
     </View>
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.body,
     backgroundColor: 'transparent',
   },

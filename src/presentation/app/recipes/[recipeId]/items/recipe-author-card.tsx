@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.md,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     marginTop: spacing.lg,
   },
   textColumn: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   eyebrow: {

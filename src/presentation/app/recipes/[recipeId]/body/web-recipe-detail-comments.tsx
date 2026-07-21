@@ -8,6 +8,7 @@ import { t } from '@presentation/i18n';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;
@@ -73,7 +74,7 @@ export const WebRecipeDetailComments = ({
           accessibilityLabel={t().comments.send}
           style={({ pressed }) => [
             styles.sendBtn,
-            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? 0.6 : 1 },
+            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? OpacityConstants.disabledStrong : OpacityConstants.full },
           ]}
         >
           <Ionicons name="send" size={sizes.iconSm} color={colors.onOverlay} />
@@ -125,7 +126,7 @@ export const WebRecipeDetailComments = ({
           accessibilityLabel={t().comments.loadMore}
           style={({ pressed }) => [
             styles.loadMore,
-            { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            { borderColor: colors.border, opacity: pressed ? OpacityConstants.pressedStrong : OpacityConstants.full },
           ]}
         >
           <ThemedText variant="caption" muted>
@@ -152,9 +153,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     minHeight: sizes.searchBarHeight,
@@ -179,6 +180,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
 });

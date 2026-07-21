@@ -36,7 +36,7 @@ export const ActiveFilterChips = ({
   const nonCuisineFilterCount =
     filters.categories.length +
     filters.difficulties.length +
-    (filters.maxTime > ValueConstants.zero ? 1 : ValueConstants.zero);
+    (filters.maxTime > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero);
 
   if (nonCuisineFilterCount === ValueConstants.zero) return null;
 
@@ -57,7 +57,7 @@ export const ActiveFilterChips = ({
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {categoryLabel(c).name}
           </ThemedText>
-          <Ionicons name="close-circle" size={14} color={colors.primary} />
+          <Ionicons name="close-circle" size={sizes.iconXs} color={colors.primary} />
         </Pressable>
       ))}
       {filters.difficulties.map((d) => (
@@ -71,7 +71,7 @@ export const ActiveFilterChips = ({
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {formatLabel(d)}
           </ThemedText>
-          <Ionicons name="close-circle" size={14} color={colors.primary} />
+          <Ionicons name="close-circle" size={sizes.iconXs} color={colors.primary} />
         </Pressable>
       ))}
       {filters.maxTime > ValueConstants.zero ? (
@@ -84,7 +84,7 @@ export const ActiveFilterChips = ({
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             ≤ {filters.maxTime} {t().recipes.minutes}
           </ThemedText>
-          <Ionicons name="close-circle" size={14} color={colors.primary} />
+          <Ionicons name="close-circle" size={sizes.iconXs} color={colors.primary} />
         </Pressable>
       ) : null}
       <Pressable
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     height: sizes.selectorHeight,
     paddingHorizontal: spacing.sm2,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   activeChipText: {
     fontWeight: '600',

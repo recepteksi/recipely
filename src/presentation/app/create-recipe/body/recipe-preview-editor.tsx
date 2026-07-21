@@ -97,7 +97,7 @@ export const RecipePreviewEditor = ({
               styles.nameInput,
               { color: colors.text },
               fieldErrors.name !== undefined
-                ? { borderWidth: 1.5, borderColor: colors.danger, borderRadius: radii.md, padding: spacing.sm }
+                ? { borderWidth: sizes.inputBorderWidth, borderColor: colors.danger, borderRadius: radii.md, padding: spacing.sm }
                 : null,
             ]}
           />
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   cover: {
     height: sizes.heroImageHeight,
-    maxHeight: 200,
+    maxHeight: sizes.coverMaxHeight,
   },
   coverImage: {
     width: '100%',

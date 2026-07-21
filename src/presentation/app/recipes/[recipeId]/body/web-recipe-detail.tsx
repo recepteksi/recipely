@@ -111,7 +111,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
             />
           </View>
 
-          {media.length > 1 ? (
+          {media.length > ValueConstants.one ? (
             <View style={styles.thumbStrip}>
               {media.map((item, i) => (
                 <Pressable
@@ -209,13 +209,13 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   sideColumn: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   hero: {
     aspectRatio: HERO_ASPECT,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     overflow: 'hidden',
   },
   heroImage: {
@@ -232,11 +232,11 @@ const styles = StyleSheet.create({
     width: sizes.webDetailThumbWidth,
     height: sizes.webDetailThumbHeight,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     overflow: 'hidden',
   },
   thumbActive: {
-    borderWidth: 2,
+    borderWidth: ValueConstants.two,
   },
   thumbImage: {
     width: '100%',

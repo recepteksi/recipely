@@ -8,6 +8,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface RecipeShareSheetProps {
   visible: boolean;
@@ -19,7 +20,7 @@ export interface RecipeShareSheetProps {
 }
 
 const COPIED_RESET_MS = 1800;
-const THUMBNAIL_SIZE = 52;
+const THUMBNAIL_SIZE = sizes.shareThumbnail;
 
 /** Bottom-sheet share dialog for a recipe — channels, link display, and copy. */
 export const RecipeShareSheet = ({
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
     padding: spacing.md,
     marginBottom: spacing.lg,
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   previewText: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xs,
   },
   previewName: {
@@ -230,17 +231,17 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   linkPill: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   linkText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   copyBtn: {
     flexDirection: 'row',

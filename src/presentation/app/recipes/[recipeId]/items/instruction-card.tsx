@@ -5,6 +5,7 @@ import { InlineTimer } from '@presentation/app/recipes/[recipeId]/items/inline-t
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { splitStepWithTimers } from '@presentation/app/recipes/[recipeId]/model/split-step-with-timers';
+import { ValueConstants } from '@core/constants';
 
 export interface InstructionCardProps {
   index: number;
@@ -46,7 +47,7 @@ export const InstructionCard = ({
         ]}
       >
         {completed ? (
-          <Ionicons name="checkmark" size={14} color={colors.onSuccess} />
+          <Ionicons name="checkmark" size={sizes.iconXs} color={colors.onSuccess} />
         ) : (
           <ThemedText
             variant="caption"
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   numberCircle: {
     width: sizes.badgeSm,
@@ -119,10 +120,10 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.caption,
   },
   body: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   stepText: {
-    lineHeight: 22,
+    lineHeight: sizes.lineHeightXl,
   },
   timerRow: {
     flexDirection: 'row',

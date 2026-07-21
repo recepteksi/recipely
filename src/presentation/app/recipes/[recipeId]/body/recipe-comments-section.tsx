@@ -9,6 +9,7 @@ import { spacing, radii, sizes } from '@presentation/base/theme';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface RecipeCommentsSectionProps {
   commentState: RecipeCommentsState | undefined;
@@ -90,7 +91,7 @@ export const RecipeCommentsSection = ({
           onPress={onLoadMoreComments}
           style={({ pressed }) => [
             styles.loadMoreBtn,
-            { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            { borderColor: colors.border, opacity: pressed ? OpacityConstants.pressedStrong : OpacityConstants.full },
           ]}
         >
           <ThemedText variant="caption" muted>
@@ -124,12 +125,12 @@ export const RecipeCommentsSection = ({
               backgroundColor: colors.primary,
               opacity:
                 pressed || commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero
-                  ? 0.6
-                  : 1,
+                  ? OpacityConstants.disabledStrong
+                  : OpacityConstants.full,
             },
           ]}
         >
-          <Ionicons name="send" size={16} color={colors.onOverlay} />
+          <Ionicons name="send" size={sizes.iconSm} color={colors.onOverlay} />
         </Pressable>
       </View>
 
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -167,9 +168,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   commentInput: {
-    flex: 1,
+    flex: ValueConstants.one,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     minHeight: sizes.searchBarHeight,

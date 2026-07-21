@@ -12,7 +12,7 @@ import { ValueConstants } from '@core/constants';
 /** Window width (px) below which the hero collapses to the featured card only. */
 const STACK_WIDTH = 700;
 /** Height of each mini-card skeleton so two fill the hero column. */
-const MINI_SKELETON_HEIGHT = (sizes.heroImageHeightWeb - spacing.sm2) / 2;
+const MINI_SKELETON_HEIGHT = (sizes.heroImageHeightWeb - spacing.sm2) / ValueConstants.two;
 
 export interface WebHeroSectionProps {
   onOpenRecipe: (id: string) => void;
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     minWidth: ValueConstants.zero,
   },
   mini: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     flexDirection: 'column',
     gap: spacing.sm2,

@@ -16,7 +16,7 @@ export interface DraftCardProps {
   onDelete: () => void;
 }
 
-const THUMB = 72;
+const THUMB = sizes.draftThumb;
 
 /** Row in the Drafts tab: cover thumb, title, item count + relative time, delete. */
 export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
@@ -51,7 +51,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
       </View>
       <Pressable
         onPress={onDelete}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.deleteBtn}
         accessibilityRole="button"
         accessibilityLabel={t().drafts.delete}
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   thumb: {
     width: THUMB,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   body: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xxs,
   },
   badge: {

@@ -11,6 +11,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
@@ -83,7 +84,7 @@ export const RefineDock = ({
           disabled={!canRegenerate || refining}
           style={[
             styles.regenChip,
-            { borderColor: colors.primary, opacity: canRegenerate && !refining ? 1 : 0.45 },
+            { borderColor: colors.primary, opacity: canRegenerate && !refining ? OpacityConstants.full : OpacityConstants.disabledSoft },
           ]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.regenerate}
@@ -102,7 +103,7 @@ export const RefineDock = ({
               disabled={refining}
               style={[
                 styles.quickChip,
-                { borderColor: colors.border, backgroundColor: colors.background, opacity: refining ? 0.5 : 1 },
+                { borderColor: colors.border, backgroundColor: colors.background, opacity: refining ? OpacityConstants.disabled : OpacityConstants.full },
               ]}
               accessibilityRole="button"
               accessibilityLabel={label}
@@ -159,7 +160,7 @@ const styles = StyleSheet.create({
     height: sizes.chipHeight,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   regenLabel: {
     fontWeight: '700',
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     height: sizes.chipHeight,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -189,10 +190,10 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.md,
     paddingRight: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: sizes.inputBorderWidth,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.medium,
     paddingVertical: ValueConstants.zero,
   },

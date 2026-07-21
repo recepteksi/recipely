@@ -10,7 +10,7 @@ import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -69,8 +69,8 @@ export const EditProfileScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  flex: { flex: 1 },
+  root: { flex: ValueConstants.one },
+  flex: { flex: ValueConstants.one },
 });
 
 export default EditProfileScreen;

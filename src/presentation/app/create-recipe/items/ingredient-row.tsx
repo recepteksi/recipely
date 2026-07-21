@@ -44,7 +44,7 @@ export const IngredientRow = ({
       />
       <Pressable
         onPress={onRemove}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.removeBtn}
         accessibilityRole="button"
         accessibilityLabel={removeLabel}
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs2,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: ValueConstants.one,
   },
   bullet: {
     width: spacing.sm,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: sizes.iconBtn,
     fontSize: fontSizes.body,
     paddingVertical: ValueConstants.zero,

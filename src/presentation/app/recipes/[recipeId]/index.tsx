@@ -17,6 +17,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -113,9 +114,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
-          style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
+          style={[styles.backButton, { top: insets.top + spacing.sm, backgroundColor: colors.overlayLight }]}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={sizes.iconLg} color={colors.onOverlay} />
         </Pressable>
       ) : null}
 
@@ -165,10 +166,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scroll: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
   },
   backButton: {
     position: 'absolute',

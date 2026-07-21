@@ -147,7 +147,7 @@ export const TimeCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'column',
     alignItems: 'center',
     gap: spacing.sm,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: sizes.inputBorderWidth,
   },
   segment: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.md,
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.micro,
   },
   value: {

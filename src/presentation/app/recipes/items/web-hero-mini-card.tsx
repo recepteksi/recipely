@@ -9,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
+import { OpacityConstants } from '@presentation/base/constants';
 
 export interface WebHeroMiniCardProps {
   recipe: RecipeSummaryEntity;
@@ -37,7 +38,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
       <LinearGradient
         colors={[HERO_OVERLAY_FADE, HERO_OVERLAY_DEEP]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: ValueConstants.zero, y: 1 }}
+        end={{ x: ValueConstants.zero, y: ValueConstants.one }}
         style={styles.gradient}
       />
       <View style={[styles.rankBadge, { backgroundColor: colors.onOverlay }]}>
@@ -66,13 +67,13 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    flex: ValueConstants.one,
     minHeight: sizes.heroMiniMinHeight,
     borderRadius: radii.xxl,
     overflow: 'hidden',
   },
   pressed: {
-    opacity: 0.88,
+    opacity: OpacityConstants.pressedFaint,
   },
   image: {
     position: 'absolute',

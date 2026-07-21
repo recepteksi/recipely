@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, sizes } from '@presentation/base/theme';
+import { OpacityConstants } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 
 export interface MyRecipesHeaderProps {
@@ -24,10 +25,10 @@ export const MyRecipesHeader = ({ onCreate }: MyRecipesHeaderProps): React.JSX.E
           style={({ pressed }) => [
             styles.createButton,
             shadows.sm,
-            { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+            { backgroundColor: colors.primary, opacity: pressed ? OpacityConstants.pressedSubtle : OpacityConstants.full },
           ]}
         >
-          <Ionicons name="add" size={16} color={colors.primaryText} />
+          <Ionicons name="add" size={sizes.iconSm} color={colors.primaryText} />
           <ThemedText variant="caption" style={[styles.createLabel, { color: colors.primaryText }]}>
             {t().myRecipes.createNew}
           </ThemedText>

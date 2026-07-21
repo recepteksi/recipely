@@ -107,7 +107,7 @@ export const LoginScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scrollContent: {
     flexGrow: 1,
@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
     flexGrow: 1,
