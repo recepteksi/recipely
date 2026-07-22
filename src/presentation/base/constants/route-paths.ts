@@ -5,6 +5,7 @@
  * used in `<Stack.Screen name=...>` or file/folder names.
  */
 export const RoutePaths = {
+  onboarding: '/onboarding',
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
