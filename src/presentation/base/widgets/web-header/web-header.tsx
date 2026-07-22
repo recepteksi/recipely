@@ -74,6 +74,12 @@ export const WebHeader = (): React.JSX.Element => {
   const goCreate = (): void => router.push(RoutePaths.createRecipe);
   const goNotifs = (): void => router.push(RoutePaths.notifications);
   const goProfile = (): void => router.replace(RoutePaths.profile);
+  const goDiscover = (): void => router.push(RoutePaths.onboarding);
+
+  // The Discover entry to the welcome/onboarding screen is a guest-only affordance
+  // and — per the prototype — lives on the Recipes tab alone.
+  const isAuthenticated = authState.status === 'authenticated';
+  const showDiscover = activeTab === 'recipes' && !isAuthenticated;
 
   // Search input only appears on the Recipes listing — that's where the recipe
   // list reads `useWebShellState().searchQuery` and folds it into its filter.
@@ -116,9 +122,11 @@ export const WebHeader = (): React.JSX.Element => {
           isProfileActive={isProfileActive}
           avatarName={displayName}
           avatarUri={avatarUri}
+          discoverLabel={showDiscover ? t().onboarding.discover : undefined}
           onCreate={goCreate}
           onOpenNotifications={goNotifs}
           onOpenProfile={goProfile}
+          onDiscover={showDiscover ? goDiscover : undefined}
         />
       </View>
     </View>

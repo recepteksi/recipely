@@ -18,6 +18,7 @@ import { RoutePaths } from '@presentation/base/constants';
  */
 export const PUBLIC_PATHS = new Set<string>([
   '/',
+  '/onboarding',
   '/login',
   '/register',
   '/verify-code',

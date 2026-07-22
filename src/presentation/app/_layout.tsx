@@ -42,6 +42,7 @@ const AlarmOverlay = (): React.JSX.Element | null => {
  */
 const HEADERLESS_PATHS = new Set<string>([
   '/',
+  '/onboarding',
   '/login',
   '/register',
   '/verify-code',
@@ -104,6 +105,7 @@ const RootStack = (): React.JSX.Element => {
             not match any route, so its options (headerShown:false) would be
             silently dropped and the default stack header would appear. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="login/index" options={{ headerShown: false }} />
         <Stack.Screen name="register/index" options={{ headerShown: false }} />
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />

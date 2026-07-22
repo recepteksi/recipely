@@ -18,9 +18,12 @@ export interface WebHeaderActionsProps {
   isProfileActive: boolean;
   avatarName: string;
   avatarUri?: string;
+  /** Guest-only Discover entry to the onboarding screen (recipes tab only). */
+  discoverLabel?: string;
   onCreate: () => void;
   onOpenNotifications: () => void;
   onOpenProfile: () => void;
+  onDiscover?: () => void;
 }
 
 /** Right cluster: Create CTA + notifications bell with badge + avatar route to profile. */
@@ -32,15 +35,38 @@ export const WebHeaderActions = ({
   isProfileActive,
   avatarName,
   avatarUri,
+  discoverLabel,
   onCreate,
   onOpenNotifications,
   onOpenProfile,
+  onDiscover,
 }: WebHeaderActionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
+  const showDiscover = discoverLabel !== undefined && onDiscover !== undefined;
 
   return (
     <View style={styles.row}>
+      {showDiscover ? (
+        <Pressable
+          onPress={onDiscover}
+          accessibilityRole="button"
+          accessibilityLabel={discoverLabel}
+          style={({ pressed }) => [
+            styles.discoverBtn,
+            {
+              borderColor: colors.cardBorder,
+              opacity: pressed ? 0.85 : 1,
+            },
+          ]}
+        >
+          <Ionicons name="sparkles" size={15} color={colors.primary} />
+          <ThemedText style={[styles.createLabel, { color: colors.text }]}>
+            {discoverLabel}
+          </ThemedText>
+        </Pressable>
+      ) : null}
+
       <Pressable
         onPress={onCreate}
         accessibilityRole="button"
@@ -119,6 +145,16 @@ const styles = StyleSheet.create({
     height: NOTIF_BTN_SIZE,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
+  },
+  discoverBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    height: NOTIF_BTN_SIZE,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
   },
   createLabel: {
     fontSize: fontSizes.caption,
