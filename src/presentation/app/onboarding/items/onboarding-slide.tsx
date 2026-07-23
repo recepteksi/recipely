@@ -12,14 +12,16 @@ export interface OnboardingSlideProps {
   /** Carousel page height — a definite height so the flex hero cannot collapse
    * inside the horizontal ScrollView. */
   height: number;
+  /** Whether this page is the one currently in view — replays its entrance. */
+  active: boolean;
 }
 
 /** One full-width carousel page: the gradient hero above the slide's copy. */
-export const OnboardingSlide = ({ slide, width, height }: OnboardingSlideProps): React.JSX.Element => {
+export const OnboardingSlide = ({ slide, width, height, active }: OnboardingSlideProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <View style={[styles.page, { width, height }]}>
-      <OnboardingHero kind={slide.kind} style={styles.hero} />
+      <OnboardingHero kind={slide.kind} active={active} style={styles.hero} />
       <View style={styles.copy}>
         <View style={[styles.eyebrow, { backgroundColor: colors.chipBackground }]}>
           <ThemedText style={[styles.eyebrowText, { color: colors.chipText }]}>

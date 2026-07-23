@@ -17,20 +17,22 @@ export interface OnboardingHeroProps {
   kind: OnboardingSlideKind;
   /** Enlarge the floating content for the roomier web hero panel. */
   web?: boolean;
+  /** Whether the slide is in view — drives the staggered entrance replay. */
+  active?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-const HeroContent = ({ kind }: { kind: OnboardingSlideKind }): React.JSX.Element => {
-  if (kind === 'recipes') return <HeroRecipes />;
-  if (kind === 'ai') return <HeroAI />;
-  return <HeroTimer />;
+const HeroContent = ({ kind, active }: { kind: OnboardingSlideKind; active: boolean }): React.JSX.Element => {
+  if (kind === 'recipes') return <HeroRecipes active={active} />;
+  if (kind === 'ai') return <HeroAI active={active} />;
+  return <HeroTimer active={active} />;
 };
 
 /**
  * The gradient hero panel behind a welcome slide: the brand gradient, two soft
  * ambient blobs, and the per-slide floating illustration centered on top.
  */
-export const OnboardingHero = ({ kind, web = false, style }: OnboardingHeroProps): React.JSX.Element => {
+export const OnboardingHero = ({ kind, web = false, active = true, style }: OnboardingHeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <LinearGradient
@@ -54,7 +56,7 @@ export const OnboardingHero = ({ kind, web = false, style }: OnboardingHeroProps
         ]}
       />
       <View style={web ? styles.contentWeb : styles.content}>
-        <HeroContent kind={kind} />
+        <HeroContent kind={kind} active={active} />
       </View>
     </LinearGradient>
   );

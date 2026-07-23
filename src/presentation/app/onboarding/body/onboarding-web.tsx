@@ -9,6 +9,7 @@ import { OpacityConstants } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
+import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-dots';
 import { OnboardingActions } from '@presentation/app/onboarding/items/onboarding-actions';
 import type { OnboardingSlide as OnboardingSlideModel } from '@presentation/app/onboarding/model/onboarding-slide';
@@ -54,15 +55,17 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
             <ThemedText style={styles.wordmark}>Recipely</ThemedText>
           </View>
 
-          <View style={[styles.eyebrow, { backgroundColor: colors.chipBackground }]}>
-            <ThemedText style={[styles.eyebrowText, { color: colors.chipText }]}>
-              {slide.eyebrow}
+          <OnboardingReveal key={index} style={styles.copyBlock}>
+            <View style={[styles.eyebrow, { backgroundColor: colors.chipBackground }]}>
+              <ThemedText style={[styles.eyebrowText, { color: colors.chipText }]}>
+                {slide.eyebrow}
+              </ThemedText>
+            </View>
+            <ThemedText style={styles.title}>{slide.title}</ThemedText>
+            <ThemedText muted style={styles.body}>
+              {slide.body}
             </ThemedText>
-          </View>
-          <ThemedText style={styles.title}>{slide.title}</ThemedText>
-          <ThemedText muted style={styles.body}>
-            {slide.body}
-          </ThemedText>
+          </OnboardingReveal>
 
           <View style={styles.controls}>
             <OnboardingDots count={slides.length} index={index} onSelect={setIndex} />
@@ -93,7 +96,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
         </View>
 
         <View style={[styles.heroCol, stacked ? styles.heroColStacked : null]}>
-          <OnboardingHero kind={slide.kind} web style={styles.hero} />
+          <OnboardingHero key={index} kind={slide.kind} web style={styles.hero} />
         </View>
       </View>
     </View>
@@ -124,6 +127,9 @@ const styles = StyleSheet.create({
     flex: 1,
     maxWidth: COLUMN_MAX,
     gap: spacing.lg,
+  },
+  copyBlock: {
+    gap: spacing.md,
   },
   copyColStacked: {
     maxWidth: CONTENT_MAX,

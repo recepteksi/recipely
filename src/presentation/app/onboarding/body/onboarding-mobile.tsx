@@ -75,8 +75,14 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
             onScroll={onScroll}
             scrollEventThrottle={16}
           >
-            {slides.map((slide) => (
-              <OnboardingSlide key={slide.kind} slide={slide} width={width} height={size.height} />
+            {slides.map((slide, i) => (
+              <OnboardingSlide
+                key={slide.kind}
+                slide={slide}
+                width={width}
+                height={size.height}
+                active={i === index}
+              />
             ))}
           </ScrollView>
         ) : null}

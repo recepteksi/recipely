@@ -7,10 +7,13 @@ import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
+import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
+import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
 
 const STAR_COUNT = 5;
 const ICON_TILE = 56;
 const CARD_WIDTH = 232;
+const STAGGER_MS = 110;
 
 interface MockRecipe {
   title: string;
@@ -65,30 +68,34 @@ const RecipeCard = ({ recipe }: { recipe: MockRecipe }): React.JSX.Element => {
 };
 
 /** Floating "browse recipes" illustration: a search pill above two recipe cards. */
-export const HeroRecipes = (): React.JSX.Element => {
+export const HeroRecipes = ({ active = true }: HeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const m = t().onboarding.mock;
   const recipes: MockRecipe[] = [
-    { title: m.recipeOneTitle, meta: m.recipeOneMeta, stars: 5 },
-    { title: m.recipeTwoTitle, meta: m.recipeTwoMeta, stars: 4 },
+    { title: m.recipeOneTitle, meta: m.recipeOneMeta, stars: STAR_COUNT },
+    { title: m.recipeTwoTitle, meta: m.recipeTwoMeta, stars: STAR_COUNT - ValueConstants.one },
   ];
 
   return (
     <View style={styles.root}>
-      <View
-        style={[
-          styles.searchPill,
-          shadows.lg,
-          { backgroundColor: colors.surface, borderColor: colors.cardBorder },
-        ]}
-      >
-        <Ionicons name="search" size={sizes.iconSm} color={colors.primary} />
-        <ThemedText muted style={styles.searchText}>
-          {m.searchPlaceholder}
-        </ThemedText>
-      </View>
-      {recipes.map((recipe) => (
-        <RecipeCard key={recipe.title} recipe={recipe} />
+      <OnboardingReveal active={active}>
+        <View
+          style={[
+            styles.searchPill,
+            shadows.lg,
+            { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+          ]}
+        >
+          <Ionicons name="search" size={sizes.iconSm} color={colors.primary} />
+          <ThemedText muted style={styles.searchText}>
+            {m.searchPlaceholder}
+          </ThemedText>
+        </View>
+      </OnboardingReveal>
+      {recipes.map((recipe, i) => (
+        <OnboardingReveal key={recipe.title} active={active} delay={(i + ValueConstants.one) * STAGGER_MS}>
+          <RecipeCard recipe={recipe} />
+        </OnboardingReveal>
       ))}
     </View>
   );
