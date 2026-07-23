@@ -6,7 +6,11 @@ import { useTheme } from '@presentation/base/theme/use-theme';
 import { shadows } from '@presentation/base/theme/shadows';
 import { spacing, radii, fontSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
+import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
 
+const RING_DELAY_MS = 40;
+const STEPS_DELAY_MS = 220;
 const RING_SIZE = 120;
 const RING_CENTER = RING_SIZE / 2;
 const RING_RADIUS = 46;
@@ -19,7 +23,7 @@ const CARD_WIDTH = 210;
 const TIMER_FACE = '04:12';
 
 /** Floating "cook with timers" illustration: a progress ring above a step checklist. */
-export const HeroTimer = (): React.JSX.Element => {
+export const HeroTimer = ({ active = true }: HeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const m = t().onboarding.mock;
   const steps = [
@@ -30,7 +34,10 @@ export const HeroTimer = (): React.JSX.Element => {
 
   return (
     <View style={styles.root}>
-      <View
+      <OnboardingReveal
+        active={active}
+        delay={RING_DELAY_MS}
+        float
         style={[
           styles.ringCard,
           shadows.lg,
@@ -69,9 +76,11 @@ export const HeroTimer = (): React.JSX.Element => {
             </ThemedText>
           </View>
         </View>
-      </View>
+      </OnboardingReveal>
 
-      <View
+      <OnboardingReveal
+        active={active}
+        delay={STEPS_DELAY_MS}
         style={[
           styles.stepCard,
           shadows.lg,
@@ -100,7 +109,7 @@ export const HeroTimer = (): React.JSX.Element => {
             </ThemedText>
           </View>
         ))}
-      </View>
+      </OnboardingReveal>
     </View>
   );
 };
