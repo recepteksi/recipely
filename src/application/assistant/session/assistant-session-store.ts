@@ -258,6 +258,13 @@ export const configureAssistantSessionStore = (
       microphone: deps.microphone,
       player,
       tools: new ToolRegistry([createRunActionTool(registry)]),
+      // The library registers a generic page pack by default — read the DOM,
+      // follow a link, press a button. This app declares its own fifty-word
+      // vocabulary for the same acts, and on web both would be offered for the
+      // same sentence: asked to open a recipe, the model could press whatever
+      // the page happens to call it instead of running `openRecipe`, which
+      // knows what a recipe is. One vocabulary, and it is ours.
+      page: false,
       getConnection: async ({ resumptionHandle }) => {
         const grant = await tokens.mintSession(languageCode, resumptionHandle);
         if (!grant.ok) throw grant.failure;
