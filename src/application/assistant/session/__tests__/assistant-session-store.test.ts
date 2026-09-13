@@ -542,6 +542,29 @@ describe('assistant session store', () => {
       expect(calls.toolResponses).toEqual([{ ok: false, error: 'unavailable_here' }]);
     });
 
+    // The library registers a generic `page` pack wherever a document exists —
+    // press whatever the screen calls a thing. This app declares its own
+    // vocabulary for the same acts, so it opts out with `page: false`: asked to
+    // open a recipe, the model must reach `openRecipe`, which knows what a
+    // recipe is, and not a button that happens to be on screen. The document
+    // below is what makes this a guard — on web the app really is in one, and
+    // without the opt-out the pack registers and answers this call.
+    it('answers a generic page call as a tool it does not have, even in a browser', async () => {
+      const page = { title: 'Recipely', querySelector: () => null, querySelectorAll: () => [] };
+      Object.defineProperty(globalThis, 'document', { value: page, configurable: true });
+      const { store, calls, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({
+        kind: SessionEventKind.ToolCall,
+        call: { id: 'c1', name: 'page', args: { action: 'press', target: 'Kaydet' } },
+      });
+      for (let tick = 0; tick < 8; tick += 1) await Promise.resolve();
+
+      expect(calls.toolResponses).toEqual([{ ok: false, error: 'unknown_tool' }]);
+      Reflect.deleteProperty(globalThis, 'document');
+    });
+
     it('runs a registered action and answers with its result', async () => {
       const { store, registry, calls, emit } = harness();
       registry.register(AssistantAction.GenerateRecipe, async (arg) => ({ ok: true, title: arg }));
